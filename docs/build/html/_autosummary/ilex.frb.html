@@ -348,13 +348,10 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.find_frb">
 <span class="sig-name descname"><span class="pre">find_frb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_guard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_roughrms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.find_frb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.find_frb" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>find_frb() -&gt; This function searches the stokes I dynamic spectrum for the most likely
+<dd><p>This function searches the stokes I dynamic spectrum for the most likely
 location of the frb. It’s important to note that this function will look through
 the entire dataset regardless of crop parameters. It will first scrunch, so if memory
 is an issue first set ‘tN’.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -363,14 +360,14 @@ is an issue first set ‘tN’.</p>
 off-pulse region for rms and baseband estimation, in (ms)</p></li>
 <li><p><strong>_width</strong> (<em>float</em>) – width of off-pulse region on either side of pulse region in (ms)</p></li>
 <li><p><strong>_roughrms</strong> (<em>float</em>) – rough offset from peak on initial S/N threshold in (ms)</p></li>
-<li><p><strong>**kwargs</strong> – </p></li>
+<li><p><strong>**kwargs</strong> – FRB parameters + FRB meta-parameters</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>New Phase start and end limits for found frb burst</p>
+<dd class="field-even"><p><strong>t_crop</strong> – New Phase start and end limits for found frb burst</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>t_crop (list)</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -410,28 +407,28 @@ f0 (float): Reference Frequency</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.fit_scintband">
 <span class="sig-name descname"><span class="pre">fit_scintband</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_priors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_priors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_err_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regions'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.fit_scintband"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.fit_scintband" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Fit for scintillation bandwidth</p>
-</dd>
-</dl>
+<dd><p>Fit for, Find and plot Scintillation bandwidth in FRB</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fit_priors</strong> (<em>dict</em>) – priors for bays fitting</p></li>
-<li><p><strong>static_priors</strong> (<em>dict</em>) – priors to keep static during fitting</p></li>
-<li><p><strong>fit_params</strong> (<em>dict</em>) – parameters used to pass into fitting function</p></li>
-<li><p><strong>plot</strong> (<em>bool</em>) – plot acf and scint function</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – filename to save plot</p></li>
-<li><p><strong>**kwargs</strong> – </p></li>
+<li><p><strong>fit_priors</strong> (<em>dict</em><em>, </em><em>optional</em>) – Priors for sampling, by default None</p></li>
+<li><p><strong>static_priors</strong> (<em>dict</em><em>, </em><em>optional</em>) – priors to keep constant, by default None</p></li>
+<li><p><strong>fit_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – extra arguments for Bilby.run_sampler function, by default None</p></li>
+<li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – plot data, by default False</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Save figure to file, by default None</p></li>
+<li><p><strong>plot_err_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Choose between two methods of plotting the error in the data, by default “regions”</p>
+<p>[regions] - Show error in data as shaded regions
+[lines] - Show error in data as tics in markers, by default “regions”</p>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of fitting parameters
-spec_lags (ndarray): spectral lags of acf in MHz
-spec_acf (ndarray): acf values (normalised)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>p (dict)</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>p</strong> (<em>fit_par</em>) – Posterior class data-structure</p></li>
+<li><p><strong>spec_lags</strong> (<em>np.ndarray</em>) – Spectral lags</p></li>
+<li><p><strong>spec_acf</strong> (<em>np.ndarray</em>) – ACF of spectral data, excluding zero-lag</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -467,23 +464,23 @@ spec_acf (ndarray): acf values (normalised)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.get_data">
 <span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dsI'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.get_data" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Create/Get crops of data from loaded data</p>
-</dd>
-</dl>
+<dd><p>Make new instance of loaded data. This will take a crop of the
+loaded mmap-ed stokes data, pass it through the back-end processing
+function and save the data in memory in the ._ds, _t, _f and _freq
+class instance attributes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data_list</strong> (<em>list</em>) – Requested crop products</p></li>
-<li><p><strong>get</strong> (<em>bool</em>) – Return crop products</p></li>
-<li><p><strong>**kwargs</strong> – </p></li>
+<li><p><strong>data_list</strong> (<em>List</em><em>(</em><em>str</em><em>) or </em><em>str</em><em>, </em><em>optional</em>) – List of data products to load in, by default “dsI”</p></li>
+<li><p><strong>get</strong> (<em>bool</em><em>, </em><em>optional</em>) – Return new crops of data, by default False and will only save data
+instances to class container attributes</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dictionary of data products to return, only if get == True</p>
+<dd class="field-even"><p><strong>data</strong> – Dictionary of processed data crops, by default None if get = False</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>data (dict)</p>
+<dd class="field-odd"><p>Dict, optional</p>
 </dd>
 </dl>
 </dd></dl>
@@ -491,19 +488,13 @@ spec_acf (ndarray): acf values (normalised)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.get_freqs">
 <span class="sig-name descname"><span class="pre">get_freqs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.get_freqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.get_freqs" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Get Frequencies</p>
-</dd>
-</dl>
+<dd><p>Get Frequencies</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.load_data">
 <span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds_I</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds_Q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds_U</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds_V</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pol_X</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pol_Y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.load_data" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Load data</p>
-</dd>
-</dl>
+<dd><p>Load Stokes HTR data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -579,16 +570,13 @@ if RM is not provided, them RM will be fitted and used.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.plot_ds_int">
 <span class="sig-name descname"><span class="pre">plot_ds_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.plot_ds_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.plot_ds_int" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Plot Dynamic spectra in interactive figure with time and freq
+<dd><p>Plot Dynamic spectra in interactive figure with time and freq
 profiles.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stk</strong> (<em>str</em>) – Stokes data</p></li>
-<li><p><strong>**kwargs</strong> – </p></li>
+<li><p><strong>stk</strong> (<em>str</em>) – Stokes data, [“I”, “Q”, “U”, “V”]</p></li>
+<li><p><strong>**kwargs</strong> – FRB parameter and meta-parameter arguments</p></li>
 </ul>
 </dd>
 </dl>
@@ -607,19 +595,22 @@ profiles.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.plot_stokes">
 <span class="sig-name descname"><span class="pre">plot_stokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ldebias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debias_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk2plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IQUV'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_err_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regions'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.plot_stokes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.plot_stokes" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Plot stokes data</p>
-</dd>
-</dl>
+<dd><p>Plot Stokes data, by default stokes I, Q, U and V data is plotted</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>L</strong> (<em>bool</em>) – Plot Stokes L (linear polarisation)</p></li>
-<li><p><strong>stk_type</strong> (<em>str</em>) – type of stokes data to plot
-[t] - time series
-[f] - frequency spectra</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – filename to save figure to</p></li>
-<li><p><strong>**kwargs</strong> – key parameters</p></li>
+<li><p><strong>plot_L</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L instead of Q and U, by default False</p></li>
+<li><p><strong>Ldebias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L debias, by default False</p></li>
+<li><p><strong>debias_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – sigma threshold for error masking, data that is &lt; debias_threshold * Ierr, mask it out or
+else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</p></li>
+<li><p><strong>stk_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of stokes data to plot, “f” for Stokes Frequency data or “t” for time data, by default “f”</p></li>
+<li><p><strong>stk_ratio</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False</p></li>
+<li><p><strong>stk2plot</strong> (<em>str</em><em>, </em><em>optional</em>) – string of stokes to plot, for example if “QV”, only stokes Q and V are plotted, by default “IQUV”</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – name of file to save figure image, by default None</p></li>
+<li><p><strong>plot_err_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Choose between two methods of plotting the error in the data, by default “regions”</p>
+<p>[regions] - Show error in data as shaded regions
+[lines] - Show error in data as tics in markers</p>
+</p></li>
 </ul>
 </dd>
 </dl>
@@ -628,17 +619,13 @@ profiles.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.save_data">
 <span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.save_data" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Save cropped data</p>
-</dd>
-</dl>
+<dd><p>Save current instance data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data_list</strong> (<em>list</em>) – Cropped data to save</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – Common prefix for saved filenames</p></li>
-<li><p><strong>param_file</strong> (<em>str</em>) – Filename for saved param_file</p></li>
-<li><p><strong>**kwargs</strong> – Arguments for FRB_params, FRB_metaparams and FRB hyperparams</p></li>
+<li><p><strong>data_list</strong> (<em>List</em><em>(</em><em>str</em><em>)</em><em>, </em><em>optional</em>) – List of data to save, by default None</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Common Pre-fix for saved data, by default None</p></li>
+<li><p><strong>param_file</strong> (<em>str</em><em>, </em><em>optional</em>) – filename for parameter file, by default None</p></li>
 </ul>
 </dd>
 </dl>

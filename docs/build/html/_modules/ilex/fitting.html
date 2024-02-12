@@ -551,6 +551,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     
+    
     <span class="c1"># keys</span>
     <span class="n">static_keys</span> <span class="o">=</span> <span class="n">static_priors</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
@@ -641,6 +642,17 @@
 <span class="sd">    fit_par</span>
 <span class="sd">        data container for posteriors</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="c1"># # check if fit_func is string or function</span>
+    <span class="c1"># if callable(fit_func):</span>
+    <span class="c1">#     # must be function, if this is callable, this needs to be treated specially</span>
+    <span class="c1"># elif type(fit_func) == str:</span>
+    <span class="c1">#     # must be string, function within .fitting module</span>
+    <span class="c1"># else:</span>
+    <span class="c1">#     print(&quot;Method type not supported, needs to be a str or callable function&quot;)</span>
+    <span class="c1">#     return</span>
+
 
     <span class="c1">##=======================================##</span>
     <span class="c1">##  seperate variable and static priors  ##</span>

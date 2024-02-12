@@ -790,10 +790,12 @@
         <span class="c1"># now time/freq array</span>
         <span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
+        <span class="nb">print</span><span class="p">(</span><span class="n">pdat</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk2plot</span><span class="p">:</span>
             <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
             <span class="k">if</span> <span class="n">st</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span> <span class="ow">and</span> <span class="n">err_flag</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">])</span>
                 <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
 

@@ -15,7 +15,6 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import pandas as pd
 from time import time
 import math
 import os
@@ -31,7 +30,7 @@ from .utils import (load_data, save_data, dict_get,
 from .data import *
 
 ## import FRB stats ##
-from .fitting import fit_scint, fit_RMquad, fit_RMsynth, fit_tscatt 
+from .fitting import fit_scint, fit_RMquad, fit_RMsynth, fit_tscatt
 
 ## import FRB params ##
 from .par import FRB_params, FRB_metaparams
@@ -43,7 +42,8 @@ from .htr import make_stokes
 from .globals import _G, globals_ 
 
 ## import plot functions ##
-from .plot import (plot_scintband, plot_tscatt, plot_RM, plot_PA, plot_stokes)
+from .plot import (plot_scintband, plot_tscatt, plot_RM, plot_PA, plot_stokes,      
+                  plot_poincare, plot_data)
 
 ## import processing functions ##
 # from .FRBproc import proc_data
@@ -51,9 +51,9 @@ from .plot import (plot_scintband, plot_tscatt, plot_RM, plot_PA, plot_stokes)
 from .logging import log, get_verbose, set_verbose
 
 
-from ._frb_proc import _proc_data
+from .master_proc import master_proc_data
 
-from .multicomp_pol import multicomp_pol
+from .multicomp_pol import *
 
 
     
@@ -64,29 +64,84 @@ from .multicomp_pol import multicomp_pol
 
 class FRB:
     """
-    Info:
-        FRB class for Processing of ASKAP FRB data
+    FRB class for Processing of ASKAP FRB data
 
-    Attributes:
-        par (FRB_params): hold parameters for FRB
-        this_par (FRB_params): Current instance of 'par'
-        prev_par (FRB_params): Last instance of 'par'
-        metapar (FRB_metaparams): hold meta-parameters for FRB
-        this_metapar (FRB_metaparams): Current instance of 'metapar'
-        prev_metapar (FRB_metaparams): Last instance of 'metapar'
-        ds (dict): Dictionary of loaded stokes dynamic spectra
-        pol (dict): Dictionary of loaded Polarisation time series
-        _t (dict): Dictionary of cropped stokes time series
-        _f (dict): Dictionary of cropped stokes spectra
-        _ds (dict): Dictionary of cropped stokes dynamic spectra
-        _freq (ndarray): Cropped Frequency array
-        verbose (bool): Enable logging
-        force (bool): En-force use of any loaded cropped data regardless of parameter differences
-        savefig (bool): Save all created figures to files
-        pcol (str): Color of text for logging
-        empty (bool): Variable used to initialise FRB instance and data loading
+    Parameters
+    ----------
+    name: str 
+        Name of FRB
+    RA: str 
+        Right acension position
+    DEC: str 
+        Declination position
+    DM: float 
+        Dispersion Measure
+    bw: float 
+        Bandwidth
+    cfreq: float 
+        Central Frequency
+    t_crop: list 
+        Crop start and end phase in Time
+    f_crop: list 
+        Crop start and end phase in Frequency
+    tN: int 
+        Factor for averaging in Time
+    fN: int 
+        Factor for averaging in Frequency
+    t_lim: list 
+        Limits for FRB in Time
+    f_lim: list 
+        Limits for FRB in Frequency
+    RM: float 
+        Rotation Measure
+    f0: float 
+        Reference Frequency
+    pa0: float 
+        Position angle at reference frequency f0
+    verbose: bool 
+        Enable verbose logging
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
 
-
+    Attributes
+    ----------
+    par: FRB_params 
+        parameters for FRB
+    this_par: FRB_params 
+        Current instance of 'par'
+    prev_par: FRB_params 
+        Last instance of 'par'
+    metapar: FRB_metaparams 
+        hold meta-parameters for FRB
+    this_metapar: FRB_metaparams 
+        Current instance of 'metapar'
+    prev_metapar: FRB_metaparams 
+        Last instance of 'metapar'
+    ds: Dict 
+        Dictionary of loaded stokes dynamic spectra
+    pol: Dict 
+        Dictionary of loaded Polarisation time series
+    _t: Dict 
+        Dictionary of cropped stokes time series
+    _f: Dict 
+        Dictionary of cropped stokes spectra
+    _ds: Dict 
+        Dictionary of cropped stokes dynamic spectra
+    _freq: np.ndarray 
+        Cropped Frequency array
+    verbose: bool 
+        Enable logging
+    force: bool 
+        En-force use of any loaded cropped data regardless of parameter differences
+    savefig: bool 
+        Save all created figures to files
+    pcol: str 
+        Color of text for logging
+    empty: bool 
+        Variable used to initialise FRB instance and data loading
     """
 
 
@@ -100,32 +155,7 @@ class FRB:
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], terr_crop = None):
         """
-        Info:
-            Create FRB instance
-
-        Args:
-            name (str): Name of FRB
-            RA (str): Right acension position
-            DEC (str): Declination position
-            DM (float): Dispersion Measure
-            bw (float): Bandwidth
-            cfreq (float): Central Frequency
-            t_crop (list): Crop start and end phase in Time
-            f_crop (list): Crop start and end phase in Frequency
-            tN (int): Factor for averaging in Time
-            fN (int): Factor for averaging in Frequency
-            t_lim (list): Limits for FRB in Time
-            f_lim (list): Limits for FRB in Frequency
-            RM (float): Rotation Measure
-            f0 (float): Reference Frequency
-            pa0 (float): Position angle at reference frequency f0
-            verbose (bool): Enable verbose logging
-            norm (str): Type of normalisation
-                        [max] -> normalise using maximum
-                        [absmax] -> normalise using absolute maximum
-                        [None] -> Skip normalisation
-            
-
+        Create FRB instance
         """
         
         self.par = FRB_params(name = name, RA = RA, DEC = DEC, 
@@ -197,24 +227,30 @@ class FRB:
     ## [ LOAD IN DATA ] ##
     def load_data(self, ds_I: str = None, ds_Q: str = None, ds_U: str = None, ds_V: str = None,
                   pol_X: str = None, pol_Y: str = None, param_file: str = None, mmap = True, _init = False):
-
         """
-        Info:
-            Load data
+        Load Stokes HTR data
 
-        Args:
-            ds_I (str): Filename of stokes I dynamic spectra
-            ds_Q (str): Filename of stokes Q dynamic spectra
-            ds_U (str): Filename of stokes U dynamic spectra
-            ds_V (str): Filename of stokes V dynamic spectra
-            pol_X (str): Filename of X polarisation time series
-            pol_Y (str): Filename of Y polarisation time series
-            param_file (str): Filename of param yaml file
-            mmap (bool): Enable memory mapping for loading
-            _init (bool): For initial Data loading
-
+        Parameters
+        ----------
+        ds_I: str 
+            Filename of stokes I dynamic spectra
+        ds_Q: str 
+            Filename of stokes Q dynamic spectra
+        ds_U: str 
+            Filename of stokes U dynamic spectra
+        ds_V: str 
+            Filename of stokes V dynamic spectra
+        pol_X: str 
+            Filename of X polarisation time series
+        pol_Y: str 
+            Filename of Y polarisation time series
+        param_file: str 
+            Filename of param yaml file
+        mmap: bool 
+            Enable memory mapping for loading
+        _init: bool 
+            For initial Data loading
         """
-
 
         def init_par_from_load(x):
             """
@@ -270,15 +306,16 @@ class FRB:
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
     def save_data(self, data_list = None, filename = None, param_file = None, **kwargs):
         """
-        Info:
-            Save cropped data
+        Save current instance data
 
-        Args:
-            data_list (list): Cropped data to save
-            filename (str): Common prefix for saved filenames
-            param_file (str): Filename for saved param_file
-            **kwargs: Arguments for FRB_params, FRB_metaparams and FRB hyperparams
-
+        Parameters
+        ----------
+        data_list : List(str), optional
+            List of data to save, by default None
+        filename : str, optional
+            Common Pre-fix for saved data, by default None
+        param_file : str, optional
+            filename for parameter file, by default None
         """
 
         # TODO:
@@ -289,8 +326,7 @@ class FRB:
 
     def get_freqs(self):
         """
-        Info:
-            Get Frequencies
+        Get Frequencies
         
         """
 
@@ -307,18 +343,23 @@ class FRB:
     ## [ GET DATA ] ##
     def get_data(self, data_list = "dsI", get = False, **kwargs):
         """
-        Info:
-            Create/Get crops of data from loaded data
+        Make new instance of loaded data. This will take a crop of the 
+        loaded mmap-ed stokes data, pass it through the back-end processing
+        function and save the data in memory in the ._ds, _t, _f and _freq
+        class instance attributes.
 
-        Args:
-            data_list (list): Requested crop products
-            get (bool): Return crop products
-            **kwargs: 
+        Parameters
+        ----------
+        data_list : List(str) or str, optional
+            List of data products to load in, by default "dsI"
+        get : bool, optional
+            Return new crops of data, by default False and will only save data
+            instances to class container attributes
 
-        Returns:
-            data (dict): Dictionary of data products to return, only if get == True
-        
-        
+        Returns
+        -------
+        data: Dict, optional
+            Dictionary of processed data crops, by default None if get = False
         """
         # update par and metapar if nessesary
         self._load_new_params(**kwargs)
@@ -373,15 +414,18 @@ class FRB:
 
     def _check_instance(self, data_list = None):
         """
-        Info:
-            Check for requested data in current instance
-        
-        Args:
-            data_list (list): Requested cropped data products
+        Run through unit checks of current instance of crops, do all crops match in shape,
+        have any parameters changed since last call to get_data().
 
-        Returns:
-            returns 1 if check passed, else 0 if not.
+        Parameters
+        ----------
+        data_list : List(str), optional
+            data to check, by default None
 
+        Returns
+        -------
+        bool
+            0 if failed, 1 if passed
         """
 
         if not dict_isall(self.prev_par.par2dict(), 
@@ -489,12 +533,17 @@ class FRB:
 
     def _get_instance(self, data_list = None):
         """
-        Info:
-            Retrieve and return instances of data
+        Grap current instance of crops
 
-        Args:
-            data_list (list): List of requested cropped data products
-        
+        Parameters
+        ----------
+        data_list : List(str), optional
+            crop types to return, by default None
+
+        Returns
+        -------
+        data: Dict
+            Dictionary of data crops
         """
         # initialise new data list
         new_data = {}
@@ -530,26 +579,25 @@ class FRB:
 
     def _make_instance(self, data_list = None):
         """
-        Info:
-            Make New instances of cropped data products
+        Make New data crops for current instance
 
-        Args:
-            data_list (list): List of requested cropped data products
-    
+        Parameters
+        ----------
+        data_list : List(str), optional
+            List of crop products to make, by default None
         """
+
         # assuming all prior checks on data were successful
-        
-        # remove data to be overwritten, conserve memory
-        for data in data_list:
-            stk = data[-1]
-            if data[:2] == "ds":
-                self._ds[stk] = None
-            elif data[0] == "t":
-                self._t[stk] = None
-                self._t[f"{stk}err"] = None
-            elif data[0] == "f":
-                self._f[stk] = None
-                self._f[f"{stk}"] = None 
+
+        # purge everything
+        for S in"IQUV":
+            self._ds[S] = None
+            self._ds[f"{S}err"] = None
+            self._t[S] = None
+            self._t[f"{S}err"] = None
+            self._f[S] = None
+            self._f[f"{S}err"] = None
+            self._freq = None
 
 
         # loop through data products
@@ -560,7 +608,7 @@ class FRB:
                                  self.this_par.par2dict())
 
         # pass through to backend processing script
-        _ds, _t, _f, self._freq = _proc_data(self.ds, freqs, 
+        _ds, _t, _f, self._freq = master_proc_data(self.ds, freqs, 
                                                             data_list, full_par)
 
         log("Saving new data products to latest instance", lpf_col = self.pcol)
@@ -592,11 +640,12 @@ class FRB:
     
     def _clear_instance(self, data_list = None):
         """
-        Info:
-            Clear instances of cropped data products
+        Remove specified data products of crops
 
-        Args:
-            data_list (list): List of requested cropped data products
+        Parameters
+        ----------
+        data_list : List(str), optional
+            List of data products to clear, by default None
         """
 
         # flags
@@ -638,12 +687,13 @@ class FRB:
     
     def _init_proc(self, data_list):
         """
-        Info:
-            Check if all requested data products and their
-            dependencies are being requested. 
+        Check if all requested data products and their
+        dependencies are being requested. 
 
-        Args:
-            data_list (list): List of requested cropped data products
+        Parameters
+        ----------
+        data_list: List(str)
+            List of requested cropped data products
         """
 
         # get stokes data to load in
@@ -753,12 +803,9 @@ class FRB:
 
     def _load_new_params(self, **kwargs):
         """
-        Info:
-            Update Current instance of FRB_params and FRB_metaparams
+        Update parameters with keywords for current instance
 
-        Args:
-            **kwargs
-        """      
+        """  
         # make sure metaparameters are updated first  
         self._proc_kwargs(**kwargs)
         
@@ -779,8 +826,7 @@ class FRB:
 
     def _save_new_params(self):
         """
-        Info:
-            save Current instance of FRB_params and FRB_metaparams
+        save Current instance of FRB_params and FRB_metaparams
 
         """
 
@@ -894,12 +940,17 @@ class FRB:
     ## [ CHECK IF DATA PROUCTS ARE VALID ] ##
     def _isvalid(self, data_products: list = None):
         """
-        Info:
-            Check if requested Stokes/Pol data to crop is valid
+        Check if data products are valid, are they loaded? Do their shapes match
 
-        Args:
-            data_products (list): List of requested loaded data to use
-        
+        Parameters
+        ----------
+        data_products : list(str), optional
+            Data products to check against, by default None
+
+        Returns
+        -------
+        bool
+            0 if failed, 1 if passed
         """
 
         data_shape = []
@@ -920,8 +971,8 @@ class FRB:
 
     def _iserr(self):
         """
-        Info:
-            Check if error data has been enabled
+        Check if off-pulse region crop parameters, i.e. terr_crop
+        has been given, if so the off-pulse rms will be calculated.
 
         """
 
@@ -1062,22 +1113,29 @@ class FRB:
     def find_frb(self, sigma: int = 5, _guard: float = 10, _width: float = 50, 
                 _roughrms: float = 100, **kwargs):
         """
-        Info:
-            find_frb() -> This function searches the stokes I dynamic spectrum for the most likely
-            location of the frb. It's important to note that this function will look through
-            the entire dataset regardless of crop parameters. It will first scrunch, so if memory
-            is an issue first set 'tN'.
+        This function searches the stokes I dynamic spectrum for the most likely
+        location of the frb. It's important to note that this function will look through
+        the entire dataset regardless of crop parameters. It will first scrunch, so if memory
+        is an issue first set 'tN'.
 
-        Args:
-            sigma (int): S/N threshold
-            _guard (float): gap between estiamted pulse region and 
-                            off-pulse region for rms and baseband estimation, in (ms)
-            _width (float): width of off-pulse region on either side of pulse region in (ms)
-            _roughrms (float): rough offset from peak on initial S/N threshold in (ms)
-            **kwargs
+        Parameters
+        ----------
+        sigma: int 
+            S/N threshold
+        _guard: float 
+            gap between estiamted pulse region and 
+            off-pulse region for rms and baseband estimation, in (ms)
+        _width: float 
+            width of off-pulse region on either side of pulse region in (ms)
+        _roughrms: float 
+            rough offset from peak on initial S/N threshold in (ms)
+        **kwargs: 
+            FRB parameters + FRB meta-parameters
 
-        Returns:
-            t_crop (list): New Phase start and end limits for found frb burst
+        Returns
+        -------
+        t_crop: list
+            New Phase start and end limits for found frb burst
 
         """
         log("Looking for FRB burst", lpf_col = self.pcol)
@@ -1188,13 +1246,15 @@ class FRB:
 # TODO -> Move to .plot
     def plot_ds_int(self, stk = "I", **kwargs):
         """
-        Info:
-            Plot Dynamic spectra in interactive figure with time and freq
-            profiles.
+        Plot Dynamic spectra in interactive figure with time and freq
+        profiles.
 
-        Args:
-            stk (str): Stokes data
-            **kwargs
+        Parameters
+        ----------
+        stk: str 
+            Stokes data, ["I", "Q", "U", "V"]
+        **kwargs:
+            FRB parameter and meta-parameter arguments
         
         """
 
@@ -1253,6 +1313,7 @@ class FRB:
                 AX[2].clear()
                 AX[2].plot(np.mean(dat,axis = 1),np.linspace(new_Y[1],new_Y[0],dat.shape[0]),
                         color = 'k')
+                AX[2].plot([0.0, 0.0], *new_Y[::-1])
                 AX[2].set_ylim(new_Y)
 
 
@@ -1329,17 +1390,22 @@ class FRB:
 # -> Move to .plots
     def plot_data(self, data = "dsI", **kwargs):
         """
-        Info:
-            General Plotting function, choose to plot either dynamic spectrum or time series 
-            data for all stokes parameters
+        General Plotting function, choose to plot either dynamic spectrum or time series 
+        data for all stokes parameters
 
-        Args:
-            data (str): Data to plot
-            **kwargs
+        Parameters
+        ----------
+        data: str 
+            Data to plot, ["{type}{S}"] where \n
+            [S] = ["I", "Q", "U", "V"] \n
+            [type] = ["ds", "t", "f"] for dynamic spectra, time series and spectra
+            respectivley
+        **kwargs:
+            FRB parameter and meta-parameter arguments
         
         """
         log(f"plotting {data}", lpf_col = self.pcol)
-
+        print(kwargs)
 
         # get data
         self.get_data(data_list = data, **kwargs)
@@ -1400,23 +1466,61 @@ class FRB:
         return fig, ax
 
 
+    def plot_data(self, data = "dsI", filename: str = None, plot_err_type = "regions", **kwargs):
+
+
+        log(f"plotting {data}", lpf_col = self.pcol)
+        print(kwargs)
+
+        # get data
+        pdat = self.get_data(data_list = data, get = True, **kwargs)
+
+        stk = data[-1]
+
+        if data[0] == "t":
+            pdat['time'] = np.linspace(*self.this_par.t_lim, self._t[stk].size)
+        else:
+            pdat['time'] = np.array(self.this_par.t_lim)
+
+        # plot 
+        plot_data(pdat, data, filename = filename, plot_err_type = plot_err_type)
+
+        self._save_new_params()
+
+        return
 
 
 
 
-    def plot_stokes(self, stk_ratios = False, L = False, stk_type = "f", filename = None, **kwargs):
+
+
+    def plot_stokes(self, plot_L = False, Ldebias = False, debias_threshold = 2.0, 
+            stk_type = "f", stk_ratio = False, stk2plot = "IQUV", filename: str = None,
+            plot_err_type = "regions", **kwargs):
         """
-        Info:
-            Plot stokes data
+        Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
-        Args:
-            L (bool): Plot Stokes L (linear polarisation)
-            stk_type (str): type of stokes data to plot
-                            [t] - time series
-                            [f] - frequency spectra
-            filename (str): filename to save figure to
-            **kwargs: key parameters
-
+        Parameters
+        ----------
+        plot_L : bool, optional
+            Plot stokes L instead of Q and U, by default False
+        Ldebias : bool, optional
+            Plot stokes L debias, by default False
+        debias_threshold : float, optional
+            sigma threshold for error masking, data that is < debias_threshold * Ierr, mask it out or
+            else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
+        stk_type : str, optional
+            Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
+        stk_ratio : bool, optional
+            Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False
+        stk2plot : str, optional
+            string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
+        filename : str, optional
+            name of file to save figure image, by default None
+        plot_err_type : str, optional
+            Choose between two methods of plotting the error in the data, by default "regions" \n
+            [regions] - Show error in data as shaded regions
+            [lines] - Show error in data as tics in markers
         """
 
         log(f"plotting stokes data", lpf_col = self.pcol)
@@ -1424,31 +1528,39 @@ class FRB:
         # get data
         self.get_data(data_list = [f"{stk_type}I", f"{stk_type}Q", f"{stk_type}U", f"{stk_type}V"], **kwargs)
 
+        err_flag = self._iserr()
+
+        # check if off-pulse region given
+        if not err_flag:
+            log("Off-pulse crop required for plotting Ldebias or stokes ratios", lpf_col = self.pcol,
+                stype = "warn")
+            Ldebias = False
+            stk_ratio = False
+
+        # data container for plotting
+        pstk = {}
+
         if stk_type == "f":
-            freqs = self.this_par.get_freqs()
-            lims = [freqs[0], freqs[-1]]
+            pstk["freq"] = self.this_par.get_freqs()
             stk_dat = deepcopy(self._f)
         elif stk_type == "t":
             lims = self.this_par.t_lim
+            pstk["time"] = np.linspace(*lims, self._t["I"].size)
             stk_dat = deepcopy(self._t)
         else:
             log("stk_type can only be t or f", lpf_col = self.pcol, stype = "err")
 
-        # if stk_ratios:
-        #     keys = list(stk_dat.keys())
-        #     for key in keys:
-        #         if stk_dat[key] is None:
-        #             del stk_dat[key]
-        #     stk_dat = calc_coeffs(stk_dat)
+        # put data in container for plotting
+        for S in "IQUV":
+            pstk[f"{S}"] = stk_dat[S]
+            if err_flag:
+                pstk[f"{S}err"] = stk_dat[f"{S}err"]
 
         # plot
-        
-        stk_dat_err = None
-        if self._iserr():
-            stk_dat_err = {"I":stk_dat['Ierr'], "Q":stk_dat['Qerr'], "U":stk_dat['U'], "V":stk_dat['V']}
-
-        plot_stokes(np.linspace(*lims,stk_dat['I'].size),
-                            stk_dat, stk_dat_err, L = L, stk_type = stk_type, filename = filename)
+        plot_stokes(pstk, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
+                    debias_threshold = debias_threshold, stk_ratio = stk_ratio, stk2plot = stk2plot,
+                    filename = filename, plot_err_type = plot_err_type) 
+    
 
         self._save_new_params()
 
@@ -1464,26 +1576,37 @@ class FRB:
 
     ## [ PLOT LORENTZ OF CROP ] ##
     def fit_scintband(self, fit_priors: dict = None, static_priors: dict = None, fit_params: dict = None,
-                      plot = False, filename: str = None, **kwargs):
+                      plot = False, filename: str = None, plot_err_type = "regions", **kwargs):
         """
-        Info:
-            Fit for scintillation bandwidth
+        Fit for, Find and plot Scintillation bandwidth in FRB
 
-        Args:
-            fit_priors (dict): priors for bays fitting
-            static_priors (dict): priors to keep static during fitting
-            fit_params (dict): parameters used to pass into fitting function
-            plot (bool): plot acf and scint function 
-            filename (str): filename to save plot
-            **kwargs
+        Parameters
+        ----------
+        fit_priors : dict, optional
+            Priors for sampling, by default None
+        static_priors : dict, optional
+            priors to keep constant, by default None
+        fit_params : dict, optional
+            extra arguments for Bilby.run_sampler function, by default None
+        plot : bool, optional
+            plot data, by default False
+        filename : str, optional
+            Save figure to file, by default None
+        plot_err_type : str, optional
+            Choose between two methods of plotting the error in the data, by default "regions" \n
+            [regions] - Show error in data as shaded regions
+            [lines] - Show error in data as tics in markers, by default "regions"
 
-        Returns:
-            p (dict): Dictionary of fitting parameters
-            spec_lags (ndarray): spectral lags of acf in MHz
-            spec_acf (ndarray): acf values (normalised)         
-
+        Returns
+        -------
+        p: fit_par
+            Posterior class data-structure
+        spec_lags: np.ndarray
+            Spectral lags
+        spec_acf: np.ndarray
+            ACF of spectral data, excluding zero-lag 
+        """
         
-        """
         log("Fitting for Scintillation bandwidth", lpf_col = self.pcol)
         ##====================##
         ##       get par      ##
@@ -1535,7 +1658,8 @@ class FRB:
 
         if plot:        
             fig = plot_scintband(x = spec_lags, y = spec_acf, y_err = p.val['sigma'], 
-                                 w = p.val['w'], a = p.val['a'], filename = filename)
+                                 w = p.val['w'], a = p.val['a'], filename = filename,
+                                 plot_err_type = plot_err_type)
 
         # update instance par
         self._save_new_params()
@@ -1554,13 +1678,96 @@ class FRB:
 
 
 
+    def plot_poincare(self, filename = None, stk_type = "f", sigma = 2.0, plot_data = True,
+                        plot_model = False, plot_P = False, n = 5, **kwargs):
+        """
+        
+        
+        """
+        log("Plotting stokes data to poincare sphere", lpf_col = self.pcol)
+
+        self._load_new_params(**kwargs)
+
+        if stk_type not in "tf":
+            print("Stokes type must be either time (t) or frequency (f)")
+
+        if not self._iserr():
+            log("Must specify off-pulse crop region", stype = "err", lpf_col = self.pcol)
+            return
+
+        # get data
+        data_list = []
+        for S in "IQUV":
+            data_list += [f"{stk_type}{S}"]
+
+        data = self.get_data(data_list = data_list, get = True, **kwargs)
+
+        if stk_type == "t":
+            pdat = self._t
+            cbar_lims = self.this_par.t_lim
+            cbar_label = "Time [ms]"
+        else:
+            pdat = self._f
+            cbar_lims = [self._freq[0], self._freq[-1]]
+            cbar_label = "Frequency [MHz]"
+
+        # plot poincare sphere
+        plot_poincare(pdat, sigma = sigma, filename = filename,
+                    plot_data = plot_data, plot_model = plot_model, plot_P = plot_P,
+                    n = n, cbar_lims = cbar_lims, cbar_label = cbar_label)
+
+
+        self._save_new_params()
+
+        return
+
+
+
+    def plot_poincare_multi(self, stk_type = "f", tcrops = None, fcrops = None, 
+                            filename: str = None, plot_data = True, plot_model = False,
+                            plot_on_surface = True, plot_P = False, n = 5, **kwargs):
+        """
+        
+        
+        """
+        log(f"Plotting multiple Poincare tracks", lpf_col = self.pcol)
+
+        tcrops = deepcopy(tcrops)
+        fcrops = deepcopy(fcrops)
+
+        # initialise crops
+        self._load_new_params(**kwargs)
+
+        # run function
+        freqs = self.par.get_freqs()
+
+        # check the units of tcrops/fcrops
+        if tcrops is not None:
+            for i, crop in enumerate(tcrops):
+                if crop[0] > 1.0 or crop[1] > 1.0:
+                    tcrops[i], _ = self.par.lim2phase(t_lim = crop)
+        
+        if fcrops is not None:
+            for i, crop in enumerate(fcrops):
+                if crop[0] > 1.0 or crop[1] > 1.0:
+                    _, fcrops[i] = self.par.lim2phase(f_lim = crop)
+
+        # combine dict
+        full_par = merge_dicts(self.this_par.par2dict(),
+                            self.this_metapar.metapar2dict())
+
+        # run multicomp_poincare function
+        multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, 
+                            par = full_par, tcrops = tcrops, fcrops = fcrops, filename = filename,
+                            plot_data = plot_data, plot_model = plot_model, n = n,
+                            plot_on_surface = plot_on_surface, plot_P = plot_P)
+        
+        return
 
 
 
 
-
-
-
+ 
 
 
 
@@ -1577,7 +1784,7 @@ class FRB:
 
     ## [ FIT SCATTERING TIMESCALE ] ##
     def fit_tscatt(self, npulse = 1, fit_priors: dict = None, static_priors: dict = None, fit_params: dict = None, 
-                      plot = False, filename: str = None, **kwargs):
+                      plot = False, filename: str = None, plot_err_type = "regions", **kwargs):
         """
         Info:
             Fit for scattering timescale
@@ -1619,6 +1826,10 @@ class FRB:
         # create time profile
         x = np.linspace(*self.this_par.t_lim,y.size)
 
+        # if error queiried, put in static
+        if self._iserr():
+            # needs to be in list form as per bilby sigma code
+            static_priors['sigma'] = float(self._t['Ierr'])
 
 
         ##==================##
@@ -1641,7 +1852,7 @@ class FRB:
 
         if plot:
             fig = plot_tscatt(x = x, y = y, y_err = p.val["sigma"], p = p, npulse = npulse, 
-                              filename = filename)
+                              filename = filename, plot_err_type = plot_err_type)
 
         # save instance parameters
         self._save_new_params()
@@ -1676,7 +1887,7 @@ class FRB:
 
 
     def fit_RM(self, method = "RMquad", plot = True, fit_params: dict = None, 
-               filename: str = None, **kwargs):
+               filename: str = None, plot_err_type = "regions", **kwargs):
         """
         Info:
             Fit for Rotation Measure (RM)
@@ -1710,13 +1921,14 @@ class FRB:
 
         elif method == "RMsynth":
             data_list = ["fI", "fQ", "fU"]
-            if self.this_metapar.terr_crop is None:
-                log("Must specify 'terr_crop' for rms crop if you want to use RMsynth", stype = "err",
-                    lpf_col = self.pcol)
-                return (None, ) * 5
         
         else:
             log("Invalid method for estimating RM", stype = "err", lpf_col = self.pcol)
+            return (None, ) * 5
+            
+        if self.this_metapar.terr_crop is None:
+            log("Must specify 'terr_crop' for rms crop if you want to use RMsynth or RMquad", stype = "err",
+                lpf_col = self.pcol)
             return (None, ) * 5
         
         ## get data ##
@@ -1751,8 +1963,8 @@ class FRB:
 
         ## plot diagnostics ##
         if plot:
-            plot_RM(self._f['Q'], self._f['U'], self._f['Qerr'], self._f['Uerr'], self._freq, rm, pa0, f0,
-                    filename = filename)
+            plot_RM(self._freq, self._f['Q'], self._f['U'], self._f['Qerr'],
+                    self._f['Uerr'], rm, pa0, f0, filename = filename, plot_err_type = plot_err_type)
 
         self._save_new_params()
 
@@ -1771,8 +1983,8 @@ class FRB:
 
 
 
-    def plot_PA(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False,
-                fit_params: dict = None, filename: str = None, **kwargs):
+    def plot_PA(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
+                fit_params: dict = None, filename: str = None, plot_err_type = "regions", **kwargs):
         """
         Info:
             Plot Position angle, Stokes Spectra and I ds at once as a mosaic
@@ -1813,11 +2025,10 @@ class FRB:
         
 
         ## calculate PA
-        stk_data = {"Q":self._ds["Q"], "U":self._ds["U"], "tQerr":self._t["Qerr"],
+        stk_data = {"dsQ":self._ds["Q"], "dsU":self._ds["U"], "tQerr":self._t["Qerr"],
                     "tUerr":self._t["Uerr"], "tIerr":self._t["Ierr"], "fQerr":self._f["Qerr"],
                     "fUerr":self._f["Uerr"]}
         PA, PA_err = calc_PAdebiased(stk_data, Ldebias_threshold = Ldebias_threshold)
-
 
         # create figure
         fig, AX = plt.subplot_mosaic("P;S;D", figsize = (12, 10), 
@@ -1826,11 +2037,16 @@ class FRB:
         _x = np.linspace(*self.this_par.t_lim, PA.size)
 
         ## plot PA
-        plot_PA(_x, PA, PA_err, ax = AX['P'])
+        plot_PA(_x, PA, PA_err, ax = AX['P'], flipPA = flipPA)
 
         ## plot Spectra
-        stk_data = {'I':self._t['I'], 'Q':self._t['Q'], 'U':self._t['U'], 'V':self._t['V']}
-        plot_stokes(_x, stk_data, ax = AX['S'], stk_type = "t", L = plot_L)
+        pdat = {'time':_x}
+        for S in "IQUV":
+            pdat[f"{S}"] = self._t[S]
+            pdat[f"{S}err"] = self._t[f"{S}err"]
+
+        plot_stokes(pdat, ax = AX['S'], stk_type = "t", plot_L = plot_L, Ldebias = True, 
+                    plot_err_type = plot_err_type)
 
         ## plot dynamic spectra
         AX['D'].imshow(self._ds['I'], aspect = 'auto', 
@@ -1881,8 +2097,9 @@ class FRB:
 
 
 
-    def plot_PA_multi(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False,
-                    tcrops = None, fcrops = None, fit_params: dict = None, filename = None, **kwargs):
+    def plot_PA_multi(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
+                    tcrops = None, fcrops = None, fit_params: dict = None, filename = None,
+                    plot_err_type = "regions", **kwargs):
             """
             Info:
                 Plot Position angle for multiple components, Stokes Spectra and I ds at once as a mosaic
@@ -1901,7 +2118,10 @@ class FRB:
                 **kwargs
 
             """
-            log(f"Plotting PA for {len(tcrops)} components", lpf_col = self.pcol)
+            log(f"Plotting multiple PA components", lpf_col = self.pcol)
+
+            tcrops = deepcopy(tcrops)
+            fcrops = deepcopy(fcrops)
 
             # initialise crops
             self._load_new_params(**kwargs)
@@ -1916,20 +2136,21 @@ class FRB:
             if tcrops is not None:
                 for i, crop in enumerate(tcrops):
                     if crop[0] > 1.0 or crop[1] > 1.0:
-                        tcrops[i], _ = self.this_par.lim2phase(t_lim = crop)
+                        tcrops[i], _ = self.par.lim2phase(t_lim = crop)
             
             if fcrops is not None:
                 for i, crop in enumerate(fcrops):
                     if crop[0] > 1.0 or crop[1] > 1.0:
-                        _, fcrops[i] = self.this_par.lim2phase(f_lim = crop)
+                        _, fcrops[i] = self.par.lim2phase(f_lim = crop)
 
             # combine dict
             full_par = merge_dicts(self.this_par.par2dict(),
                                 self.this_metapar.metapar2dict())
 
-            RM, PA, PA_err = multicomp_pol(stk = self.ds, freqs = freqs, method = method, dt = self.par.dt,
-                                Ldebias_threshold=Ldebias_threshold, plot_L=plot_L, par=full_par,
-                                tcrops=tcrops, fcrops=fcrops, filename = filename, **fit_params)
+            RM, PA, PA_err = multicomp_PA(stk = self.ds, freqs = freqs, method = method, dt = self.par.dt,
+                                Ldebias_threshold=Ldebias_threshold, plot_L=plot_L, flipPA = flipPA, par=full_par,
+                                tcrops=tcrops, fcrops=fcrops, filename = filename, plot_err_type = plot_err_type,
+                                 **fit_params)
             
             return 
 

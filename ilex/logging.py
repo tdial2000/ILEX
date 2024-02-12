@@ -8,6 +8,7 @@
 ## imports
 import inspect
 from os import path, getcwd
+import os
 
 verbose_file = "_verbose.txt"
 
@@ -42,7 +43,7 @@ def get_filepath(file):
     Get filepath of verbose file
     """
 
-    return path.join(getcwd(), file)
+    return path.join(os.environ['ILEX_PATH'], file)
 
 
 def check_verbosefile():

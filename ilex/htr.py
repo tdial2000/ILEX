@@ -281,6 +281,8 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
         rbounds (ndarray): Bounds of FRB burst in Phase units
 
     """
+    dt *= ds.shape[0]/336.0
+
     # ms -> ds time bin converters
     get_units_avg = lambda t : int(ceil(t/(dt * tN)))
     get_units = lambda t : int(ceil(t/dt))
@@ -300,6 +302,8 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
         # get peak, crop rms and do rough S/N calculation
         t_rn = np.mean(ds_rn, axis = 0)
         peak = np.argmax(t_rn)
+        print(f"Peak found at phase of {peak / t_rn.size}")
+
         rms_w = get_units_avg(baseline)
         rms_crop = np.roll(t_rn, int(rmsmp * ds_rn.shape[1]))[peak-rms_w:peak+rms_w]
         rms = np.mean(rms_crop**2)**0.5
@@ -310,7 +314,7 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
         rbounds = np.asarray((rbounds*ds.shape[1]), dtype = int)[:,0]
     
 
-
+    print(f"Phase bounds of burst: {rbounds/ds.shape[1]}")
     ## calculate baseline corrections
     guard_w = get_units(guard)
     rms_w = get_units(baseline)

@@ -28,17 +28,22 @@ c = 2.997924538e8 # Speed of light [m/s]
 def average(x: np.ndarray, axis: int = 0, N: int = 10):
 
     """
-    Info:
-        average in either frequency or time
+    average in either frequency or time
 
-    Args:
-        x (ndarray): data to average over
-        axis (int): axis to average over
-        weights (ndarray): weights to apply to data when summing over. By default this is set
-                           to None, in which case a uniform weighting is applied.
+    Parameters
+    ----------
+    x: ndarray
+       data to average over
+    axis: int 
+          axis to average over
+    weights: ndarray
+          weights to apply to data when summing over. By default this is set
+          to None, in which case a uniform weighting is applied.
 
-    Returns:
-        x (ndarray): Average data
+    Returns
+    -------
+    x: ndarray 
+       Average data
     
     """
 
@@ -77,20 +82,22 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
 
 def scrunch(x: np.ndarray, axis: int = 0, weights = None):
     """
-    Info:
-        collapse dynamic spectrum in either time or 
-        frequency (freq -> axis = 0, time -> axis = 1)
+    Scrunch data along a given axis, weights may also be applied.
 
-    Args:
-        x (ndarray): dynamic spectra
-        axis (int): axis to collapse
-        weights (ndarray): weights to apply to data when summing over. By default this is set
-                           to None, in which case a uniform weighting is applied.
+    Parameters
+    ----------
+    x: np.ndarray
+        data to scrunch
+    axis: int, optional
+        axes to scrunch over, by default 0
+    weights: array-like or float, optional
+        weights to apply during scrunching, by default None
 
     Returns
-        y (ndarray): 1D time/freq data
-
-    """
+    -------
+    y: np.ndarray
+        Weighted and scrunched data
+    """    
 
 
     # check weights
@@ -126,21 +133,27 @@ def scrunch(x: np.ndarray, axis: int = 0, weights = None):
 
 ##  function to index in phase  ##
 def pslice(x: np.ndarray, start: float, end: float, axis: int = 0):
-
     """
-    Info:
-        Slice data in phase
+    Slice 1D or 2D data in phase, between 0.0-1.0 which represents the 
+    start and end of ndarray along given axis. If array is 1D, given axis
+    is set to 0.
 
-    Args:
-        x (ndarray): data to slice
-        axis (int): axis to slice over
-        start (float): starting phase
-        end (float): end phase
+    Parameters
+    ----------
+    x : np.ndarray
+        1D or 2D data array 
+    start : float
+        starting point of slice 
+    end : float
+        ending point of slice
+    axis : int, optional
+        axis to slice along, can be 0 or 1(-1)
 
-    Returns:
-        x (ndarray): sliced data 
-
-    """
+    Returns
+    -------
+    y: np.ndarray
+        sliced 1D or 2D data array
+    """    
 
     # Check number of dims
     ndims = x.ndim
@@ -177,19 +190,24 @@ def pslice(x: np.ndarray, start: float, end: float, axis: int = 0):
 
 def rotate_data(A, B, angle):
     """
-    Info:
-        Apply rotation between 2 data products (ndarrays).
+    Rotate data in 2D
 
-    Args:
-        A (ndarray): array 1 to rotate 
-        B (ndarray): array 2 to rotate
-        angle (ndarray): angle to rotate A and B by
+    Parameters
+    ----------
+    A : np.ndarray
+        First array
+    B : np.ndarray
+        Second array
+    angle : float
+        angle [rad] to rotate A and B in 2D
 
-    Returns:
-        X (ndarray): rotated A array
-        Y (ndarray): rotated B array
-        
-    """
+    Returns
+    -------
+    X: np.ndarray
+        First array rotated
+    Y: np.ndarray
+        Second array rotated
+    """    
 
     # apply rotation between A and B (and errors)
     X = A*np.cos(angle) - B*np.sin(angle)
@@ -203,15 +221,20 @@ def rotate_data(A, B, angle):
 
 def f_weight(x, fW):
     """
-    Info:
-        Apply frequency weights to dynamic spectra
+    Apply frequency weights on a 2D array, it is assumed that
+    the freq axis is axis = 0
 
-    Args:
-        x (ndarray): 2D dynamic spectra
-        fw (int/float or 1D ndarray): frequency weights
+    Parameters
+    ----------
+    x : np.ndarray
+        2D array, (f, t)
+    fW : np.ndarray or float
+        frequency weights
 
-    Returns:
-        y (ndarray): frequency Weighted dynamic spectra 
+    Returns
+    -------
+    np.ndarray
+        weighted 2D array
     """
 
     if fW is not None:
@@ -227,15 +250,20 @@ def f_weight(x, fW):
 
 def t_weight(x, tW):
     """
-    Info:
-        Apply Time weights to dynamic spectra
+    Apply time weights on a 2D array, it is assumed that
+    the time axis is axis = 1
 
-    Args:
-        x (ndarray): 2D dynamic spectra
-        fw (int/float or 1D ndarray): Time weights
+    Parameters
+    ----------
+    x : np.ndarray
+        2D array, (f, t)
+    fW : np.ndarray or float
+        time weights weights
 
-    Returns:
-        y (ndarray): Time Weighted dynamic spectra 
+    Returns
+    -------
+    np.ndarray
+        weighted 2D array
     """
 
     if tW is not None:
@@ -252,16 +280,22 @@ def t_weight(x, tW):
 
 def norm(x, method = "abs_max"):
     """
-    Info:
-        Normalize data
+    Normalise data
 
-    Args:
-        x (ndarray): data
-        method (str): method of normalisation
+    Parameters
+    ----------
+    x : np.ndarray
+        data to normalise
+    method : str, optional
+        method of normalising, by default "abs_max" \n
+        [abs_max] - Normalise using absolute maximum abs(max) \n
+        [max] - Normalise using maximum \n
+        [unit] - normalise data between -1 and 1 - not implemented 
 
-    Returns:
-        y (ndarray): normalised data
-    
+    Returns
+    -------
+    np.ndarray
+        normalised data
     """
 
     # normalise using the maximum value
@@ -304,21 +338,31 @@ def norm(x, method = "abs_max"):
 
 def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
     """
-    Info:
-        Apply Faraday Rotation via rotation about Q and U
+    Apply Faraday rotation to 1D or 2D Stokes data
 
-    Args:
-        Q (1D or 2D ndarray): Stokes Q dynamic spectra or spectra
-        U (1D or 2D ndarray): Stokes U dynamic spectra or spectra
-        f (ndarray): Frequency array
-        RM (float): Rotation Measure
-        f0 (float): Reference frequency
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
+    f : np.ndarray
+        frequency array
+    RM : float
+        Rotation Measure [rad/m2]
+    f0 : float
+        reference frequency [MHz]
+    pa0 : float, optional
+        reference position angle [rad], by default 0.0
 
-    Returns:
-        Q (1D or 2D ndarray): Rotated stokes Q
-        U (1D or 2D ndarray): Rotated stokes U
+    Returns
+    -------
+    Qrot : np.ndarray
+        de-faraday rotated Stokes Q
+    Urot : np.ndarray
+        de-faraday rotated Stokes U 
+    """ 
 
-    """    
     if RM == 0.0 or RM is None:
         return Q, U
     if f0 is None or f0 == 0.0:
@@ -341,14 +385,14 @@ def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
 
 
 
-def denoise():
-    pass
+# def denoise():
+#     pass
 
 
 
 
-def zap_chan():
-    pass
+# def zap_chan():
+#     pass
 
 
 
@@ -364,27 +408,33 @@ def zap_chan():
 
 def calc_PA(Q, U, Qerr, Uerr):
     """
-    Info:
-        Calculate PA
+    Calculate Position Angle (PA) and PA angle
 
-    Args: (all inputs are de-faraday rotated for best results)
-        tQ (ndarray): Stokes Q  
-        tU (ndarray): Stokes U
-        tQerr (ndarray): Stokes Q error 
-        tUerr (ndarray): Stokes U error 
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
+    Qerr : np.ndarray
+        Stokes Q err data
+    Uerr : np.ndarray
+        Stokes U err data
 
     Returns
-        PA (ndarray): position angle 
-        PA_err (ndarray): position angle error 
-
+    -------
+    PA : np.ndarray
+        Position Angle (PA)
+    PAerr : np.ndarray
+        Position Angle err  
     """
 
     # calculate PA and error
     PA = 0.5 * np.arctan2(U, Q)
-    PA_err = 0.5 * np.sqrt((Q**2*Uerr**2 + Q**2*Qerr**2)/
+    PAerr = 0.5 * np.sqrt((Q**2*Uerr**2 + Q**2*Qerr**2)/
                            (Q**2 + Q**2)**2)
 
-    return PA, PA_err
+    return PA, PAerr
 
 
 
@@ -395,45 +445,50 @@ def calc_PA(Q, U, Qerr, Uerr):
 
 def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
     """
-    Info:
-        Calculate de-biased PA as a function of time
-        (see Day+2020 and references therin)
+    Calculate time-dependant Position Angle masked using
+    stokes L debiased
 
-    Args:
-        stk (dict): dictionary of data (Note these data products must be de-faraday rotated)
-                    [Q] -> Stokes Q dynamic spectra
-                    [U] -> Stokes U dynamic spectra
-                    [tQerr] -> Stokes Q average rms over time 
-                    [tUerr] -> Stokes U average rms over time
-                    [tIerr] -> Stokes I average rms over time
-                    [fQerr] -> Stokes Q frequency dependent rms
-                    [fUerr] -> Stokes U frequency dependent rms
-        Ldebias_threshold (float): Threshold for PA masking using L_debias
+    Parameters
+    ----------
+    stk : Dict(np.ndarray)
+        Dictionary of Stokes data \n
+        [dsQ] - Stokes Q dynamic spectra \n
+        [dsU] - Stokes U dynamic spectra \n
+        [tQerr] - Stokes Q average rms over time \n
+        [tUerr] - Stokes U average rms over time \n
+        [tIerr] - Stokes I average rms over time \n
+        [fQerr] - Stokes Q frequency dependent rms \n
+        [fUerr] - Stokes U frequency dependent rms 
+    Ldebias_threshold : float, optional
+        sigma threshold for masking PA, by default 2.0
 
-    Returns:
-    PA (ndarray): Time dependant position angle
-    PA_err (ndarray): Time dependant position angle error
-
-    """
-
+    Returns
+    -------
+    PA : np.ndarray
+        Position Angle (PA)
+    PAerr : np.ndarray
+        Position Angle err 
+    """    
+    
     # calculate time series and de-noise
+    stk_den = {}    # denoised stk data
     for S in "QU":
-        stk[f't{S}'] = np.mean(stk[S] - stk[f"f{S}err"][:, None], axis = 0)
+        stk_den[f't{S}'] = np.mean(stk[f"ds{S}"] - stk[f"f{S}err"][:, None], axis = 0)
 
     # calculate PA and error
-    PA = 0.5 * np.arctan2(stk['tU'], stk['tQ'])
-    PA_err = 0.5 * np.sqrt((stk['tQ']**2*stk['tUerr']**2 + stk['tU']**2*stk['tQerr']**2)/
-                           (stk['tQ']**2 + stk['tU']**2)**2)
+    PA = 0.5 * np.arctan2(stk_den['tU'], stk_den['tQ'])
+    PAerr = 0.5 * np.sqrt((stk_den['tQ']**2*stk['tUerr']**2 + stk_den['tU']**2*stk['tQerr']**2)/
+                           (stk_den['tQ']**2 + stk_den['tU']**2)**2)
 
     # calculate de-baised L and mask PA 
-    L_debias = calc_Ldebiased(stk['tQ'], stk['tU'], stk['tIerr'])
+    L_debias = calc_Ldebiased(stk_den['tQ'], stk_den['tU'], stk['tIerr'])
     PA_mask = L_debias < Ldebias_threshold * stk['tIerr']
 
     # mask PA
     PA[PA_mask] = np.nan
-    PA_err[PA_mask] = np.nan
+    PAerr[PA_mask] = np.nan
 
-    return PA, PA_err
+    return PA, PAerr
 
 
 
@@ -441,16 +496,19 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
 
 def calc_L(Q, U):
     """
-    Info:
-        Calculate Linear polarisation fraction
+    Calculate Stokes L
 
-    Args:
-        Q (ndarray): Stokes Q time/frequency array
-        U (ndarray): Stokes U time/frequency array
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
 
-    Returns:
-        L (ndarray): Stokes L time/frequency array
-
+    Returns
+    -------
+    L : np.ndarray
+        Stokes L data
     """
 
     return np.sqrt(Q**2 + U**2)
@@ -462,21 +520,27 @@ def calc_L(Q, U):
 
 def calc_Ldebiased(Q, U, Ierr):
     """
-    Info:
-        Calculate De-biased Linear polarisation fraction
-        (see Everett & Weisberg+2001)
+    Calculate De-biased Linear polarisation fraction
+    (see Everett & Weisberg+2001)
 
-    Args:
-        Q (ndarray): Stokes Q time/frequency array
-        U (ndarray): Stokes U time/frequency array
-        Ierr (ndarray): Stokes I time/frequency error array
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
+    Ierr : np.ndarray
+        Stokes U err data
 
-    Returns:
-        L (ndarray): Stokes L time/frequency array
+    Returns
+    -------
+    L_debias : np.ndarray
+        Stokes L debias
     """
 
     L_meas = np.sqrt(Q**2 + U**2)
     L_debias = Ierr * np.sqrt((L_meas/Ierr)**2 - 1)
+    L_debias[np.isnan(L_debias)] = 0
     L_debias[L_meas/Ierr < 1.57] = 0
 
     return L_debias
@@ -484,31 +548,44 @@ def calc_Ldebiased(Q, U, Ierr):
 
 
 
-def calc_coeffs(stk_data):
+def calc_ratio(I, X, Ierr = None, Xerr = None):
     """
-    Info: 
-        Calculate stokes coefficients
+    Calculate Stokes Ratio X/I 
 
-    Args:
-        stk_data (dict): Stokes data in dictionary
+    Parameters
+    ----------
+    I : np.ndarray
+        Stokes I data
+    X : np.ndarray
+        Stokes [X] data, usually either Q, U or V
+    Ierr : np.ndarray, optional
+        Stokes I err data, by default None, if both Ierr and Xerr is given \n
+        Stokes X/I err will also be calculated and returned
+    Xerr : np.ndarray, optional
+        Stokes [X] err data, by default None
 
-    Returns:
-        stk_data (dict): Stokes coefficients
-
+    Returns
+    -------
+    XI : np.ndarray
+        Stokes X/I data
+    XIerr : np.ndarray, optional 
+        Stokes X/I err data, by default None
     """
-    stk_dataout = deepcopy(stk_data)
+    XIerr = None
 
-    keys = stk_data.keys()
+    # calc XI
+    XI = X/I
 
-    if "I" not in keys:
-        print("Stokes I data requried to calculate stokes coefficients")
+    # calc error?
+    if Ierr is not None and Xerr is not None:
+        XIerr = XI * np.sqrt((Xerr/X)**2 + (Ierr/I)**2)
 
-    for S in keys:
-        if S != "I":
-            stk_dataout[S] /= stk_dataout["I"]
-    stk_dataout['I'] /= stk_dataout['I']
+        # check if array or scalar
+        if not hasattr(Ierr, "__len__") or not hasattr(Xerr, "__len__"):
+            # take standard deviation
+            XIerr = np.nanmean(XIerr)
 
-    return stk_dataout
+    return XI, XIerr
 
 
 
@@ -518,6 +595,22 @@ def calc_coeffs(stk_data):
 def calc_freqs(cfreq, bw = 336.0, df = 1.0, upper = True):
     """
     Calculate Frequencies
+
+    Parameters
+    ----------
+    cfreq : float
+        Central frequency [MHz]
+    bw : float, optional
+        Bandwidth [MHz], by default 336.0
+    df : float, optional
+        channel width [MHz], by default 1.0
+    upper : bool, optional
+        If true, freq band starts at top, by default True
+
+    Returns
+    -------
+    freqs : np.ndarray
+        Frequency array
     """
     
     freqs = np.linspace(cfreq - bw/2 + df/2,
@@ -547,16 +640,20 @@ def calc_freqs(cfreq, bw = 336.0, df = 1.0, upper = True):
 ## [ GET RESIDUALS OF SOME FUNCTION ] ##
 def residuals(y,n=5):
     """
-    Info:
-        Get residuals of data array
+    Calculate residuals of a data array by subtracting the mean
+    model
 
-    Args:
-        y (ndarray): data
-        n (int): order of polynomial to fit to data
+    Parameters
+    ----------
+    y : np.ndarray
+        data array
+    n : int, optional
+        max order for polynomial to fit to mean model of y, by default 5
 
-    Returns:
-        res (ndarray): Residuals
-
+    Returns
+    -------
+    np.ndarray
+        residuals of y
     """
 
     x = np.arange(y.size)
@@ -568,16 +665,22 @@ def residuals(y,n=5):
 ## [ AUTO-CORRELATION FUNCTION ] ##
 def acf(x, outs = "unique"):
     """
-    Info:
-        Calculate auto-correlation function of real-valued data
+    Calculate normalised Auto-Correlation function using 'fft' method of 
+    real-valued data
 
-    Args:
-        x (ndarray): data
-        outs (str): output:
-                    [unique] -> take half of acf, excluding zero-lag point
+    Parameters
+    ----------
+    x : np.ndarray
+        data array
+    outs : str, optional
+        describes output of acf function, by default "unique" \n
+        [unique] - Take positive acf lags, exclude zero-lag peak
+        [all] - Take full acf, including positive, negative and zero lags
 
-    Returns:
-        acf (ndarray): acf
+    Returns
+    -------
+    np.ndarray
+        Auto-Correlation of x data
     """
 
     #correlate
@@ -596,6 +699,24 @@ def acf(x, outs = "unique"):
 
 ## [ CROSS-CORRELATION FUNCTION ] ##
 def ccf(x, y, outs = "unique"):
+    """
+    Calculate normalised Cross-Correlation function using 'fft' method of 
+    real-valued data
+
+    Parameters
+    ----------
+    x : np.ndarray
+        data array
+    outs : str, optional
+        describes output of ccf function, by default "unique" \n
+        [unique] - Take positive acf lags, including zero-lag peak
+        [all] - Take full acf, including positive, negative and zero lags
+
+    Returns
+    -------
+    np.ndarray
+        Cross-Correlation of x data
+    """
 
     #correlate
     xcorr = correlate(x,y,mode = "full",method = "fft")/(np.sum(x**2)*np.sum(y**2))**0.5

@@ -36,6 +36,22 @@ c = 2.997924538e8 # Speed of light [m/s]
 
 
 class fit_par:
+    """
+    Class for holding priors and posteriors of fitted functions.
+    To Be Implemented - Stats functions
+
+
+    Attributes
+    ----------
+    val: Dict(float)
+        bestfit posteriors of fitted function
+    plus: Dict(float)
+        Positive error
+    minus: Dict(float)
+        Negative error
+    keys: List(str)
+        Parameter names
+    """
 
     def __init__(self):
 
@@ -43,21 +59,22 @@ class fit_par:
         self.plus = {}
         self.minus = {}
         self.keys = []
+        
 
         pass
 
 
     def result2par(self, result):
         """
-        Info:
-            Get posterior info from BILBY result class
+        Get (result) class values from Bilby and save them to 
+        current instance of fit_par
 
-        Args:
-            result (result): BILBY result class
-
-        Returns:
-            p (dict): Dictionary of posterior params
+        Parameters
+        ----------
+        result : (Bilby.result)
+            Output of Bilby sampler
         """
+
         # get all parameters excluding log_likelihood
         par_keys = result.posterior.columns[:-2].tolist()
 
@@ -72,12 +89,13 @@ class fit_par:
 
     def static2par(self, dic):
         """
-        Info:
-            Get static params infomation from dictionary
-            and add to par class
+        Add single value or static parameters to current instance
+        of fit_par class
 
-        Args:
-            dic (dict): Static prior dict
+        Parameters
+        ----------
+        dic : Dict(float)
+            Single value or static parameters 
         """
 
         for key in dic.keys():
@@ -90,16 +108,18 @@ class fit_par:
         
     def add_param(self, key, val, plus, minus):
         """
-        Info:
-            Add param to container, if param exists, will be overwritten 
-            instead.
+        Add parameter to current instance of fit_par class
 
-        Args:
-            key (str): parameter name
-            val (float): bestfit value
-            plus (float): positive error
-            minus (float): negative error
-
+        Parameters
+        ----------
+        key : str
+            parameter name
+        val : float
+            bestfit/median of posterior
+        plus : float
+            Positive err
+        minus : float
+            Negative err
         """
 
         if key not in self.keys:
@@ -115,13 +135,14 @@ class fit_par:
 
     def get_bestfit(self):
         """
-        Info:
-            Get parameter bestfit values
+        Return bestfit/median values
 
-        Args:
-            vals (dict): bestfit values
-
+        Returns
+        -------
+        bestfit: Dict(float)
+            bestfit/median values
         """
+
         bestfit = {}
         params = deepcopy(self.val)
 
@@ -136,13 +157,14 @@ class fit_par:
 
     def get_err(self):
         """
-        Info:
-            Get parameter errors values
+        Get Positive and negative values of parameters
 
-        Args:
-            plus (dict): positive errors
-            minus (dict): negative errors
-            
+        Returns
+        -------
+        plus: List(float)
+            Positive errs
+        minus: List(float)
+            Negative errs
         """
 
         plus = {}
@@ -162,12 +184,12 @@ class fit_par:
 
     def get_keys(self):
         """
-        Info:
-            Get parameter keys
+        Return parameter names
 
-        Args:
-            keys (dict): parameter keys
-
+        Returns
+        -------
+        List(str)
+            Parameter names
         """
 
         keys = []
@@ -208,55 +230,94 @@ class fit_par:
 ##             utility functions                 ##
 ##===============================================##
 
-def print_bestfit(p: dict = None):
+
+def model_curve(y, n: int = 5, samp: int = None):
     """
-    Info:
-        Print out bestfit 
+    Fit Polynomial model to data
 
-    Args:
-        p (dict): Posterior from Fit
+    Parameters
+    ----------
+    y : np.ndarray
+        data to model
+    n : int, optional
+        Polynomial order, by default 5
+    samp : int, optional
+        number of samples to sample modelled data, by default None
 
+    Returns
+    -------
+    np.ndarray
+        Modelled data
+    """    
 
-    """
+    if samp is None:
+        samp = x.size
 
-    print("##======== Best fit parameters =========##")
-    print("##======================================##")
+    x = np.linspace(0, 1.0, y.size)
+    xnew = np.linspace(0, 1.0, samp)
+    
+    y_fit = np.poly1d(np.polyfit(x,y,n))
 
-    for key in p.keys():
-        if key != "sigma": 
-            print(f"{key}:    {p[key].val:.4f} (+{p[key].plus:.4f}/-{p[key].minus:.4f})")
-
-
-
-
-## [ GET MEDIAN AND PLUS AND MINUS VALUES FROM RESULT ] ##
-def _get_posterior(result):
-    """
-    Info:
-        Get posterior info from BILBY result class
-
-    Args:
-        result (result): BILBY result class
-
-    Returns:
-        p (dict): Dictionary of posterior params
-    """
-
-    params = {}
-
-    # get all parameters excluding log_likelihood
-    par_keys = result.posterior.columns[:-2].tolist()
-    p = struct_()
-
-    for _,key in enumerate(par_keys):
-        vals = result.get_one_dimensional_median_and_error_bar(key)
-        p.val = vals.median
-        p.plus = vals.plus
-        p.minus = vals.minus
-        params[key] = deepcopy(p)
+    return y_fit(xnew)
 
 
-    return params
+
+
+
+
+
+
+# def print_bestfit(p: dict = None):
+#     """
+#     Print bestfit parameters from Dict(par)
+
+#     Parameters
+#     ----------
+#     p : dict, optional
+#         Dictionary of par instances, by default None
+#     """
+
+#     print("##======== Best fit parameters =========##")
+#     print("##======================================##")
+
+#     for key in p.keys():
+#         if key != "sigma": 
+#             print(f"{key}:    {p[key].val:.4f} (+{p[key].plus:.4f}/-{p[key].minus:.4f})")
+
+
+
+
+# ## [ GET MEDIAN AND PLUS AND MINUS VALUES FROM RESULT ] ##
+# def _get_posterior(result):
+#     """
+#     Return Posterior from Bilby.result instance
+
+#     Parameters
+#     ----------
+#     result : Bilby.result
+#         Bilby result instance from Bilby.run_sampler
+
+#     Returns
+#     -------
+#     _type_
+#         _description_
+#     """
+
+#     params = {}
+
+#     # get all parameters excluding log_likelihood
+#     par_keys = result.posterior.columns[:-2].tolist()
+#     p = struct_()
+
+#     for _,key in enumerate(par_keys):
+#         vals = result.get_one_dimensional_median_and_error_bar(key)
+#         p.val = vals.median
+#         p.plus = vals.plus
+#         p.minus = vals.minus
+#         params[key] = deepcopy(p)
+
+
+#     return params
 
 
 
@@ -320,8 +381,17 @@ def _check_static_priors(static_priors):
 ## [ UNIFORM PRIORS ] ##
 def priorUniform(p):
     """
-    Info:
-        Convert priors to prior UNIFORM usable BILBY format
+    Convert Dictionary of Priors to Bilby Uniform prior instance
+
+    Parameters
+    ----------
+    p : Dict(List(float))
+        Dictionary of priors for Bilby.run_sampler
+
+    Returns
+    -------
+    Bilby.UniformPrior
+        Bilby uniform priors
     """
     priors = {}
     for _,key in enumerate(p.keys()):
@@ -330,6 +400,26 @@ def priorUniform(p):
     return priors
 
 
+
+
+# ## [ GET MEDIAN AND PLUS AND MINUS VALUES FROM RESULT ] ##
+# def result2dict(result):
+
+#     params = {}
+
+#     # get all parameters excluding log_likelihood
+#     par_keys = result.posterior.columns[:-2].tolist()
+#     p = struct_()
+
+#     for _,key in enumerate(par_keys):
+#         vals = result.get_one_dimensional_median_and_error_bar(key)
+#         p.val = vals.median
+#         p.plus = vals.plus
+#         p.minus = vals.minus
+#         params[key] = deepcopy(p)
+
+
+#     return params
 
 
 
@@ -359,6 +449,7 @@ def _static_wrap_fit_func(method: str, fit_priors: dict = None, static_priors: d
         func (lambda): return wrapper function
 
     """
+    
     
     # keys
     static_keys = static_priors.keys()
@@ -422,20 +513,43 @@ def _static_wrap_fit_func(method: str, fit_priors: dict = None, static_priors: d
 ## [ FIT FOR N-PULSES AND SCATTERING TAIL ] ##
 def func_fit(x, y, fit_func, fit_priors: dict = None, static_priors: dict = None, **kwargs):
     """
-    Info:
-        Fit function using Baysian inference (Bilby)
+    General Purpose Function for Sampling Posterior of a function through
+    Bilby. This function has the ability of constraining priors of a chosen
+    function to keep constant during sampling which is done by wrapping chosen
+    function in a temporary lambda function.
 
-    Args: 
-        x (ndarray): x data
-        y (ndarray): y data
-        fit_priors (dict): initial fitting parameters
-        static_priors (dict): priors to keep constant
-        **kwargs: fitting parameters for BILBY
+    This function also saves result.plot_data() and result.corner()
 
-    Returns:
-        params (fit_par): fit parameter class container
-    
+
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    y : np.ndarray
+        Y data
+    fit_func : str
+        Function to sample
+    fit_priors : dict, optional
+        Priors to sample, by default None
+    static_priors : dict, optional
+        Parameters to keep constant during sampling, by default None
+
+    Returns
+    -------
+    fit_par
+        data container for posteriors
     """
+
+
+    # # check if fit_func is string or function
+    # if callable(fit_func):
+    #     # must be function, if this is callable, this needs to be treated specially
+    # elif type(fit_func) == str:
+    #     # must be string, function within .fitting module
+    # else:
+    #     print("Method type not supported, needs to be a str or callable function")
+    #     return
+
 
     ##=======================================##
     ##  seperate variable and static priors  ##
@@ -520,16 +634,21 @@ def func_fit(x, y, fit_func, fit_priors: dict = None, static_priors: dict = None
 ## [ LORENTZIAN FUNCTION ] ##
 def lorentz(x,w,a):
     """
-    Info:
-        Lorentz function
+    Lorentz function - Usually used to model scintillation bandwidth
 
-    Args:
-        x (ndarray): x data array
-        w (float): HWHM 
-        a (float): Amplitude
+    Parameters
+    ----------
+    x : np.ndarray
+        X data - Usually Frequency array
+    w : float
+        width - Usually Scintillation Bandwidth
+    a : float
+        Amplitude - Usually m^2 where m is modulation index
 
-    Returns:
-        y (ndarray): y data array
+    Returns
+    -------
+    np.ndarray
+        Y data
     """
 
     return a*w**2/(w**2+x**2)
@@ -538,17 +657,23 @@ def lorentz(x,w,a):
 ## [ GAUSSIAN FUNCTION ] ##
 def gaussian(x, a, mu, sig):
     """
-    Info:
-        Gaussian function
+    Gaussian Pulse Function
 
-    Args:
-        x (ndarray): x data array
-        a (float): Amplitude
-        mu (float): Position
-        sig (float): guassian width
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    a : float
+        amplitude
+    mu : float
+        position of Gaussian Pulse
+    sig : float
+        width of Gaussian Pulse
 
-    Returns:
-        y (ndarray): y data array
+    Returns
+    -------
+    np.ndarray
+        Y data 
     """
 
     return a*np.exp(-(x-mu)**2/(2*sig**2))
@@ -556,15 +681,19 @@ def gaussian(x, a, mu, sig):
 
 def scat(x, tau):
     """
-    Info:
-        Scattering tail function
+    1 sided (positive side) exponential Scattering tail function
 
-    Args:
-        x (ndarray): x data array
-        tau (float): scattering timescale 
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    tau : float
+        Scattering Timescale
 
-    Returns:
-        y (ndarray): y data array
+    Returns
+    -------
+    np.ndarray
+        Y data
     """
 
     # create x with same time resolution
@@ -581,16 +710,21 @@ def scat(x, tau):
 
 def specindex(x, a, alpha):
     """
-    Info:
-        Spectral index function
+    Spectral index power-law function
 
-    Args:
-        x (ndarray): x data array
-        a (float): Amplitude
-        alpha (float): Spectral index
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    a : float
+        Amplitude
+    alpha : float
+        Power-law index
 
-    Returns:
-        y (ndarray): y data array
+    Returns
+    -------
+    np.ndarray
+        Y data
     """
 
     # spectral index function
@@ -607,19 +741,23 @@ def specindex(x, a, alpha):
 # TODO: Make so the scat pulse is a small as possible, maybe also implement deconvolution
 def scatt_pulse_profile(x, p):
     """
-    Info:
-        Scattering time series profile with n pulses
+    Scattering time series profile with n pulses
 
-    Args:
-        x (ndarray): x data array
-        p (dict): dictionary of params for pulses, for each pulse n:
-                  [a[n]] -> Pulse amplitude
-                  [mu[n]] -> Pulse position
-                  [sig[n]] -> Pulse width
-                  [tau] -> scattering timescale
+    Parameters
+    ----------
+    x: np.ndarray
+        X data array
+    p: Dict(float)
+        dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n
+        [a[n]] - Pulse amplitude \n
+        [mu[n]] - Pulse position \n
+        [sig[n]] - Pulse width \n
+        [tau] - scattering timescale
 
-    Returns:
-        y (ndarray): y data array
+    Returns
+    -------
+    y: np.ndarray
+        Y data array
     """
 
     npulses = (len(p) - 1)//3
@@ -654,30 +792,43 @@ def scatt_pulse_profile(x, p):
 ## RM fitting functions ##
 def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
     """
-    Info:
-        Use RM synthesis to calculate RM, pa0 and f0,
-        f0 is the weighted midband frequency and pa0 the
-        pa at f0.
+    Use RM synthesis to calculate RM, pa0 and f0,
+    f0 is the weighted midband frequency and pa0 the
+    pa at f0.
 
-    Args:
-        I (ndarray): stokes I spectra
-        Q (ndarray): stokes Q spectra
-        U (ndarray): stokes U spectra
-        Ierr (ndarray): stokes I rms spectra
-        Qerr (ndarray): stokes Q rms spectra
-        Uerr (ndarray): stokes U rms spectra
-        f (ndarray): frequencies [MHz]
-        clean_cutoff (float): cutoff arg for run_rmclean()
-        **kwargs: keyword arguments for RM tools run_synthesis
+    Parameters
+    ----------
+    I: np.ndarray
+        stokes I spectra
+    Q: np.ndarray 
+        stokes Q spectra
+    U: np.ndarray 
+        stokes U spectra
+    Ierr: np.ndarray 
+        stokes I rms spectra
+    Qerr: np.ndarray 
+        stokes Q rms spectra
+    Uerr: np.ndarray 
+        stokes U rms spectra
+    f: np.ndarray 
+        frequencies [MHz]
+    clean_cutoff: float 
+        cutoff arg for run_rmclean()
+    **kwargs: Dict 
+        keyword arguments for RM tools run_synthesis
 
-    Returns:
-        rm (float): rotation measure
-        rm_err (float): error in rotation measure
-        f0 (float): reference frequency at weighted mid-band
-        pa0 (float): position angle at f0 
-
-    
+    Returns
+    -------
+    rm: float 
+        rotation measure
+    rm_err: float 
+        error in rotation measure
+    f0: float 
+        reference frequency at weighted mid-band
+    pa0: float 
+        position angle at f0 
     """
+
     defkwargs = {"polyOrd":3, "phiMax_radm2":1.0e3, "dPhi_radm2":1.0, "nSamples":100.0}
 
     ## process kwargs keys
@@ -738,20 +889,35 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
     Info:
         Use Quadratic method to fit for RM and pa0.
 
-    Args:
-        Q (ndarray): stokes Q or Q/I spectra
-        U (ndarray): stokes U or U/I spectra
-        f (ndarray): frequency array [MHz]
-        f0 (float): reference frequency
-        **kwargs: kwargs for scipy.curve_fit()
+    Parameters
+    ----------
+    Q: np.ndarray 
+        stokes Q spectra
+    U: np.ndarray 
+        stokes U spectra
+    Qerr: np.ndarray 
+        stokes Q rms spectra
+    Uerr: np.ndarray 
+        stokes U rms spectra
+    f: np.ndarray 
+        frequencies [MHz]
+    f0: float
+        reference Frequency [MHz]
+    **kwargs: Dict 
+        keyword arguments for RM tools run_synthesis
 
-    Returns:
-        rm (float): rotation measure
-        rm_err (float): error in rotation measure
-        pa0 (float): position angle at f0
-        pa0_err (float): error in position angle at f0
-
+    Returns
+    -------
+    rm: float 
+        rotation measure
+    rm_err: float 
+        error in rotation measure
+    pa0: float 
+        position angle at f0 
+    pa0_err: float
+        position angle err
     """
+
     log("Fitting using RM quadratic function", lpf = False)
     # fit RM using Quadratic function
     def rmquad(f, rm, pa0):
@@ -762,7 +928,7 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
     PA_meas = np.unwrap(PA_meas, period = np.pi)
 
     # fit
-    fit_val, fit_err = curve_fit(rmquad, f, PA_meas, sigma = PA_err, absolute_sigma = True, **kwargs)
+    fit_val, fit_err = curve_fit(rmquad, f, PA_meas, sigma = PA_err, absolute_sigma = True, **kwargs, maxfev = 2000000)
     fit_err = np.sqrt(np.diag(fit_err))
     
     # get params
@@ -792,30 +958,36 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
 
 def fit_tscatt(t, I, npulse, priors, static_priors, **kwargs):
     """
-    Info:
-        Fit time series with some x number of convolved
-        gaussians
+    Fit time series with some n number of convolved
+    gaussians
 
-    Args:
-        t (ndarray): Time array in [ms]
-        I (ndarray): Stokes I time series
-        npulse (int): Number of convolved gaussians to fit
-        priors (dict): priors, for each pulse n:
-                       [a[n]] -> amplitude
-                       [mu[n]] -> Position in [ms]
-                       [sig[n]] -> HWHM in [ms]
-                       then
-                       [tau] -> Scattering time scale
-        static_priors (dict): priors to keep static during fitting
-                              and their vales
-                              [sigma] -> if sigma is static, an array can be 
-                                         used of the same size as t
-        **kwargs: Additional arguments for BILBY [run_sampler] function
+    Parameters
+    ----------
+    t: np.ndarray 
+        Time array in [ms]
+    I: np.ndarray
+        Stokes I time series
+    npulse: int 
+        Number of convolved gaussians to fit
+    priors: Dict 
+        priors, for each pulse n: \n
+        [a[n]] - amplitude \n
+        [mu[n]] - Position in [ms] \n
+        [sig[n]] - HWHM in [ms] \n
+        [tau] - Scattering time scale \n
+        [sigma] - rms in time
+    static_priors: Dict 
+        priors to keep static during fitting and their vales \n
+        [sigma] - if sigma is static, an array can be used of the same size as t
+    **kwargs: Dict
+        Additional arguments for BILBY [run_sampler] function
 
-    Return:
-        p (fit_par): Posterior data container
-    
+    Returns
+    -------
+        p: fit_par 
+            Posterior data container
     """
+
     log("Fitting for scattering time scale", lpf = False)
 
     # process priors, if unspecified priors are present, give default values
@@ -844,26 +1016,31 @@ def fit_tscatt(t, I, npulse, priors, static_priors, **kwargs):
 
 def fit_scint(f, I, priors, static_priors, **kwargs):
     """
-    Info:
-        Fit sectra for scintillation
+    Fit spectra for scintillation bandwidth
 
-    Args:
-        f (ndarray): Frequency array in MHz [in asending order]
-        I (ndarray): Stokes I spectra
-        priors (dict): priors
-                       [a] -> amplitude of lorentz function 
-                       [w] -> Scintillation bandwidth
-                       [sigma] -> rms in freq
-        static_priors (dict): priors to keep static during fitting
-                              and their vales
-                              [sigma] -> if sigma is kept static, an array can
-                              be used with the same size as f
-        **kwargs: Additional arguments for BILBY [run_sampler] function
+    Parameters
+    ----------
+    f: np.ndarray 
+        Frequency array [MHz] [in asending order, low end of band first]
+    I: np.ndarray 
+        Stokes I spectra
+    priors: Dict 
+        priors \n
+        [a] - amplitude of lorentz function \n
+        [w] - Scintillation bandwidth \n
+        [sigma] - rms in freq
+    static_priors: Dict 
+        priors to keep static during fitting and their vales \n
+        [sigma] - if sigma is kept static, an array can 
+        be used with the same size as f
+    **kwargs: Dict
+        Additional arguments for BILBY [run_sampler] function
 
     Return:
-        p (fit_par): Posterior data container
-    
+    p: fit_par 
+        Posterior data container
     """
+
     log("Fitting for scintillation bandwidth", lpf = False)
 
     # proc priors + static priors
@@ -912,3 +1089,15 @@ def fit_scint(f, I, priors, static_priors, **kwargs):
 # def calc_scint_C(v, t):
 
 #     return 2 * 3.1415926 * v * t
+
+
+
+# def red_chi2(data, fit, err, Nfree):
+#     """
+#     Calculate reduced chi squared
+#     """
+
+#     chi2 = np.sum((data - fit)**2/err**2)
+
+#     return chi2/(data.size - Nfree)
+

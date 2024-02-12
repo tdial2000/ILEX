@@ -1,0 +1,59 @@
+------------------
+| PLOTTING HELP  |
+------------------
+
+HOW DOES PLOTTING WORK?
+-----------------------
+
+Plotting in ILEX is standardised for ease of implementation and use. 
+All plotting functions unless otherwise specified in their docstrings 
+will follow this input/output format:
+
+Inputs:
+
+    dat: dict(ndarray)
+         Dictionary of data used for plotting, the doc string of each function will
+         specify what data is needed for this. For example (["I", "U"]). The function
+         will also check if corrosponding errors have been given. For example (["Ierr", "Uerr"]).
+
+    ax: Axes handle
+        Handle to axes of matplotlib figure. If not given an seperate figure will be created.
+
+    filename: str
+              If a filename is given, then a figure of this plot will be saved with the given
+              string.
+
+    **kwargs: other
+              Additional arguments will be avaliable depending on the plotting function.
+
+
+
+Outputs:
+
+    fig: figure handle
+         If a new figure handle is created, it will be returned.
+
+    Misc.: other
+           Additional outputs will depend on the plotting function.
+
+
+
+The basic workflow of each plotting function is as follows:
+
+
+def _plot():
+
+    1. check if ax handle is given, if not make figure
+
+    2. get data from data dictionary, i.e. dat["I"]
+
+    3. check if errors are given
+
+    4. plot
+
+    5. if filename given, save figure to .png file
+
+
+---------------------------
+END OF HELP MESSAGE
+---------------------------

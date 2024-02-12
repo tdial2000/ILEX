@@ -249,7 +249,7 @@ class FRB_params:
             f_phase[0] = (f_lim[0] - self.f_lim[0]) / lim_width
             f_phase[1] = (f_lim[1] - self.f_lim[0]) / lim_width
 
-            if self.UP:
+            if not self.UP:
                 f_phase[0], f_phase[1] = 1.0 - f_phase[1], 1.0 - f_phase[0]
 
         return t_phase, f_phase

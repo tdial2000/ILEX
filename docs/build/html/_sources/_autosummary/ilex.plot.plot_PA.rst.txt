@@ -1,6 +1,0 @@
-ilex.plot.plot\_PA
-==================
-
-.. currentmodule:: ilex.plot
-
-.. autofunction:: plot_PA

@@ -1,6 +1,0 @@
-ilex.multicomp\_pol.multicomp\_poincare
-=======================================
-
-.. currentmodule:: ilex.multicomp_pol
-
-.. autofunction:: multicomp_poincare

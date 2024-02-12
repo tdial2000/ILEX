@@ -1,6 +1,0 @@
-ilex.fitting.func\_fit
-======================
-
-.. currentmodule:: ilex.fitting
-
-.. autofunction:: func_fit

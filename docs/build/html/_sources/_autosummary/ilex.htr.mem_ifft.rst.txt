@@ -1,6 +1,0 @@
-ilex.htr.mem\_ifft
-==================
-
-.. currentmodule:: ilex.htr
-
-.. autofunction:: mem_ifft

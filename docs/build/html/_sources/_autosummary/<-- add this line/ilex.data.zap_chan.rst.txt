@@ -1,6 +1,0 @@
-ilex.data.zap\_chan
-===================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: zap_chan

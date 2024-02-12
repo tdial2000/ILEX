@@ -1,6 +1,0 @@
-ilex.plot
-=========
-
-.. currentmodule:: ilex
-
-.. automodule:: plot

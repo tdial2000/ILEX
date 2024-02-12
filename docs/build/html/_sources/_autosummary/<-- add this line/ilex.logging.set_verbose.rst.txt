@@ -1,6 +1,0 @@
-ilex.logging.set\_verbose
-=========================
-
-.. currentmodule:: ilex.logging
-
-.. autofunction:: set_verbose

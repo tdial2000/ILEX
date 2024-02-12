@@ -1,6 +1,0 @@
-ilex.data.t\_weight
-===================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: t_weight

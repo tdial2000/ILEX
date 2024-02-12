@@ -1,6 +1,0 @@
-ilex.data.calc\_Ldebiased
-=========================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: calc_Ldebiased

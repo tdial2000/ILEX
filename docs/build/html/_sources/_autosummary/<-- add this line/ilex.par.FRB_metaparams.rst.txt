@@ -1,6 +1,0 @@
-ilex.par.FRB\_metaparams
-========================
-
-.. currentmodule:: ilex.par
-
-.. autoclass:: FRB_metaparams

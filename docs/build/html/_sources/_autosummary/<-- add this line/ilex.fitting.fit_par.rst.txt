@@ -1,6 +1,0 @@
-ilex.fitting.fit\_par
-=====================
-
-.. currentmodule:: ilex.fitting
-
-.. autoclass:: fit_par

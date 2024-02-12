@@ -1,6 +1,0 @@
-ilex.htr.coherent\_scatter
-==========================
-
-.. currentmodule:: ilex.htr
-
-.. autofunction:: coherent_scatter

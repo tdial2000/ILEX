@@ -1,6 +1,0 @@
-ilex.htr.pulse\_fold
-====================
-
-.. currentmodule:: ilex.htr
-
-.. autofunction:: pulse_fold

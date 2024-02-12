@@ -1,6 +1,0 @@
-ilex.frb.FRB
-============
-
-.. currentmodule:: ilex.frb
-
-.. autoclass:: FRB

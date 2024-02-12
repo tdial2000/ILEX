@@ -1,6 +1,0 @@
-ilex.frb
-========
-
-.. currentmodule:: ilex
-
-.. automodule:: frb

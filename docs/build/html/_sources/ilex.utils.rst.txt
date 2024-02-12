@@ -1,6 +1,0 @@
-ilex.utils
-==========
-
-.. currentmodule:: ilex
-
-.. automodule:: utils

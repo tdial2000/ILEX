@@ -1,6 +1,0 @@
-ilex.utils.plotnum2grid
-=======================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: plotnum2grid

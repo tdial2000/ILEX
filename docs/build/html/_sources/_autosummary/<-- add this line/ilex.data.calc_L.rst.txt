@@ -1,6 +1,0 @@
-ilex.data.calc\_L
-=================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: calc_L

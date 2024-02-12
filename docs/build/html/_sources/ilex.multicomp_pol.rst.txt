@@ -1,6 +1,0 @@
-ilex.multicomp\_pol
-===================
-
-.. currentmodule:: ilex
-
-.. automodule:: multicomp_pol

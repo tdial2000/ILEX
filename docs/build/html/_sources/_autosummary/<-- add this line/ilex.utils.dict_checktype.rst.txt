@@ -1,6 +1,0 @@
-ilex.utils.dict\_checktype
-==========================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: dict_checktype

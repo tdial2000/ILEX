@@ -1,6 +1,0 @@
-ilex.utils.load\_data
-=====================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: load_data

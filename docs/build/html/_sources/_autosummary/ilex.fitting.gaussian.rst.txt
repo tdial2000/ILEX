@@ -1,6 +1,0 @@
-ilex.fitting.gaussian
-=====================
-
-.. currentmodule:: ilex.fitting
-
-.. autofunction:: gaussian

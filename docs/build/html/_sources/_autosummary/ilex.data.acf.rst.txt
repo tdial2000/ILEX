@@ -1,6 +1,0 @@
-ilex.data.acf
-=============
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: acf

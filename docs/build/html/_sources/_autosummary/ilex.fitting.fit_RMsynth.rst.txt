@@ -1,6 +1,0 @@
-ilex.fitting.fit\_RMsynth
-=========================
-
-.. currentmodule:: ilex.fitting
-
-.. autofunction:: fit_RMsynth

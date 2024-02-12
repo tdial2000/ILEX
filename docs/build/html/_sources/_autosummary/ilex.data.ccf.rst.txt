@@ -1,6 +1,0 @@
-ilex.data.ccf
-=============
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: ccf

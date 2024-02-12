@@ -1,6 +1,0 @@
-ilex.data.calc\_ratio
-=====================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: calc_ratio

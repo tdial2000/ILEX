@@ -1,6 +1,0 @@
-ilex.htr.coherent\_rotate
-=========================
-
-.. currentmodule:: ilex.htr
-
-.. autofunction:: coherent_rotate

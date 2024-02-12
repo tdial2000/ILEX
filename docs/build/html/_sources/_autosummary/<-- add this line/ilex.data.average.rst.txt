@@ -1,6 +1,0 @@
-ilex.data.average
-=================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: average

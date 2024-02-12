@@ -1,6 +1,0 @@
-ilex.utils.dict\_isall
-======================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: dict_isall

@@ -1,6 +1,0 @@
-ilex.utils.stitch\_components\_together
-=======================================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: stitch_components_together

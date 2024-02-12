@@ -1,6 +1,0 @@
-ilex.utils.dict\_null
-=====================
-
-.. currentmodule:: ilex.utils
-
-.. autofunction:: dict_null

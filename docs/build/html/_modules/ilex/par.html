@@ -41,8 +41,12 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -95,7 +99,7 @@
 
 
 <div class="viewcode-block" id="FRB_params">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params">[docs]</a>
 <span class="k">class</span> <span class="nc">FRB_params</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    FRB parameter structure </span>
@@ -200,7 +204,7 @@
 
     <span class="c1"># function to update from new crop</span>
 <div class="viewcode-block" id="FRB_params.update_from_crop">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
     <span class="k">def</span> <span class="nf">update_from_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
                         <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
 
@@ -240,7 +244,7 @@
 
     <span class="c1"># function to load paramters from parameter file</span>
 <div class="viewcode-block" id="FRB_params.load_params">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.load_params">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.load_params">[docs]</a>
     <span class="k">def</span> <span class="nf">load_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -263,7 +267,7 @@
     
     <span class="c1"># function to get limits from crop</span>
 <div class="viewcode-block" id="FRB_params.save_params">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.save_params">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.save_params">[docs]</a>
     <span class="k">def</span> <span class="nf">save_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -287,7 +291,7 @@
     
     <span class="c1"># function to save parameters to parameter file</span>
 <div class="viewcode-block" id="FRB_params.phase2lim">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.phase2lim">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.phase2lim">[docs]</a>
     <span class="k">def</span> <span class="nf">phase2lim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
         <span class="c1"># init</span>
@@ -314,7 +318,7 @@
     
     <span class="c1"># function to get crop from limits</span>
 <div class="viewcode-block" id="FRB_params.lim2phase">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.lim2phase">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.lim2phase">[docs]</a>
     <span class="k">def</span> <span class="nf">lim2phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         
         <span class="c1"># init</span>
@@ -344,7 +348,7 @@
 
     
 <div class="viewcode-block" id="FRB_params.mkpar_from_params">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.mkpar_from_params">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.mkpar_from_params">[docs]</a>
     <span class="k">def</span> <span class="nf">mkpar_from_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frb_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks if any par. parameters have been updated and</span>
@@ -371,7 +375,7 @@
 
     
 <div class="viewcode-block" id="FRB_params.par2dict">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.par2dict">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.par2dict">[docs]</a>
     <span class="k">def</span> <span class="nf">par2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return parameters of class as dictionary</span>
@@ -399,7 +403,7 @@
 
     <span class="c1"># copy function</span>
 <div class="viewcode-block" id="FRB_params.copy">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.copy">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.copy">[docs]</a>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
@@ -409,7 +413,7 @@
 
 
 <div class="viewcode-block" id="FRB_params.set_par">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.set_par">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.set_par">[docs]</a>
     <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set attributes of par class</span>
@@ -424,7 +428,7 @@
 
         
 <div class="viewcode-block" id="FRB_params.get_freqs">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.get_freqs">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.get_freqs">[docs]</a>
     <span class="k">def</span> <span class="nf">get_freqs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get frequencies</span>
@@ -439,7 +443,7 @@
 
 
 <div class="viewcode-block" id="FRB_params.empty_par">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.empty_par">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.empty_par">[docs]</a>
     <span class="k">def</span> <span class="nf">empty_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>
@@ -452,7 +456,7 @@
 
         
 <div class="viewcode-block" id="FRB_params.default_par">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.default_par">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.default_par">[docs]</a>
     <span class="k">def</span> <span class="nf">default_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>
@@ -485,7 +489,7 @@
 <span class="c1">##===================================##</span>
 
 <div class="viewcode-block" id="FRB_metaparams">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams">[docs]</a>
 <span class="k">class</span> <span class="nc">FRB_metaparams</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -519,7 +523,7 @@
     
 
 <div class="viewcode-block" id="FRB_metaparams.set_metapar">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.set_metapar">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.set_metapar">[docs]</a>
     <span class="k">def</span> <span class="nf">set_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -531,7 +535,7 @@
 
 
 <div class="viewcode-block" id="FRB_metaparams.metapar2dict">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.metapar2dict">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.metapar2dict">[docs]</a>
     <span class="k">def</span> <span class="nf">metapar2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         
         <span class="n">metapar</span> <span class="o">=</span> <span class="p">{}</span>
@@ -543,7 +547,7 @@
 
 
 <div class="viewcode-block" id="FRB_metaparams.copy">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.copy">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.copy">[docs]</a>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         
         <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
@@ -552,7 +556,7 @@
 
 
 <div class="viewcode-block" id="FRB_metaparams.empty_metapar">
-<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.empty_metapar">[docs]</a>
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.empty_metapar">[docs]</a>
     <span class="k">def</span> <span class="nf">empty_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        </span>

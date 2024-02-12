@@ -1,6 +1,0 @@
-ilex.data.pslice
-================
-
-.. currentmodule:: ilex.data
-
-.. autofunction:: pslice

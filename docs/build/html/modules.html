@@ -88,7 +88,6 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.calc_freqs"><code class="docutils literal notranslate"><span class="pre">calc_freqs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.calc_ratio"><code class="docutils literal notranslate"><span class="pre">calc_ratio()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.ccf"><code class="docutils literal notranslate"><span class="pre">ccf()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.denoise"><code class="docutils literal notranslate"><span class="pre">denoise()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.f_weight"><code class="docutils literal notranslate"><span class="pre">f_weight()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.fday_rot"><code class="docutils literal notranslate"><span class="pre">fday_rot()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.norm"><code class="docutils literal notranslate"><span class="pre">norm()</span></code></a></li>
@@ -97,7 +96,6 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.rotate_data"><code class="docutils literal notranslate"><span class="pre">rotate_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.scrunch"><code class="docutils literal notranslate"><span class="pre">scrunch()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.t_weight"><code class="docutils literal notranslate"><span class="pre">t_weight()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.data.html#ilex.data.zap_chan"><code class="docutils literal notranslate"><span class="pre">zap_chan()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.fitting.html">ilex.fitting</a><ul>
@@ -109,13 +107,15 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.func_fit"><code class="docutils literal notranslate"><span class="pre">func_fit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.lorentz"><code class="docutils literal notranslate"><span class="pre">lorentz()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.print_bestfit"><code class="docutils literal notranslate"><span class="pre">print_bestfit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.model_curve"><code class="docutils literal notranslate"><span class="pre">model_curve()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.priorUniform"><code class="docutils literal notranslate"><span class="pre">priorUniform()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.red_chi2"><code class="docutils literal notranslate"><span class="pre">red_chi2()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.result2dict"><code class="docutils literal notranslate"><span class="pre">result2dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.scat"><code class="docutils literal notranslate"><span class="pre">scat()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.scatt_pulse_profile"><code class="docutils literal notranslate"><span class="pre">scatt_pulse_profile()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.fitting.html#ilex.fitting.specindex"><code class="docutils literal notranslate"><span class="pre">specindex()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.frb.html">ilex.frb</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.frb.html#ilex.frb.FRB"><code class="docutils literal notranslate"><span class="pre">FRB</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.globals.html">ilex.globals</a><ul>
@@ -150,7 +150,15 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.logging.html#ilex.logging.show_terminal_cols"><code class="docutils literal notranslate"><span class="pre">show_terminal_cols()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.master_proc.html">ilex.master_proc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.master_proc.html">ilex.master_proc</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.master_proc.html#ilex.master_proc.master_proc_data"><code class="docutils literal notranslate"><span class="pre">master_proc_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.multicomp_pol.html">ilex.multicomp_pol</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.multicomp_pol.html#ilex.multicomp_pol.multicomp_PA"><code class="docutils literal notranslate"><span class="pre">multicomp_PA()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.multicomp_pol.html#ilex.multicomp_pol.multicomp_poincare"><code class="docutils literal notranslate"><span class="pre">multicomp_poincare()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/ilex.par.html">ilex.par</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.par.html#ilex.par.FRB_metaparams"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/ilex.par.html#ilex.par.FRB_params"><code class="docutils literal notranslate"><span class="pre">FRB_params</span></code></a></li>

@@ -1,0 +1,6 @@
+ilex.plot.plot\_tscatt
+======================
+
+.. currentmodule:: ilex.plot
+
+.. autofunction:: plot_tscatt

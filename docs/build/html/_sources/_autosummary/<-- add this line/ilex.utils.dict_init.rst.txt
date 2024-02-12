@@ -1,0 +1,6 @@
+ilex.utils.dict\_init
+=====================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: dict_init

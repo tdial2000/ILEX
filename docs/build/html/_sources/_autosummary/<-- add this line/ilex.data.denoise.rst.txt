@@ -1,0 +1,6 @@
+ilex.data.denoise
+=================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: denoise

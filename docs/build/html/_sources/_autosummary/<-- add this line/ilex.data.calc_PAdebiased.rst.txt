@@ -1,0 +1,6 @@
+ilex.data.calc\_PAdebiased
+==========================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: calc_PAdebiased

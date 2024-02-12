@@ -1,0 +1,6 @@
+ilex.fitting.scat
+=================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: scat

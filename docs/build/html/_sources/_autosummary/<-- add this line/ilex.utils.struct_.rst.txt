@@ -1,0 +1,6 @@
+ilex.utils.struct\_
+===================
+
+.. currentmodule:: ilex.utils
+
+.. autoclass:: struct_

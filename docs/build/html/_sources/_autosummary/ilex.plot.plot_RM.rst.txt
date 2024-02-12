@@ -1,0 +1,6 @@
+ilex.plot.plot\_RM
+==================
+
+.. currentmodule:: ilex.plot
+
+.. autofunction:: plot_RM

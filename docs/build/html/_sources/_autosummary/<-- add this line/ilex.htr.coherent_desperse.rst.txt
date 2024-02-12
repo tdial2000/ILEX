@@ -1,0 +1,6 @@
+ilex.htr.coherent\_desperse
+===========================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: coherent_desperse

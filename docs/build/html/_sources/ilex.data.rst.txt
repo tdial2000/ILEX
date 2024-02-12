@@ -1,0 +1,6 @@
+ilex.data
+=========
+
+.. currentmodule:: ilex
+
+.. automodule:: data

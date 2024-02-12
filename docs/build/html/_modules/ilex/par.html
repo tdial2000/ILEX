@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.par &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.par</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.par</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 11/10/2023 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## FRB params structure</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1"># imports</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">_G</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">dict_init</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
+
+
+<div class="viewcode-block" id="FRB_params">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params">[docs]</a>
+<span class="k">class</span> <span class="nc">FRB_params</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FRB parameter structure </span>
+<span class="sd">    </span>
+<span class="sd">    ##==== parameters ====##</span>
+<span class="sd">    name:           name of FRB</span>
+<span class="sd">    RA:             Right ascension</span>
+<span class="sd">    DEC:            Declination</span>
+<span class="sd">    DM:             Dispersion Measure</span>
+<span class="sd">    bw:             Bandwidth (MHz)</span>
+<span class="sd">    cfreq:          Central Frequency (MHz)</span>
+
+<span class="sd">    t_lim:          Time bounds (ms)</span>
+<span class="sd">    f_lim:          Frequency bounds (MHz)</span>
+<span class="sd">    dt:             delta time (ms)</span>
+<span class="sd">    df:             delta frequency (MHz)</span>
+<span class="sd">    nchan:          Number of channels</span>
+<span class="sd">    nsamp:          Number of samples</span>
+
+<span class="sd">    UP:             Upper bandwidth</span>
+
+
+
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>    <span class="n">RA</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span>    <span class="n">DEC</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> 
+                       <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DM&#39;</span><span class="p">],</span>      <span class="n">bw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;bw&#39;</span><span class="p">],</span>    <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;cfreq&#39;</span><span class="p">],</span> 
+                       <span class="n">t_lim</span>  <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_lim&#39;</span><span class="p">],</span>      <span class="n">f_lim</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f_lim&#39;</span><span class="p">],</span>   <span class="n">RM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">],</span>
+                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span><span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+                       <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>         <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>             <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                       <span class="n">fW</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>                   <span class="n">tW</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>               <span class="n">norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+                       <span class="n">czap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>                 <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span>   <span class="o">=</span> <span class="n">name</span>              <span class="c1"># name of FRB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RA</span>     <span class="o">=</span> <span class="n">RA</span>                <span class="c1"># Right Acension </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEC</span>    <span class="o">=</span> <span class="n">DEC</span>               <span class="c1"># Declination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DM</span>     <span class="o">=</span> <span class="n">DM</span>                <span class="c1"># dispersion measure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bw</span>     <span class="o">=</span> <span class="n">bw</span>                <span class="c1"># bandwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span>  <span class="o">=</span> <span class="n">cfreq</span>             <span class="c1"># central frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RM</span>     <span class="o">=</span> <span class="n">RM</span>                <span class="c1"># rotation measure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>     <span class="o">=</span> <span class="n">f0</span>                <span class="c1"># reference frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pa0</span>    <span class="o">=</span> <span class="n">pa0</span>               <span class="c1"># reference PA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fW</span>     <span class="o">=</span> <span class="n">fW</span>                <span class="c1"># frequency weightings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tW</span>     <span class="o">=</span> <span class="n">tW</span>                <span class="c1"># time weightings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">czap</span>   <span class="o">=</span> <span class="n">czap</span>              <span class="c1"># frequencies to zap in string form</span>
+
+        <span class="c1"># define base parameters, these will be used when changing the crop parameters, </span>
+        <span class="c1"># all other parameters will be updated from these </span>
+
+        <span class="c1"># crop parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span>  <span class="o">=</span> <span class="n">t_lim</span>                                         <span class="c1"># time range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span>  <span class="o">=</span> <span class="p">[</span><span class="n">cfreq</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bw</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bw</span><span class="p">]</span>             <span class="c1"># frequency range</span>
+
+        <span class="c1"># calculate resolutions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>     <span class="o">=</span> <span class="mf">1e-3</span>              <span class="c1"># delta time in ms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span>     <span class="o">=</span> <span class="mi">1</span>                 <span class="c1"># delta frequency in MHz</span>
+
+        <span class="c1"># dimensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of time samples</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">UP</span>    <span class="o">=</span> <span class="kc">True</span>               <span class="c1"># flag, True if data is Upper sideband</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;lgreen&#39;</span>
+
+        <span class="k">if</span> <span class="n">EMPTY</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">empty_par</span><span class="p">()</span>
+
+
+
+
+
+    <span class="c1"># build from fft</span>
+    <span class="c1"># TODO?: implement smarter way of accounting for this</span>
+    <span class="c1"># [DEPRECIATED]</span>
+    <span class="c1"># def build_from_fft(self, nFFT: int, nsamp: int):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Update relevant paramters based on new fft window for </span>
+    <span class="c1">#     dynamic spectrum</span>
+
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     new_params = self.copy()</span>
+
+    <span class="c1">#     # update nchan, nsamps </span>
+    <span class="c1">#     new_params.nchan = nFFT</span>
+    <span class="c1">#     new_params.nsamp = nsamp</span>
+
+    <span class="c1">#     # update resolutions</span>
+    <span class="c1">#     new_params.df    = 336 / nFFT               # in MHz</span>
+    <span class="c1">#     new_params.dt    = 1e-3 / new_params.df        # in ms</span>
+
+    <span class="c1">#     # update lims</span>
+    <span class="c1">#     new_params.t_lim[1] = new_params.t_lim[0] + new_params.dt * new_params.nsamp</span>
+
+
+    <span class="c1">#     return new_params</span>
+
+
+    
+
+    <span class="c1"># function to update from new crop</span>
+<div class="viewcode-block" id="FRB_params.update_from_crop">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_from_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+                        <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+
+        <span class="c1"># TODO: Maybe find a smarter way to do this</span>
+        <span class="c1"># reverse f_crop if Upper sideband</span>
+        <span class="c1"># if self.UP:</span>
+        <span class="c1">#     f_crop = [1.0 - f_crop[1], 1.0 - f_crop[0]]</span>
+
+        <span class="c1"># update params given new crop and averaging</span>
+        <span class="c1"># update resolutions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*=</span> <span class="n">tN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*=</span> <span class="n">fN</span>
+
+        <span class="c1"># update t_lim</span>
+        <span class="c1"># NOTE: Must correct for int casting that is used for phase slicing and averaging chopping</span>
+        <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tlim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
+
+        <span class="c1"># update f_lim </span>
+        <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">flim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+
+        <span class="c1"># update bw and cfreq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span>
+
+        <span class="c1"># update nchan and nsamp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">))</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">))</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span></div>
+
+
+
+
+    <span class="c1"># function to load paramters from parameter file</span>
+<div class="viewcode-block" id="FRB_params.load_params">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.load_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Parameter file must be valid&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># load into object</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters loaded from [</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+
+        <span class="k">return</span> </div>
+
+
+
+    
+    <span class="c1"># function to get limits from crop</span>
+<div class="viewcode-block" id="FRB_params.save_params">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.save_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;parameter file must be valid&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># build yaml .object</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        
+        <span class="c1"># save object to .yaml file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters saved to [</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+        
+    
+    <span class="c1"># function to save parameters to parameter file</span>
+<div class="viewcode-block" id="FRB_params.phase2lim">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.phase2lim">[docs]</a>
+    <span class="k">def</span> <span class="nf">phase2lim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># init</span>
+        <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="c1"># convert phase to limit based on parameters</span>
+        <span class="k">if</span> <span class="n">t_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># time</span>
+            <span class="n">t_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">f_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># frequency</span>
+            <span class="n">f_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span></div>
+
+
+    
+    <span class="c1"># function to get crop from limits</span>
+<div class="viewcode-block" id="FRB_params.lim2phase">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.lim2phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">lim2phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="c1"># init</span>
+        <span class="n">t_phase</span><span class="p">,</span> <span class="n">f_phase</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># convert physical points to phase</span>
+        <span class="k">if</span> <span class="n">t_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># time</span>
+            <span class="n">t_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+
+        <span class="k">if</span> <span class="n">f_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># frequency</span>
+            <span class="n">f_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
+                <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">t_phase</span><span class="p">,</span> <span class="n">f_phase</span></div>
+
+
+
+    
+<div class="viewcode-block" id="FRB_params.mkpar_from_params">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.mkpar_from_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">mkpar_from_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frb_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if any par. parameters have been updated and</span>
+<span class="sd">        creates a new par() instance to use</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># make copy of frb params</span>
+        <span class="n">frb_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">frb_params</span><span class="p">)</span>
+
+        <span class="n">new_par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">crop_par</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># loop over params</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">frb_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_par</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">frb_params</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">crop_par</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+         
+        <span class="c1"># create new par instance and return </span>
+        <span class="k">return</span> <span class="n">new_par</span><span class="o">.</span><span class="n">build_from_crop</span><span class="p">(</span><span class="o">**</span><span class="n">crop_par</span><span class="p">)</span></div>
+
+
+
+    
+<div class="viewcode-block" id="FRB_params.par2dict">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.par2dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">par2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return parameters of class as dictionary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">new_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span></div>
+
+
+
+
+    <span class="c1"># print function</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">param_str</span> <span class="o">=</span> <span class="s2">&quot;===== params =====</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">param_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">:       </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">param_str</span>
+    
+
+    <span class="c1"># copy function</span>
+<div class="viewcode-block" id="FRB_params.copy">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="FRB_params.set_par">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.set_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attributes of par class</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get all relevant pars</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+        
+<div class="viewcode-block" id="FRB_params.get_freqs">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.get_freqs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_freqs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get frequencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_params.empty_par">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.empty_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">empty_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Set all parameters to None:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+        
+<div class="viewcode-block" id="FRB_params.default_par">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_params.default_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">default_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Set all parameters to default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">##===================================##</span>
+<span class="c1">## FRB METAPARAMETER CLASS/CONTAINER ##</span>
+<span class="c1">##===================================##</span>
+
+<div class="viewcode-block" id="FRB_metaparams">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams">[docs]</a>
+<span class="k">class</span> <span class="nc">FRB_metaparams</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">],</span> <span class="n">fN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">],</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">],</span>
+                 <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Storage container for metaparameters</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># set crop parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="n">f_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terr_crop</span> <span class="o">=</span> <span class="n">terr_crop</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span>
+
+        <span class="c1"># set averaging parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fN</span> <span class="o">=</span> <span class="n">fN</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+        <span class="k">if</span> <span class="n">EMPTY</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">empty_metapar</span><span class="p">()</span>
+
+    
+
+<div class="viewcode-block" id="FRB_metaparams.set_metapar">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.set_metapar">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+        
+
+
+<div class="viewcode-block" id="FRB_metaparams.metapar2dict">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.metapar2dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">metapar2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">metapar</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">metapar</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">metapar</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_metaparams.copy">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="FRB_metaparams.empty_metapar">
+<a class="viewcode-back" href="../../ilex.html#ilex.par.FRB_metaparams.empty_metapar">[docs]</a>
+    <span class="k">def</span> <span class="nf">empty_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Set all meta parameters to None:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+</div>
+
+        
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

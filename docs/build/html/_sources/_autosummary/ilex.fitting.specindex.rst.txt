@@ -1,0 +1,6 @@
+ilex.fitting.specindex
+======================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: specindex

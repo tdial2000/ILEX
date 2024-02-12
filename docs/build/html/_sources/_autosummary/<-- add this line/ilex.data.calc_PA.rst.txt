@@ -1,0 +1,6 @@
+ilex.data.calc\_PA
+==================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: calc_PA

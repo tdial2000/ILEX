@@ -1,0 +1,6 @@
+ilex.fitting
+============
+
+.. currentmodule:: ilex
+
+.. automodule:: fitting

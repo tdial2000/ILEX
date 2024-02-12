@@ -1,0 +1,6 @@
+ilex.globals.globals\_
+======================
+
+.. currentmodule:: ilex.globals
+
+.. autoclass:: globals_

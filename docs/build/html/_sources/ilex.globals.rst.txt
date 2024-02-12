@@ -1,0 +1,6 @@
+ilex.globals
+============
+
+.. currentmodule:: ilex
+
+.. automodule:: globals

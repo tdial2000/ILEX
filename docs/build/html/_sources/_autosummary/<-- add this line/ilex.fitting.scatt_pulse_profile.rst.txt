@@ -1,0 +1,6 @@
+ilex.fitting.scatt\_pulse\_profile
+==================================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: scatt_pulse_profile

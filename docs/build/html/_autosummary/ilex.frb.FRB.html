@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.frb.FRB &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="ilex.html">ILEX</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ilex.frb.FRB</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/ilex.frb.FRB.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ilex-frb-frb">
+<h1>ilex.frb.FRB<a class="headerlink" href="#ilex-frb-frb" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.frb.FRB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FRB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'FRBXXXXXX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RA</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEC</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1271.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">3100.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">336.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terr_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Info:</dt><dd><p>FRB class for Processing of ASKAP FRB data</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.par">
+<span class="sig-name descname"><span class="pre">par</span></span><a class="headerlink" href="#ilex.frb.FRB.par" title="Link to this definition"></a></dt>
+<dd><p>hold parameters for FRB</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_params.html#ilex.par.FRB_params" title="ilex.par.FRB_params">FRB_params</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.this_par">
+<span class="sig-name descname"><span class="pre">this_par</span></span><a class="headerlink" href="#ilex.frb.FRB.this_par" title="Link to this definition"></a></dt>
+<dd><p>Current instance of ‘par’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_params.html#ilex.par.FRB_params" title="ilex.par.FRB_params">FRB_params</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.prev_par">
+<span class="sig-name descname"><span class="pre">prev_par</span></span><a class="headerlink" href="#ilex.frb.FRB.prev_par" title="Link to this definition"></a></dt>
+<dd><p>Last instance of ‘par’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_params.html#ilex.par.FRB_params" title="ilex.par.FRB_params">FRB_params</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.metapar">
+<span class="sig-name descname"><span class="pre">metapar</span></span><a class="headerlink" href="#ilex.frb.FRB.metapar" title="Link to this definition"></a></dt>
+<dd><p>hold meta-parameters for FRB</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_metaparams.html#ilex.par.FRB_metaparams" title="ilex.par.FRB_metaparams">FRB_metaparams</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.this_metapar">
+<span class="sig-name descname"><span class="pre">this_metapar</span></span><a class="headerlink" href="#ilex.frb.FRB.this_metapar" title="Link to this definition"></a></dt>
+<dd><p>Current instance of ‘metapar’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_metaparams.html#ilex.par.FRB_metaparams" title="ilex.par.FRB_metaparams">FRB_metaparams</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.prev_metapar">
+<span class="sig-name descname"><span class="pre">prev_metapar</span></span><a class="headerlink" href="#ilex.frb.FRB.prev_metapar" title="Link to this definition"></a></dt>
+<dd><p>Last instance of ‘metapar’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.par.FRB_metaparams.html#ilex.par.FRB_metaparams" title="ilex.par.FRB_metaparams">FRB_metaparams</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.ds">
+<span class="sig-name descname"><span class="pre">ds</span></span><a class="headerlink" href="#ilex.frb.FRB.ds" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of loaded stokes dynamic spectra</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.pol">
+<span class="sig-name descname"><span class="pre">pol</span></span><a class="headerlink" href="#ilex.frb.FRB.pol" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of loaded Polarisation time series</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB._t">
+<span class="sig-name descname"><span class="pre">_t</span></span><a class="headerlink" href="#ilex.frb.FRB._t" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of cropped stokes time series</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB._f">
+<span class="sig-name descname"><span class="pre">_f</span></span><a class="headerlink" href="#ilex.frb.FRB._f" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of cropped stokes spectra</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB._ds">
+<span class="sig-name descname"><span class="pre">_ds</span></span><a class="headerlink" href="#ilex.frb.FRB._ds" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of cropped stokes dynamic spectra</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB._freq">
+<span class="sig-name descname"><span class="pre">_freq</span></span><a class="headerlink" href="#ilex.frb.FRB._freq" title="Link to this definition"></a></dt>
+<dd><p>Cropped Frequency array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.verbose">
+<span class="sig-name descname"><span class="pre">verbose</span></span><a class="headerlink" href="#ilex.frb.FRB.verbose" title="Link to this definition"></a></dt>
+<dd><p>Enable logging</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.force">
+<span class="sig-name descname"><span class="pre">force</span></span><a class="headerlink" href="#ilex.frb.FRB.force" title="Link to this definition"></a></dt>
+<dd><p>En-force use of any loaded cropped data regardless of parameter differences</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.savefig">
+<span class="sig-name descname"><span class="pre">savefig</span></span><a class="headerlink" href="#ilex.frb.FRB.savefig" title="Link to this definition"></a></dt>
+<dd><p>Save all created figures to files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.pcol">
+<span class="sig-name descname"><span class="pre">pcol</span></span><a class="headerlink" href="#ilex.frb.FRB.pcol" title="Link to this definition"></a></dt>
+<dd><p>Color of text for logging</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.frb.FRB.empty">
+<span class="sig-name descname"><span class="pre">empty</span></span><a class="headerlink" href="#ilex.frb.FRB.empty" title="Link to this definition"></a></dt>
+<dd><p>Variable used to initialise FRB instance and data loading</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.frb.FRB.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'FRBXXXXXX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RA</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEC</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1271.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">3100.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">336.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terr_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Info:</dt><dd><p>Create FRB instance</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of FRB</p></li>
+<li><p><strong>RA</strong> (<em>str</em>) – Right acension position</p></li>
+<li><p><strong>DEC</strong> (<em>str</em>) – Declination position</p></li>
+<li><p><strong>DM</strong> (<em>float</em>) – Dispersion Measure</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth</p></li>
+<li><p><strong>cfreq</strong> (<em>float</em>) – Central Frequency</p></li>
+<li><p><strong>t_crop</strong> (<em>list</em>) – Crop start and end phase in Time</p></li>
+<li><p><strong>f_crop</strong> (<em>list</em>) – Crop start and end phase in Frequency</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Factor for averaging in Time</p></li>
+<li><p><strong>fN</strong> (<em>int</em>) – Factor for averaging in Frequency</p></li>
+<li><p><strong>t_lim</strong> (<em>list</em>) – Limits for FRB in Time</p></li>
+<li><p><strong>f_lim</strong> (<em>list</em>) – Limits for FRB in Frequency</p></li>
+<li><p><strong>RM</strong> (<em>float</em>) – Rotation Measure</p></li>
+<li><p><strong>f0</strong> (<em>float</em>) – Reference Frequency</p></li>
+<li><p><strong>pa0</strong> (<em>float</em>) – Position angle at reference frequency f0</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Enable verbose logging</p></li>
+<li><p><strong>norm</strong> (<em>str</em>) – Type of normalisation
+[max] -&gt; normalise using maximum
+[absmax] -&gt; normalise using absolute maximum
+[None] -&gt; Skip normalisation</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ilex.frb.FRB.__init__" title="ilex.frb.FRB.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([name, RA, DEC, DM, bw, cfreq, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_frb</span></code>([sigma, _guard, _width, _roughrms])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_RM</span></code>([method, plot, fit_params, filename, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_scintband</span></code>([fit_priors, static_priors, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_tscatt</span></code>([npulse, fit_priors, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data</span></code>([data_list, get])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_freqs</span></code>()</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_data</span></code>([ds_I, ds_Q, ds_U, ds_V, pol_X, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_PA</span></code>([method, Ldebias_threshold, plot_L, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_PA_multi</span></code>([method, Ldebias_threshold, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_data</span></code>([data, filename, plot_err_type])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ds_int</span></code>([stk])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_poincare</span></code>([filename, stk_type])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_poincare_multi</span></code>([stk_type, tcrops, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_stokes</span></code>([plot_L, Ldebias, ...])</p></td>
+<td><p>Info:</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_data</span></code>([data_list, filename, param_file])</p></td>
+<td><p>Info:</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

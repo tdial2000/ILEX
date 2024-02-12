@@ -1,0 +1,6 @@
+ilex.utils.get\_stk\_from\_datalist
+===================================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: get_stk_from_datalist

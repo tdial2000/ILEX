@@ -1,0 +1,6 @@
+ilex.fitting.fit\_scint
+=======================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: fit_scint

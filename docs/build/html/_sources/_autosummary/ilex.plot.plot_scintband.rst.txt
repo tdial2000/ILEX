@@ -1,0 +1,6 @@
+ilex.plot.plot\_scintband
+=========================
+
+.. currentmodule:: ilex.plot
+
+.. autofunction:: plot_scintband

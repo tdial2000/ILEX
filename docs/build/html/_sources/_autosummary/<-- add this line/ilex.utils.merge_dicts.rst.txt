@@ -1,0 +1,6 @@
+ilex.utils.merge\_dicts
+=======================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: merge_dicts

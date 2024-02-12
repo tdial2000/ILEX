@@ -1,0 +1,6 @@
+ilex.data.norm
+==============
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: norm

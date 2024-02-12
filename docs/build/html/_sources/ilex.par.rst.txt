@@ -1,0 +1,6 @@
+ilex.par
+========
+
+.. currentmodule:: ilex
+
+.. automodule:: par

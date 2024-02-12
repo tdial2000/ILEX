@@ -1,0 +1,6 @@
+ilex.fitting.fit\_RMquad
+========================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: fit_RMquad

@@ -1,0 +1,6 @@
+ilex.htr.baseline\_correction
+=============================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: baseline_correction

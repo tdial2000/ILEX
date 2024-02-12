@@ -1,0 +1,6 @@
+ilex.logging.check\_verbosefile
+===============================
+
+.. currentmodule:: ilex.logging
+
+.. autofunction:: check_verbosefile

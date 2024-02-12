@@ -1,0 +1,6 @@
+ilex.logging.log
+================
+
+.. currentmodule:: ilex.logging
+
+.. autofunction:: log

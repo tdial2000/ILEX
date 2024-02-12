@@ -1,0 +1,6 @@
+ilex.fitting.red\_chi2
+======================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: red_chi2

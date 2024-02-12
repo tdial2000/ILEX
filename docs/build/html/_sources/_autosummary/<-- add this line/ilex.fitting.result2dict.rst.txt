@@ -1,0 +1,6 @@
+ilex.fitting.result2dict
+========================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: result2dict

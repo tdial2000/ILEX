@@ -1,0 +1,6 @@
+ilex.logging.get\_filepath
+==========================
+
+.. currentmodule:: ilex.logging
+
+.. autofunction:: get_filepath

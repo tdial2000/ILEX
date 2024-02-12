@@ -1,0 +1,6 @@
+ilex.utils.save\_data
+=====================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: save_data

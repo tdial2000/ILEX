@@ -1,0 +1,6 @@
+ilex.logging.show\_terminal\_cols
+=================================
+
+.. currentmodule:: ilex.logging
+
+.. autofunction:: show_terminal_cols

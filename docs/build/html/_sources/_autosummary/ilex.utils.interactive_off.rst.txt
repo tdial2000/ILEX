@@ -1,0 +1,6 @@
+ilex.utils.interactive\_off
+===========================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: interactive_off

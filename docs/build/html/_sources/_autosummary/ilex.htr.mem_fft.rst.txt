@@ -1,0 +1,6 @@
+ilex.htr.mem\_fft
+=================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: mem_fft

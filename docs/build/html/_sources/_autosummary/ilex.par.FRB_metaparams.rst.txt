@@ -1,0 +1,26 @@
+ilex.par.FRB\_metaparams
+========================
+
+.. currentmodule:: ilex.par
+
+.. autoclass:: FRB_metaparams
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FRB_metaparams.__init__
+      ~FRB_metaparams.copy
+      ~FRB_metaparams.empty_metapar
+      ~FRB_metaparams.metapar2dict
+      ~FRB_metaparams.set_metapar
+   
+   
+
+   
+   
+   

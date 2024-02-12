@@ -1,0 +1,22 @@
+ilex.globals.globals\_
+======================
+
+.. currentmodule:: ilex.globals
+
+.. autoclass:: globals_
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~globals_.__init__
+   
+   
+
+   
+   
+   

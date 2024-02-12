@@ -1,0 +1,6 @@
+ilex.fitting.priorUniform
+=========================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: priorUniform

@@ -1,0 +1,28 @@
+ilex.fitting.fit\_par
+=====================
+
+.. currentmodule:: ilex.fitting
+
+.. autoclass:: fit_par
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~fit_par.__init__
+      ~fit_par.add_param
+      ~fit_par.get_bestfit
+      ~fit_par.get_err
+      ~fit_par.get_keys
+      ~fit_par.result2par
+      ~fit_par.static2par
+   
+   
+
+   
+   
+   

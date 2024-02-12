@@ -1,0 +1,6 @@
+ilex.plot.plot\_help
+====================
+
+.. currentmodule:: ilex.plot
+
+.. autofunction:: plot_help

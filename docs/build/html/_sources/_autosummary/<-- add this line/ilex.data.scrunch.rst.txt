@@ -1,0 +1,6 @@
+ilex.data.scrunch
+=================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: scrunch

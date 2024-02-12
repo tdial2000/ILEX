@@ -1,0 +1,6 @@
+ilex.htr.arr2mmap
+=================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: arr2mmap

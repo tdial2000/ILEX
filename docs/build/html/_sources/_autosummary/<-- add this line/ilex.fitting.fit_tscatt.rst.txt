@@ -1,0 +1,6 @@
+ilex.fitting.fit\_tscatt
+========================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: fit_tscatt

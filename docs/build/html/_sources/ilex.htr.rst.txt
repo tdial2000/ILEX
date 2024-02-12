@@ -1,0 +1,6 @@
+ilex.htr
+========
+
+.. currentmodule:: ilex
+
+.. automodule:: htr

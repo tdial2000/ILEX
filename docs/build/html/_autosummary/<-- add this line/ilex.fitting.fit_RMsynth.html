@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.fitting.fit_RMsynth &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ilex.fitting.fit_scint" href="ilex.fitting.fit_scint.html" />
+    <link rel="prev" title="ilex.fitting.fit_RMquad" href="ilex.fitting.fit_RMquad.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../ilex.html">ILEX</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ilex.data.html">ilex.data</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../ilex.fitting.html">ilex.fitting</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.fit_RMquad.html">ilex.fitting.fit_RMquad</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">ilex.fitting.fit_RMsynth</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_RMsynth"><code class="docutils literal notranslate"><span class="pre">fit_RMsynth()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.fit_scint.html">ilex.fitting.fit_scint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.fit_tscatt.html">ilex.fitting.fit_tscatt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.func_fit.html">ilex.fitting.func_fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.gaussian.html">ilex.fitting.gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.lorentz.html">ilex.fitting.lorentz</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.print_bestfit.html">ilex.fitting.print_bestfit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.priorUniform.html">ilex.fitting.priorUniform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.red_chi2.html">ilex.fitting.red_chi2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.result2dict.html">ilex.fitting.result2dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.scat.html">ilex.fitting.scat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.scatt_pulse_profile.html">ilex.fitting.scatt_pulse_profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.specindex.html">ilex.fitting.specindex</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ilex.fitting.fit_par.html">ilex.fitting.fit_par</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.fit_RMquad"><code class="docutils literal notranslate"><span class="pre">fit_RMquad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.fit_RMsynth"><code class="docutils literal notranslate"><span class="pre">fit_RMsynth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.fit_scint"><code class="docutils literal notranslate"><span class="pre">fit_scint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.fit_tscatt"><code class="docutils literal notranslate"><span class="pre">fit_tscatt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.func_fit"><code class="docutils literal notranslate"><span class="pre">func_fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.lorentz"><code class="docutils literal notranslate"><span class="pre">lorentz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.print_bestfit"><code class="docutils literal notranslate"><span class="pre">print_bestfit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.priorUniform"><code class="docutils literal notranslate"><span class="pre">priorUniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.red_chi2"><code class="docutils literal notranslate"><span class="pre">red_chi2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.scat"><code class="docutils literal notranslate"><span class="pre">scat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.scatt_pulse_profile"><code class="docutils literal notranslate"><span class="pre">scatt_pulse_profile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ilex.fitting.html#ilex.fitting.specindex"><code class="docutils literal notranslate"><span class="pre">specindex()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.frb.html">ilex.frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.globals.html">ilex.globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.htr.html">ilex.htr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.logging.html">ilex.logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.par.html">ilex.par</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ilex.utils.html">ilex.utils</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../ilex.html">ilex</a></li>
+          <li class="breadcrumb-item"><a href="../ilex.fitting.html">ilex.fitting</a></li>
+      <li class="breadcrumb-item active">ilex.fitting.fit_RMsynth</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/_autosummary/&lt;-- add this line/ilex.fitting.fit_RMsynth.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ilex-fitting-fit-rmsynth">
+<h1>ilex.fitting.fit_RMsynth<a class="headerlink" href="#ilex-fitting-fit-rmsynth" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.fit_RMsynth">
+<span class="sig-name descname"><span class="pre">fit_RMsynth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ilex/fitting.html#fit_RMsynth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_RMsynth" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Info:</dt><dd><p>Use RM synthesis to calculate RM, pa0 and f0,
+f0 is the weighted midband frequency and pa0 the
+pa at f0.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>I</strong> (<em>ndarray</em>) – stokes I spectra</p></li>
+<li><p><strong>Q</strong> (<em>ndarray</em>) – stokes Q spectra</p></li>
+<li><p><strong>U</strong> (<em>ndarray</em>) – stokes U spectra</p></li>
+<li><p><strong>Ierr</strong> (<em>ndarray</em>) – stokes I rms spectra</p></li>
+<li><p><strong>Qerr</strong> (<em>ndarray</em>) – stokes Q rms spectra</p></li>
+<li><p><strong>Uerr</strong> (<em>ndarray</em>) – stokes U rms spectra</p></li>
+<li><p><strong>f</strong> (<em>ndarray</em>) – frequencies [MHz]</p></li>
+<li><p><strong>clean_cutoff</strong> (<em>float</em>) – cutoff arg for run_rmclean()</p></li>
+<li><p><strong>**kwargs</strong> – keyword arguments for RM tools run_synthesis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>rotation measure
+rm_err (float): error in rotation measure
+f0 (float): reference frequency at weighted mid-band
+pa0 (float): position angle at f0</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rm (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex.fitting.fit_RMquad.html" class="btn btn-neutral float-left" title="ilex.fitting.fit_RMquad" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.fitting.fit_scint.html" class="btn btn-neutral float-right" title="ilex.fitting.fit_scint" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

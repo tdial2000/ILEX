@@ -1,0 +1,6 @@
+ilex.data.calc\_freqs
+=====================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: calc_freqs

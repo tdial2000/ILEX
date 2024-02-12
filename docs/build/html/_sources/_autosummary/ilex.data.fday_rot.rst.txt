@@ -1,0 +1,6 @@
+ilex.data.fday\_rot
+===================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: fday_rot

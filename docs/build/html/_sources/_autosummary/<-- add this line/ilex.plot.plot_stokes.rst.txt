@@ -1,0 +1,6 @@
+ilex.plot.plot\_stokes
+======================
+
+.. currentmodule:: ilex.plot
+
+.. autofunction:: plot_stokes

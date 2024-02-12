@@ -1,0 +1,6 @@
+ilex.data.f\_weight
+===================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: f_weight

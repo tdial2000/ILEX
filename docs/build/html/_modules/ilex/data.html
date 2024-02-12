@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.data &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.data</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial                            ##</span>
+<span class="c1">## Email: tdial@swin.edu.au                      ##</span>
+<span class="c1">## Last Updated: 09/01/2024                      ##</span>
+<span class="c1">##                                               ##</span>
+<span class="c1">##                                               ##</span>
+<span class="c1">##                                               ##</span>
+<span class="c1">##                                               ##</span>
+<span class="c1">## Data processing library to manipulate Stokes  ##</span>
+<span class="c1">## High time resolution (HTR) data               ##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">correlate</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="c1"># constants</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mf">2.997924538e8</span> <span class="c1"># Speed of light [m/s]</span>
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##      Basic functions to manipulate data       ##</span>
+<span class="c1">##===============================================##</span>
+
+<span class="c1">##  function to average data    ##</span>
+<div class="viewcode-block" id="average">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.average">[docs]</a>
+<span class="k">def</span> <span class="nf">average</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    average in either frequency or time</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: ndarray</span>
+<span class="sd">       data to average over</span>
+<span class="sd">    axis: int </span>
+<span class="sd">          axis to average over</span>
+<span class="sd">    weights: ndarray</span>
+<span class="sd">          weights to apply to data when summing over. By default this is set</span>
+<span class="sd">          to None, in which case a uniform weighting is applied.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x: ndarray </span>
+<span class="sd">       Average data</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span>
+    
+
+    <span class="c1"># either dynamic spectra or time series</span>
+    <span class="n">ndims</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="k">if</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">N_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_new</span> <span class="o">//</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    
+    <span class="k">elif</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1">#frequency scrunching</span>
+            <span class="n">N_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">N_new</span> <span class="o">//</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">axis</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#time scrunching</span>
+            <span class="n">N_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">[:,:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">N_new</span> <span class="o">//</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;axis must be 1[-1] or 0&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;ndims must equal 1 or 2..&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+    
+
+
+
+
+<div class="viewcode-block" id="scrunch">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.scrunch">[docs]</a>
+<span class="k">def</span> <span class="nf">scrunch</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scrunch data along a given axis, weights may also be applied.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: np.ndarray</span>
+<span class="sd">        data to scrunch</span>
+<span class="sd">    axis: int, optional</span>
+<span class="sd">        axes to scrunch over, by default 0</span>
+<span class="sd">    weights: array-like or float, optional</span>
+<span class="sd">        weights to apply during scrunching, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y: np.ndarray</span>
+<span class="sd">        Weighted and scrunched data</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+
+    <span class="c1"># check weights</span>
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span><span class="p">]:</span>
+            <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;weights </span><span class="si">{</span><span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> != xdata </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;size of weights array mismatch, using uniform weighting instead&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">w_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">axis</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">w_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">w_shape</span><span class="p">)</span>
+            
+
+
+
+    <span class="c1"># scrunch</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">weights</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+
+
+
+
+
+<span class="c1">##  function to index in phase  ##</span>
+<div class="viewcode-block" id="pslice">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.pslice">[docs]</a>
+<span class="k">def</span> <span class="nf">pslice</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Slice 1D or 2D data in phase, between 0.0-1.0 which represents the </span>
+<span class="sd">    start and end of ndarray along given axis. If array is 1D, given axis</span>
+<span class="sd">    is set to 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        1D or 2D data array </span>
+<span class="sd">    start : float</span>
+<span class="sd">        starting point of slice </span>
+<span class="sd">    end : float</span>
+<span class="sd">        ending point of slice</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        axis to slice along, can be 0 or 1(-1)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y: np.ndarray</span>
+<span class="sd">        sliced 1D or 2D data array</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1"># Check number of dims</span>
+    <span class="n">ndims</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="k">if</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># time series</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">end</span> <span class="o">&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Phase slicing must be between [0,1]&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    
+    <span class="k">elif</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># frequency phase slicing</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">,:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">axis</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">[:,</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;axis must be 1[-1] or 0&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;ndims must be either 1 or 2&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="rotate_data">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.rotate_data">[docs]</a>
+<span class="k">def</span> <span class="nf">rotate_data</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rotate data in 2D</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A : np.ndarray</span>
+<span class="sd">        First array</span>
+<span class="sd">    B : np.ndarray</span>
+<span class="sd">        Second array</span>
+<span class="sd">    angle : float</span>
+<span class="sd">        angle [rad] to rotate A and B in 2D</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    X: np.ndarray</span>
+<span class="sd">        First array rotated</span>
+<span class="sd">    Y: np.ndarray</span>
+<span class="sd">        Second array rotated</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1"># apply rotation between A and B (and errors)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">A</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">-</span> <span class="n">B</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">A</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">+</span> <span class="n">B</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span></div>
+
+
+    
+
+
+
+<div class="viewcode-block" id="f_weight">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.f_weight">[docs]</a>
+<span class="k">def</span> <span class="nf">f_weight</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fW</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply frequency weights on a 2D array, it is assumed that</span>
+<span class="sd">    the freq axis is axis = 0</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        2D array, (f, t)</span>
+<span class="sd">    fW : np.ndarray or float</span>
+<span class="sd">        frequency weights</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        weighted 2D array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">fW</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">fW</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">fW</span>
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">fW</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="t_weight">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.t_weight">[docs]</a>
+<span class="k">def</span> <span class="nf">t_weight</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tW</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply time weights on a 2D array, it is assumed that</span>
+<span class="sd">    the time axis is axis = 1</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        2D array, (f, t)</span>
+<span class="sd">    fW : np.ndarray or float</span>
+<span class="sd">        time weights weights</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        weighted 2D array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">tW</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">tW</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">tW</span>
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">tW</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="norm">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.norm">[docs]</a>
+<span class="k">def</span> <span class="nf">norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;abs_max&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalise data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        data to normalise</span>
+<span class="sd">    method : str, optional</span>
+<span class="sd">        method of normalising, by default &quot;abs_max&quot; \n</span>
+<span class="sd">        [abs_max] - Normalise using absolute maximum abs(max) \n</span>
+<span class="sd">        [max] - Normalise using maximum \n</span>
+<span class="sd">        [unit] - normalise data between -1 and 1 - not implemented </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        normalised data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># normalise using the maximum value</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># normalise using the absolute maximum value</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;abs_max&quot;</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="c1"># normalise data to between -1 and 1 [-1, 1]</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;unit&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not implemented yet&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;invalid method for normalisation&quot;</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##        Advanced functions for HTR data        ##</span>
+<span class="c1">##===============================================##</span>
+
+
+<div class="viewcode-block" id="fday_rot">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.fday_rot">[docs]</a>
+<span class="k">def</span> <span class="nf">fday_rot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span>  <span class="n">RM</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply Faraday rotation to 1D or 2D Stokes data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q data</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U data</span>
+<span class="sd">    f : np.ndarray</span>
+<span class="sd">        frequency array</span>
+<span class="sd">    RM : float</span>
+<span class="sd">        Rotation Measure [rad/m2]</span>
+<span class="sd">    f0 : float</span>
+<span class="sd">        reference frequency [MHz]</span>
+<span class="sd">    pa0 : float, optional</span>
+<span class="sd">        reference position angle [rad], by default 0.0</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Qrot : np.ndarray</span>
+<span class="sd">        de-faraday rotated Stokes Q</span>
+<span class="sd">    Urot : np.ndarray</span>
+<span class="sd">        de-faraday rotated Stokes U </span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+
+    <span class="k">if</span> <span class="n">RM</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">RM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span>
+    <span class="k">if</span> <span class="n">f0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">f0</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Must specify non-zero f0&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span>
+    
+    <span class="c1"># calculate faraday angle</span>
+    <span class="n">fang</span> <span class="o">=</span> <span class="n">RM</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">1e12</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">pa0</span>
+
+    <span class="c1"># dynamic spectra or spectra?</span>
+    <span class="k">if</span> <span class="n">Q</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">fang</span> <span class="o">=</span> <span class="n">fang</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1"># de-rotate using faraday angle</span>
+    <span class="k">return</span> <span class="n">rotate_data</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">fang</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+
+<span class="c1"># def denoise():</span>
+<span class="c1">#     pass</span>
+
+
+
+
+<span class="c1"># def zap_chan():</span>
+<span class="c1">#     pass</span>
+
+
+
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##         Aditional Stokes params calcs         ##</span>
+<span class="c1">##===============================================##</span>
+
+
+<div class="viewcode-block" id="calc_PA">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_PA">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Position Angle (PA) and PA angle</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q data</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U data</span>
+<span class="sd">    Qerr : np.ndarray</span>
+<span class="sd">        Stokes Q err data</span>
+<span class="sd">    Uerr : np.ndarray</span>
+<span class="sd">        Stokes U err data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PA : np.ndarray</span>
+<span class="sd">        Position Angle (PA)</span>
+<span class="sd">    PAerr : np.ndarray</span>
+<span class="sd">        Position Angle err  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># calculate PA and error</span>
+    <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+    <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
+                           <span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PAerr</span></div>
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="calc_PAdebiased">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_PAdebiased">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_PAdebiased</span><span class="p">(</span><span class="n">stk</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate time-dependant Position Angle masked using</span>
+<span class="sd">    stokes L debiased</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stk : Dict(np.ndarray)</span>
+<span class="sd">        Dictionary of Stokes data \n</span>
+<span class="sd">        [Q] - Stokes Q dynamic spectra \n</span>
+<span class="sd">        [U] - Stokes U dynamic spectra \n</span>
+<span class="sd">        [tQerr] - Stokes Q average rms over time \n</span>
+<span class="sd">        [tUerr] - Stokes U average rms over time \n</span>
+<span class="sd">        [tIerr] - Stokes I average rms over time \n</span>
+<span class="sd">        [fQerr] - Stokes Q frequency dependent rms \n</span>
+<span class="sd">        [fUerr] - Stokes U frequency dependent rms </span>
+<span class="sd">    Ldebias_threshold : float, optional</span>
+<span class="sd">        sigma threshold for masking PA, by default 2.0</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PA : np.ndarray</span>
+<span class="sd">        Position Angle (PA)</span>
+<span class="sd">    PAerr : np.ndarray</span>
+<span class="sd">        Position Angle err </span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    
+    <span class="c1"># calculate time series and de-noise</span>
+    <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QU&quot;</span><span class="p">:</span>
+        <span class="n">stk</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">-</span> <span class="n">stk</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;f</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># calculate PA and error</span>
+    <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">])</span>
+    <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
+                           <span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># calculate de-baised L and mask PA </span>
+    <span class="n">L_debias</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">])</span>
+    <span class="n">PAmask</span> <span class="o">=</span> <span class="n">L_debias</span> <span class="o">&lt;</span> <span class="n">Ldebias_threshold</span> <span class="o">*</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">]</span>
+
+    <span class="c1"># mask PA</span>
+    <span class="n">PA</span><span class="p">[</span><span class="n">PA_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">PAerr</span><span class="p">[</span><span class="n">PA_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">return</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="calc_L">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_L">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_L</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Stokes L</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q data</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    L : np.ndarray</span>
+<span class="sd">        Stokes L data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="calc_Ldebiased">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_Ldebiased">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_Ldebiased</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate De-biased Linear polarisation fraction</span>
+<span class="sd">    (see Everett &amp; Weisberg+2001)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q data</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U data</span>
+<span class="sd">    Ierr : np.ndarray</span>
+<span class="sd">        Stokes U err data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    L_debias : np.ndarray</span>
+<span class="sd">        Stokes L debias</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">L_meas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">L_debias</span> <span class="o">=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">L_debias</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">L_debias</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">L_debias</span><span class="p">[</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mf">1.57</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">L_debias</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="calc_ratio">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_ratio">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_ratio</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Xerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Stokes Ratio X/I </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I : np.ndarray</span>
+<span class="sd">        Stokes I data</span>
+<span class="sd">    X : np.ndarray</span>
+<span class="sd">        Stokes [X] data, usually either Q, U or V</span>
+<span class="sd">    Ierr : np.ndarray, optional</span>
+<span class="sd">        Stokes I err data, by default None, if both Ierr and Xerr is given \n</span>
+<span class="sd">        Stokes X/I err will also be calculated and returned</span>
+<span class="sd">    Xerr : np.ndarray, optional</span>
+<span class="sd">        Stokes [X] err data, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    XI : np.ndarray</span>
+<span class="sd">        Stokes X/I data</span>
+<span class="sd">    XIerr : np.ndarray, optional </span>
+<span class="sd">        Stokes X/I err data, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">XIerr</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># calc XI</span>
+    <span class="n">XI</span> <span class="o">=</span> <span class="n">X</span><span class="o">/</span><span class="n">I</span>
+
+    <span class="c1"># calc error?</span>
+    <span class="k">if</span> <span class="n">Ierr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">XIerr</span> <span class="o">=</span> <span class="n">XI</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Xerr</span><span class="o">/</span><span class="n">X</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Ierr</span><span class="o">/</span><span class="n">I</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># check if array or scalar</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Ierr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Xerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="c1"># take standard deviation</span>
+            <span class="n">XIerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">XIerr</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">XI</span><span class="p">,</span> <span class="n">XIerr</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="calc_freqs">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_freqs">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_freqs</span><span class="p">(</span><span class="n">cfreq</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mf">336.0</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Frequencies</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cfreq : float</span>
+<span class="sd">        Central frequency [MHz]</span>
+<span class="sd">    bw : float, optional</span>
+<span class="sd">        Bandwidth [MHz], by default 336.0</span>
+<span class="sd">    df : float, optional</span>
+<span class="sd">        channel width [MHz], by default 1.0</span>
+<span class="sd">    upper : bool, optional</span>
+<span class="sd">        If true, freq band starts at top, by default True</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    freqs : np.ndarray</span>
+<span class="sd">        Frequency array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">cfreq</span> <span class="o">-</span> <span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">cfreq</span> <span class="o">+</span> <span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">bw</span> <span class="o">/</span> <span class="n">df</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">upper</span><span class="p">:</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">freqs</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##      basic statistics functions               ##</span>
+<span class="c1">##===============================================##</span>
+
+<span class="c1">## [ GET RESIDUALS OF SOME FUNCTION ] ##</span>
+<div class="viewcode-block" id="residuals">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.residuals">[docs]</a>
+<span class="k">def</span> <span class="nf">residuals</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate residuals of a data array by subtracting the mean</span>
+<span class="sd">    model</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        data array</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        max order for polynomial to fit to mean model of y, by default 5</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        residuals of y</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
+
+
+
+<span class="c1">## [ AUTO-CORRELATION FUNCTION ] ##</span>
+<div class="viewcode-block" id="acf">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.acf">[docs]</a>
+<span class="k">def</span> <span class="nf">acf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">outs</span> <span class="o">=</span> <span class="s2">&quot;unique&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate normalised Auto-Correlation function using &#39;fft&#39; method of </span>
+<span class="sd">    real-valued data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        data array</span>
+<span class="sd">    outs : str, optional</span>
+<span class="sd">        describes output of acf function, by default &quot;unique&quot; \n</span>
+<span class="sd">        [unique] - Take positive acf lags, exclude zero-lag peak</span>
+<span class="sd">        [all] - Take full acf, including positive, negative and zero lags</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Auto-Correlation of x data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#correlate</span>
+    <span class="n">acorr</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">)</span>
+    <span class="n">acorr</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">outs</span> <span class="o">==</span> <span class="s2">&quot;unique&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">acorr</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:]</span>
+
+    <span class="k">elif</span> <span class="n">outs</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">acorr</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+
+<span class="c1">## [ CROSS-CORRELATION FUNCTION ] ##</span>
+<div class="viewcode-block" id="ccf">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.ccf">[docs]</a>
+<span class="k">def</span> <span class="nf">ccf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">outs</span> <span class="o">=</span> <span class="s2">&quot;unique&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate normalised Cross-Correlation function using &#39;fft&#39; method of </span>
+<span class="sd">    real-valued data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        data array</span>
+<span class="sd">    outs : str, optional</span>
+<span class="sd">        describes output of ccf function, by default &quot;unique&quot; \n</span>
+<span class="sd">        [unique] - Take positive acf lags, including zero-lag peak</span>
+<span class="sd">        [all] - Take full acf, including positive, negative and zero lags</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Cross-Correlation of x data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#correlate</span>
+    <span class="n">xcorr</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span>
+
+
+    <span class="k">if</span> <span class="n">outs</span> <span class="o">==</span> <span class="s2">&quot;unique&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xcorr</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="k">elif</span> <span class="n">outs</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xcorr</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

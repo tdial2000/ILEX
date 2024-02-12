@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.htr &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.htr</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.htr</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 25/09/2023 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## Library of functions for HTR processing (coherent)</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1"># imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.fft</span> <span class="kn">import</span> <span class="n">fft</span><span class="p">,</span> <span class="n">ifft</span><span class="p">,</span> <span class="n">next_fast_len</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="n">rotate_data</span><span class="p">,</span> <span class="n">average</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
+
+
+
+<span class="c1">##=====================##</span>
+<span class="c1">## AUXILIARY FUNCTIONS ##</span>
+<span class="c1">##=====================##</span>
+
+<div class="viewcode-block" id="phasor_DM">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.phasor_DM">[docs]</a>
+<span class="k">def</span> <span class="nf">phasor_DM</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Apply Phasor rotation based on DM, coherent Dispersion</span>
+<span class="sd">        This rotation can be applied </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f (ndarray): frequency array [MHz]</span>
+<span class="sd">        DM (float): Dispersion Measure [pc/cm3]</span>
+<span class="sd">        f0 (float): reference frequency [rad]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        p (ndarray): Phasor np.exp()</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># constants</span>
+    <span class="n">kDM</span> <span class="o">=</span> <span class="mf">4.14938e3</span>         <span class="c1"># DM constant</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">kDM</span><span class="o">*</span><span class="n">DM</span><span class="o">*</span><span class="p">(</span><span class="n">f</span><span class="o">-</span><span class="n">f0</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">f</span><span class="o">*</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="phasor_">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.phasor_">[docs]</a>
+<span class="k">def</span> <span class="nf">phasor_</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Apply A generalized phasor rotation -&gt; </span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f (ndarray): frequency array [MHz]</span>
+<span class="sd">        tau (float): Time delay [us]</span>
+<span class="sd">        phi (float): Phase delay [rad]  </span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        p (ndarray): Phasor np.exp()</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">2</span><span class="n">j</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">tau</span><span class="o">*</span><span class="n">f</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">phi</span><span class="p">)</span></div>
+
+    
+
+
+<div class="viewcode-block" id="mem_fft">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.mem_fft">[docs]</a>
+<span class="k">def</span> <span class="nf">mem_fft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fft_len</span><span class="p">,</span> <span class="n">_map</span> <span class="o">=</span> <span class="s1">&#39;r+&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Apply FFT and save to temp memory map</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (ndarray): data to fft</span>
+<span class="sd">        fft_len (int): len of fft array</span>
+<span class="sd">        _map (str): mapper, &#39;r&#39; for read only or &#39;r+&#39; read and writing.</span>
+<span class="sd">                    see mmap_mode in numpy.load()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        xfft (memmap): memory map of fft</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xfft</span> <span class="o">=</span> <span class="n">fft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fft_len</span><span class="p">)</span>
+
+    <span class="c1"># save to temp array</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;temp_fft.npy&quot;</span><span class="p">,</span> <span class="n">xfft</span><span class="p">)</span>
+
+    <span class="c1"># load temp array as memory map</span>
+    <span class="n">xfft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;temp_fft.npy&quot;</span><span class="p">,</span> <span class="n">mmap_mode</span> <span class="o">=</span> <span class="n">_map</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">xfft</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="mem_ifft">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.mem_ifft">[docs]</a>
+<span class="k">def</span> <span class="nf">mem_ifft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fft_len</span><span class="p">,</span> <span class="n">dat_len</span><span class="p">,</span> <span class="n">_map</span> <span class="o">=</span> <span class="s1">&#39;r+&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Apply iFFT and save to temp memory map</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (ndarray): data to fft</span>
+<span class="sd">        fft_len (int): len of fft array</span>
+<span class="sd">        dat_len (int): initial lenght of array</span>
+<span class="sd">        _map (str): mapper, &#39;r&#39; for read only or &#39;r+&#39; read and writing.</span>
+<span class="sd">                    see mmap_mode in numpy.load()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        xfft (memmap): memory map of ifft</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xifft</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fft_len</span><span class="p">)[:</span><span class="n">dat_len</span><span class="p">]</span>
+
+    <span class="c1"># save to temp array file</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;temp_ifft.npy&quot;</span><span class="p">,</span> <span class="n">xifft</span><span class="p">)</span>
+
+    <span class="c1"># load temp array as memory map</span>
+    <span class="n">xifft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;temp_ifft.npy&quot;</span><span class="p">,</span> <span class="n">mmap_mode</span> <span class="o">=</span> <span class="n">_map</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">xifft</span></div>
+
+
+
+<div class="viewcode-block" id="arr2mmap">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.arr2mmap">[docs]</a>
+<span class="k">def</span> <span class="nf">arr2mmap</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">_map</span> <span class="o">=</span> <span class="s1">&#39;r+&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Convert array to memory map for memory efficiency</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (ndarray): data to convert to memory map</span>
+<span class="sd">        filename (str): filename to store memory map</span>
+<span class="sd">        _map (str): mapper, &#39;r&#39; for read only or &#39;r+&#39; read and writing.</span>
+<span class="sd">                    see mmap_mode in numpy.load()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        xm (memmap): memory map of x data array</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># save to temp array file</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># load temp array as memory map</span>
+    <span class="n">xm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mmap_mode</span> <span class="o">=</span> <span class="n">_map</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">xm</span></div>
+
+
+
+
+<div class="viewcode-block" id="rm_mmap_file">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.rm_mmap_file">[docs]</a>
+<span class="k">def</span> <span class="nf">rm_mmap_file</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Remove Memory map file</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x (memmap): memory map object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+
+
+
+
+
+
+<span class="c1">##==================##</span>
+<span class="c1">## STOKES FUNCTIONS ##</span>
+<span class="c1">##==================##</span>
+
+<div class="viewcode-block" id="stk_I">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.stk_I">[docs]</a>
+<span class="k">def</span> <span class="nf">stk_I</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Produces stokes I data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (ndarray): X polarisation data</span>
+<span class="sd">        Y (ndarray): Y polarisation data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        S (ndarray): Stokes data</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
+
+
+
+
+<div class="viewcode-block" id="stk_Q">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.stk_Q">[docs]</a>
+<span class="k">def</span> <span class="nf">stk_Q</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Produces stokes Q data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (ndarray): X polarisation data</span>
+<span class="sd">        Y (ndarray): Y polarisation data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        S (ndarray): Stokes data</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="stk_U">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.stk_U">[docs]</a>
+<span class="k">def</span> <span class="nf">stk_U</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Produces stokes U data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (ndarray): X polarisation data</span>
+<span class="sd">        Y (ndarray): Y polarisation data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        S (ndarray): Stokes data</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">Y</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stk_V">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.stk_V">[docs]</a>
+<span class="k">def</span> <span class="nf">stk_V</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Produces stokes V data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (ndarray): X polarisation data</span>
+<span class="sd">        Y (ndarray): Y polarisation data</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        S (ndarray): Stokes data</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">Y</span><span class="p">)</span></div>
+
+
+<span class="c1">## array of stokes functions ##</span>
+<span class="n">STK_FUNC</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span><span class="n">stk_I</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span><span class="n">stk_Q</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">:</span><span class="n">stk_U</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span><span class="n">stk_V</span><span class="p">}</span>
+
+
+
+
+
+
+
+
+
+<span class="c1">## Additional processing functions ##</span>
+<div class="viewcode-block" id="baseline_correction">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.baseline_correction">[docs]</a>
+<span class="k">def</span> <span class="nf">baseline_correction</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">guard</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> 
+                        <span class="n">baseline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span> <span class="n">rmsmp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+                        <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
+                        <span class="n">rbounds</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Apply baseline corrections to the Dynamic spectra data</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ds (ndarray): Dynamic spectra</span>
+<span class="sd">        sigma (float): S/N threshold for bounds</span>
+<span class="sd">        guard (float): Time in [ms] between rough bounds and rms crop region</span>
+<span class="sd">        baseline (float): Width of buffer in [ms] to estimate baseline</span>
+<span class="sd">                          correction</span>
+<span class="sd">        rmsmp (float): Phase difference between maximum point in time and mid</span>
+<span class="sd">                       point of rms crop used to estimate rough initial S/N</span>
+<span class="sd">        tN (int): Time Averaging factor for Dynamic spectrum, helps with</span>
+<span class="sd">                    S/N calculation.</span>
+<span class="sd">        dt (float): Time resolution in [ms] of dynamic spectra</span>
+<span class="sd">        rbounds (list): Bounds of FRB burst, if Unspecified, the code will do a rough S/N</span>
+<span class="sd">                        calculation to determine a bursts bounds</span>
+<span class="sd">        norm (bool): Apply baseline correction to dynamic spectra</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ds (ndarray): Baseline corrected (zero-mean, unit variance) dynamic spectra </span>
+<span class="sd">        bs_mean (ndarray): Baseline mean</span>
+<span class="sd">        bs_std (ndarray): Baseline std</span>
+<span class="sd">        rbounds (ndarray): Bounds of FRB burst in Phase units</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dt</span> <span class="o">*=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">336.0</span>
+
+    <span class="c1"># ms -&gt; ds time bin converters</span>
+    <span class="n">get_units_avg</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="n">tN</span><span class="p">)))</span>
+    <span class="n">get_units</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">rbounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1">## Rough normalize </span>
+        <span class="n">ds_r</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">tN</span><span class="p">)</span>
+        <span class="n">rmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds_r</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">rstd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ds_r</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">ds_rn</span> <span class="o">=</span> <span class="n">ds_r</span> <span class="o">-</span> <span class="n">rmean</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">ds_rn</span> <span class="o">/=</span> <span class="n">rstd</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        
+        <span class="c1">## find burst bounds</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looking for bounds of burst...&quot;</span><span class="p">)</span>
+        <span class="c1"># get peak, crop rms and do rough S/N calculation</span>
+        <span class="n">t_rn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds_rn</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">peak</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">t_rn</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Peak found at phase of </span><span class="si">{</span><span class="n">peak</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_rn</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">rms_w</span> <span class="o">=</span> <span class="n">get_units_avg</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span>
+        <span class="n">rms_crop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">t_rn</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">rmsmp</span> <span class="o">*</span> <span class="n">ds_rn</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="n">peak</span><span class="o">-</span><span class="n">rms_w</span><span class="p">:</span><span class="n">peak</span><span class="o">+</span><span class="n">rms_w</span><span class="p">]</span>
+        <span class="n">rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">rms_crop</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+        <span class="c1"># calculate S/N</span>
+        <span class="n">t_sn</span> <span class="o">=</span> <span class="n">t_rn</span> <span class="o">/</span> <span class="n">rms</span>
+        <span class="n">rbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">t_sn</span> <span class="o">&gt;=</span> <span class="n">sigma</span><span class="p">)[[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">/</span><span class="n">t_sn</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">rbounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">((</span><span class="n">rbounds</span><span class="o">*</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">]</span>
+    
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Phase bounds of burst: </span><span class="si">{</span><span class="n">rbounds</span><span class="o">/</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1">## calculate baseline corrections</span>
+    <span class="n">guard_w</span> <span class="o">=</span> <span class="n">get_units</span><span class="p">(</span><span class="n">guard</span><span class="p">)</span>
+    <span class="n">rms_w</span> <span class="o">=</span> <span class="n">get_units</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span>
+    <span class="n">lhs_crop</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[:,</span><span class="n">rbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">guard_w</span><span class="o">-</span><span class="n">rms_w</span><span class="p">:</span><span class="n">rbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">guard_w</span><span class="p">]</span>
+    <span class="n">rhs_crop</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[:,</span><span class="n">rbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">guard_w</span><span class="p">:</span><span class="n">rbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">guard_w</span><span class="o">+</span><span class="n">rms_w</span><span class="p">]</span>
+    <span class="n">bl_crop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">lhs_crop</span><span class="p">,</span> <span class="n">rhs_crop</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">bs_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bl_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">bs_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">bl_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+
+    <span class="c1">## re-normalize (Baseline Correction)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying Baseline corrections...&quot;</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">-=</span> <span class="n">bs_mean</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">ds</span> <span class="o">/=</span> <span class="n">bs_std</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ds</span><span class="p">,</span> <span class="n">rbounds</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1"># stft htr function</span>
+<div class="viewcode-block" id="make_stokes">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.make_stokes">[docs]</a>
+<span class="k">def</span> <span class="nf">make_stokes</span><span class="p">(</span><span class="n">xpol</span><span class="p">,</span> <span class="n">ypol</span><span class="p">,</span> <span class="n">stokes</span> <span class="o">=</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">nFFT</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">negateQ</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">nworkers</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mf">200e6</span><span class="p">,</span>
+                <span class="n">BIT_SIZE</span> <span class="o">=</span> <span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Performs the stft on the xpol and ypol htr products</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xpol (ndarray): X polarisation time series (ideally a memory map)</span>
+<span class="sd">        ypol (ndarray): Y polarisation time series (ideally a memory map)</span>
+<span class="sd">        stokes (str): Stokes product type [&quot;I&quot;, &quot;Q&quot;, &quot;U&quot;, &quot;V&quot;]</span>
+<span class="sd">        nFFT (int): FFT window size (number of channels for dynamic spectrum)</span>
+<span class="sd">        nworkers (int): number of &quot;workers&quot; for parallel processing (see scipy.fft.fft)</span>
+<span class="sd">        BLOCK_SIZE (int): maximum memory allocated at a time when running fft</span>
+<span class="sd">        conv (str): Stokes sign convention, [&quot;celebi&quot;, &quot;straten&quot;]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dynspec (ndarray): Final dynamic spectrum</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prog_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;[Stokes] = </span><span class="si">{</span><span class="n">stokes</span><span class="si">}</span><span class="s2"> with [nFFT] = </span><span class="si">{</span><span class="n">nFFT</span><span class="si">}</span><span class="s2">:    [BLOCK SIZE] = </span><span class="si">{</span><span class="n">BLOCK_SIZE</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> MB with [BIT SIZE] = </span><span class="si">{</span><span class="n">BIT_SIZE</span><span class="si">}</span><span class="s2"> Bits&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">stokes</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid Stokes&quot;</span><span class="p">)</span>
+        <span class="k">return</span> 
+
+
+    <span class="c1"># First need to chop data so that an integer number of FFT windows can</span>
+    <span class="c1"># be performed. Afterwards, this data will be split into coarse BLOCKS</span>
+    <span class="c1"># with specific memory constraints. </span>
+
+    <span class="c1"># define parameters</span>
+    <span class="n">nsamps</span>  <span class="o">=</span> <span class="n">xpol</span><span class="o">.</span><span class="n">size</span>                  <span class="c1"># original number of samples in loaded dataset</span>
+    <span class="n">fnsamps</span> <span class="o">=</span> <span class="p">(</span><span class="n">nsamps</span> <span class="o">//</span> <span class="n">nFFT</span><span class="p">)</span> <span class="o">*</span> <span class="n">nFFT</span>    <span class="c1"># number of samples after chopping </span>
+    <span class="n">nwind</span>   <span class="o">=</span> <span class="n">fnsamps</span> <span class="o">//</span> <span class="n">nFFT</span>            <span class="c1"># number of fft windows along time series</span>
+
+    <span class="c1"># memeory block paramters</span>
+    <span class="n">nwinb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">BLOCK_SIZE</span> <span class="o">//</span> <span class="p">(</span><span class="n">nFFT</span> <span class="o">*</span> <span class="n">BIT_SIZE</span><span class="p">))</span>    <span class="c1"># num windows in BLOCK</span>
+    <span class="n">nsinb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nwinb</span> <span class="o">*</span> <span class="n">nFFT</span><span class="p">)</span>                     <span class="c1"># num samples in BLOCK</span>
+    <span class="n">nblock</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nwind</span> <span class="o">//</span> <span class="n">nwinb</span><span class="p">)</span>                     <span class="c1"># num BLOCKS</span>
+
+    <span class="c1"># create empty array</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nFFT</span><span class="p">,</span> <span class="n">nwind</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># block array for looping over data</span>
+    <span class="n">b_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nblock</span><span class="p">):</span>
+        <span class="n">b_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b_arr</span><span class="p">,</span> <span class="p">[[</span><span class="n">i</span><span class="o">*</span><span class="n">nwinb</span><span class="p">,(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nwinb</span><span class="p">]],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># append extra block at end</span>
+    <span class="k">if</span> <span class="n">nblock</span><span class="o">*</span><span class="n">nsinb</span> <span class="o">&lt;</span> <span class="n">nsamps</span><span class="p">:</span>
+        <span class="n">b_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b_arr</span><span class="p">,</span> <span class="p">[[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">nwinb</span><span class="p">,</span><span class="n">nwind</span><span class="p">]],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># loop over blocks</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">b_arr</span><span class="p">):</span> <span class="c1"># b is bounds of block in nFFT windows</span>
+        <span class="n">sb</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="n">nFFT</span>
+        <span class="n">wind_w</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ds</span><span class="p">[:,</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">STK_FUNC</span><span class="p">[</span><span class="n">stokes</span><span class="p">](</span><span class="n">fft</span><span class="p">(</span><span class="n">xpol</span><span class="p">[</span><span class="n">sb</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">sb</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">wind_w</span><span class="p">,</span> <span class="n">nFFT</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span>
+                                 <span class="n">fft</span><span class="p">(</span><span class="n">ypol</span><span class="p">[</span><span class="n">sb</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">sb</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">wind_w</span><span class="p">,</span> <span class="n">nFFT</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="c1"># print progress</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[MAKING DYNSPEC]:    [Progress] = </span><span class="si">{</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">nblock</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">3.3f</span><span class="si">}</span><span class="s2">%:    &quot;</span> <span class="o">+</span> <span class="n">prog_str</span><span class="p">,</span>
+              <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[MAKING DYNSPEC]:    [Progress] = 100.00%:    &quot;</span> <span class="o">+</span> <span class="n">prog_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>   
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dynamic spectrum created with:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> channels&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> time samples&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># negate Q if nessesary</span>
+    <span class="k">if</span> <span class="n">negateQ</span> <span class="ow">and</span> <span class="n">stokes</span> <span class="o">==</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span>
+        <span class="n">ds</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="coherent_desperse">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.coherent_desperse">[docs]</a>
+<span class="k">def</span> <span class="nf">coherent_desperse</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">cfreq</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">DM</span><span class="p">,</span> <span class="n">fast</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+                      <span class="n">DM_iter</span> <span class="o">=</span> <span class="mi">50</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Function that coherently dedisperses X,Y htr data products in (f) domain,</span>
+<span class="sd">        It is assumed that frequencies start from the top of the band.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        t (time series): time series</span>
+<span class="sd">        cfreq (float): central frequency of band</span>
+<span class="sd">        bw (float): bandwidth</span>
+<span class="sd">        f0 (float): refernece frequency</span>
+<span class="sd">        DM (float): Dispersion Measure</span>
+<span class="sd">        fast (bool): Apply padding to significantly speed up function at the cost of a small precision error</span>
+<span class="sd">        DM_iter (int): Reduces the amount of memory used when applying dispersion at the cost of a little performance</span>
+
+
+<span class="sd">    Returns:</span>
+<span class="sd">        t_d (ndarray): time series despersed</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prog_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[bw] = </span><span class="si">{</span><span class="n">bw</span><span class="si">}</span><span class="s2"> MHz with [cfreq] = </span><span class="si">{</span><span class="n">cfreq</span><span class="si">}</span><span class="s2"> MHz:    [DM] = </span><span class="si">{</span><span class="n">DM</span><span class="si">}</span><span class="s2"> pc/cm3 at a ref freq [f0] = </span><span class="si">{</span><span class="n">f0</span><span class="si">}</span><span class="s2"> MHz&quot;</span>
+
+    <span class="c1"># constants</span>
+    <span class="n">kDM</span> <span class="o">=</span> <span class="mf">4.14938e3</span>         <span class="c1"># DM constant</span>
+
+    <span class="n">next_len</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">if</span> <span class="n">fast</span><span class="p">:</span>
+        <span class="n">next_len</span> <span class="o">=</span> <span class="n">next_fast_len</span><span class="p">(</span><span class="n">next_len</span><span class="p">)</span>
+
+    <span class="c1"># ifft</span>
+    <span class="n">t_d</span> <span class="o">=</span> <span class="n">fft</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">next_len</span><span class="p">)</span>
+
+    <span class="c1"># apply dispersion</span>
+    <span class="n">uband</span> <span class="o">=</span> <span class="n">cfreq</span> <span class="o">+</span> <span class="n">bw</span><span class="o">/</span><span class="mi">2</span>                            <span class="c1"># upper band</span>
+    <span class="n">bw</span> <span class="o">=</span> <span class="n">bw</span><span class="o">*</span><span class="p">(</span><span class="n">next_len</span><span class="o">/</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>                       <span class="c1"># updated bandwidth due to zero padding in time domain</span>
+
+    <span class="n">BLOCK_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">next_len</span> <span class="o">/</span> <span class="n">DM_iter</span><span class="p">)</span>            <span class="c1"># number of samples per DM iteration</span>
+    <span class="n">BLOCK_end</span> <span class="o">=</span> <span class="n">next_len</span> <span class="o">-</span> <span class="n">BLOCK_size</span> <span class="o">*</span> <span class="n">DM_iter</span>     <span class="c1"># in case number of samples don&#39;t divide into DM_iter evenly, usually</span>
+                                                    <span class="c1"># a handful of samples are left at the end, this is BLOCK_end</span>
+    <span class="n">BLOCK_bw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">bw</span><span class="o">*</span><span class="n">BLOCK_size</span><span class="o">/</span><span class="n">next_len</span><span class="p">)</span>        <span class="c1"># amount of bandwidth being covered per DM iteration</span>
+
+    <span class="c1"># iterate over chuncks to save memory</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">DM_iter</span><span class="p">):</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">uband</span> <span class="o">-</span> <span class="n">i</span><span class="o">*</span><span class="n">BLOCK_bw</span><span class="p">,</span> <span class="n">uband</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">BLOCK_bw</span><span class="p">,</span> <span class="n">BLOCK_size</span><span class="p">,</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> 
+                <span class="o">+</span><span class="n">bw</span><span class="o">/</span><span class="n">next_len</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># disperse part of t series</span>
+        <span class="n">t_d</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">BLOCK_size</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">BLOCK_size</span><span class="p">]</span> <span class="o">*=</span> <span class="n">phasor_DM</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="n">DM</span><span class="p">,</span> <span class="n">f0</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[DISPERSING]:    [Progress] = </span><span class="si">{</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">DM_iter</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">3.3f</span><span class="si">}</span><span class="s2">%:    &quot;</span> <span class="o">+</span> <span class="n">prog_str</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># apply last chunck if needed</span>
+    <span class="k">if</span> <span class="n">BLOCK_end</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">uband</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">BLOCK_bw</span><span class="p">,</span><span class="n">uband</span> <span class="o">-</span> <span class="n">bw</span><span class="p">,</span> <span class="n">BLOCK_end</span><span class="p">,</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">+</span><span class="n">bw</span><span class="o">/</span><span class="n">next_len</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="c1"># disperse</span>
+        <span class="n">t_d</span><span class="p">[(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">BLOCK_size</span><span class="p">:]</span> <span class="o">*=</span> <span class="n">phasor_DM</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="n">DM</span><span class="p">,</span> <span class="n">f0</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[DISPERSING]:    [Progress] = 100.00%:    &quot;</span> <span class="o">+</span> <span class="n">prog_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># inverse fourier tranform back to time domain</span>
+    <span class="n">t_d</span> <span class="o">=</span> <span class="n">ifft</span><span class="p">(</span><span class="n">t_d</span><span class="p">,</span> <span class="n">next_len</span><span class="p">)[:</span><span class="n">t</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">t_d</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="pulse_fold">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.pulse_fold">[docs]</a>
+<span class="k">def</span> <span class="nf">pulse_fold</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">MJD0</span><span class="p">,</span> <span class="n">MJD1</span><span class="p">,</span> <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">sphase</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Takes Pulsar dynamic spectrum and folds it, removes periods</span>
+<span class="sd">        at far left and right sides to avoid band artifacts produced during</span>
+<span class="sd">        de-dispersion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ds (ndarray): dynamic spectrum</span>
+<span class="sd">        MJD0 (float): Initial Epoch MJD</span>
+<span class="sd">        MJD1 (float): Observation MJD</span>
+<span class="sd">        F0 (float): initial Epoch Frequency period</span>
+<span class="sd">        F1 (float): Spin-down rate</span>
+<span class="sd">        sphase (float): Starting phase of folding, if not given</span>
+<span class="sd">                        will be estimated (best done using &quot;I&quot; ds)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ds_f (ndarray): Raw folded Dynamic spectra</span>
+<span class="sd">        sphase (float): Starting phase of folding from original dynspec</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pulse Folding Dynspec...&quot;</span><span class="p">)</span>
+    <span class="c1"># normalise needed to help find fold bounds</span>
+    <span class="n">ds_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">ds_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+    <span class="c1">## Calculate Period T in [s]</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">F0</span> <span class="o">-</span> <span class="n">F1</span> <span class="o">*</span> <span class="p">(</span><span class="n">MJD1</span> <span class="o">-</span> <span class="n">MJD0</span><span class="p">)</span><span class="o">*</span><span class="mi">86400</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;with period T = </span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">336</span><span class="p">)</span> <span class="c1"># get time resolution of dynspec</span>
+
+    <span class="c1">## Fold dynamic spectra</span>
+    <span class="n">fold_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">dt</span><span class="p">)</span>          <span class="c1"># fold width in samples (assumed dt = 1 us)</span>
+    <span class="n">fold_n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">fold_w</span><span class="p">)</span>     <span class="c1"># number of folds</span>
+
+    <span class="c1"># find index of peak in second period, then get starting phase</span>
+    <span class="k">if</span> <span class="n">sphase</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">search_crop</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[:,</span><span class="n">fold_w</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">fold_w</span><span class="p">]</span>
+        <span class="n">search_crop</span> <span class="o">=</span> <span class="p">(</span><span class="n">search_crop</span> <span class="o">-</span> <span class="n">ds_mean</span><span class="p">)</span><span class="o">/</span><span class="n">ds_std</span>
+        <span class="n">pulse2i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">search_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="n">pulse2i</span> <span class="o">+=</span> <span class="n">fold_w</span>
+        <span class="n">sphase</span> <span class="o">=</span> <span class="n">pulse2i</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">fold_w</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># put in phase units</span>
+        <span class="n">sphase</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sphase</span><span class="o">*</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+
+    <span class="c1"># reshape to average folds together</span>
+    <span class="c1"># ignore side periods due to dedispersing</span>
+    <span class="n">ds_r</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[:,</span><span class="n">sphase</span><span class="p">:</span><span class="n">sphase</span> <span class="o">+</span> <span class="n">fold_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">fold_n</span><span class="o">-</span><span class="mi">2</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">ds_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds_r</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ds_r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">fold_n</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">fold_w</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+    
+    <span class="k">return</span> <span class="n">ds_f</span><span class="p">,</span> <span class="n">sphase</span> <span class="o">/</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+<div class="viewcode-block" id="coherent_scatter">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.coherent_scatter">[docs]</a>
+<span class="k">def</span> <span class="nf">coherent_scatter</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="coherent_rotate">
+<a class="viewcode-back" href="../../ilex.html#ilex.htr.coherent_rotate">[docs]</a>
+<span class="k">def</span> <span class="nf">coherent_rotate</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1"># ##==========================================##</span>
+<span class="c1"># ## Master function to update ASKAP X, Y POL ##</span>
+<span class="c1"># ## data products                            ##</span>
+<span class="c1"># ##==========================================##</span>
+
+<span class="c1"># def update_XY(X, Y, filename, cfreq: float = 0.0, bw: float = 336.0, f0: float = None,</span>
+<span class="c1">#               DM: float = 0.0, tau: float = 0.0, phi: </span>
+<span class="c1">#               float = 0.0, psi: float = 0.0, _iter: int = 50, fast: bool = True, save_XY = True):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Make new X,Y data products with the following changes:</span>
+
+<span class="c1">#     del DM:         apply a small change in dispersion coherently</span>
+<span class="c1">#     tau:            apply a time delay coherently</span>
+<span class="c1">#     phi:            apply a phase delay coherently</span>
+<span class="c1">#     psi:            apply a rotational offset between X and Y</span>
+
+<span class="c1">#     This function can be memory intensive, especially if del RM is being</span>
+<span class="c1">#     used. To be safe a minimum of 24GB RAM (or ~3x sizeof(X)) is nessesary to use all of the </span>
+<span class="c1">#     above features.</span>
+
+<span class="c1">#     safe mem usage ~3x sizeof(X, Y)</span>
+
+
+<span class="c1">#     ##==== inputs ====##</span>
+<span class="c1">#     DM (pc/cm3):             Dispersion Measure</span>
+<span class="c1">#     tau (us):                Time delay (from POLCAL)</span>
+<span class="c1">#     phi (rad):               Phase delay (from POLCAL)</span>
+<span class="c1">#                              Note: tau and phi derived from POLCAL.py</span>
+<span class="c1">#                              are what has already been applyied to X, Y, to</span>
+<span class="c1">#                              correct for these in this function they need to be</span>
+<span class="c1">#                              negated.</span>
+<span class="c1">#     psi (rad):               Rotation offset (from POLCAL)</span>
+<span class="c1">#     filename:                Common prefix for X, Y filenames</span>
+<span class="c1">#                              i.e. [{filename}_X.npy]</span>
+<span class="c1">#     fast:                    Apply Zero-padding to speed up FFT/iFFT</span>
+<span class="c1">#     X:                       X pol memory map</span>
+<span class="c1">#     Y:                       Y pol memory map</span>
+
+
+<span class="c1">#     ##==== outputs ====##  </span>
+<span class="c1">#     None:           This function does not have any outputs</span>
+
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     print(&quot;Making new X and Y pol products using the following:&quot;)</span>
+<span class="c1">#     print(&quot;----------------------------------------------------&quot;)</span>
+<span class="c1">#     print(f&quot;delta DM:    {DM:.4f}  (pc/cm3)&quot;)</span>
+<span class="c1">#     print(f&quot;tau:         {tau:.4g}  (us)&quot;)</span>
+<span class="c1">#     print(f&quot;phi:         {phi:.4f}  (rad)&quot;)</span>
+<span class="c1">#     print(f&quot;psi:         {psi:.4f}  (rad)\n&quot;)</span>
+
+<span class="c1">#     t1 = time()</span>
+<span class="c1">#     ##================================##</span>
+<span class="c1">#     ## APPLY DM AND TIME/PHASE DELAYS ##</span>
+<span class="c1">#     ##================================##</span>
+<span class="c1">#     mmap_flag = type(X) == &quot;numpy.memmap&quot;</span>
+
+<span class="c1">#     if mmap_flag:</span>
+<span class="c1">#         print(&quot;Loading X,Y data products&quot;)</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         print(&quot;Passing X,Y data products&quot;)</span>
+
+<span class="c1">#     # output filenames</span>
+<span class="c1">#     X_ofile = f&quot;{filename}_X.npy&quot;</span>
+<span class="c1">#     Y_ofile = f&quot;{filename}_Y.npy&quot;</span>
+
+
+<span class="c1">#     # process flags</span>
+<span class="c1">#     DM_flag = DM != 0.0                         # DM flag</span>
+<span class="c1">#     leak_flag = (tau != 0.0 or phi != 0.0)      # leakage flag</span>
+<span class="c1">#     psi_flag = psi != 0.0                       # rotation offset flag</span>
+
+
+<span class="c1">#     # get new len for FFT</span>
+<span class="c1">#     fft_len = X.size        # size of fft for optimal speed</span>
+<span class="c1">#     dat_len = X.size        # size of original data set (X or Y)</span>
+<span class="c1">#     if fast:</span>
+<span class="c1">#         fft_len = next_fast_len(X.size)</span>
+
+
+<span class="c1">#     # set up for iterative process</span>
+<span class="c1">#     uband = cfreq + bw/2                            # upper band</span>
+<span class="c1">#     bw = bw*(fft_len/dat_len)                       # updated bandwidth due to zero padding in time domain</span>
+
+<span class="c1">#     BLOCK_size = int(fft_len / _iter)               # number of samples per DM iteration</span>
+<span class="c1">#     BLOCK_end = fft_len - BLOCK_size * _iter        # in case number of samples don&#39;t divide into DM_iter evenly, usually</span>
+<span class="c1">#                                                     # a handful of samples are left at the end, this is BLOCK_end</span>
+<span class="c1">#     BLOCK_bw = float(bw*BLOCK_size/fft_len)         # amount of bandwidth being covered per DM iteration</span>
+
+
+<span class="c1">#     if f0 is None:          # reference frequency</span>
+<span class="c1">#         f0 = cfreq</span>
+
+
+<span class="c1">#     # make Function to retrieve a block of frequeuncy band</span>
+<span class="c1">#     def get_fblock(_i):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Get block of bandwidth (for Memory efficieny)</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         if _i &lt; _iter:</span>
+<span class="c1">#             _f = (np.linspace(uband - _i*BLOCK_bw, uband - (_i+1)*BLOCK_bw, BLOCK_size, endpoint = False) </span>
+<span class="c1">#                 +bw/fft_len/2)</span>
+<span class="c1">#         elif i == _iter:</span>
+<span class="c1">#             _f = (np.linspace(uband - (_i+1)*BLOCK_bw,uband - bw, BLOCK_end, endpoint = False) </span>
+<span class="c1">#                 +bw/fft_len/2)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             print(&quot;Something went wrong: asking for chunk of frequency outside bandwidth&quot;)</span>
+<span class="c1">#             sys.exit()</span>
+<span class="c1">#         return _f</span>
+
+
+
+<span class="c1">#     ##=====================================##</span>
+<span class="c1">#     ## APPLY PROCESSES WITHOUT NEEDED FFTS ##</span>
+<span class="c1">#     ##=====================================##</span>
+
+<span class="c1">#     ## apply rotational offset</span>
+<span class="c1">#     if psi_flag:</span>
+<span class="c1">#         print(&quot;Applying rotational offset...&quot;)</span>
+<span class="c1">#         X, Y = rotate_data(X, Y, psi)</span>
+<span class="c1">#     else:</span>
+<span class="c1">#         print(&quot;Skipping Rotation offset [psi = 0.0]&quot;)</span>
+    
+
+
+<span class="c1">#     ##==============================##</span>
+<span class="c1">#     ## APPLY PROCESSES NEEDING FFTS ##</span>
+<span class="c1">#     ##==============================##</span>
+
+<span class="c1">#     # check whether X pol needs to be FFT&#39;d</span>
+<span class="c1">#     if DM_flag or leak_flag or fday_flag:</span>
+<span class="c1">#         # FFT X pol</span>
+<span class="c1">#         print(&quot;Applying FFT to [X] pol&quot;)</span>
+<span class="c1">#         X = fft(X, fft_len)</span>
+        
+
+<span class="c1">#     if DM_flag or fday_flag:</span>
+<span class="c1">#         # FFT Y pol</span>
+<span class="c1">#         print(&quot;Applying FFT to [Y] pol&quot;)</span>
+<span class="c1">#         Y = fft(Y, fft_len)</span>
+        
+
+
+<span class="c1">#     ## APPLY DM AND LEAKAGE</span>
+<span class="c1">#     if DM_flag or leak_flag:</span>
+<span class="c1">#         # iterate, this iterates over blocks of the array at a time,</span>
+<span class="c1">#         # more memory efficient at the cost of a little performance</span>
+<span class="c1">#         print(f&quot;Applying DM = {DM_flag}&quot;)</span>
+<span class="c1">#         print(f&quot;Applying Leakage = {leak_flag}&quot;)</span>
+        
+<span class="c1">#         # do iteration</span>
+<span class="c1">#         for i in range(_iter):</span>
+<span class="c1">#             print(f&quot;progress: {i/_iter*100:.2f} %&quot;, end = &#39;\r&#39;)</span>
+<span class="c1">#             freqs = get_fblock(i)</span>
+
+<span class="c1">#             # dedisperse rotate</span>
+<span class="c1">#             if DM_flag:</span>
+<span class="c1">#                 X[i*BLOCK_size:(i+1)*BLOCK_size] *= phasor_DM(freqs, DM, f0)</span>
+<span class="c1">#                 Y[i*BLOCK_size:(i+1)*BLOCK_size] *= phasor_DM(freqs, DM, f0)</span>
+            
+<span class="c1">#             # leakage rotate</span>
+<span class="c1">#             if leak_flag:</span>
+<span class="c1">#                 X[i*BLOCK_size:(i+1)*BLOCK_size] *= phasor_(freqs, tau, phi)</span>
+            
+<span class="c1">#         # apply last block if needed (consequency of doing integer iteration)</span>
+<span class="c1">#         print(f&quot;progress: 100.00 %\n&quot;)</span>
+<span class="c1">#         if BLOCK_end &gt; 0:</span>
+<span class="c1">#             freqs = get_fblock(i+1)</span>
+
+<span class="c1">#             # dedisperse rotate</span>
+<span class="c1">#             if DM_flag:</span>
+<span class="c1">#                 X[(i+1)*BLOCK_size:] *= phasor_DM(freqs, DM, f0)</span>
+<span class="c1">#                 Y[(i+1)*BLOCK_size:] *= phasor_DM(freqs, DM, f0)</span>
+            
+<span class="c1">#             # leakage rotate</span>
+<span class="c1">#             if leak_flag:</span>
+<span class="c1">#                 X[(i+1)*BLOCK_size:] *= phasor_(freqs, tau, phi)</span>
+        
+
+
+<span class="c1">#     else:</span>
+<span class="c1">#         print(f&quot;Skipping Despersion and leakage correction [DM = {DM:.1f}], [tau = {tau:.1f}], [phi = {phi:.1f}&quot;)</span>
+
+<span class="c1">#     # # free up memory</span>
+<span class="c1">#     # if DM_flag or leak_flag:</span>
+<span class="c1">#     #     X = arr2mmap(X, X_ofile)</span>
+<span class="c1">#     # if DM_flag:</span>
+<span class="c1">#     #     Y = arr2mmap(Y, Y_ofile)</span>
+
+
+<span class="c1">#     # check whether X pol needs to be FFT&#39;d</span>
+<span class="c1">#     if DM_flag or leak_flag:</span>
+<span class="c1">#         # FFT X pol</span>
+<span class="c1">#         print(&quot;Applying iFFT to [X] pol&quot;)</span>
+        
+<span class="c1">#         X = ifft(X, fft_len)[:dat_len]</span>
+        
+<span class="c1">#     if DM_flag:</span>
+<span class="c1">#         # FFT Y pol</span>
+<span class="c1">#         print(&quot;Applying iFFT to [Y] pol&quot;)</span>
+        
+<span class="c1">#         Y = ifft(X, fft_len)[:dat_len]</span>
+        
+<span class="c1">#     print(f&quot;Execution Time: {time() - t1:.2f} s&quot;)</span>
+    
+<span class="c1">#     # due to using memory maps with the mmap_mode = &#39;r+&#39; option,</span>
+<span class="c1">#     # data is already stored in our output files.</span>
+<span class="c1">#     print(&quot;Completed!&quot;)</span>
+
+<span class="c1">#     if save_XY:</span>
+<span class="c1">#         np.save(X_ofile, X)</span>
+<span class="c1">#         print(f&quot;[X] pol saved as: {X_ofile}&quot;)</span>
+
+<span class="c1">#         np.save(Y_ofile, Y)</span>
+<span class="c1">#         print(f&quot;[Y] pol saved as: {Y_ofile}&quot;)</span>
+<span class="c1">#         return</span>
+    
+<span class="c1">#     else:</span>
+<span class="c1">#         print(&quot;removing temp files...&quot;)</span>
+<span class="c1">#         os.remove(X_ofile)</span>
+<span class="c1">#         os.remove(Y_ofile)</span>
+<span class="c1">#         return X, Y</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1"># def make_stokes(X, Y, fname, stk = &quot;&quot;, nFFT = 336, tN = 1, fN = 1, t_crop = None, f_crop = None,</span>
+<span class="c1">#                 nwork = 1, BLK_S = 200e6, BIT_S = 8):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Make Stokes spectra from X and Y pol products Using CELEBI stokes conventions. </span>
+<span class="c1">#     Can also apply a handful of processes to the dynspec products.</span>
+
+<span class="c1">#     process:</span>
+<span class="c1">#         1. Make X,Y Dynamic Spectra</span>
+<span class="c1">#         2. Apply processes -&gt; Dedispersion</span>
+<span class="c1">#                            -&gt; Baseline correction</span>
+<span class="c1">#         3. mean/std corrections</span>
+<span class="c1">#         4. Make IQUV stokes dynamic spectra</span>
+<span class="c1">#         5. Apply post-processes -&gt; Time/Frequency scrunching</span>
+<span class="c1">#                                 -&gt; Time/Frequency Cropping</span>
+    
+
+<span class="c1">#     ##==== inputs ====##</span>
+<span class="c1">#     X:              X polarisation time series filename (~3ns)</span>
+<span class="c1">#     Y:              Y polarisation time series filename (~3ns)</span>
+<span class="c1">#     stk:            Stokes dynspec to make [pass as string i.e. &quot;QUV&quot; for all or &quot;Q&quot; for Q]</span>
+<span class="c1">#                     Stokes I dynamic spectra will always be created. To build just stokes I, </span>
+<span class="c1">#                     pass an empty string.</span>
+<span class="c1">#     nFFT:           Number of channels for dynamic spectra</span>
+<span class="c1">#     fname:          Common Filename Prefix for dynamic spectra</span>
+
+<span class="c1">#     DM [pc/cm3]:    Dispersion Measure </span>
+<span class="c1">#     f0 [rad]:       Reference Frequency</span>
+<span class="c1">#     cfreq [MHz]:    Central Frequency of band</span>
+<span class="c1">#     bw [MHz]:       Bandwidth</span>
+
+<span class="c1">#     tN:             Time averaging Factor</span>
+<span class="c1">#     fN:             Frequency averaging Factor</span>
+<span class="c1">#     t_crop:         Time Axis Crop of dynspec [taken as a phase between 0-1]</span>
+<span class="c1">#     f_crop:         Frequeny Axis Crop of dynspec [taken as a phase between 0-1]</span>
+
+<span class="c1">#     nwork:          Number of workers for STFT (FFT)</span>
+<span class="c1">#     BLK_S [B]:     size of BLOCK to split time series into (More Memory efficient)</span>
+<span class="c1">#     BIT_S [B]:      size of data in bytes</span>
+
+<span class="c1">#     ##==== outputs ====##</span>
+<span class="c1">#     None:</span>
+    
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     t1 = time()</span>
+<span class="c1">#     print(f&quot;Making Stokes dynspec: {stk} with {nFFT:.0f} f channels&quot;)</span>
+<span class="c1">#     print(&quot;Applying the following processes:&quot;)</span>
+
+    
+<span class="c1">#     stk = &quot;I&quot; + stk                         # update stokes string with I </span>
+<span class="c1">#     pol = {&quot;X&quot;:X, &quot;Y&quot;:Y}                    # convienient container </span>
+
+
+<span class="c1">#     ## Set up iteration ##</span>
+<span class="c1">#     # First need to chop data so that an integer number of FFT windows can</span>
+<span class="c1">#     # be performed. Afterwards, this data will be split into coarse BLOCKS</span>
+<span class="c1">#     # with specific memory constraints. </span>
+
+<span class="c1">#     # define parameters</span>
+<span class="c1">#     nsamps  = pol[&#39;X&#39;].size                        # original number of samples in loaded dataset</span>
+<span class="c1">#     fnsamps = (nsamps // nFFT) * nFFT       # number of samples after chopping </span>
+<span class="c1">#     nwind   = fnsamps // nFFT               # number of fft windows along time series</span>
+
+<span class="c1">#     # memeory block paramters</span>
+<span class="c1">#     nwinb = int(BLK_S // (nFFT * BIT_S))    # num windows in BLOCK</span>
+<span class="c1">#     nsinb = int(nwinb * nFFT)               # num samples in BLOCK</span>
+<span class="c1">#     nblock= int(nwind // nwinb)             # num BLOCKS</span>
+
+<span class="c1">#     # crop block parameters</span>
+<span class="c1">#     sblock= 0                               # block where crop starts</span>
+<span class="c1">#     eblock= nblock                          # block where crop ends</span>
+<span class="c1">#     ssamp = 0                               # sample number where crop starts</span>
+<span class="c1">#     esamp = fnsamps                         # sample number where crop ends</span>
+<span class="c1">#     schan = 0                               # channel number crop stars</span>
+<span class="c1">#     echan = nFFT                            # channel number crop ends</span>
+<span class="c1">#     nchan = nFFT                            # number of channels</span>
+<span class="c1">#     nblockc = nblock                        # number of blocks in crop</span>
+<span class="c1">#     swinc = 0                               # sample FFT where crop starts</span>
+<span class="c1">#     ewinc = nwind                           # sample FFT where crop ends</span>
+
+<span class="c1">#     if t_crop is not None:  # update time crop</span>
+<span class="c1">#         swinc = int(t_crop[0]*nwind)</span>
+<span class="c1">#         ewinc = int(t_crop[1]*nwind)</span>
+<span class="c1">#         sblock = int(t_crop[0]*nblock)</span>
+<span class="c1">#         eblock = int(t_crop[1]*nblock)</span>
+<span class="c1">#         nblockc = (ewinc - swinc) // nwinb</span>
+    
+<span class="c1">#     if f_crop is not None: # update frequency crop</span>
+<span class="c1">#         schan = int(f_crop[0]*nFFT)</span>
+<span class="c1">#         echan = int(f_crop[1]*nFFT)</span>
+<span class="c1">#         nchan = echan - schan</span>
+
+<span class="c1">#     print(&quot;Will Build Stokes Dynamic spectra with the following parameters:&quot;)</span>
+<span class="c1">#     print(f&quot;Time crop: {t_crop}&quot;)</span>
+<span class="c1">#     print(f&quot;Frequency crop: {f_crop}&quot;)</span>
+<span class="c1">#     print(f&quot;# channels: {nchan}&quot;)</span>
+<span class="c1">#     print(f&quot;# samples: {ewinc - swinc}&quot;)</span>
+
+
+<span class="c1">#     # build block arrays, sample crop may not nessesarily align with blocking</span>
+<span class="c1">#     # also, We want to conserve memory, it wouldn&#39;t make sense to store part</span>
+<span class="c1">#     # of the stokes dynamic spectra outside of the crop. In addition, we also</span>
+<span class="c1">#     # want to reduce computation as much as possible, that is, only do one FFT</span>
+<span class="c1">#     # for each X and Y polarisation. To Do this we will incorporate a handful of </span>
+<span class="c1">#     # logic:</span>
+<span class="c1">#     #       -&gt; Only store FFT of crop</span>
+<span class="c1">#     #       -&gt; Save FFT(X) and FFT(Y) crop to temporary array file .npy (for memory mapping)</span>
+
+
+<span class="c1">#     # First, build block array that will handle outside the sample crop</span>
+<span class="c1">#     outarr = np.empty((0,2), dtype = int)                               # initialise empty arrays</span>
+<span class="c1">#     inarr  = np.empty((0,2), dtype = int)</span>
+
+<span class="c1">#     outarrL = np.empty((0,2), dtype = int)</span>
+<span class="c1">#     for i in range(0, sblock):      # LHS outside crop</span>
+<span class="c1">#         outarrL = np.append(outarrL,[[i*nwinb, (i+1)*nwinb]], axis = 0)</span>
+<span class="c1">#     if swinc &gt; 0:      # if first window not start bound</span>
+<span class="c1">#         outarrL = np.append(outarrL, [[sblock*nwinb, swinc]], axis = 0)</span>
+
+<span class="c1">#     outarrR = np.empty((0,2), dtype = int)        # RHS outside crop</span>
+<span class="c1">#     for i in range(eblock+1, nblock):</span>
+<span class="c1">#         outarrR = np.append(outarrR, [[i*nwinb, (i+1)*nwinb]], axis = 0)</span>
+<span class="c1">#     if ewinc &lt; nwind - 1:</span>
+<span class="c1">#         outarrR = np.append([[ewinc, (eblock+1)*nwinb]], outarrR, axis = 0)</span>
+
+<span class="c1">#     # combine L and R sides to form single array</span>
+<span class="c1">#     outarr = np.append(outarrL, outarrR, axis = 0)</span>
+
+<span class="c1">#     # now, build block array that will handle inside the sample crop</span>
+<span class="c1">#     i = -1</span>
+<span class="c1">#     for i in range(nblockc):</span>
+<span class="c1">#         inarr = np.append(inarr, [[swinc + i*nwinb, swinc + (i+1)*nwinb]], axis = 0)</span>
+<span class="c1">#     inarr = np.append(inarr, [[swinc + (i+1)*nwinb, ewinc]], axis = 0)</span>
+
+
+<span class="c1">#     ## FFT arguments</span>
+<span class="c1">#     fftp = {&quot;workers&quot;: nwork, &quot;axis&quot;: 1}</span>
+
+
+
+
+<span class="c1">#     ## auxillary function to process FFT&#39;d data ##</span>
+<span class="c1">#     def proc_fft(x):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         Process fft:</span>
+<span class="c1">#         - despersion</span>
+
+
+<span class="c1">#         &quot;&quot;&quot;</span>
+
+<span class="c1">#         return x</span>
+
+
+
+
+<span class="c1">#     ##===========================##</span>
+<span class="c1">#     ## PROCESS DATA OUTSIDE CROP ##</span>
+<span class="c1">#     ##===========================##</span>
+<span class="c1">#     # initialise mean and stds</span>
+<span class="c1">#     std = {}                             # std of stokes dynspec squared -&gt; sqrt taken at end</span>
+<span class="c1">#     meanI = np.zeros(nchan)              # mean of I dynspec</span>
+<span class="c1">#     for S in stk:</span>
+<span class="c1">#         std[S] = np.zeros(nchan)</span>
+
+
+<span class="c1">#     # loop outarr</span>
+<span class="c1">#     print(&quot;Processing data outside crop...&quot;)</span>
+<span class="c1">#     for i, blk in enumerate(outarr):</span>
+<span class="c1">#         print(f&quot;progress: {i/outarr.shape[0]*100:.2f} %&quot;, end = &#39;\r&#39;)</span>
+<span class="c1">#         # perform FFT on X and Y</span>
+<span class="c1">#         blk_len = blk[1] - blk[0]</span>
+<span class="c1">#         samp_i = blk * nFFT</span>
+<span class="c1">#         Xfft = fft(pol[&#39;X&#39;][samp_i[0]:samp_i[1]].copy().reshape(blk_len, nFFT),</span>
+<span class="c1">#                    **fftp).T[schan:echan]</span>
+<span class="c1">#         Yfft = fft(pol[&#39;Y&#39;][samp_i[0]:samp_i[1]].copy().reshape(blk_len, nFFT),</span>
+<span class="c1">#                    **fftp).T[schan:echan]</span>
+
+<span class="c1">#         # process fft data</span>
+<span class="c1">#         Xfft = proc_fft(Xfft)</span>
+<span class="c1">#         Yfft = proc_fft(Yfft)</span>
+
+<span class="c1">#         # loop over stokes</span>
+<span class="c1">#         for S in stk:</span>
+<span class="c1">#             # get stokes block whilst cropping in frequency</span>
+<span class="c1">#             stk_blk = STK_FUNC[S](Xfft, Yfft)</span>
+
+<span class="c1">#             # add to std</span>
+<span class="c1">#             std[S] += np.sum(stk_blk**2, axis = 1)</span>
+
+<span class="c1">#             # add to mean</span>
+<span class="c1">#             if S == &quot;I&quot;:</span>
+<span class="c1">#                 meanI += np.sum(stk_blk, axis = 1)</span>
+            
+<span class="c1">#     print(&quot;progess: 100.00%\n&quot;)</span>
+            
+    
+
+<span class="c1">#     ##==========================##</span>
+<span class="c1">#     ## PROCESS DATA INSIDE CROP ##</span>
+<span class="c1">#     ##==========================##</span>
+<span class="c1">#     # initialize crop of POL data</span>
+<span class="c1">#     print(inarr)</span>
+<span class="c1">#     P_crop = np.zeros((nchan, ewinc - swinc), dtype = &quot;complex64&quot;)</span>
+<span class="c1">#     for P in &quot;XY&quot;:</span>
+        
+<span class="c1">#         # loop over blocks</span>
+<span class="c1">#         print(f&quot;Processing {P} pol data inside crop...&quot;)</span>
+<span class="c1">#         for i, blk in enumerate(inarr):</span>
+<span class="c1">#             print(f&quot;progress: {i/inarr.shape[0]*100:.2f} %&quot;, end = &#39;\r&#39;)</span>
+<span class="c1">#             # perform FFT</span>
+<span class="c1">#             blk_len = blk[1] - blk[0]</span>
+<span class="c1">#             crop_i = blk - swinc        # crop indexing</span>
+<span class="c1">#             samp_i = blk * nFFT         # pol data indexing</span>
+
+<span class="c1">#             fft_blk = fft(pol[P][samp_i[0]:samp_i[1]].copy().reshape(blk_len, nFFT), </span>
+<span class="c1">#                                                 **fftp).T[schan:echan]</span>
+
+<span class="c1">#             # process fft data and store in array</span>
+<span class="c1">#             P_crop[:,crop_i[0]:crop_i[1]] = proc_fft(fft_blk)</span>
+
+
+<span class="c1">#         print(&quot;progress: 100.00 %\n&quot;)</span>
+<span class="c1">#         # save crop of P to temporary array</span>
+<span class="c1">#         np.save(f&quot;temp_{P}fft.npy&quot;, P_crop)</span>
+    
+<span class="c1">#     # release memory</span>
+<span class="c1">#     del P_crop</span>
+<span class="c1">#     del fft_blk</span>
+
+
+
+<span class="c1">#     ##=======================##</span>
+<span class="c1">#     ## BUILD STOKES DYNSPECS ##</span>
+<span class="c1">#     ##=======================##</span>
+<span class="c1">#     S_crop = np.zeros((nchan, ewinc - swinc), dtype = float)</span>
+<span class="c1">#     # load in temp pol arrays</span>
+<span class="c1">#     pol[&#39;X&#39;] = np.load(&quot;temp_Xfft.npy&quot;, mmap_mode = &#39;r&#39;)</span>
+<span class="c1">#     pol[&#39;Y&#39;] = np.load(&quot;temp_Yfft.npy&quot;, mmap_mode = &#39;r&#39;)</span>
+
+<span class="c1">#     for S in stk:</span>
+<span class="c1">#         # loop over inarr</span>
+<span class="c1">#         print(f&quot;Processing stokes {S} dynamic spectrum...&quot;)</span>
+<span class="c1">#         for i, blk in enumerate(inarr):</span>
+<span class="c1">#             print(f&quot;progress: {i/inarr.shape[0]*100:.2f} %&quot;, end = &#39;\r&#39;)</span>
+<span class="c1">#             crop_i = blk - swinc        # crop indexing</span>
+<span class="c1">#             # perform stokes calc</span>
+<span class="c1">#             stk_blk = STK_FUNC[S](pol[&#39;X&#39;][:,crop_i[0]:crop_i[1]],</span>
+<span class="c1">#                                                      pol[&#39;Y&#39;][:,crop_i[0]:crop_i[1]])</span>
+
+<span class="c1">#             # update std</span>
+<span class="c1">#             std[S] += np.sum(stk_blk**2, axis = 1)</span>
+
+<span class="c1">#             S_crop[:,crop_i[0]:crop_i[1]] = stk_blk</span>
+        
+<span class="c1">#         print(&quot;progress: 100.00 %\n&quot;)</span>
+            
+<span class="c1">#         # add to std (finalise std)</span>
+<span class="c1">#         std[S] = np.sqrt(std[S]/nwind)</span>
+
+<span class="c1">#         # add to mean of I</span>
+<span class="c1">#         if S == &quot;I&quot;: # finalise mean of I</span>
+<span class="c1">#             meanI += np.sum(S_crop, axis = 1)</span>
+<span class="c1">#             meanI /= nwind</span>
+        
+<span class="c1">#         # normalize Stokes crop</span>
+<span class="c1">#         S_crop -= meanI[:, None]</span>
+<span class="c1">#         S_crop /= std[S][:, None]</span>
+
+<span class="c1">#         # save stokes crop to file</span>
+<span class="c1">#         np.save(f&quot;{fname}_{S}.npy&quot;, S_crop)</span>
+<span class="c1">#         print(f&quot;Saved Stokes {S} dynamic spectra to: {fname}_{S}.npy&quot;)</span>
+
+<span class="c1">#     print(&quot;removing temporary files...&quot;)</span>
+<span class="c1">#     # remove temp files</span>
+<span class="c1">#     os.remove(&quot;temp_Xfft.npy&quot;)</span>
+<span class="c1">#     os.remove(&quot;temp_Yfft.npy&quot;)</span>
+
+<span class="c1">#     print(&quot;Completed!&quot;)</span>
+<span class="c1">#     print(f&quot;Execution Time: {time() - t1:.2f} s&quot;)</span>
+
+<span class="c1">#     return</span>
+
+
+
+
+
+
+
+
+
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

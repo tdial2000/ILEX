@@ -1,0 +1,6 @@
+ilex.utils.dict\_get
+====================
+
+.. currentmodule:: ilex.utils
+
+.. autofunction:: dict_get

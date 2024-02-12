@@ -1,0 +1,6 @@
+ilex.htr.rm\_mmap\_file
+=======================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: rm_mmap_file

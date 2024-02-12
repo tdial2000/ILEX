@@ -1,0 +1,6 @@
+ilex.htr.phasor\_DM
+===================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: phasor_DM

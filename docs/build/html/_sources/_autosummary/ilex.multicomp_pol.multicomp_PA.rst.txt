@@ -1,0 +1,6 @@
+ilex.multicomp\_pol.multicomp\_PA
+=================================
+
+.. currentmodule:: ilex.multicomp_pol
+
+.. autofunction:: multicomp_PA

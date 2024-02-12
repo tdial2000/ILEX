@@ -1,0 +1,6 @@
+ilex.data.rotate\_data
+======================
+
+.. currentmodule:: ilex.data
+
+.. autofunction:: rotate_data

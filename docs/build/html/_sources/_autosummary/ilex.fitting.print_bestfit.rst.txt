@@ -1,0 +1,6 @@
+ilex.fitting.print\_bestfit
+===========================
+
+.. currentmodule:: ilex.fitting
+
+.. autofunction:: print_bestfit

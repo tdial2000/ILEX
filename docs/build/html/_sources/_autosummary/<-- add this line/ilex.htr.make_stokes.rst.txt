@@ -1,0 +1,6 @@
+ilex.htr.make\_stokes
+=====================
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: make_stokes

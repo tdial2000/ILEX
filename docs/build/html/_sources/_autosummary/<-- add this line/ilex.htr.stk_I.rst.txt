@@ -1,0 +1,6 @@
+ilex.htr.stk\_I
+===============
+
+.. currentmodule:: ilex.htr
+
+.. autofunction:: stk_I

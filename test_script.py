@@ -10,7 +10,7 @@ import sys
 
 #testing loading
 frb = "190102"
-DM = 361.53
+DM = 364.5
 dynI_file = f"/fred/oz002/askap/craft/craco/processing/output/{frb}/htr/{frb}_I_dynspec_{DM}.npy"
 dynQ_file = f"/fred/oz002/askap/craft/craco/processing/output/{frb}/htr/{frb}_Q_dynspec_{DM}.npy"
 dynU_file = f"/fred/oz002/askap/craft/craco/processing/output/{frb}/htr/{frb}_U_dynspec_{DM}.npy"
@@ -28,15 +28,15 @@ dynV_file = f"/fred/oz002/askap/craft/craco/processing/output/{frb}/htr/{frb}_V_
 
 # dynI_file2 = "/fred/oz002/tdial/FRBdata/FRB_230708/beamformed/dynspec_0.10.npy"
 
-# dynI_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/polcal_calib_I.npy"
-# dynQ_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/polcal_calib_Q.npy"
-# dynU_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/polcal_calib_U.npy"
-# dynV_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/polcal_calib_V.npy"
+dynI_file = "/fred/oz002/tdial/FRBdata/FRB_230708/beamformed/230708_calib_I.npy"
+dynQ_file = "/fred/oz002/tdial/FRBdata/FRB_230708/beamformed/230708_calib_Q.npy"
+dynU_file = "/fred/oz002/tdial/FRBdata/FRB_230708/beamformed/230708_calib_U.npy"
+dynV_file = "/fred/oz002/tdial/FRBdata/FRB_230708/beamformed/230708_calib_V.npy"
 
-dynI_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_I.npy"
-dynQ_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_Q.npy"
-dynU_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_U.npy"
-dynV_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_V.npy"
+# dynI_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_I.npy"
+# dynQ_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_Q.npy"
+# dynU_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_U.npy"
+# dynV_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_V.npy"
 
 # dynI_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/210912_calib_no_offset_I.npy"
 # dynQ_file = "/fred/oz002/tdial/FRBdata/FRB_210912/htr/210912_calib_no_offset_Q.npy"
@@ -85,24 +85,148 @@ dynV_file = f"/fred/oz002/tdial/testing/make_XY/{frb}_V.npy"
 # print(v)
 # print(b)
 
+# c = 2.998e8
+# f0 = 1400
+
+# def rmquad(f, rm, pa0):
+#     angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+#     return 0.5*np.arctan2(np.sin(2*angs), np.cos(2*angs))
+
+# def norm_rm(f, rm, pa0):
+#     return pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+
+# rm = -120
+# pa0 = -0.67
+# cfreq = 1271.5
+# bw = 336
+# freq = np.linspace(cfreq + bw/2, cfreq - bw/2, bw)
+
+# plt.plot(freq, rmquad(freq, rm, pa0), 'k--')
+# plt.plot(freq, norm_rm(freq, rm, pa0))
+# plt.show()
 
 
 
+# # sys.exit()
 # sys.exit()
 
+tcrop_fullburst = [0.68173,0.691]
+fcrop_fullburst = [0.0, 0.74405]
+
+tcrop_mainburst = [0.6818,0.68275]
+fcrop_mainburst = [0.0, 1.0]
+
+# region crops
+region1_t = [2124.934, 2126.724]
+region2_t = [2128.509, 2129.755]
+region3_t = [2132.031, 2134.192]
+region4_t = [2138.630, 2140.844]
+region5_t = [2142.098, 2144.580]
+region6_t = [2146.740, 2149.704]
+
+tcrops = [region1_t, region2_t, region3_t, region4_t, region5_t, region6_t]
+
+tcrop_err = [0.60, 0.67]
+
+frb = FRB(name = "230708", cfreq = 919.5, bw = 336, t_crop = tcrop_fullburst, f_crop = [0.0, 1.0],
+            terr_crop = [0.60, 0.67], tN = 10, verbose = True)
+frb.load_data(ds_I = dynI_file, 
+              ds_Q = dynQ_file, 
+              ds_U = dynU_file, 
+              ds_V = dynV_file)
+
+# tcrops_test = [[2125.0, 2125.5], [2125.5, 2126.0], [2126, 2126.5]]
+
+# # frb.plot_data("tV")
+# # frb.plot_stokes(t_crop = [1250, 1350.37], stk_type = 't', RM = -7.8, stk_ratios = True, terr_crop = [500, 1000])
+# frb.plot_stokes(stk_type = "t", plot_err_type = "regions", RM = -7.8, stk_ratio = False, debias_threshold = 4, stk2plot = "IQUV", plot_L = False, fN = 1)
+
+# # frb.plot_poincare(t_crop = [2125, 2126.37], stk_type = 't', RM = -7.8, tN = 50)
+# # frb.fit_RM(method = "RMsynth", plot_err_type = "regions")
+# # frb.plot_PA(method = "RMsynth", flipPA = True, Ldebias_threshold = 3.0, plot_L = True)
+# t_crop_p = [2125.091, 2126.400]
+# t_crop_f = [2125.834, 2125.942]
+# # frb.plot_poincare_multi(RM = -5.977, stk_type = "t", tN = 10, sigma = 7.0, fcrops = [[0.0, 0.3],[0.3, 0.6], [0.6, 1.0]], t_crop = t_crop_p, plot_model = True, plot_data = False, plot_on_surface = False)
+# frb.plot_poincare(stk_type = "t", sigma = 7.0, fN = 4, RM = -5.977, t_crop = t_crop_p, plot_model = True, plot_data = True, plot_P = True)
+# frb.plot_poincare_multi(RM = -5.977, stk_type = "f", tN = 10, sigma = 7.0, tcrops = tcrops_test, plot_model = True, plot_data = True)
 
 
-frb = FRB(name = "210912",bw = 336, cfreq = 1271.5, tN = 5, verbose = True)
+from ilex.data import *
+
+# get data
+stk = frb.get_data(["dsQ", "dsU", "tQ", "tU", "tI", "fQ", "fU"], get = True, RM = -5.977, t_crop = tcrop_fullburst, fcrop = [0.0, 1.0], terr_crop = [0.6, 0.67])
+
+
+from ilex.plot import plot_PA
+
+# get PA
+PA, PA_err = calc_PAdebiased(stk, Ldebias_threshold = 3.5)
+
+# plot_PA(np.arange(PA.size), PA, PA_err, flipPA = True)
+
+# fit RVM model
+def rvm(x, alpha, phi_w, psi0, chi):
+    phi = np.linspace(0, phi_w, x.size)
+    den = np.sin(chi)*np.cos(alpha) - np.cos(chi)*np.sin(alpha)*np.cos(phi)
+    PA = np.arctan2(psi0*den + (np.sin(alpha)*np.sin(phi)),den)
+
+    return PA*180/np.pi
+
+
+from ilex.fitting import *
+import inspect
+import bilby
+print(inspect.signature(eval('rvm')))
+
+priors = {'alpha':[0, np.pi/10], 'phi_w':[0,10/180*np.pi], 'psi0':[40/180*np.pi,np.pi/2], 'chi':[0,np.pi/10]}
+x = np.arange(PA.size)
+# fit_par = func_fit(x, PA, 'rvm',priors, static_priors = {'sigma':PA_err})
+
+priors = priorUniform(priors)
+likelihood = bilby.core.likelihood.GaussianLikelihood(x, PA, rvm, sigma = PA_err)
+result = bilby.run_sampler(likelihood = likelihood, priors = priors, sampler = "dynesty", label = "frr7", npool = 28)
+
+
+sys.exit()
+
+frb.plot_poincare_multi(fcrops = [[800, 900],[900, 1000], [1000, 1060]], t_crop = [2125.75, 2126.05], stk_type = "f",
+                        fN = 8, tN = 1)
+# frb.plot_PA_multi(method = "RMsynth", tcrops = tcrops,
+#                      terr_crop = [0.60, 0.67], fN = 1, Ldebias_threshold=3.0, plot_L = True, flipPA = True)
+# print(frb.get_data())
+sys.exit()
+# set up the priors 
+priors = {'a1':[0.6, 1.0],   'sig1':[0.0001, 0.2],   'mu1':[2125.1, 2125.3],
+          'a2':[0.0, 0.2],   'sig2':[0.0001, 0.2],   'mu2':[2125.3, 2125.6],
+          'a3':[0.6, 0.85], 'sig3':[0.0001, 0.2],   'mu3':[2125.6, 2126.1],
+          'tau':[0.05, 1.0]}
+
+# name of directory to same fitting outputs to
+outdir = "tscatt_out"
+label = "main_burst10"
+npool = 28
+fit_par = {'outdir':outdir, 'label':label, 'npool':npool}
+
+# run sampler
+p_main = frb.fit_tscatt(npulse=3, fit_priors=priors, fit_params=fit_par, plot = True)
+
+# frb = FRB(name = "230708",bw = 336, cfreq = 919.5, tN = 5, verbose = True)
 
 
 
-frb.load_data(ds_I = dynI_file, ds_Q = dynQ_file,
-              ds_U = dynU_file, ds_V = dynV_file)
-# frb.plot_data("dsI", t_crop = [1943., 1945.])
-# frb.plot_stokes(stk_type = 'f', t_crop = [1943.436, 1943.750], terr_crop = [0.67, 0.684])
-# frb.plot_PA(t_crop = [1943.436, 1943.750], terr_crop = [0.67, 0.684], fN = 8, f0 = 1271.5)
-frb.plot_PA_multi(method = "RMquad", tcrops = [[1943.436, 1943.750], [1943.846, 1944.179]],
-                     terr_crop = [0.67, 0.684], fN = 8, Ldebias_threshold=1.0, plot_L = True)
+# frb.load_data(ds_I = dynI_file, ds_Q = dynQ_file,
+#               ds_U = dynU_file, ds_V = dynV_file)
+# # frb.load_data(ds_I = dynI_file)
+# # frb.plot_data("fI", f_crop = [0.0, 1.0], tN = 100)
+# # frb.plot_PA(t_crop = [40,60], terr_crop = [0, 30])s
+# # frb.plot_data("dsI", t_crop = [40, 50], tN = 10)
+# # frb.plot_data("tI", t_crop = [40, 50], tN = 10)
+# # # frb.plot_data("fI", t_crop = [40, 50])
+# # frb.plot_stokes(stk_type = 'f', t_crop = [40, 50])
+# # frb.fit_RM(t_crop = [43.9, 44], terr_crop = [0, 30])
+# frb.plot_PA(t_crop = [40,50], terr_crop = [0, 30], fN = 1, f0 = 919.5)
+# frb.plot_PA_multi(method = "RMsynth", tcrops = [[1943.436, 1943.750], [1943.846, 1944.179]],
+#                      terr_crop = [0.67, 0.684], fN = 1, Ldebias_threshold=2.0, plot_L = True)
 
 
 # print(frb)

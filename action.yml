@@ -1,0 +1,31 @@
+name: 'ILEX'
+description: 'Builds GitHub Pages with Sphinx'
+author: 'Tyson Dial'
+branding:
+  icon: 'book'
+  color: 'purple'
+inputs:
+  github_token:
+    description: 'Token for the repo. Can be passed in using $\{{ secrets.GITHUB_TOKEN }}'
+    required: true
+  create_readme:
+    description: 'Auto create a README.md file at branch gh-pages root with repo/branch/commit links'
+    default: false
+  source_dir:
+    description: 'Path to documentation source files that relative to project root'
+    default: '.'
+  install_extensions:
+    description: 'Install Sphinx extensions listed in $source_dir/requirements.txt'
+    default: true
+outputs:
+  name:
+    description: 'Author name'
+  email:
+    description: 'Author email'
+  docs_sha:
+    description: 'Sphinx source sha'
+  docs_sha8:
+    description: 'Sphinx source short sha'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

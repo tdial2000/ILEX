@@ -7,7 +7,7 @@ set -e
     exit 1;
 };
 
-docs_src=$GITHUB_WORKSPACE/dev/docs
+docs_src=$GITHUB_WORKSPACE/docs
 docs_html=$GITHUB_WORKSPACE/ilex-doc
 sphinx_doctree=$GITHUB_WORKSPACE/.doctree
 

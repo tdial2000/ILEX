@@ -7,5 +7,17 @@ What does ILEX stand for? `¯\_(ツ)_/¯`
 Here is the documentation for [ILEX](https://tdial2000.github.io/ILEX/), which includes function definitions and worked examples.
 
 ## Installing ILEX
--TO COMPLETE
+To install ILEX, first clone the 'main' branch of the repo:
 
+`git clone https://github.com/tdial2000/ILEX.git`
+
+If you haven't got a python Virtual enviroment, you can make one simply using the following command OR the Conda enviroment equivelent:
+
+`python -m venv --system-site-packages <venv_filepath>/<venv_name>`
+
+Once the git repo is cloned, cd into `ilex\` and run the following command OR the Conda equivelent:
+
+`pip install .`
+
+The installed ILEX package can be used with an interactive python kernel `ipython`. To use A jupyter notebook, the 
+relevant jupyter packages will also need to be installed as they are not included in ILEX. 

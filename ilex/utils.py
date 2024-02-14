@@ -30,14 +30,14 @@ class struct_:
 plt.ioff()
 
 
-def interactive_on():
-    log("Turning interactive ON", lpf = False)
-    plt.ion()
+# def interactive_on():
+#     log("Turning interactive ON", lpf = False)
+#     plt.ion()
 
 
-def interactive_off():
-    log("Turning interactive OFF", lpf = False)
-    plt.ioff()
+# def interactive_off():
+#     log("Turning interactive OFF", lpf = False)
+#     plt.ioff()
 
 
 
@@ -48,7 +48,21 @@ def interactive_off():
 
 
 def load_data(datafile: str, mmap = True):
+    """
+    Load data to memory map
 
+    Parameters
+    ----------
+    datafile : str
+        filename or path
+    mmap : bool, optional
+        is memorymap?, by default True
+
+    Returns
+    -------
+    data : np.mmap or np.ndarray
+        loaded data
+    """
     # option to enable memory mapping
     data = None
     m_mode = None
@@ -63,7 +77,16 @@ def load_data(datafile: str, mmap = True):
 
 
 def save_data(data, filename: str):
+    """
+    Save data to file
 
+    Parameters
+    ----------
+    data : np.ndarray
+        data to save to file
+    filename : str
+        filename to save data to
+    """
     with open(filename,"wb") as f:
         np.save(f,data)
 
@@ -77,6 +100,21 @@ def save_data(data, filename: str):
 
 ## [ CHECK IF ALL ENTRIES IN DICT HAVE SAME TYPE ] ##
 def dict_checktype(dict, t):
+    """
+    Check if all entries of Dict are type = t
+
+    Parameters
+    ----------
+    dict : Dict
+        Dictionary
+    t : Type()
+        type to check against
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
 
     for _,key in enumerate(dict.keys()):
         if type(dict[key]) is not t:
@@ -87,7 +125,21 @@ def dict_checktype(dict, t):
 
 ## [ GET LIST OF ITEMS FROM DICT ] ##
 def dict_get(dict, keys):
+    """
+    Get a sub-set of the Dictionary based on keys
 
+    Parameters
+    ----------
+    dict : Dict
+        Original dictionary
+    keys : List(str)
+        List of items to retrieve
+
+    Returns
+    -------
+    new_dict : Dict
+        Sub-set of Dictionary
+    """    
     new_dict = {}
 
     for key in keys:
@@ -98,6 +150,14 @@ def dict_get(dict, keys):
 
 
 def dict_init(*dicts):
+    """
+    Initilise any number of dictionaries
+
+    Returns
+    -------
+    *dicts
+        A number of Dictionaries
+    """    
 
     #assign input dictionaries to empty {} object
     out_ = list(dicts)
@@ -112,7 +172,21 @@ def dict_init(*dicts):
 
 
 def dict_isall(dictA, dictB):
+    """
+    Check if Entires in Dict A match those in Dict B
 
+    Parameters
+    ----------
+    dictA : Dict
+        Dict A
+    dictB : Dict
+        Dict B
+
+    Returns
+    -------
+    bool
+        1 if True, 0 if False
+    """
     # check if entires in dictA equal those in dictB, 
     # if so return 1, else return 0
 
@@ -126,6 +200,14 @@ def dict_isall(dictA, dictB):
 
 
 def merge_dicts(*dicts):
+    """
+    Combine multiple Dictionaries into 1 dictionary
+
+    Returns
+    -------
+    *dicts : 
+        A number of dictionaries
+    """    
 
     # combine multiple dictionaries together
     dicts = list(dicts)
@@ -137,6 +219,19 @@ def merge_dicts(*dicts):
 
 
 def dict_null(dic):
+    """
+    Set all entries in a Dictionary to 'None'
+
+    Parameters
+    ----------
+    dic : Dict
+        Dictionary
+
+    Returns
+    -------
+    dic : Dict
+        Dict with entries set to 'None'
+    """    
 
     new_dic = deepcopy(dic)
 
@@ -148,7 +243,20 @@ def dict_null(dic):
 
 
 def get_stk_from_datalist(data_list):
+    """
+    Get Stokes characters, i.e. I, Q, U and V from list of Stokes 
+    products to make, i.e. "dsI", "fQ" etc.
 
+    Parameters
+    ----------
+    data_list : List(str)
+        List of data products to make
+
+    Returns
+    -------
+    stk : str
+        Stokes Characters
+    """
     stk = []
     for data in data_list:
         stk.append(data[-1])
@@ -174,20 +282,26 @@ def get_stk_from_datalist(data_list):
 
 def plotnum2grid(nrows = None, ncols = None, num = None):
     """
-    Info:
-        Takes the number of axes you want and creates a grid,
-        one can constrain either the number of rows or colums to 
-        make the grid. If Neither is specified, will create the smallest 
-        sqaure grid to fit.
+    Takes the number of axes you want and creates a grid,
+    one can constrain either the number of rows or colums to 
+    make the grid. If Neither is specified, will create the smallest 
+    sqaure grid to fit.
     
-    Args:
-        nrows (int): number of rows to keep constant
-        ncols (int): number of columns to keep constant
-        num (int): number of axes to make into grid
+    Parameters
+    ----------
+    nrows : int 
+        number of rows to keep constant
+    ncols : int
+        number of columns to keep constant
+    num : int
+        number of axes to make into grid
 
-    Returns:
-        grid_nrows (int): number of rows of new grid
-        grid_ncols (int): number of columns of new grid
+    Returns
+    -------
+    grid_nrows : int
+        number of rows of new grid
+    grid_ncols : int 
+        number of columns of new grid
 
     """
     # constraining the number of rows
@@ -235,60 +349,60 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
 
 
 
-#-----------------------------------------------#
-# extra data utility functions                  #
-#-----------------------------------------------#
+# #-----------------------------------------------#
+# # extra data utility functions                  #
+# #-----------------------------------------------#
 
-def stitch_components_together(x_list, y_list = None):
-    """
-    Info:
-        Stitch data together, in the case that the x data segments
-        are not contiguous, the difference between samples, assuming
-        contigous within each segment, will be used to pad segments 
-        together with zeros
-    Args:
-        x_list (list): List of data segments to patch together
-        y_list (list): Optional, Also patch y list together, will 
-                       follow x patching and stitch data along last axis
+# def stitch_components_together(x_list, y_list = None):
+#     """
+#     Info:
+#         Stitch data together, in the case that the x data segments
+#         are not contiguous, the difference between samples, assuming
+#         contigous within each segment, will be used to pad segments 
+#         together with zeros
+#     Args:
+#         x_list (list): List of data segments to patch together
+#         y_list (list): Optional, Also patch y list together, will 
+#                        follow x patching and stitch data along last axis
     
-    Returns:
-        x_patch (ndarray): patched x data array
-        y_patch (ndarray): Optional, patched y data array
+#     Returns:
+#         x_patch (ndarray): patched x data array
+#         y_patch (ndarray): Optional, patched y data array
 
-    """
+#     """
 
-    dx = x_list[0][1] - x_list[0][0]
+#     dx = x_list[0][1] - x_list[0][0]
 
-    x_patch = x_list[0]
-    y_patch = None
-    if y_list is not None:
-        y_patch = y_list[0]
+#     x_patch = x_list[0]
+#     y_patch = None
+#     if y_list is not None:
+#         y_patch = y_list[0]
 
-    for i in range(1, len(x_list)):
-        # check bounds of x_patch and new segment
-        seg_diff = x_patch[-1] - x_list[i][0]
+#     for i in range(1, len(x_list)):
+#         # check bounds of x_patch and new segment
+#         seg_diff = x_patch[-1] - x_list[i][0]
 
-        # just patch together
-        if seg_diff <= dx and seg_diff > 0:
-            x_patch = np.append(x_patch, x_list[i])
-            if y_list is not None:
-                y_patch = np.append(y_patch, y_list[i], axis = -1)
+#         # just patch together
+#         if seg_diff <= dx and seg_diff > 0:
+#             x_patch = np.append(x_patch, x_list[i])
+#             if y_list is not None:
+#                 y_patch = np.append(y_patch, y_list[i], axis = -1)
             
-        elif seg_diff == 0:
-            x_patch = np.append(x_patch, x_list[i][1:])
-            if y_list is not None:
-                y_patch = np.append(y_patch, y_list[i][...,1:], axis = -1)
+#         elif seg_diff == 0:
+#             x_patch = np.append(x_patch, x_list[i][1:])
+#             if y_list is not None:
+#                 y_patch = np.append(y_patch, y_list[i][...,1:], axis = -1)
 
-        else:
-            x_interpatch = np.linspace(x_patch[-1] + dx, x_list[i][0] - dx,
-                             int((seg_diff - 2*dx)/dx))
-            x_patch = np.append(x_patch, x_interpatch)
-            x_patch = np.append(x_patch, x_list[i])
-            if y_list is not None:
-                y_patch = np.append(y_patch, np.zeros((*y_patch.shape[:-1],x_interpatch.size)), axis = -1)
-                y_patch = np.append(y_patch, y_list[i], axis = -1)
+#         else:
+#             x_interpatch = np.linspace(x_patch[-1] + dx, x_list[i][0] - dx,
+#                              int((seg_diff - 2*dx)/dx))
+#             x_patch = np.append(x_patch, x_interpatch)
+#             x_patch = np.append(x_patch, x_list[i])
+#             if y_list is not None:
+#                 y_patch = np.append(y_patch, np.zeros((*y_patch.shape[:-1],x_interpatch.size)), axis = -1)
+#                 y_patch = np.append(y_patch, y_list[i], axis = -1)
         
-    return x_patch, y_patch
+#     return x_patch, y_patch
 
 
 

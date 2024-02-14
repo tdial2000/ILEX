@@ -578,7 +578,7 @@ def calc_ratio(I, X, Ierr = None, Xerr = None):
 
     # calc error?
     if Ierr is not None and Xerr is not None:
-        XIerr = XI * np.sqrt((Xerr/X)**2 + (Ierr/I)**2)
+        XIerr = np.sqrt((Xerr/I)**2 + (Ierr*X/I**2)**2)
 
         # check if array or scalar
         if not hasattr(Ierr, "__len__") or not hasattr(Xerr, "__len__"):

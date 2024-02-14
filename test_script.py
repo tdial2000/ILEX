@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 from ilex.frb import FRB
-from ilex.data import average
+from ilex.data import *
+from ilex.plot import *
 import matplotlib.pyplot as plt
 import numpy as np
+import subprocess
 # from FRB.FRBstats import scatt_pulse_profile
 # from FRB.FRBstats import get_bestfit
-import sys
+import sys, os
 
 #testing loading
 frb = "190102"
@@ -128,28 +130,129 @@ tcrops = [region1_t, region2_t, region3_t, region4_t, region5_t, region6_t]
 
 tcrop_err = [0.60, 0.67]
 
-frb = FRB(name = "230708", cfreq = 919.5, bw = 336, t_crop = tcrop_fullburst, f_crop = [0.0, 1.0],
+frb = FRB(name = "230708", cfreq = 919.5, bw = 336, t_crop = tcrop_mainburst, f_crop = [0.0, 1.0],
             terr_crop = [0.60, 0.67], tN = 10, verbose = True)
 frb.load_data(ds_I = dynI_file, 
               ds_Q = dynQ_file, 
               ds_U = dynU_file, 
               ds_V = dynV_file)
 
-# tcrops_test = [[2125.0, 2125.5], [2125.5, 2126.0], [2126, 2126.5]]
+# frb.plot_stokes(plot_L = True, t_crop = [2125.634, 2126.142])
 
-# # frb.plot_data("tV")
-# # frb.plot_stokes(t_crop = [1250, 1350.37], stk_type = 't', RM = -7.8, stk_ratios = True, terr_crop = [500, 1000])
-# frb.plot_stokes(stk_type = "t", plot_err_type = "regions", RM = -7.8, stk_ratio = False, debias_threshold = 4, stk2plot = "IQUV", plot_L = False, fN = 1)
+# sys.exit()
 
-# # frb.plot_poincare(t_crop = [2125, 2126.37], stk_type = 't', RM = -7.8, tN = 50)
-# # frb.fit_RM(method = "RMsynth", plot_err_type = "regions")
-# # frb.plot_PA(method = "RMsynth", flipPA = True, Ldebias_threshold = 3.0, plot_L = True)
-# t_crop_p = [2125.091, 2126.400]
-# t_crop_f = [2125.834, 2125.942]
-# # frb.plot_poincare_multi(RM = -5.977, stk_type = "t", tN = 10, sigma = 7.0, fcrops = [[0.0, 0.3],[0.3, 0.6], [0.6, 1.0]], t_crop = t_crop_p, plot_model = True, plot_data = False, plot_on_surface = False)
-# frb.plot_poincare(stk_type = "t", sigma = 7.0, fN = 4, RM = -5.977, t_crop = t_crop_p, plot_model = True, plot_data = True, plot_P = True)
-# frb.plot_poincare_multi(RM = -5.977, stk_type = "f", tN = 10, sigma = 7.0, tcrops = tcrops_test, plot_model = True, plot_data = True)
+# grab stokes data
+data2 = frb.get_data(data_list = "all", get = True, fN = 4, RM = -7.8)
+data = frb.get_data(data_list = "all", get = True, fN = 16, RM = -7.8)
 
+for S in "IQUV":
+    data[f"t{S}"] = data2[f"t{S}"]
+    data[f"t{S}err"] = data2[f"t{S}err"]
+
+x = [0.70, 0.80]
+
+width = 0.03381
+fnum = 100    
+frames = np.linspace(width, 1-width, fnum)
+def get_frame_of_stokes(data, x, filename):
+    
+    # make figure
+    fig, AX = plt.subplots(1, 2, figsize = (14,10))
+
+
+    stk_t = {}
+    for S in "IQUV":
+        stk_t[S] = data[f"t{S}"]
+        stk_t[f"{S}err"] = data[f"t{S}err"]
+    stk_t['time'] = np.linspace(0.0, 1.0, stk_t['I'].size)
+
+    # plot stokes data to show region of interest
+    plot_stokes(stk_t, plot_L = True, Ldebias = True, stk_type = "t", ax = AX[0], plot_err_type = 'regions')
+
+    # plot region boundaries
+    ylim = AX[0].get_ylim()
+    AX[0].fill_between(x, *ylim, color = 'k', alpha = 0.3)
+    AX[0].set_ylim(ylim)
+
+
+    # plot stokes/I
+    stk_f = {}
+    for S in "IQUV":
+        stk_f[S] = np.mean(pslice(data[f"ds{S}"], *x, axis = 1), axis = 1)
+        stk_f[f"{S}err"] = data[f"f{S}err"]
+
+    # calculate Stokes P/I
+    stk_rat = {}
+    stk_rat["P"] = np.sqrt(stk_f['Q']**2 + stk_f['U']**2 + stk_f['V']**2)
+    stk_rat["Perr"] = np.sqrt(stk_f['Q']**2*stk_f['Qerr']**2 
+                            + stk_f['U']**2*stk_f['Uerr']**2 
+                            + stk_f['V']**2*stk_f['Verr']**2)/stk_rat['P']
+
+    # calculate Stokes 
+    stk_rat["L"] = np.sqrt(stk_f['Q']**2 + stk_f['U']**2)
+    stk_rat["Lerr"] = np.sqrt(stk_f['Q']**2*stk_f['Qerr']**2 
+                            + stk_f['U']**2*stk_f['Uerr']**2)/stk_rat['L']
+
+    stk_rat['V'], stk_rat['Verr'] = calc_ratio(stk_f['I'], stk_f['V'], stk_f['Ierr'], stk_f['Verr'])
+    stk_rat['P'], stk_rat['Perr'] = calc_ratio(stk_f['I'], stk_rat['P'], stk_f['Ierr'], stk_rat['Perr'])
+    stk_rat['L'], stk_rat['Lerr'] = calc_ratio(stk_f['I'], stk_rat['L'], stk_f['Ierr'], stk_rat['Lerr'])
+    # stk_rat["V"] = stk_f['V'] / stk_f['I']
+    # stk_rat["Verr"] = stk_f['Verr'] / stk_f['I']
+
+    # plot 
+    col = ['k','r','b']
+    for i, S in enumerate("PLV"):
+        AX[1].plot(data['freq'], stk_rat[S], color = col[i], label = f"{S}/I")
+        AX[1].fill_between(data['freq'], stk_rat[S] - stk_rat[f"{S}err"],
+                           stk_rat[S] + stk_rat[f"{S}err"], color = col[i], alpha = 0.5)
+    AX[1].set_ylim([-1.5, 1.5])
+    
+    AX[1].legend()
+    # return fig
+    plt.savefig(filename)
+
+
+# get single frame
+for i, val in enumerate(frames):
+    x = [val - width, val + width]
+    print(f"Frame: {i+1}")
+    get_frame_of_stokes(data, x, f"/fred/oz002/tdial/FRBdata/FRB_230708/htr/movies/polarisation/frame{i+1}.png")
+
+# plt.show()
+
+# # make video
+# subprocess.call(['ffmpeg', '-framerate', '8', '-i', 'file%d.png', '-r', '30', '-pix_fmt',
+#                 'movie_1.mp4'])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sys.exit()
 
 from ilex.data import *
 

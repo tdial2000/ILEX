@@ -28,18 +28,21 @@ from math import ceil
 
 def phasor_DM(f, DM: float, f0: float):
     """
-    Info:
-        Apply Phasor rotation based on DM, coherent Dispersion
-        This rotation can be applied 
+    Calculate Phasor Rotator for DM dispersion
 
-    Args:
-        f (ndarray): frequency array [MHz]
-        DM (float): Dispersion Measure [pc/cm3]
-        f0 (float): reference frequency [rad]
+    Parameters
+    ----------
+    f : np.ndarray
+        Frequency array [MHz]
+    DM : float
+        Dispersion Measure [pc/cm^3]
+    f0 : float
+        Reference Frequency [MHz]
 
-    Returns:
-        p (ndarray): Phasor np.exp()
-    
+    Returns
+    -------
+    phasor_DM : np.ndarray
+        Phasor Rotator array in frequency domain
     """
     # constants
     kDM = 4.14938e3         # DM constant
@@ -50,118 +53,122 @@ def phasor_DM(f, DM: float, f0: float):
 
 def phasor_(f, tau: float, phi: float):
     """
-    Info:
-        Apply A generalized phasor rotation -> 
+    Calculate General Phasor Rotator
 
-    Args:
-        f (ndarray): frequency array [MHz]
-        tau (float): Time delay [us]
-        phi (float): Phase delay [rad]  
+    Parameters
+    ----------
+    f : np.ndarray
+        Frequency array [MHz]
+    tau : float
+        Time delay (us)
+    phi : float
+        phase delay (Rad)
 
-    Returns:
-        p (ndarray): Phasor np.exp()
-    
+    Returns
+    -------
+    phasor : np.ndarray
+        Phasor Rotator array in frequency domain
     """
     return np.exp(2j*np.pi*tau*f + 1j*phi)
     
 
 
-def mem_fft(x, fft_len, _map = 'r+'):
-    """
-    Info:
-        Apply FFT and save to temp memory map
+# def mem_fft(x, fft_len, _map = 'r+'):
+#     """
+#     Info:
+#         Apply FFT and save to temp memory map
 
-    Args:
-        x (ndarray): data to fft
-        fft_len (int): len of fft array
-        _map (str): mapper, 'r' for read only or 'r+' read and writing.
-                    see mmap_mode in numpy.load()
+#     Args:
+#         x (ndarray): data to fft
+#         fft_len (int): len of fft array
+#         _map (str): mapper, 'r' for read only or 'r+' read and writing.
+#                     see mmap_mode in numpy.load()
 
-    Returns:
-        xfft (memmap): memory map of fft
+#     Returns:
+#         xfft (memmap): memory map of fft
 
-    """
-    xfft = fft(x, fft_len)
+#     """
+#     xfft = fft(x, fft_len)
 
-    # save to temp array
-    np.save("temp_fft.npy", xfft)
+#     # save to temp array
+#     np.save("temp_fft.npy", xfft)
 
-    # load temp array as memory map
-    xfft = np.load("temp_fft.npy", mmap_mode = _map)
-
-
-    return xfft
+#     # load temp array as memory map
+#     xfft = np.load("temp_fft.npy", mmap_mode = _map)
 
 
+#     return xfft
 
 
-def mem_ifft(x, fft_len, dat_len, _map = 'r+'):
-    """
-    Info:
-        Apply iFFT and save to temp memory map
-
-    Args:
-        x (ndarray): data to fft
-        fft_len (int): len of fft array
-        dat_len (int): initial lenght of array
-        _map (str): mapper, 'r' for read only or 'r+' read and writing.
-                    see mmap_mode in numpy.load()
-
-    Returns:
-        xfft (memmap): memory map of ifft
-
-    """
-    xifft = ifft(x, fft_len)[:dat_len]
-
-    # save to temp array file
-    np.save("temp_ifft.npy", xifft)
-
-    # load temp array as memory map
-    xifft = np.load("temp_ifft.npy", mmap_mode = _map)
 
 
-    return xifft
+# def mem_ifft(x, fft_len, dat_len, _map = 'r+'):
+#     """
+#     Info:
+#         Apply iFFT and save to temp memory map
+
+#     Args:
+#         x (ndarray): data to fft
+#         fft_len (int): len of fft array
+#         dat_len (int): initial lenght of array
+#         _map (str): mapper, 'r' for read only or 'r+' read and writing.
+#                     see mmap_mode in numpy.load()
+
+#     Returns:
+#         xfft (memmap): memory map of ifft
+
+#     """
+#     xifft = ifft(x, fft_len)[:dat_len]
+
+#     # save to temp array file
+#     np.save("temp_ifft.npy", xifft)
+
+#     # load temp array as memory map
+#     xifft = np.load("temp_ifft.npy", mmap_mode = _map)
 
 
-def arr2mmap(x, filename, _map = 'r+'):
-    """
-    Info:
-        Convert array to memory map for memory efficiency
+#     return xifft
 
-    Args:
-        x (ndarray): data to convert to memory map
-        filename (str): filename to store memory map
-        _map (str): mapper, 'r' for read only or 'r+' read and writing.
-                    see mmap_mode in numpy.load()
 
-    Returns:
-        xm (memmap): memory map of x data array
+# def arr2mmap(x, filename, _map = 'r+'):
+#     """
+#     Info:
+#         Convert array to memory map for memory efficiency
+
+#     Args:
+#         x (ndarray): data to convert to memory map
+#         filename (str): filename to store memory map
+#         _map (str): mapper, 'r' for read only or 'r+' read and writing.
+#                     see mmap_mode in numpy.load()
+
+#     Returns:
+#         xm (memmap): memory map of x data array
     
-    """
+#     """
 
-    # save to temp array file
-    np.save(filename, x)
+#     # save to temp array file
+#     np.save(filename, x)
 
-    # load temp array as memory map
-    xm = np.load(filename, mmap_mode = _map)
+#     # load temp array as memory map
+#     xm = np.load(filename, mmap_mode = _map)
 
-    return xm
+#     return xm
 
 
 
-def rm_mmap_file(x):
-    """
-    Info:
-        Remove Memory map file
+# def rm_mmap_file(x):
+#     """
+#     Info:
+#         Remove Memory map file
 
-    Args:
-        x (memmap): memory map object
+#     Args:
+#         x (memmap): memory map object
 
-    """
+#     """
 
-    os.remove(x.filename)
+#     os.remove(x.filename)
 
-    return
+#     return
 
 
 
@@ -175,16 +182,19 @@ def rm_mmap_file(x):
 
 def stk_I(X, Y):
     """
-    Info:
-        Produces stokes I data
+    Claculate Stokes I from X and Y polarisations
 
-    Args:
-        X (ndarray): X polarisation data
-        Y (ndarray): Y polarisation data
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
 
-    Returns:
-        S (ndarray): Stokes data
-
+    Returns
+    -------
+    I : np.ndarray
+        Stokes I data
     """
 
     return np.abs(X)**2 + np.abs(Y)**2
@@ -193,48 +203,57 @@ def stk_I(X, Y):
 
 def stk_Q(X, Y):
     """
-    Info:
-        Produces stokes Q data
+    Claculate Stokes Q from X and Y polarisations.
 
-    Args:
-        X (ndarray): X polarisation data
-        Y (ndarray): Y polarisation data
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
 
-    Returns:
-        S (ndarray): Stokes data
-        
+    Returns
+    -------
+    Q : np.ndarray
+        Stokes Q data
     """
 
-    return np.abs(X)**2 - np.abs(Y)**2
+    return np.abs(Y)**2 - np.abs(X)**2
 
 def stk_U(X, Y):
     """
-    Info:
-        Produces stokes U data
+    Claculate Stokes U from X and Y polarisations
 
-    Args:
-        X (ndarray): X polarisation data
-        Y (ndarray): Y polarisation data
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
 
-    Returns:
-        S (ndarray): Stokes data
-        
+    Returns
+    -------
+    U : np.ndarray
+        Stokes U data
     """
 
     return 2 * np.real(np.conj(X) * Y)
 
 def stk_V(X, Y):
     """
-    Info:
-        Produces stokes V data
+    Claculate Stokes V from X and Y polarisations
 
-    Args:
-        X (ndarray): X polarisation data
-        Y (ndarray): Y polarisation data
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
 
-    Returns:
-        S (ndarray): Stokes data
-        
+    Returns
+    -------
+    V : np.ndarray
+        Stokes V data
     """
 
     return 2 * np.imag(np.conj(X) * Y)
@@ -256,30 +275,37 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
                         tN: int = 50, dt: float = 0.001,
                         rbounds = None):
     """
-    Info:
-        Apply baseline corrections to the Dynamic spectra data
+    Apply Baseline correction to dynamic spectra
 
-    Args:
-        ds (ndarray): Dynamic spectra
-        sigma (float): S/N threshold for bounds
-        guard (float): Time in [ms] between rough bounds and rms crop region
-        baseline (float): Width of buffer in [ms] to estimate baseline
-                          correction
-        rmsmp (float): Phase difference between maximum point in time and mid
-                       point of rms crop used to estimate rough initial S/N
-        tN (int): Time Averaging factor for Dynamic spectrum, helps with
-                    S/N calculation.
-        dt (float): Time resolution in [ms] of dynamic spectra
-        rbounds (list): Bounds of FRB burst, if Unspecified, the code will do a rough S/N
-                        calculation to determine a bursts bounds
-        norm (bool): Apply baseline correction to dynamic spectra
+    Parameters
+    ----------
+    ds : np.ndarray
+        Dynamic spectra
+    sigma : float, optional
+        Sigma threshold used to look for burst bounds, by default 5.0
+    guard : float, optional
+        width of tims [ms] between bounds of burst and off-pulse region used for 
+        estimating baseline, by default 1.0
+    baseline : float, optional
+        Width of off-pulse region [ms] used to estimate baseline, by default 50.0
+    rmsmp : float, optional
+        Difference in phase between peak of burst and off-pulse region used to calculate
+        initial rough off-pulse RMS used to find burst bounds, by default 0.5
+    tN : int, optional
+        Factor or time averaging, by default 50
+    dt : float, optional
+        Dynmaic spectrum time resolution [ms], by default 0.001
+    rbounds : List, optional
+        Bounds of Burst, if given this will instead be used in baseline correction,
+        ideally when Stokes I baseline correction is done the resultant rbounds parameter
+        is reused for Stokes Q, U and V, by default None
 
-    Returns:
-        ds (ndarray): Baseline corrected (zero-mean, unit variance) dynamic spectra 
-        bs_mean (ndarray): Baseline mean
-        bs_std (ndarray): Baseline std
-        rbounds (ndarray): Bounds of FRB burst in Phase units
-
+    Returns
+    -------
+    ds : np.ndarray
+        Corrected Dynamic spectra
+    rbounds : List
+        Bounds of burst
     """
     dt *= ds.shape[0]/336.0
 
@@ -355,21 +381,33 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
 def make_stokes(xpol, ypol, stokes = "I", nFFT = 336, negateQ = True, nworkers = 4, BLOCK_SIZE = 200e6,
                 BIT_SIZE = 8):
     """
-    Info:
-        Performs the stft on the xpol and ypol htr products
+    Make Stokes Dynamic Spectrum from X and Y time series polarisation data. This algorithm splits 
+    the timeseries into seperate 'BLOCKS' that reduce memory usage whilst maximising speed.
 
-    Args:
-        xpol (ndarray): X polarisation time series (ideally a memory map)
-        ypol (ndarray): Y polarisation time series (ideally a memory map)
-        stokes (str): Stokes product type ["I", "Q", "U", "V"]
-        nFFT (int): FFT window size (number of channels for dynamic spectrum)
-        nworkers (int): number of "workers" for parallel processing (see scipy.fft.fft)
-        BLOCK_SIZE (int): maximum memory allocated at a time when running fft
-        conv (str): Stokes sign convention, ["celebi", "straten"]
+    Parameters
+    ----------
+    xpol : np.mmap or np.ndarray
+        X polarisation time series data
+    ypol : np.mmap or np.ndarray
+        Y polarisation time series data
+    stokes : str, optional
+        Stokes dynamic spectrum to make, by default "I"
+    nFFT : int, optional
+        Number of channels of Dynamic spectra, by default 336
+    negateQ : bool, optional
+        Negate Stokes Q, Parameter used to correct for the left-handed basis of ASKAP 
+        antenna PAFs, by default True
+    nworkers : int, optional
+        number of workers to use when performing FFT, by default 4
+    BLOCK_SIZE : float, optional
+        Size of BLock in [Bytes], by default 200e6
+    BIT_SIZE : int, optional
+        BIT Size of data in [Bytes], by default 8
 
-    Returns:
-        dynspec (ndarray): Final dynamic spectrum
-
+    Returns
+    -------
+    ds : np.ndarray
+        Stokes Dynamic Spectrum
     """
 
     prog_str = f"""[Stokes] = {stokes} with [nFFT] = {nFFT}:    [BLOCK SIZE] = {BLOCK_SIZE/1e6:.3f} MB with [BIT SIZE] = {BIT_SIZE} Bits"""
@@ -445,24 +483,31 @@ def make_stokes(xpol, ypol, stokes = "I", nFFT = 336, negateQ = True, nworkers =
 def coherent_desperse(t, cfreq, bw, f0, DM, fast = False, 
                       DM_iter = 50):
     """
-    Info:
-        Function that coherently dedisperses X,Y htr data products in (f) domain,
-        It is assumed that frequencies start from the top of the band.
+    Apply Coherent dedespersion on Complex Polarisation time series data
 
-    Args:
-        t (time series): time series
-        cfreq (float): central frequency of band
-        bw (float): bandwidth
-        f0 (float): refernece frequency
-        DM (float): Dispersion Measure
-        fast (bool): Apply padding to significantly speed up function at the cost of a small precision error
-        DM_iter (int): Reduces the amount of memory used when applying dispersion at the cost of a little performance
+    Parameters
+    ----------
+    t : np.mmap or np.ndarray
+        Complex Polarisation time series data
+    cfreq : float
+        Central Frequency of observing band [MHz]
+    bw : float
+        Bandwidth of observation [MHz]
+    f0 : float
+        Reference Frequency
+    DM : float
+        Dispersion Measure [pc/cm^3]
+    fast : bool, optional
+        Apply FFT and IFFT quickly by zero-padding data to optimal length. , by default False \n
+        Note: This shouldn't affect results too much assuming full CELEBI HTR data, however, the longer 
+        the padding relative to the original size of dataset, the worse the data, so use wisely.
+    DM_iter : int, optional
+        Number of iterations to split Dispersion into, by default 50
 
-
-    Returns:
-        t_d (ndarray): time series despersed
-
-
+    Returns
+    -------
+    t_d : np.ndarray
+        De-dispersed Complex Polarisation times series data
     """
 
     prog_str = f"[bw] = {bw} MHz with [cfreq] = {cfreq} MHz:    [DM] = {DM} pc/cm3 at a ref freq [f0] = {f0} MHz"
@@ -526,24 +571,27 @@ def coherent_desperse(t, cfreq, bw, f0, DM, fast = False,
 
 def pulse_fold(ds, MJD0, MJD1, F0, F1, sphase = None):
     """
-    Info:
-        Takes Pulsar dynamic spectrum and folds it, removes periods
-        at far left and right sides to avoid band artifacts produced during
-        de-dispersion.
+    Dynamic spectra to fold
 
-    Args:
-        ds (ndarray): dynamic spectrum
-        MJD0 (float): Initial Epoch MJD
-        MJD1 (float): Observation MJD
-        F0 (float): initial Epoch Frequency period
-        F1 (float): Spin-down rate
-        sphase (float): Starting phase of folding, if not given
-                        will be estimated (best done using "I" ds)
+    Parameters
+    ----------
+    ds : np.ndarray
+        Dynamic Spectra
+    MJD0 : float
+        MJD of initial observation of pulsar
+    MJD1 : float
+        MJD of 'this' observation of pulsar
+    F0 : float
+        Initial Frequency of pulsar rotation
+    F1 : float
+        Frequency spin down rate
+    sphase : float, optional
+        Starting phase of pulse folding, by default None
 
-    Returns:
-        ds_f (ndarray): Raw folded Dynamic spectra
-        sphase (float): Starting phase of folding from original dynspec
-
+    Returns
+    -------
+    ds_fold : np.ndarray
+        folded dynamic spectrum
     """
     print("Pulse Folding Dynspec...")
     # normalise needed to help find fold bounds
@@ -599,21 +647,21 @@ def pulse_fold(ds, MJD0, MJD1, F0, F1, sphase = None):
 
 
 
-def coherent_scatter():
-    """
+# def coherent_scatter():
+#     """
     
-    """
-    pass
+#     """
+#     pass
 
 
 
 
 
-def coherent_rotate():
-    """
+# def coherent_rotate():
+#     """
 
-    """
-    pass
+#     """
+#     pass
 
 
 

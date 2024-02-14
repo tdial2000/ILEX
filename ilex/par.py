@@ -28,22 +28,97 @@ class FRB_params:
     """
     FRB parameter structure 
     
-    ##==== parameters ====##
-    name:           name of FRB
-    RA:             Right ascension
-    DEC:            Declination
-    DM:             Dispersion Measure
-    bw:             Bandwidth (MHz)
-    cfreq:          Central Frequency (MHz)
+    Attributes
+    ----------
+    name: str
+        name of FRB
+    RA: str            
+        Right ascension
+    DEC: str            
+        Declination
+    DM: float             
+        Dispersion Measure [pc/cm^3]
+    bw: float            
+        Bandwidth [MHz]
+    cfreq: float          
+        Central Frequency [MHz]
+    t_lim: List          
+        Time bounds [ms]
+    f_lim: List          
+        Frequency bounds [MHz]
+    dt: float             
+        delta time [ms]
+    df: float            
+        delta frequency [MHz]
+    nchan: int         
+        Number of channels
+    nsamp: int          
+        Number of samples
+    UP: bool
+        Upper bandwidth
+    RM: float
+        Rotation Measure [Rad/m^2]
+    f0: float
+        Reference frequency [MHz]
+    pa0: float
+        Positon angle at f0
+    tW: np.ndarray
+        time weights
+    fW: np.ndarray
+        frequency weights
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
 
-    t_lim:          Time bounds (ms)
-    f_lim:          Frequency bounds (MHz)
-    dt:             delta time (ms)
-    df:             delta frequency (MHz)
-    nchan:          Number of channels
-    nsamp:          Number of samples
 
-    UP:             Upper bandwidth
+
+    Parameters
+    ----------
+    name: str
+        name of FRB
+    RA: str            
+        Right ascension
+    DEC: str            
+        Declination
+    DM: float             
+        Dispersion Measure [pc/cm^3]
+    bw: float            
+        Bandwidth [MHz]
+    cfreq: float          
+        Central Frequency [MHz]
+    t_lim: List          
+        Time bounds [ms]
+    f_lim: List          
+        Frequency bounds [MHz]
+    dt: float             
+        delta time [ms]
+    df: float            
+        delta frequency [MHz]
+    nchan: int         
+        Number of channels
+    nsamp: int          
+        Number of samples
+    UP: bool
+        Upper bandwidth
+    RM: float
+        Rotation Measure [Rad/m^2]
+    f0: float
+        Reference frequency [MHz]
+    pa0: float
+        Positon angle at f0
+    tW: np.ndarray
+        time weights
+    fW: np.ndarray
+        frequency weights
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
+    
+    
 
 
 
@@ -54,9 +129,8 @@ class FRB_params:
     def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
                        DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
-                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],t_crop = [0.0, 1.0],
-                       f_crop = [0.0, 1.0],         tN: int = 1,             fN: int = 1,
-                       fW = None,                   tW = None,               norm: str = "max",
+                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],fW = None,                   
+                       tW = None,                   norm: str = "max",
                        czap = None,                 EMPTY = False):
 
         # parameters
@@ -97,38 +171,25 @@ class FRB_params:
 
 
 
-
-    # build from fft
-    # TODO?: implement smarter way of accounting for this
-    # [DEPRECIATED]
-    # def build_from_fft(self, nFFT: int, nsamp: int):
-    #     """
-    #     Update relevant paramters based on new fft window for 
-    #     dynamic spectrum
-
-    #     """
-    #     new_params = self.copy()
-
-    #     # update nchan, nsamps 
-    #     new_params.nchan = nFFT
-    #     new_params.nsamp = nsamp
-
-    #     # update resolutions
-    #     new_params.df    = 336 / nFFT               # in MHz
-    #     new_params.dt    = 1e-3 / new_params.df        # in ms
-
-    #     # update lims
-    #     new_params.t_lim[1] = new_params.t_lim[0] + new_params.dt * new_params.nsamp
-
-
-    #     return new_params
-
-
     
 
     # function to update from new crop
     def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],
                         tN: int = 1, fN: int = 1):
+        """
+        Update Parameters based on time and frequency crops + averaging
+
+        Parameters
+        ----------
+        t_crop : list, optional
+            time crop, by default [0.0, 1.0]
+        f_crop : list, optional
+            frequency crop, by default [0.0, 1.0]
+        tN : int, optional
+            Factor for time averaging, by default 1
+        fN : int, optional
+            Factor for frequency averaging, by default 1
+        """    
 
         # TODO: Maybe find a smarter way to do this
         # reverse f_crop if Upper sideband
@@ -165,6 +226,14 @@ class FRB_params:
 
     # function to load paramters from parameter file
     def load_params(self, filename: str = None):
+        """
+        Load params from file - To implement??
+
+        Parameters
+        ----------
+        filename : str, optional
+            param file name, by default None
+        """        
 
         if filename is None:
             log("Parameter file must be valid", lpf_col = self.pcol)
@@ -185,6 +254,14 @@ class FRB_params:
     
     # function to get limits from crop
     def save_params(self, filename: str = None):
+        """
+        Save current parameters to file
+
+        Parameters
+        ----------
+        filename : str, optional
+            filename to save params to, by default None
+        """        
         
         if filename is None:
             log("parameter file must be valid", lpf_col = self.pcol)
@@ -206,6 +283,24 @@ class FRB_params:
     
     # function to save parameters to parameter file
     def phase2lim(self, t_crop: list = None, f_crop: list = None):
+        """
+        Provide time and frequency phases, based on parameters convert
+        to ms and MHz crops
+
+        Parameters
+        ----------
+        t_crop : list, optional
+            Time crop, in phase, by default None
+        f_crop : list, optional
+            Freq crop, in phase, by default None
+
+        Returns
+        -------
+        t_lim: List
+            Time limits in [ms]
+        f_lim: List
+            Freq limits in [MHz]
+        """        
 
         # init
         t_lim, f_lim = None, None
@@ -228,8 +323,28 @@ class FRB_params:
         return t_lim, f_lim
 
     
+
+
     # function to get crop from limits
     def lim2phase(self, t_lim: list = None, f_lim: list = None):
+        """
+        Provide time [ms] and Freq [MHz] limits and using params, convert 
+        to time and freq phase.
+
+        Parameters
+        ----------
+        t_lim: List
+            Time limits in [ms]
+        f_lim: List
+            Freq limits in [MHz]
+
+        Returns
+        -------
+        t_crop : list, optional
+            Time crop, in phase, by default None
+        f_crop : list, optional
+            Freq crop, in phase, by default None
+        """        
         
         # init
         t_phase, f_phase = None, None
@@ -258,10 +373,18 @@ class FRB_params:
     
     def mkpar_from_params(self, frb_params: dict = None):
         """
-        Checks if any par. parameters have been updated and
-        creates a new par() instance to use
-        
-        """
+        Make new copy of params instance
+
+        Parameters
+        ----------
+        frb_params : dict, optional
+            keyword parameters, by default None
+
+        Returns
+        -------
+        params : FRB_params
+            New instance of FRB params
+        """        
         # make copy of frb params
         frb_params = dict_init(frb_params)
 
@@ -306,7 +429,9 @@ class FRB_params:
 
     # copy function
     def copy(self):
-
+        """
+        Return copy of parameter class
+        """        
         return deepcopy(self)
 
 
@@ -315,6 +440,11 @@ class FRB_params:
     def set_par(self, **kwargs):
         """
         Set attributes of par class
+
+        Parameters
+        ----------
+        **kwargs : Dict
+            Keyword parameters
         
         """
         # get all relevant pars
@@ -338,7 +468,6 @@ class FRB_params:
 
     def empty_par(self):
         """
-        
         Set all parameters to None:
         """
 
@@ -348,7 +477,6 @@ class FRB_params:
         
     def default_par(self):
         """
-        
         Set all parameters to default
         """
 
@@ -376,14 +504,40 @@ class FRB_params:
 ##===================================##
 
 class FRB_metaparams:
+    """
+    Class for FRB meta-params
+
+    Attributes
+    ----------
+    t_crop : List
+        Time crop
+    f_crop : List
+        Frequency crop
+    tN : int
+        Factor for time averaging
+    fN : int
+        Factor for frequency averaging
+    norm : str
+
+
+
+    Parameters
+    ----------
+    t_crop : List
+        Time crop
+    f_crop : List
+        Frequency crop
+    tN : int
+        Factor for time averaging
+    fN : int
+        Factor for frequency averaging
+    norm : str
+    """    
 
     def __init__(self, t_crop = None, f_crop = None, terr_crop = None,
                  tN = _G.mp['tN'], fN = _G.mp['fN'], norm = _G.mp['norm'],
                  EMPTY = False):
-        """
-        Storage container for metaparameters
-        
-        """
+
 
         # set crop parameters
         self.t_crop = t_crop
@@ -408,6 +562,9 @@ class FRB_metaparams:
     
 
     def set_metapar(self, **kwargs):
+        """
+        Set meta-parameters
+        """
 
         for key in kwargs.keys():
             if key in _G.mp.keys():
@@ -417,6 +574,9 @@ class FRB_metaparams:
 
 
     def metapar2dict(self):
+        """
+        Return Dictionary of meta-parameters
+        """
         
         metapar = {}
         for key in _G.mp.keys():
@@ -426,15 +586,16 @@ class FRB_metaparams:
 
 
     def copy(self):
-        
+        """
+        Return Copy of Meta-params instance
+        """
         return deepcopy(self)
 
 
 
     def empty_metapar(self):
         """
-        
-        Set all meta parameters to None:
+        Set all meta parameters to None
         """
 
         for key in _G.mp.keys():

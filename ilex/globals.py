@@ -1,11 +1,28 @@
 
 class globals_:
-    pass
+  """
+  Container for Global parameters
+
+  Attributes
+  ----------
+  hkeys : List
+    List of HTR crop products
+  DATA : List
+    List of HTR products
+  p : Dict
+    Dictionary of FRB parameters
+  mp : Dict
+    Dictionary of FRB meta-parameters
+  hp : Dict
+    Dictionary of FRB hyper-parameters
+  
+  """
+  pass
 
 
 _G = globals_()
 
-#dict of HTR products
+#dict of HTR crop products
 _G.hkeys = ["dsI","tI","fI",
             "dsQ","tQ","fQ",
             "dsU","tU","fU",

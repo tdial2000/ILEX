@@ -1387,87 +1387,30 @@ class FRB:
 
 
 
-# -> Move to .plots
-    def plot_data(self, data = "dsI", **kwargs):
+
+
+
+    def plot_data(self, data = "dsI", filename: str = None, plot_err_type = "regions", **kwargs):
         """
         General Plotting function, choose to plot either dynamic spectrum or time series 
         data for all stokes parameters
 
         Parameters
         ----------
-        data: str 
-            Data to plot, ["{type}{S}"] where \n
-            [S] = ["I", "Q", "U", "V"] \n
-            [type] = ["ds", "t", "f"] for dynamic spectra, time series and spectra
-            respectivley
-        **kwargs:
-            FRB parameter and meta-parameter arguments
-        
-        """
-        log(f"plotting {data}", lpf_col = self.pcol)
-        print(kwargs)
+        data : str, optional
+            type of data to plot, by default "dsI"
+        filename : str, optional
+            filename to save figure to, by default None
+        plot_err_type : str, optional
+            type of error plotting, by default "regions"\n
+            [regions] - Show error in data as shaded regions
+            [lines] - Show error in data as tics in markers
 
-        # get data
-        self.get_data(data_list = data, **kwargs)
-
-        # flags
-        err_flag = self._iserr()
-
-
-        ##====================##
-        ##     create axes    ##
-        ##====================##
-
-        fig = plt.figure(figsize = (10,6))
-        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        ax.set_xlabel("Time [ms]", fontsize = 12)
-        stk = data[-1]
-        
-
-        if data[:2] == "ds":   # dynamic spectrum
-            ax.set_ylabel("Frequency [MHz]", fontsize = 12)
-            ax.imshow(self._ds[stk], aspect = 'auto',
-                            extent = [*self.this_par.t_lim,*self.this_par.f_lim])
-            
-        elif data[0] == "t":   # time series
-            ax.set_ylabel("arb.", fontsize = 12)
-            # plot
-            t_x = np.linspace(*self.this_par.t_lim, self._t[stk].size)
-            ax.plot(t_x, self._t[stk])
-
-            # plot err
-            if err_flag:
-                ax_xlim = ax.get_xlim()
-                t_err = self._t[f"{stk}err"]
-                ax.plot(ax_xlim, [t_err, t_err], '--k')
-                ax.set_xlim(ax_xlim)
-
-                # legend
-                ax.legend(["Data", "rms"])
-                
-        elif data[0] == "f":    # freq spectra
-            ax.set_ylabel("arb.", fontsize = 12)
-            ax.set_xlabel("Frequency [MHz]", fontsize = 12)
-            # plot
-            ax.plot(self._freq, self._f[stk])
-
-            # plot err
-            if err_flag:
-                ax.plot(self._freq, self._f[f"{stk}err"], '--k')
-
-                # legend
-                ax.legend(["Data", "rms"])
-
-        self._save_new_params()
-
-        plt.show()
-        
-
-        return fig, ax
-
-
-    def plot_data(self, data = "dsI", filename: str = None, plot_err_type = "regions", **kwargs):
-
+        Returns
+        -------
+        fig : figure
+            Return Figure Instance
+        """        
 
         log(f"plotting {data}", lpf_col = self.pcol)
         print(kwargs)
@@ -1483,11 +1426,17 @@ class FRB:
             pdat['time'] = np.array(self.this_par.t_lim)
 
         # plot 
-        plot_data(pdat, data, filename = filename, plot_err_type = plot_err_type)
+        fig = plot_data(pdat, data, filename = filename, plot_err_type = plot_err_type)
 
         self._save_new_params()
 
-        return
+        return fig
+
+
+
+
+
+
 
 
 
@@ -1521,6 +1470,14 @@ class FRB:
             Choose between two methods of plotting the error in the data, by default "regions" \n
             [regions] - Show error in data as shaded regions
             [lines] - Show error in data as tics in markers
+        **kwargs : Dict
+            FRB parameter keywords
+
+        Returns
+        -------
+        fig : figure
+            Return figure instance
+
         """
 
         log(f"plotting stokes data", lpf_col = self.pcol)
@@ -1557,14 +1514,14 @@ class FRB:
                 pstk[f"{S}err"] = stk_dat[f"{S}err"]
 
         # plot
-        plot_stokes(pstk, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
+        fig = plot_stokes(pstk, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
                     debias_threshold = debias_threshold, stk_ratio = stk_ratio, stk2plot = stk2plot,
                     filename = filename, plot_err_type = plot_err_type) 
     
 
         self._save_new_params()
 
-        return
+        return fig
 
 
 
@@ -1605,6 +1562,8 @@ class FRB:
             Spectral lags
         spec_acf: np.ndarray
             ACF of spectral data, excluding zero-lag 
+        fig: figure
+            Return figure instance
         """
         
         log("Fitting for Scintillation bandwidth", lpf_col = self.pcol)
@@ -1655,7 +1614,7 @@ class FRB:
 
         
         
-
+        fig = None
         if plot:        
             fig = plot_scintband(x = spec_lags, y = spec_acf, y_err = p.val['sigma'], 
                                  w = p.val['w'], a = p.val['a'], filename = filename,
@@ -1664,7 +1623,7 @@ class FRB:
         # update instance par
         self._save_new_params()
 
-        return p, spec_lags, spec_acf
+        return p, spec_lags, spec_acf, fig
     
 
 
@@ -1679,11 +1638,39 @@ class FRB:
 
 
     def plot_poincare(self, filename = None, stk_type = "f", sigma = 2.0, plot_data = True,
-                        plot_model = False, plot_P = False, n = 5, **kwargs):
+                        plot_model = False, plot_P = False, n = 5, plot_on_surface = True, **kwargs):
         """
-        
-        
-        """
+        Plot Stokes data on a Poincare Sphere.
+
+        Parameters
+        ----------
+        filename : str, optional
+            filename to save figure to, by default None
+        stk_type : str, optional
+            types of stokes data to plot, by default "f" \n
+            [f] - Plot as a function of frequency \n
+            [t] - Plot as a function of time 
+        sigma : float, optional
+            Error threshold used for masking stokes data in the case that stokes/I is being calculated \n
+            this avoids deviding by potentially small numbers and getting weird results,by default 2.0
+        plot_data : bool, optional
+            Plot Data on Poincare sphere, by default True
+        plot_model : bool, optional
+            Plot Polynomial fitted data on Poincare sphere, by default False
+        plot_P : bool, optional
+            Plot stokes/P instead of stokes/I, by default False
+        plot_on_surface : bool, optional
+            Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+        n : int, optional
+            Maximum order of Polynomial fit, by default 5
+        **kwargs : Dict
+            FRB parameter keywords
+
+        Returns
+        -------
+        fig : figure
+            Return figure instance
+        """    
         log("Plotting stokes data to poincare sphere", lpf_col = self.pcol)
 
         self._load_new_params(**kwargs)
@@ -1712,14 +1699,14 @@ class FRB:
             cbar_label = "Frequency [MHz]"
 
         # plot poincare sphere
-        plot_poincare(pdat, sigma = sigma, filename = filename,
+        fig = plot_poincare(pdat, sigma = sigma, filename = filename,
                     plot_data = plot_data, plot_model = plot_model, plot_P = plot_P,
                     n = n, cbar_lims = cbar_lims, cbar_label = cbar_label)
 
 
         self._save_new_params()
 
-        return
+        return fig
 
 
 
@@ -1727,9 +1714,39 @@ class FRB:
                             filename: str = None, plot_data = True, plot_model = False,
                             plot_on_surface = True, plot_P = False, n = 5, **kwargs):
         """
-        
-        
-        """
+        Plot multiple tracks on a Poincare Sphere. Each Track is represented by
+        a seperate crop, i.e. a set of of t_crop and f_crop. \n
+        Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop 
+        will be used instead for each seperate track.
+
+        Parameters
+        ----------
+        stk_type : str, optional
+            Type of stokes data, by default "f" \n
+            [f] - Plot data as function of frequency \n
+            [t] - Plot data as function of time
+        tcrops : List(List), optional
+            List of t_crop's, one for each track to plot, by default None
+        fcrops : List(List), optional
+            List of f_crop's, one for each track to plot, by default None
+        filename : str, optional
+            filename to save figure to, by default None
+        plot_data : bool, optional
+            plot data on Poincare sphere, by default True
+        plot_model : bool, optional
+            Plot Polynomial fitted model of data on Poincare sphere, by default False
+        plot_on_surface : bool, optional
+            Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+        plot_P : bool, optional
+            Plot Stokes/P instead of Stokes/I, by default False
+        n : int, optional
+            Maximum polynomial order for model fitting, by default 5
+
+        Returns
+        -------
+        fig : figure
+            Return figure instance
+        """        
         log(f"Plotting multiple Poincare tracks", lpf_col = self.pcol)
 
         tcrops = deepcopy(tcrops)
@@ -1757,12 +1774,12 @@ class FRB:
                             self.this_metapar.metapar2dict())
 
         # run multicomp_poincare function
-        multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, 
+        fig = multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, 
                             par = full_par, tcrops = tcrops, fcrops = fcrops, filename = filename,
                             plot_data = plot_data, plot_model = plot_model, n = n,
                             plot_on_surface = plot_on_surface, plot_P = plot_P)
         
-        return
+        return fig
 
 
 
@@ -1786,23 +1803,32 @@ class FRB:
     def fit_tscatt(self, npulse = 1, fit_priors: dict = None, static_priors: dict = None, fit_params: dict = None, 
                       plot = False, filename: str = None, plot_err_type = "regions", **kwargs):
         """
-        Info:
-            Fit for scattering timescale
+        Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
 
-        Args:
-            npulse (int): number of convolved pulses to fit for
-            fit_priors (dict): priors for bays fitting
-            static_priors (dict): priors to keep static during fitting
-            fit_params (dict): parameters used to pass into fitting function
-            plot (bool): plot acf and scint function 
-            filename (str): filename to save plot
-            **kwargs
+        Parameters
+        ----------
+        npulse : int, optional
+            Number of gaussian to fit, by default 1
+        fit_priors : dict, optional
+            Priors for sampling, by default None
+        static_priors : dict, optional
+            Priors to keep constant during fitting, by default None
+        fit_params : dict, optional
+            Keyword parameters for Bilby.run_sampler, by default None
+        plot : bool, optional
+            plot data after modelling is complete, by default False
+        filename : str, optional
+            filename to save final plot to, by default None
+        plot_err_type : str, optional
+            type of errors to plot, by default "regions"
 
-        Returns:
-            p (dict): Dictionary of fitting parameters          
-
-        
-        """
+        Returns
+        -------
+        p : fit_par
+            fit_par instance with parameters of tscatter fitting
+        fig : figure
+            Return figure instance
+        """        
         log("Fitting for Scattering Time", lpf_col = self.pcol)
         ##====================##
         ## check if data valid##
@@ -1857,7 +1883,7 @@ class FRB:
         # save instance parameters
         self._save_new_params()
 
-        return p
+        return p, fig
 
 
 
@@ -1889,26 +1915,29 @@ class FRB:
     def fit_RM(self, method = "RMquad", plot = True, fit_params: dict = None, 
                filename: str = None, plot_err_type = "regions", **kwargs):
         """
-        Info:
-            Fit for Rotation Measure (RM)
+        Fit Spectra for Rotation Measure
 
-        Args:
-            method (str): Method for RM fitting
-                          [RMquad] -> Quadratic fitting using scipy.curve_fit()
-                          [RMsynth] -> Fit RM using RM synthesis (RMtools)
-            plot (bool): plot RM fitting
-            fit_params (dict): **kwargs for RM fitting
-            filename (str): filename to save figure 
-            **kwargs
+        Parameters
+        ----------
+        method : str, optional
+            Method to perform Rotation Measure fitting, by default "RMquad" \n
+            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
+            [RMsynth] - Use the RM-tools RM-Synthesis method
+        plot : bool, optional
+            plot data after fitting if true, by default True
+        fit_params : dict, optional
+            keyword parameters for fitting method, by default None \n
+            [RMquad] - Scipy.optimise.curve_fit keyword params \n
+            [RMsynth] - RMtools_1D.run_synth keyword params
+        filename : str, optional
+            filename to save figure to, by default None
+        plot_err_type : str, optional
+            type of error to plot, by default "regions"
 
-        Returns:
-            rm (float): Fitted Rotation Measure
-            rm_err (float): Fitted Rotation Measure error
-            pa0 (float): Position angle
-            pa0_err (float): Position angle error
-            f0 (float): Reference Frequency
-
-
+        Returns
+        -------
+        _type_
+            _description_
         """
         log(f"Retrieving RM", lpf_col = self.pcol)
 
@@ -1986,21 +2015,34 @@ class FRB:
     def plot_PA(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
                 fit_params: dict = None, filename: str = None, plot_err_type = "regions", **kwargs):
         """
-        Info:
-            Plot Position angle, Stokes Spectra and I ds at once as a mosaic
-            if RM is not provided, them RM will be fitted and used.
+        Plot Figure with PA profile, Stokes Time series data, and Stokes I dyspec. If RM is not 
+        specified, will be fitted first.
 
-        Args:
-            method (str): Method for RM fitting
-                          [RMquad] -> Quadratic fitting using scipy.curve_fit()
-                          [RMsynth] -> Fit RM using RM synthesis (RMtools)
-            Ldebias_threshold (float): Threshold for Debiased Linear fraction
-            plot_L (bool): Plot Linear Fraction (L) instead of stokes Q and U
-            fit_params (dict): **kwargs for RM fitting method
-            filename (str): Filename to save mosaic figure
-            **kwargs
+        Parameters
+        ----------
+        method : str, optional
+            Method to perform Rotation Measure fitting, by default "RMquad" \n
+            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
+            [RMsynth] - Use the RM-tools RM-Synthesis method
+        Ldebias_threshold : float, optional
+            Sigma threshold for PA masking, by default 2.0
+        plot_L : bool, optional
+            Plot Linear polarisation L stokes time series instead of U and Q, by default False
+        flipPA : bool, optional
+            Plot PA between [0, 180] degrees instead of [-90, 90], by default False
+        fit_params : dict, optional
+            keyword parameters for fitting method, by default None \n
+            [RMquad] - Scipy.optimise.curve_fit keyword params \n
+            [RMsynth] - RMtools_1D.run_synth keyword params
+        filename : str, optional
+            filename of figure to save to, by default None
+        plot_err_type : str, optional
+            type of error to plot, by default "regions"
 
-        
+        Returns
+        -------
+        fig : figure
+            Return figure instance
         """
         log("Plotting PA", lpf_col = self.pcol)
 
@@ -2073,7 +2115,7 @@ class FRB:
 
         plt.show()
 
-        return
+        return fig
 
 
 
@@ -2100,59 +2142,72 @@ class FRB:
     def plot_PA_multi(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
                     tcrops = None, fcrops = None, fit_params: dict = None, filename = None,
                     plot_err_type = "regions", **kwargs):
-            """
-            Info:
-                Plot Position angle for multiple components, Stokes Spectra and I ds at once as a mosaic
-                if RM is not provided, them RM will be fitted and used.
+        """
+        Plot PA for multiple different components and sitch together. If RM is not specified, will be
+        fitted for each component. \n
+        Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop 
+        will be used instead for each seperate track.
 
-            Args:
-                method (str): Method for RM fitting
-                            [RMquad] -> Quadratic fitting using scipy.curve_fit()
-                            [RMsynth] -> Fit RM using RM synthesis (RMtools)
-                Ldebias_threshold (float): Threshold for Debiased Linear fraction
-                tcrops (list): List of t_crop for each component
-                fcrops (list): List of f_crop for each component
-                plot_L (bool): Plot Linear Fraction (L) instead of stokes Q and U
-                fit_params (dict): **kwargs for RM fitting method
-                filename (str): Filename to save mosaic figure
-                **kwargs
+        Parameters
+        ----------
+        method : str, optional
+            Method to perform Rotation Measure fitting, by default "RMquad" \n
+            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
+            [RMsynth] - Use the RM-tools RM-Synthesis method
+        Ldebias_threshold : float, optional
+            sigma threshold for PA masking, by default 2.0
+        plot_L : bool, optional
+            Plot Linear polarisation L stokes time series instead of U and Q, by default False
+        flipPA : bool, optional
+            Plot PA between [0, 180] degrees instead of [-90, 90], by default False
+        tcrops : _type_, optional
+            _description_, by default None
+        fcrops : _type_, optional
+            _description_, by default None
+        fit_params : dict, optional
+            keyword parameters for fitting method, by default None \n
+            [RMquad] - Scipy.optimise.curve_fit keyword params \n
+            [RMsynth] - RMtools_1D.run_synth keyword params
+        filename : str, optional
+            filename of figure to save to, by default None
+        plot_err_type : str, optional
+            type of error to plot, by default "regions"
+        """
+        log(f"Plotting multiple PA components", lpf_col = self.pcol)
 
-            """
-            log(f"Plotting multiple PA components", lpf_col = self.pcol)
+        tcrops = deepcopy(tcrops)
+        fcrops = deepcopy(fcrops)
 
-            tcrops = deepcopy(tcrops)
-            fcrops = deepcopy(fcrops)
+        # initialise crops
+        self._load_new_params(**kwargs)
+        
+        # initialise parameters
+        fit_params = dict_init(fit_params)
 
-            # initialise crops
-            self._load_new_params(**kwargs)
-            
-            # initialise parameters
-            fit_params = dict_init(fit_params)
+        # run function
+        freqs = self.par.get_freqs()
 
-            # run function
-            freqs = self.par.get_freqs()
+        # check the units of tcrops/fcrops
+        if tcrops is not None:
+            for i, crop in enumerate(tcrops):
+                if crop[0] > 1.0 or crop[1] > 1.0:
+                    tcrops[i], _ = self.par.lim2phase(t_lim = crop)
+        
+        if fcrops is not None:
+            for i, crop in enumerate(fcrops):
+                if crop[0] > 1.0 or crop[1] > 1.0:
+                    _, fcrops[i] = self.par.lim2phase(f_lim = crop)
 
-            # check the units of tcrops/fcrops
-            if tcrops is not None:
-                for i, crop in enumerate(tcrops):
-                    if crop[0] > 1.0 or crop[1] > 1.0:
-                        tcrops[i], _ = self.par.lim2phase(t_lim = crop)
-            
-            if fcrops is not None:
-                for i, crop in enumerate(fcrops):
-                    if crop[0] > 1.0 or crop[1] > 1.0:
-                        _, fcrops[i] = self.par.lim2phase(f_lim = crop)
+        # combine dict
+        full_par = merge_dicts(self.this_par.par2dict(),
+                            self.this_metapar.metapar2dict())
 
-            # combine dict
-            full_par = merge_dicts(self.this_par.par2dict(),
-                                self.this_metapar.metapar2dict())
-
-            RM, PA, PA_err = multicomp_PA(stk = self.ds, freqs = freqs, method = method, dt = self.par.dt,
-                                Ldebias_threshold=Ldebias_threshold, plot_L=plot_L, flipPA = flipPA, par=full_par,
-                                tcrops=tcrops, fcrops=fcrops, filename = filename, plot_err_type = plot_err_type,
-                                 **fit_params)
-            
-            return 
+        RM, PA, PA_err = multicomp_PA(stk = self.ds, freqs = freqs, method = method, dt = self.par.dt,
+                            Ldebias_threshold=Ldebias_threshold, plot_L=plot_L, flipPA = flipPA, par=full_par,
+                            tcrops=tcrops, fcrops=fcrops, filename = filename, plot_err_type = plot_err_type,
+                                **fit_params)
+        
+        return 
 
 
 

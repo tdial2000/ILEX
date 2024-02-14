@@ -139,21 +139,28 @@ def _plot_err(x, y, err, ax, col = 'k', linestyle = '', plot_type = "lines"):
 
 def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_err_type = "lines"):
     """
-    Info:
-        Plot data
-    
-    Args:
-        data (ndarray): Stokes Dynamic spectrum
-        typ (str): type of data to plot
-                    [ds] -> Dynamic spectra
-                    [t] -> Time series
-                    [f] -> Spectra
-        tlim (List): Time bounds (limits) in [ms]
-        flim (List): Freq bounds (limits) in [MHz]
-        ax (axes): Axes handle
-        filename (str): To save figure to
+    Plot data
 
-    
+    Parameters
+    ----------
+    dat : Dict(np.ndarray)
+        Dictionary of stokes data, can include any data products
+    typ : str, optional
+        Type of data to plot, by default "dsI" \n
+        [ds] - dynamic spectra \n
+        [t] - time series \n
+        [f] - frequency spectra
+    ax : Axes, optional
+        axes handle, by default None
+    filename : str, optional
+        filename to save figure to, by default None
+    plot_err_type : str, optional
+        type of error plotting, by default "lines"
+
+    Returns
+    -------
+    fig : figure
+        Return Figure instance
     """
 
     ##==================##
@@ -228,13 +235,14 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_err_type =
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None
+
 
 
 
@@ -246,21 +254,31 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_err_type =
 def plot_scintband(x, y, y_err = None, w = 0.0, a = 0.0, ax = None, filename: str = None,
                     plot_err_type = "lines"):
     """
-    Info:
-        plot scintillation bandwidth
+    Plot Scintillation bandwidth model and residual data
 
-    Args:
-        x (ndarray): x data
-        y (ndarray): y data
-        y_err (ndarray): y data error
-        w (float): scintillation bandwidth
-        a (float): amplitude
-        filename (str): filename to save figure to
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    y : np.ndarray
+        Y data
+    y_err : np.ndarray, optional
+        Y error data, by default None
+    w : float, optional
+        Scintillation bandwidth, by default 0.0
+    a : float, optional
+        square of modulation index, by default 0.0
+    ax : Axes, optional
+        Axes handle, by default None
+    filename : str, optional
+        filename to save figure to, by default None
+    plot_err_type : str, optional
+        type of error to plot, by default "lines"
 
-    Returns:
-        fig (figure): figure handle
-
-
+    Returns
+    -------
+    fig : figure
+        Return figure instance
     """
     
     ##==================##
@@ -299,12 +317,12 @@ def plot_scintband(x, y, y_err = None, w = 0.0, a = 0.0, ax = None, filename: st
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None
 
 
@@ -319,20 +337,31 @@ def plot_scintband(x, y, y_err = None, w = 0.0, a = 0.0, ax = None, filename: st
 def plot_tscatt(x, y, y_err = None, ax = None, p = None, npulse: int = 1, filename: str = None,
                 plot_err_type = "lines"):
     """
-    Info:
-        plot scattering timescale
+    Plot time series fit, a sum of convolved gaussians
 
-    Args:
-        x (ndarray): x data
-        y (ndarray): y data
-        y_err (ndarray): y data error
-        ax (axes): Axes handle
-        npulse (int): Number of convolved pulses from fit
-        p (dict): parameters to pass, derived from get_tscatt()
-        filename (str): filename to save figure to
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    y : np.ndarray
+        Y data
+    y_err : np.ndarray, optional
+        Y error data, by default None
+    ax : Axes, optional
+        Axes handle, by default None
+    p : Dict, optional
+        Dictionary of parameters for each convolved gaussian in time series, by default None
+    npulse : int, optional
+        number of convolved gaussians, by default 1
+    filename : str, optional
+        filename to save figure to, by default None
+    plot_err_type : str, optional
+        type of error to plot, by default "lines"
 
-    Returns:
-        fig (figure): figure handle
+    Returns
+    -------
+    fig : figure
+        Return figure handle
     """
 
     ##==================##
@@ -386,12 +415,12 @@ def plot_tscatt(x, y, y_err = None, ax = None, p = None, npulse: int = 1, filena
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None
 
 
@@ -406,24 +435,37 @@ def plot_tscatt(x, y, y_err = None, ax = None, p = None, npulse: int = 1, filena
 def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
             ax = None, filename: str = None, plot_err_type = "lines"):
     """
-    Info:
-        Plot RM against PA spectra
+    Plot RM fit
 
-    Args:
-        Q (ndarray): stokes Q spectra
-        U (ndarray): stokes U spectra
-        f (ndarray): frequency array
-        rm (float): rotation measure
-        pa0 (float): position angle
-        f0 (float): reference frequency
-        ax (axes): axes handle
-        filename (str): name to save figure to, if None figure is 
-                        not saved.
+    Parameters
+    ----------
+    f : np.ndarray
+        Frequency array
+    Q : np.ndarray
+        Stokes Q spectrum
+    U : np.ndarray
+        Stokes U spectrum
+    Qerr : np.ndarray, optional
+        Stokes Q error spectrum, by default None
+    Uerr : np.ndarray, optional
+        Stokes U error spectrum, by default None
+    rm : float, optional
+        Rotation Measure [rad/m^2], by default 0.0
+    pa0 : float, optional
+        position angle at f0, by default 0.0
+    f0 : float, optional
+        reference frequency [MHz], by default 0.0
+    ax : Axes, optional
+        Axes handle, by default None
+    filename : str, optional
+        filename to save figure to, by default None
+    plot_err_type : str, optional
+        type of error to plot, by default "lines"
 
     Returns
-        fig: returns figure handle if ax handle not passed and 
-             filename not given
-
+    -------
+    fig : figure
+        Return figure instance
     """
 
     ##==================##
@@ -476,12 +518,12 @@ def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None
 
 
@@ -499,20 +541,29 @@ def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
 def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
             plot_err_type = "lines"):
     """
-    Info:
-        Plot Position angle and error as function of time in units degrees
+    Plot PA profile
 
-    Args:
-        x (ndarray): x axis to plot PA units in [ms]
-        PA (ndarray): position angle
-        PA_err (ndarray): position angle error
-        ax (axes): axes handle
-        filename (str): filename of saved figure
+    Parameters
+    ----------
+    x : np.ndarray
+        X data
+    PA : np.ndarray
+        Position angle
+    PA_err : np.ndarray
+        PA error
+    ax : Axes, optional
+        Axes handle, by default None
+    flipPA : bool, optional
+        plot PA over [0, 180] degrees instead of [-90, 90], by default False
+    filename : str, optional
+        filename to save figure to, by default None
+    plot_err_type : str, optional
+        type of error to plot, by default "lines"
 
     Returns
-        fig (figure): returns figure handle if ax handle not passed and 
-                      filename not given
-
+    -------
+    fig : figure
+        Return figure instance
     """
 
     ##==================##
@@ -553,12 +604,12 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None
 
 
@@ -578,30 +629,41 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
             stk_type = "f", stk_ratio = False, stk2plot = "IQUV", ax = None, filename: str = None,
             plot_err_type = "lines"):
     """
-    Info:
-        Plot Stokes time series/spectra
+    Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
-    Args:
-        x (ndarray): x axis data, either time/frequency
-        stk_data (dict): dictionary of stokes data
-                         [I] -> Stokes I time/frequency data
-                         [Q] -> Stokes Q time/frequency data
-                         [U] -> Stokes U time/frequency data
-                         [V] -> Stokes V time/frequency data
-                         [Ierr] -> (Optional) for calculating L debiased
-        stk_err (dict): dictionary of stokes errors
-        lims (list): limits of x axis, either time in [ms] or freq in [MHz]
-                     be treated as spectra, else if not as time 
-                     series
-        L (bool): If True, plots the Linear pol data 'L' instead
-                  of Q and U
-        ax (axes): axes handle
-        stk_type (str): Time series "t" or spectra "f"
-        filename (str): name of figure file to save
+    Parameters
+    ----------
+    dat : Dict(np.ndarray)
+        Dictionary of stokes data, can include any data products but must include the following: \n
+        [I] - Stokes I data \n
+        [Q] - Stokes Q data \n
+        [U] - Stokes U data \n
+        [V] - Stokes V data \n
+        [Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True
+    plot_L : bool, optional
+        Plot stokes L instead of Q and U, by default False
+    Ldebias : bool, optional
+        Plot stokes L debias, by default False
+    debias_threshold : float, optional
+        sigma threshold for error masking, data that is < debias_threshold * Ierr, mask it out or
+        else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
+    stk_type : str, optional
+        Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
+    stk_ratio : bool, optional
+        Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False
+    stk2plot : str, optional
+        string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
+    filename : str, optional
+        name of file to save figure image, by default None
+    plot_err_type : str, optional
+        Choose between two methods of plotting the error in the data, by default "regions" \n
+        [regions] - Show error in data as shaded regions
+        [lines] - Show error in data as tics in markers
 
-    Returns:
-        fig: if filename and ax not specified, returns figure
-             handle.
+    Returns
+    -------
+    fig : figure
+        Return figure instance
 
     """
 
@@ -724,13 +786,13 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None and fig_flag:
-        plt.savefig(filename)
-    elif not fig_flag:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
-    return None 
+    
+    return None
 
 
 
@@ -746,25 +808,42 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
 def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False, 
                     plot_on_surface = True, n = 5, filename: str = None, cbar_lims = [0.0, 1.0], cbar_label = "", plot_P = False):
     """
-    Info:
-        Plot RM against PA spectra
+    Plot Stokes data on a Poincare Sphere.
 
-    Args:
-        Q (ndarray): stokes Q spectra
-        U (ndarray): stokes U spectra
-        f (ndarray): frequency array
-        rm (float): rotation measure
-        pa0 (float): position angle
-        f0 (float): reference frequency
-        ax (axes): axes handle
-        filename (str): name to save figure to, if None figure is 
-                        not saved.
+    Parameters
+    ----------
+    dat : Dict(np.ndarray)
+        Dictionary of stokes data, can include any data products but must include the following: \n
+        [I] - Stokes I data \n
+        [Q] - Stokes Q data \n
+        [U] - Stokes U data \n
+        [V] - Stokes V data \n
+        [Ierr] - Stokes I error data
+    filename : str, optional
+        filename to save figure to, by default None
+    stk_type : str, optional
+        types of stokes data to plot, by default "f" \n
+        [f] - Plot as a function of frequency \n
+        [t] - Plot as a function of time 
+    sigma : float, optional
+        Error threshold used for masking stokes data in the case that stokes/I is being calculated \n
+        this avoids deviding by potentially small numbers and getting weird results,by default 2.0
+    plot_data : bool, optional
+        Plot Data on Poincare sphere, by default True
+    plot_model : bool, optional
+        Plot Polynomial fitted data on Poincare sphere, by default False
+    plot_P : bool, optional
+        Plot stokes/P instead of stokes/I, by default False
+    plot_on_surface : bool, optional
+        Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+    n : int, optional
+        Maximum order of Polynomial fit, by default 5
 
     Returns
-        fig: returns figure handle if ax handle not passed and 
-             filename not given
-
-    """
+    -------
+    fig : figure
+        Return figure instance
+    """    
 
     data_list = ["I", "Q", "U", "V", "Ierr"]
 
@@ -935,10 +1014,10 @@ def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False,
     ##================##
     ## PLOT END GUARD ##
     ##================##
-    if filename is not None:
-        plt.savefig(filename)
-    else:
+    if not fig_flag:
+        if filename is not None:
+            plt.savefig(filename)
         plt.show()
         return fig
-
+    
     return None

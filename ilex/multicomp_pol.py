@@ -34,33 +34,47 @@ def multicomp_PA(stk, freqs, method = "RMquad", Ldebias_threshold = 2.0, dt = 0.
                 par: dict = None, tcrops = None, fcrops = None, filename: str = None, flipPA = False, ncols = 3,
                 plot_err_type = "lines", **kwargs):
     """
-    Info:
-        Multicomponent Polarisation, does full RM fitting and PA plotting/spectra plotting for each
-        component specified by tcrops and fcrops
+    Multicomponent Polarisation, does full RM fitting and PA plotting/spectra plotting for each
+    component specified by tcrops and fcrops
 
-    Args:
-        stk (dict): Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra
-                    [I] - Stokes I
-                    [Q] - Stokes Q
-                    [U] - Stokes U
-                    [V] - Stokes V
-        freqs (ndarray): Full Frequency array [MHz]
-        method (str): Method for RM fitting
-                      [RMquad] - Use Quadratic function and Scipy.curve_fit
-                      [RMsynth] - Use RM synthesis from [RMtools] from CIRCADA [https://github.com/CIRADA-Tools/RM-Tools]
-        Ldebias_threshold (float): Threshold for Debiased linear fraction in PA masking
-        dt (float): Time resolution in [ms] of stk data
-        tcrops (list): List of Time phase limits for each component
-        fcrops (list): List of Freq phase limits for each component
-        par (dict): List of parameters for data processing, see _proc_data() in _frb_proc() for a list of params
-        plot_L (bool): Plot Linear Fraction (L) instead of stokes Q and U
-        filename (str): Save plots to files with a common prefix
-        **kwargs: Keyword arguments for fitting processes (see method for RM fitting)
+    Parameters
+    ----------
+    stk : dict
+        Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra \n
+        [I] - Stokes I \n
+        [Q] - Stokes Q \n
+        [U] - Stokes U \n
+        [V] - Stokes V
+    freqs : ndarray
+        Full Frequency array [MHz]
+    method : str 
+        Method for RM fitting \n
+        [RMquad] - Use Quadratic function and Scipy.curve_fit \n
+        [RMsynth] - Use RM synthesis from [RMtools] from CIRCADA [https://github.com/CIRADA-Tools/RM-Tools]
+    Ldebias_threshold : float 
+        Threshold for Debiased linear fraction in PA masking
+    dt : float 
+        Time resolution in [ms] of stk data
+    plot_L: bool, optional
+        Plot Linear Polarisation instead of Stokes Q and U, by default False
+    tcrops : list
+        List of Time phase limits for each component
+    fcrops : list
+        List of Freq phase limits for each component
+    par : dict
+        List of parameters for data processing, see master_proc_data() in master_proc() for a list of params
+    plot_L : bool
+        Plot Linear Fraction (L) instead of stokes Q and U
+    filename : str 
+        Save plots to files with a common prefix
+    flipPA : bool, optional
+        Plot PA from [0, 180] instead of [-90, 90], by default False
+    ncols : number of colums when plotting a grid of different RM fitted components
+    **kwargs: Dict
+        Keyword arguments for fitting processes (see method for RM fitting)
 
     Returns:
-        RMs (list): List of fitted RMs for each components
-        PA (ndarray): Position angle for full data
-        PA_err (ndarray): Position angle error ""
+
     
     """
     # check if tcrops and fcrops are same length
@@ -269,18 +283,16 @@ def multicomp_PA(stk, freqs, method = "RMquad", Ldebias_threshold = 2.0, dt = 0.
     AX_PA['S'].legend(leg_lines, leg_s)
 
 
-
-
-    if filename is None:
-        plt.show()
-    else:
-        plt.savefig(filename)
-
     # print out infomation
     for i,_ in enumerate(RM):
         print(f"RM [{i}]= {RM[i]} +/- {RM_err[i]}   [rad/m2]")
 
-    return (None,) * 3
+
+    if filename is not None:
+        plt.savefig(filename)
+    plt.show()
+    return fig_PA
+
 
 
 
@@ -311,10 +323,54 @@ def multicomp_poincare(stk, freqs, stk_type = "f", dt = 0.001, par: dict = None,
                         tcrops = None, fcrops = None, filename: str = None, sigma = 2.0, 
                         plot_data = True, plot_model = False, plot_on_surface = True, 
                         plot_P = False, n = 5, cbar_lims = [0.0, 1.0]):
+    """
+    Plot multiple tracks on Poincare sphere
 
+    Parameters
+    ----------
+    stk : dict
+        Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra \n
+        [I] - Stokes I \n
+        [Q] - Stokes Q \n
+        [U] - Stokes U \n
+        [V] - Stokes V
+    freqs : ndarray
+        Full Frequency array [MHz]
+    stk_type : str, optional
+        stokes data to plot, by default "f" \n
+        [f] - plot stokes data as a function of frequency \n
+        [t] - plot stokes data as a function of time
+    dt : float, optional
+        time resolution in [ms], by default 0.001
+    tcrops : list
+        List of Time phase limits for each component
+    fcrops : list
+        List of Freq phase limits for each component
+    par : dict
+        List of parameters for data processing, see master_proc_data() in master_proc() for a list of params
+    filename : str, optional
+        filename to save plot to, by default None
+    sigma : float, optional
+        error threshold when masking stokes/I ratios, by default 2.0
+    plot_data : bool, optional
+        plot data on Poincare sphere, by default True
+    plot_model : bool, optional
+        Plot Polynomial fitted model of data on Poincare sphere, by default False
+    plot_on_surface : bool, optional
+        Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+    plot_P : bool, optional
+        Plot Stokes/P instead of Stokes/I, by default False
+    n : int, optional
+        Maximum polynomial order for model fitting, by default 5
+    cbar_lims : list, optional
+        limits of colorbar, by default [0.0, 1.0]
+
+    Returns
+    -------
+    fig : figure
+        Return figure instance
     """
-    
-    """
+
     # check if tcrops and fcrops are same length
     if tcrops is None and fcrops is None:
         log("Must specify time and/or freq crops for each component", stype = "err")
@@ -552,10 +608,8 @@ def multicomp_poincare(stk, freqs, stk_type = "f", dt = 0.001, par: dict = None,
     ax2.legend(leg_lines2, leg_names2)
 
     # plot figure
-    if filename is None:
-        plt.show()
-    else:
+    if filename is not None:
         plt.savefig(filename)
+    plt.show()
+    return fig
 
-        
-    return

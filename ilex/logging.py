@@ -50,6 +50,7 @@ def check_verbosefile():
     """
     Check if verbose file exists, else create new one
     """
+
     vfile = get_filepath(verbose_file)
 
     if not vfile:
@@ -116,14 +117,22 @@ def set_verbose(verbose):
 
 def log(pstr, stype = "log", lpf = True, lpf_col = 'None', ):
     """
-        Print String with a few utility options
+    Logging function, used to replace the python 'print' function
+    with extra functionality for ILEX
 
-        ##==== inputs ====##
-        str:            String to print out to console
-        stype:          Message type
-                        [log] -> print out as is
-                        [warn] -> print out as warning
-                        [err] -> print out as error
+    Parameters
+    ----------
+    pstr : str 
+        string to print
+    stype : str, optional
+        type of message to print, by default "log" \n
+        [log] - Normal print, shown in white \n
+        [warn] - Warn message, shown in yellow \n
+        [err] - Error message, shown in red
+    lpf : bool, optional
+        If true, the message will also label the parent function of the log function call, by default True
+    lpf_col : str, optional
+        Color to label parent function, by default 'None'
     """
 
     if not get_verbose():

@@ -16,32 +16,37 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
     Parameters
     ----------
-    stk: (dict[memmap]) 
+    stk: dict[np.memmap]
         Dictionary of memory maps of Stokes Dynamic spectra
     freq: (ndarray) 
         Array of frequencies before cropping/averaging (processing)
-    data_list: (list) 
+    data_list: List 
         List of requested data products
-    par: (dict) 
+    par: Dict 
         Parameters for data processing, the following are required \n
         [t_crop]: Crop in Time phase (default = [0.0, 1.0]) \n
         [f_crop]: Crop in Freq phase (default = [0.0, 1.0]) \n
         [terr_crop]: Crop of Error Time phase (default = None) \n
         [tN]: Factor in Time average (default = 1) \n
-        [fN]: Factor in Freq average (default = 1)
-        [tW]: Time weights (default = None)
-        [fW]: Freq weifhts (default = None)
-        [norm]: Method of normalisation (defualt = "None")
-        [RM]: Rotation Measure (default = 0.0)
-        [cfreq]: Central Frequency (default = 1271.5)
-        [f0]: reference frequency (default = cfreq)
+        [fN]: Factor in Freq average (default = 1) \n
+        [tW]: Time weights (default = None) \n
+        [fW]: Freq weifhts (default = None) \n
+        [norm]: Method of normalisation (defualt = "None") \n
+        [RM]: Rotation Measure (default = 0.0) \n
+        [cfreq]: Central Frequency (default = 1271.5) \n
+        [f0]: reference frequency (default = cfreq) \n
         [pa0]: PA at f0 (default = 0.0)
 
-    Returns:
-        _ds (dict): Dictionary of processed dynamic spectra
-        _t (dict): Dictionary of processed time series data
-        _f (dict): Dictionary of processed spectra data 
-        freq (ndarray): Array of Frequencies in MHz
+    Returns
+    -------
+    _ds : dict
+        Dictionary of processed dynamic spectra
+    _t :dict 
+        Dictionary of processed time series data
+    _f : dict
+         Dictionary of processed spectra data 
+    freq : ndarray
+         Array of Frequencies in MHz
     
     """
     ## ============================== ##

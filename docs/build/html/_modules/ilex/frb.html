@@ -91,10 +91,10 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
-
+<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span>
 
 <span class="c1">## import utils ##</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_data</span><span class="p">,</span> <span class="n">save_data</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">,</span>
@@ -104,20 +104,21 @@
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="c1">## import FRB stats ##</span>
-<span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="n">fit_scint</span><span class="p">,</span> <span class="n">fit_RMquad</span><span class="p">,</span> <span class="n">fit_RMsynth</span><span class="p">,</span> <span class="n">fit_tscatt</span>
+<span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="p">(</span><span class="n">fit_RMquad</span><span class="p">,</span> <span class="n">fit_RMsynth</span><span class="p">,</span> <span class="n">lorentz</span><span class="p">,</span>
+                     <span class="n">make_scatt_pulse_profile_func</span><span class="p">)</span>
 
 <span class="c1">## import FRB params ##</span>
 <span class="kn">from</span> <span class="nn">.par</span> <span class="kn">import</span> <span class="n">FRB_params</span><span class="p">,</span> <span class="n">FRB_metaparams</span>
 
-<span class="c1">## import FRB htr functions ##</span>
-<span class="kn">from</span> <span class="nn">.htr</span> <span class="kn">import</span> <span class="n">make_stokes</span>
+<span class="c1"># ## import FRB htr functions ##</span>
+<span class="c1"># from .htr import make_stokes</span>
 
 <span class="c1">## import globals ##</span>
 <span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">_G</span><span class="p">,</span> <span class="n">globals_</span> 
 
 <span class="c1">## import plot functions ##</span>
-<span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="p">(</span><span class="n">plot_scintband</span><span class="p">,</span> <span class="n">plot_tscatt</span><span class="p">,</span> <span class="n">plot_RM</span><span class="p">,</span> <span class="n">plot_PA</span><span class="p">,</span> <span class="n">plot_stokes</span><span class="p">,</span>      
-                  <span class="n">plot_poincare</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="p">(</span><span class="n">plot_RM</span><span class="p">,</span> <span class="n">plot_PA</span><span class="p">,</span> <span class="n">plot_stokes</span><span class="p">,</span>      
+                  <span class="n">plot_poincare_track</span><span class="p">,</span> <span class="n">create_poincare_sphere</span><span class="p">,</span> <span class="n">plot_data</span><span class="p">)</span>
 
 <span class="c1">## import processing functions ##</span>
 <span class="c1"># from .FRBproc import proc_data</span>
@@ -292,6 +293,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">savefig</span> <span class="o">=</span> <span class="kc">False</span>            <span class="c1"># save figures instead of plotting them</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;cyan&#39;</span>              <span class="c1"># color for verbose printing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span>    <span class="c1"># type of errorbar plot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="kc">False</span>          <span class="c1"># plot residuals when plotting fits</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isinstance</span> <span class="o">=</span> <span class="kc">False</span>        <span class="c1"># if data instance is valid</span>
 
 
 
@@ -385,7 +390,7 @@
     <span class="c1">## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##</span>
 <div class="viewcode-block" id="FRB.save_data">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.save_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">param_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save current instance data</span>
 
@@ -393,16 +398,61 @@
 <span class="sd">        ----------</span>
 <span class="sd">        data_list : List(str), optional</span>
 <span class="sd">            List of data to save, by default None</span>
-<span class="sd">        filename : str, optional</span>
-<span class="sd">            Common Pre-fix for saved data, by default None</span>
-<span class="sd">        param_file : str, optional</span>
-<span class="sd">            filename for parameter file, by default None</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Common Pre-fix for saved data, by default None, if None the name parameter of the</span>
+<span class="sd">            FRB class will be used.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># TODO:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Saving the following data products:&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
+        <span class="c1"># get data</span>
+        <span class="n">pdat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> 
         
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">frbname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">frbname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">frbname</span> <span class="o">=</span> <span class="s2">&quot;FRBXXXXXX&quot;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">frbname</span><span class="p">)</span>
+
+        <span class="c1"># save data</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">pdat</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">.npy&quot;</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">data</span><span class="p">])</span>
+
         <span class="k">return</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="FRB.set">
+<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set FRB parameters, see class parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># update pars</span>
+        <span class="n">par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_kwargs_get_par</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="o">**</span><span class="n">par</span><span class="p">)</span>
+
+        <span class="c1"># update metapars</span>
+        <span class="n">metapar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_from_kwargs_get_metapar</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">set_metapar</span><span class="p">(</span><span class="o">**</span><span class="n">metapar</span><span class="p">)</span>
+
+        <span class="c1"># update hyperpars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_hyperpar</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="p">)</span></div>
+
+
+
+
 
 
 
@@ -474,7 +524,8 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isvalid</span><span class="p">(</span><span class="n">data_products</span><span class="p">):</span>
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Loaded data not avaliable or incorrect DS shapes&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">,</span>
                     <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-                <span class="k">return</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_isinstance</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">return</span> 
 
 
             <span class="c1">## make new instances</span>
@@ -487,6 +538,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Loading previous crop&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isinstance</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># check if get is true</span>
         <span class="k">if</span> <span class="n">get</span><span class="p">:</span>
@@ -894,6 +946,13 @@
 <span class="sd">        Update parameters with keywords for current instance</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>  
+        <span class="c1"># copy over current hyperparams to kwargs</span>
+        <span class="n">metapar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">()</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">metapar</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kw</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">metapar</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
         <span class="c1"># make sure metaparameters are updated first  </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_proc_kwargs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
@@ -989,6 +1048,9 @@
                 <span class="n">new_t</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">prev_t</span><span class="p">)</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
                 <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting Time crop </span><span class="si">{</span><span class="n">prev_t</span><span class="si">}</span><span class="s2"> ms -&gt; </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> phase units&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># check if t_crop has been given in units of ms</span>
@@ -998,19 +1060,25 @@
                 <span class="n">_</span><span class="p">,</span> <span class="n">new_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">f_lim</span> <span class="o">=</span> <span class="n">prev_f</span><span class="p">)</span>
                 <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
                 <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting Freq crop </span><span class="si">{</span><span class="n">prev_f</span><span class="si">}</span><span class="s2"> MHz -&gt; </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> phase units&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># check if terr_crop has been given in units of ms</span>
         <span class="k">if</span> <span class="s2">&quot;terr_crop&quot;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                <span class="n">prev_t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="n">new_t</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">prev_t</span><span class="p">)</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="n">prev_t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">new_t</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">prev_t</span><span class="p">)</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting err Time crop </span><span class="si">{</span><span class="n">prev_t</span><span class="si">}</span><span class="s2"> ms -&gt; </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> phase units&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                    <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+                    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting err Time crop </span><span class="si">{</span><span class="n">prev_t</span><span class="si">}</span><span class="s2"> ms -&gt; </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> phase units&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
         
-
-
+            
 
 
 
@@ -1045,12 +1113,14 @@
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data_products</span><span class="p">:</span>
             <span class="c1"># check if none</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing data for [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="mi">0</span>
             
             <span class="n">data_shape</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
         
         <span class="c1"># check if shape of all data matches</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="o">==</span><span class="n">data_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data_shape</span><span class="p">):</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Data shape mismatch between loaded Dynamic spectra&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="mi">1</span>
@@ -1066,6 +1136,10 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">terr_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     
+
+    <span class="k">def</span> <span class="nf">_isdata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isinstance</span>
 
 
 
@@ -1238,8 +1312,10 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>  
 
         <span class="c1"># get dynI spectra (first scrunch)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
         
 
 
@@ -1309,7 +1385,11 @@
         <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">]</span>
         <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_start</span> <span class="o">+</span> <span class="n">sig_i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">tpro</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="p">(</span><span class="n">p_end</span> <span class="o">-</span> <span class="n">p_start</span><span class="p">)</span>
         <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_start</span> <span class="o">+</span> <span class="n">sig_i</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tpro</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="p">(</span><span class="n">p_end</span> <span class="o">-</span> <span class="n">p_start</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">width</span>
+        <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">width</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">set_metapar</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">)</span>
 
         <span class="n">log</span><span class="p">(</span><span class="s2">&quot;New t_crop: [</span><span class="si">{:.5f}</span><span class="s2">, </span><span class="si">{:.5f}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
@@ -1443,6 +1523,8 @@
         
         <span class="c1">#fill figure</span>
         <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1"># dynamic spectra</span>
         <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
@@ -1481,95 +1563,40 @@
 
 
 
-<span class="c1"># -&gt; Move to .plots</span>
-    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+
+
+<div class="viewcode-block" id="FRB.plot_data">
+<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        General Plotting function, choose to plot either dynamic spectrum or time series </span>
 <span class="sd">        data for all stokes parameters</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        data: str </span>
-<span class="sd">            Data to plot, [&quot;{type}{S}&quot;] where \n</span>
-<span class="sd">            [S] = [&quot;I&quot;, &quot;Q&quot;, &quot;U&quot;, &quot;V&quot;] \n</span>
-<span class="sd">            [type] = [&quot;ds&quot;, &quot;t&quot;, &quot;f&quot;] for dynamic spectra, time series and spectra</span>
-<span class="sd">            respectivley</span>
-<span class="sd">        **kwargs:</span>
-<span class="sd">            FRB parameter and meta-parameter arguments</span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;plotting </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="sd">        data : str, optional</span>
+<span class="sd">            type of data to plot, by default &quot;dsI&quot;</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename to save figure to, by default None</span>
+<span class="sd">        plot_err_type : str, optional</span>
+<span class="sd">            type of error plotting, by default &quot;regions&quot;\n</span>
+<span class="sd">            [regions] - Show error in data as shaded regions</span>
+<span class="sd">            [lines] - Show error in data as tics in markers</span>
 
-        <span class="c1"># get data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="c1"># flags</span>
-        <span class="n">err_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iserr</span><span class="p">()</span>
-
-
-        <span class="c1">##====================##</span>
-        <span class="c1">##     create axes    ##</span>
-        <span class="c1">##====================##</span>
-
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-        <span class="n">stk</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        
-
-        <span class="k">if</span> <span class="n">data</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ds&quot;</span><span class="p">:</span>   <span class="c1"># dynamic spectrum</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency [MHz]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="p">[</span><span class="n">stk</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-                            <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">f_lim</span><span class="p">])</span>
-            
-        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>   <span class="c1"># time series</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;arb.&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-            <span class="c1"># plot</span>
-            <span class="n">t_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="n">stk</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="n">stk</span><span class="p">])</span>
-
-            <span class="c1"># plot err</span>
-            <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-                <span class="n">ax_xlim</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
-                <span class="n">t_err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax_xlim</span><span class="p">,</span> <span class="p">[</span><span class="n">t_err</span><span class="p">,</span> <span class="n">t_err</span><span class="p">],</span> <span class="s1">&#39;--k&#39;</span><span class="p">)</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ax_xlim</span><span class="p">)</span>
-
-                <span class="c1"># legend</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span> <span class="s2">&quot;rms&quot;</span><span class="p">])</span>
-                
-        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span>    <span class="c1"># freq spectra</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;arb.&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency [MHz]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-            <span class="c1"># plot</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="n">stk</span><span class="p">])</span>
-
-            <span class="c1"># plot err</span>
-            <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="s1">&#39;--k&#39;</span><span class="p">)</span>
-
-                <span class="c1"># legend</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span> <span class="s2">&quot;rms&quot;</span><span class="p">])</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
-
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        
-
-        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span>
-
-
-<div class="viewcode-block" id="FRB.plot_data">
-<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : figure</span>
+<span class="sd">            Return Figure Instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
 
         <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;plotting </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># get data</span>
         <span class="n">pdat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">stk</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
@@ -1579,11 +1606,17 @@
             <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">)</span>
 
         <span class="c1"># plot </span>
-        <span class="n">plot_data</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
-        <span class="k">return</span></div>
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+
+
+
 
 
 
@@ -1594,8 +1627,7 @@
 <div class="viewcode-block" id="FRB.plot_stokes">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_stokes">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">debias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
-            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot Stokes data, by default stokes I, Q, U and V data is plotted</span>
 
@@ -1610,22 +1642,27 @@
 <span class="sd">            else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</span>
 <span class="sd">        stk_type : str, optional</span>
 <span class="sd">            Type of stokes data to plot, &quot;f&quot; for Stokes Frequency data or &quot;t&quot; for time data, by default &quot;f&quot;</span>
-<span class="sd">        stk_ratio : bool, optional</span>
-<span class="sd">            Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False</span>
 <span class="sd">        stk2plot : str, optional</span>
 <span class="sd">            string of stokes to plot, for example if &quot;QV&quot;, only stokes Q and V are plotted, by default &quot;IQUV&quot;</span>
 <span class="sd">        filename : str, optional</span>
 <span class="sd">            name of file to save figure image, by default None</span>
-<span class="sd">        plot_err_type : str, optional</span>
-<span class="sd">            Choose between two methods of plotting the error in the data, by default &quot;regions&quot; \n</span>
-<span class="sd">            [regions] - Show error in data as shaded regions</span>
-<span class="sd">            [lines] - Show error in data as tics in markers</span>
+<span class="sd">        **kwargs : Dict</span>
+<span class="sd">            FRB parameter keywords</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : figure</span>
+<span class="sd">            Return figure instance</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;plotting stokes data&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
         <span class="c1"># get data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">I&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">Q&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">U&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">V&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">I&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">Q&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">U&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}</span><span class="s2">V&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="n">data_list</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="n">err_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iserr</span><span class="p">()</span>
 
@@ -1656,14 +1693,14 @@
                 <span class="n">pstk</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stk_dat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
 
         <span class="c1"># plot</span>
-        <span class="n">plot_stokes</span><span class="p">(</span><span class="n">pstk</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">Ldebias</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="n">stk_type</span><span class="p">,</span>
-                    <span class="n">debias_threshold</span> <span class="o">=</span> <span class="n">debias_threshold</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="n">stk_ratio</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk2plot</span><span class="p">,</span>
-                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span> 
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_stokes</span><span class="p">(</span><span class="n">pstk</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">Ldebias</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="n">stk_type</span><span class="p">,</span>
+                    <span class="n">debias_threshold</span> <span class="o">=</span> <span class="n">debias_threshold</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk2plot</span><span class="p">,</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span><span class="p">)</span> 
     
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
-        <span class="k">return</span></div>
+        <span class="k">return</span> <span class="n">fig</span></div>
 
 
 
@@ -1677,16 +1714,20 @@
     <span class="c1">## [ PLOT LORENTZ OF CROP ] ##</span>
 <div class="viewcode-block" id="FRB.fit_scintband">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_scintband">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit_scintband</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit_priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                      <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fit_scintband</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span><span class="n">priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">statics</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                     <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit for, Find and plot Scintillation bandwidth in FRB</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        fit_priors : dict, optional</span>
+<span class="sd">        method : str</span>
+<span class="sd">            method for fitting \n</span>
+<span class="sd">            [bayesian] - Use Bilby bayesian Statistics \n</span>
+<span class="sd">            [least squares] - Use Scipy.Curve_fit least squares </span>
+<span class="sd">        priors : dict, optional</span>
 <span class="sd">            Priors for sampling, by default None</span>
-<span class="sd">        static_priors : dict, optional</span>
+<span class="sd">        statics : dict, optional</span>
 <span class="sd">            priors to keep constant, by default None</span>
 <span class="sd">        fit_params : dict, optional</span>
 <span class="sd">            extra arguments for Bilby.run_sampler function, by default None</span>
@@ -1694,19 +1735,11 @@
 <span class="sd">            plot data, by default False</span>
 <span class="sd">        filename : str, optional</span>
 <span class="sd">            Save figure to file, by default None</span>
-<span class="sd">        plot_err_type : str, optional</span>
-<span class="sd">            Choose between two methods of plotting the error in the data, by default &quot;regions&quot; \n</span>
-<span class="sd">            [regions] - Show error in data as shaded regions</span>
-<span class="sd">            [lines] - Show error in data as tics in markers, by default &quot;regions&quot;</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        p: fit_par</span>
-<span class="sd">            Posterior class data-structure</span>
-<span class="sd">        spec_lags: np.ndarray</span>
-<span class="sd">            Spectral lags</span>
-<span class="sd">        spec_acf: np.ndarray</span>
-<span class="sd">            ACF of spectral data, excluding zero-lag </span>
+<span class="sd">        p: pyfit.fit</span>
+<span class="sd">            pyfit class structure</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting for Scintillation bandwidth&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
@@ -1715,8 +1748,7 @@
         <span class="c1">##====================##</span>
 
         <span class="c1"># initilise dicts</span>
-        <span class="n">fit_priors</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">,</span> <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">fit_priors</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">,</span> 
-                                                          <span class="n">fit_params</span><span class="p">)</span>
+        <span class="n">priors</span><span class="p">,</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">)</span>
 
         <span class="c1"># init pars</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -1729,27 +1761,36 @@
 
         <span class="c1"># get data crop and spectrum</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;fI&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="c1"># caculate acf of residuals</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">acf</span><span class="p">(</span><span class="n">residuals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]))</span>
+        <span class="c1"># lags</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">bw</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
+                         <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
-        <span class="n">p</span> <span class="o">=</span> <span class="n">fit_scint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">fit_priors</span><span class="p">,</span> 
-                      <span class="n">static_priors</span> <span class="o">=</span> <span class="n">static_priors</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="c1"># create instance of fitting</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">lorentz</span><span class="p">,</span> <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span>
+                <span class="n">static</span> <span class="o">=</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_keywords</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span>
+                <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-
+        <span class="c1"># fit</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 
         <span class="c1"># calculate modulation index</span>
         <span class="c1"># see (Macquart. j. P. et al, 2019) - [The spectral Properties of the bright FRB population]</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val</span><span class="o">**</span><span class="mf">0.5</span>
 
         <span class="c1">#  using error propogation and quick calculus to obtain error</span>
-        <span class="n">temp_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">plus</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">minus</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]))</span><span class="o">/</span><span class="mi">2</span> 
-        <span class="n">err</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">temp_err</span><span class="o">/</span><span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+        <span class="n">temp_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span> 
+        <span class="n">err</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">temp_err</span><span class="o">/</span><span class="n">p</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val</span>
+
+        <span class="n">p</span><span class="o">.</span><span class="n">set_posterior</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
         
-        <span class="n">p</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-
-        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Modulated Index:&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;m:    </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> (+</span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">/-</span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
-
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
         <span class="c1">##===================##</span>
         <span class="c1">##   do plotting     ##</span>
@@ -1757,16 +1798,113 @@
 
         
         
-
-        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>        
-            <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_scintband</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">spec_lags</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">spec_acf</span><span class="p">,</span> <span class="n">y_err</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> 
-                                 <span class="n">w</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;w&#39;</span><span class="p">],</span> <span class="n">a</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">],</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span>
-                                 <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Norm acf&quot;</span><span class="p">)</span>
 
         <span class="c1"># update instance par</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">p</span><span class="p">,</span> <span class="n">spec_lags</span><span class="p">,</span> <span class="n">spec_acf</span></div>
+        <span class="k">return</span> <span class="n">p</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <span class="c1">## [ FIT SCATTERING TIMESCALE ] ##</span>
+<div class="viewcode-block" id="FRB.fit_tscatt">
+<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_tscatt">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_tscatt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">statics</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                   <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit a series of gaussian&#39;s convolved with a one-sided exponential scattering tai using BILB</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str</span>
+<span class="sd">            method for fitting \n</span>
+<span class="sd">            [bayesian] - Use Bilby bayesian Statistics \n</span>
+<span class="sd">            [least squares] - Use Scipy.Curve_fit least squares </span>
+<span class="sd">        npulse : int, optional</span>
+<span class="sd">            Number of gaussian to fit, by default 1</span>
+<span class="sd">        priors : dict, optional</span>
+<span class="sd">            Priors for sampling, by default None</span>
+<span class="sd">        statics : dict, optional</span>
+<span class="sd">            Priors to keep constant during fitting, by default None</span>
+<span class="sd">        fit_params : dict, optional</span>
+<span class="sd">            Keyword parameters for Bilby.run_sampler, by default None</span>
+<span class="sd">        plot : bool, optional</span>
+<span class="sd">            plot data after modelling is complete, by default False</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename to save final plot to, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        p: pyfit.fit</span>
+<span class="sd">            pyfit class structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting for Scattering Time&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+        <span class="c1">##====================##</span>
+        <span class="c1">## check if data valid##</span>
+        <span class="c1">##====================##</span>
+
+        <span class="c1"># initilaise dicts</span>
+        <span class="n">priors</span><span class="p">,</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">)</span>
+
+        <span class="c1"># init par</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+        <span class="c1">##====================##</span>
+        <span class="c1">##  proc data to fit  ##</span>
+        <span class="c1">##====================##</span>
+        
+        <span class="c1"># get data</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="s2">&quot;tI&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># create time profile</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iserr</span><span class="p">():</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+
+        <span class="c1">##==================##</span>
+        <span class="c1">##   Do Fitting     ##</span>
+        <span class="c1">##==================##</span>
+
+        <span class="c1"># create instance of fitting</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">err</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">make_scatt_pulse_profile_func</span><span class="p">(</span><span class="n">npulse</span><span class="p">),</span>
+                <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_keywords</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span>
+                <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span> 
+
+        <span class="c1"># fit </span>
+        <span class="n">p</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        
+        <span class="c1"># print best fit parameters</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="c1"># plot</span>
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Time [ms]&quot;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density (arb.)&quot;</span><span class="p">)</span>
+
+        <span class="c1"># save instance parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">p</span></div>
+
 
     
 
@@ -1784,11 +1922,37 @@
 <div class="viewcode-block" id="FRB.plot_poincare">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_poincare">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_poincare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_data</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                        <span class="n">plot_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot_P</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                        <span class="n">plot_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        Plot Stokes data on a Poincare Sphere.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename to save figure to, by default None</span>
+<span class="sd">        stk_type : str, optional</span>
+<span class="sd">            types of stokes data to plot, by default &quot;f&quot; \n</span>
+<span class="sd">            [f] - Plot as a function of frequency \n</span>
+<span class="sd">            [t] - Plot as a function of time </span>
+<span class="sd">        sigma : float, optional</span>
+<span class="sd">            Error threshold used for masking stokes data in the case that stokes/I is being calculated \n</span>
+<span class="sd">            this avoids deviding by potentially small numbers and getting weird results,by default 2.0</span>
+<span class="sd">        plot_data : bool, optional</span>
+<span class="sd">            Plot Data on Poincare sphere, by default True</span>
+<span class="sd">        plot_model : bool, optional</span>
+<span class="sd">            Plot Polynomial fitted data on Poincare sphere, by default False</span>
+<span class="sd">        normalise : bool, optional</span>
+<span class="sd">            Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True</span>
+<span class="sd">        n : int, optional</span>
+<span class="sd">            Maximum order of Polynomial fit, by default 5</span>
+<span class="sd">        **kwargs : Dict</span>
+<span class="sd">            FRB parameter keywords</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : figure</span>
+<span class="sd">            Return figure instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>    
         <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Plotting stokes data to poincare sphere&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -1806,7 +1970,10 @@
             <span class="n">data_list</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stk_type</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
 
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="n">data_list</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
+        <span class="c1"># what type of data, time or freq</span>
         <span class="k">if</span> <span class="n">stk_type</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
             <span class="n">pdat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span>
             <span class="n">cbar_lims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span>
@@ -1817,158 +1984,105 @@
             <span class="n">cbar_label</span> <span class="o">=</span> <span class="s2">&quot;Frequency [MHz]&quot;</span>
 
         <span class="c1"># plot poincare sphere</span>
-        <span class="n">plot_poincare</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span>
-                    <span class="n">plot_data</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="n">plot_model</span><span class="p">,</span> <span class="n">plot_P</span> <span class="o">=</span> <span class="n">plot_P</span><span class="p">,</span>
-                    <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">cbar_lims</span> <span class="o">=</span> <span class="n">cbar_lims</span><span class="p">,</span> <span class="n">cbar_label</span> <span class="o">=</span> <span class="n">cbar_label</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">create_poincare_sphere</span><span class="p">(</span><span class="n">cbar_lims</span> <span class="o">=</span> <span class="n">cbar_lims</span><span class="p">,</span> <span class="n">cbar_label</span> <span class="o">=</span> <span class="n">cbar_label</span><span class="p">)</span>
 
+        <span class="n">plot_poincare_track</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span>
+                    <span class="n">plot_data</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="n">plot_model</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">normalise</span><span class="p">,</span>
+                    <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
-        <span class="k">return</span></div>
+        <span class="k">return</span> <span class="n">fig</span></div>
 
 
 
 
-<div class="viewcode-block" id="FRB.plot_poincare_multi">
-<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_poincare_multi">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_poincare_multi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">tcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-                            <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_data</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                            <span class="n">plot_on_surface</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_P</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting multiple Poincare tracks&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
-        <span class="n">tcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
-        <span class="n">fcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)</span>
 
-        <span class="c1"># initialise crops</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c1"># run function</span>
-        <span class="n">freqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">()</span>
 
-        <span class="c1"># check the units of tcrops/fcrops</span>
-        <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                    <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
+
+
+
+
+
+
+
+
+    <span class="c1"># def plot_poincare_multi(self, stk_type = &quot;f&quot;, tcrops = None, fcrops = None, </span>
+    <span class="c1">#                         filename: str = None, plot_data = True, plot_model = False,</span>
+    <span class="c1">#                         plot_on_surface = True, plot_P = False, n = 5, **kwargs):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Plot multiple tracks on a Poincare Sphere. Each Track is represented by</span>
+    <span class="c1">#     a seperate crop, i.e. a set of of t_crop and f_crop. \n</span>
+    <span class="c1">#     Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop </span>
+    <span class="c1">#     will be used instead for each seperate track.</span>
+
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     stk_type : str, optional</span>
+    <span class="c1">#         Type of stokes data, by default &quot;f&quot; \n</span>
+    <span class="c1">#         [f] - Plot data as function of frequency \n</span>
+    <span class="c1">#         [t] - Plot data as function of time</span>
+    <span class="c1">#     tcrops : List(List), optional</span>
+    <span class="c1">#         List of t_crop&#39;s, one for each track to plot, by default None</span>
+    <span class="c1">#     fcrops : List(List), optional</span>
+    <span class="c1">#         List of f_crop&#39;s, one for each track to plot, by default None</span>
+    <span class="c1">#     filename : str, optional</span>
+    <span class="c1">#         filename to save figure to, by default None</span>
+    <span class="c1">#     plot_data : bool, optional</span>
+    <span class="c1">#         plot data on Poincare sphere, by default True</span>
+    <span class="c1">#     plot_model : bool, optional</span>
+    <span class="c1">#         Plot Polynomial fitted model of data on Poincare sphere, by default False</span>
+    <span class="c1">#     plot_on_surface : bool, optional</span>
+    <span class="c1">#         Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True</span>
+    <span class="c1">#     plot_P : bool, optional</span>
+    <span class="c1">#         Plot Stokes/P instead of Stokes/I, by default False</span>
+    <span class="c1">#     n : int, optional</span>
+    <span class="c1">#         Maximum polynomial order for model fitting, by default 5</span>
+
+    <span class="c1">#     Returns</span>
+    <span class="c1">#     -------</span>
+    <span class="c1">#     fig : figure</span>
+    <span class="c1">#         Return figure instance</span>
+    <span class="c1">#     &quot;&quot;&quot;        </span>
+    <span class="c1">#     log(f&quot;Plotting multiple Poincare tracks&quot;, lpf_col = self.pcol)</span>
+
+    <span class="c1">#     tcrops = deepcopy(tcrops)</span>
+    <span class="c1">#     fcrops = deepcopy(fcrops)</span>
+
+    <span class="c1">#     # initialise crops</span>
+    <span class="c1">#     self._load_new_params(**kwargs)</span>
+
+    <span class="c1">#     # run function</span>
+    <span class="c1">#     freqs = self.par.get_freqs()</span>
+
+    <span class="c1">#     # check the units of tcrops/fcrops</span>
+    <span class="c1">#     if tcrops is not None:</span>
+    <span class="c1">#         for i, crop in enumerate(tcrops):</span>
+    <span class="c1">#             if crop[0] &gt; 1.0 or crop[1] &gt; 1.0:</span>
+    <span class="c1">#                 tcrops[i], _ = self.par.lim2phase(t_lim = crop)</span>
         
-        <span class="k">if</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fcrops</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                    <span class="n">_</span><span class="p">,</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">f_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
+    <span class="c1">#     if fcrops is not None:</span>
+    <span class="c1">#         for i, crop in enumerate(fcrops):</span>
+    <span class="c1">#             if crop[0] &gt; 1.0 or crop[1] &gt; 1.0:</span>
+    <span class="c1">#                 _, fcrops[i] = self.par.lim2phase(f_lim = crop)</span>
 
-        <span class="c1"># combine dict</span>
-        <span class="n">full_par</span> <span class="o">=</span> <span class="n">merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">(),</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">())</span>
+    <span class="c1">#     # combine dict</span>
+    <span class="c1">#     full_par = merge_dicts(self.this_par.par2dict(),</span>
+    <span class="c1">#                         self.this_metapar.metapar2dict())</span>
 
-        <span class="c1"># run multicomp_poincare function</span>
-        <span class="n">multicomp_poincare</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="n">stk_type</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> 
-                            <span class="n">par</span> <span class="o">=</span> <span class="n">full_par</span><span class="p">,</span> <span class="n">tcrops</span> <span class="o">=</span> <span class="n">tcrops</span><span class="p">,</span> <span class="n">fcrops</span> <span class="o">=</span> <span class="n">fcrops</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span>
-                            <span class="n">plot_data</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="n">plot_model</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span>
-                            <span class="n">plot_on_surface</span> <span class="o">=</span> <span class="n">plot_on_surface</span><span class="p">,</span> <span class="n">plot_P</span> <span class="o">=</span> <span class="n">plot_P</span><span class="p">)</span>
+    <span class="c1">#     # run multicomp_poincare function</span>
+    <span class="c1">#     fig = multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, </span>
+    <span class="c1">#                         par = full_par, tcrops = tcrops, fcrops = fcrops, filename = filename,</span>
+    <span class="c1">#                         plot_data = plot_data, plot_model = plot_model, n = n,</span>
+    <span class="c1">#                         plot_on_surface = plot_on_surface, plot_P = plot_P)</span>
         
-        <span class="k">return</span></div>
+    <span class="c1">#     return fig</span>
 
 
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <span class="c1">## [ FIT SCATTERING TIMESCALE ] ##</span>
-<div class="viewcode-block" id="FRB.fit_tscatt">
-<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_tscatt">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit_tscatt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fit_priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-                      <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Info:</span>
-<span class="sd">            Fit for scattering timescale</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            npulse (int): number of convolved pulses to fit for</span>
-<span class="sd">            fit_priors (dict): priors for bays fitting</span>
-<span class="sd">            static_priors (dict): priors to keep static during fitting</span>
-<span class="sd">            fit_params (dict): parameters used to pass into fitting function</span>
-<span class="sd">            plot (bool): plot acf and scint function </span>
-<span class="sd">            filename (str): filename to save plot</span>
-<span class="sd">            **kwargs</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            p (dict): Dictionary of fitting parameters          </span>
-
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting for Scattering Time&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-        <span class="c1">##====================##</span>
-        <span class="c1">## check if data valid##</span>
-        <span class="c1">##====================##</span>
-
-        <span class="c1"># initilaise dicts</span>
-        <span class="n">fit_priors</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">,</span> <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">fit_priors</span><span class="p">,</span> <span class="n">static_priors</span><span class="p">,</span>
-                                                          <span class="n">fit_params</span><span class="p">)</span>
-
-        <span class="c1"># init par</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-        <span class="c1">##====================##</span>
-        <span class="c1">##  proc data to fit  ##</span>
-        <span class="c1">##====================##</span>
-        
-        <span class="c1"># get data</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="s2">&quot;tI&quot;</span><span class="p">]</span>
-
-        <span class="c1"># create time profile</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-
-        <span class="c1"># if error queiried, put in static</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iserr</span><span class="p">():</span>
-            <span class="c1"># needs to be in list form as per bilby sigma code</span>
-            <span class="n">static_priors</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">])</span>
-
-
-        <span class="c1">##==================##</span>
-        <span class="c1">##   Do Fitting     ##</span>
-        <span class="c1">##==================##</span>
-
-        <span class="n">p</span> <span class="o">=</span> <span class="n">fit_tscatt</span><span class="p">(</span><span class="n">t</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">I</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="n">npulse</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">fit_priors</span><span class="p">,</span>
-                       <span class="n">static_priors</span><span class="o">=</span><span class="n">static_priors</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>   
-        
-        <span class="c1"># print best fit parameters</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-
-
-
-
-        <span class="c1">##=====================##</span>
-        <span class="c1">##     Do Plotting     ##</span>
-        <span class="c1">##=====================##</span>
-
-        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-            <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_tscatt</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_err</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">],</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="n">npulse</span><span class="p">,</span> 
-                              <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
-
-        <span class="c1"># save instance parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="n">p</span></div>
 
 
 
@@ -2001,28 +2115,29 @@
 <div class="viewcode-block" id="FRB.fit_RM">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_RM">[docs]</a>
     <span class="k">def</span> <span class="nf">fit_RM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-               <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+               <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Info:</span>
-<span class="sd">            Fit for Rotation Measure (RM)</span>
+<span class="sd">        Fit Spectra for Rotation Measure</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            method (str): Method for RM fitting</span>
-<span class="sd">                          [RMquad] -&gt; Quadratic fitting using scipy.curve_fit()</span>
-<span class="sd">                          [RMsynth] -&gt; Fit RM using RM synthesis (RMtools)</span>
-<span class="sd">            plot (bool): plot RM fitting</span>
-<span class="sd">            fit_params (dict): **kwargs for RM fitting</span>
-<span class="sd">            filename (str): filename to save figure </span>
-<span class="sd">            **kwargs</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            Method to perform Rotation Measure fitting, by default &quot;RMquad&quot; \n</span>
+<span class="sd">            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n</span>
+<span class="sd">            [RMsynth] - Use the RM-tools RM-Synthesis method</span>
+<span class="sd">        plot : bool, optional</span>
+<span class="sd">            plot data after fitting if true, by default True</span>
+<span class="sd">        fit_params : dict, optional</span>
+<span class="sd">            keyword parameters for fitting method, by default None \n</span>
+<span class="sd">            [RMquad] - Scipy.optimise.curve_fit keyword params \n</span>
+<span class="sd">            [RMsynth] - RMtools_1D.run_synth keyword params</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename to save figure to, by default None</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            rm (float): Fitted Rotation Measure</span>
-<span class="sd">            rm_err (float): Fitted Rotation Measure error</span>
-<span class="sd">            pa0 (float): Position angle</span>
-<span class="sd">            pa0_err (float): Position angle error</span>
-<span class="sd">            f0 (float): Reference Frequency</span>
-
-
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        p : pyfit.fit</span>
+<span class="sd">            pyfit class fitting structure</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Retrieving RM&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
@@ -2038,7 +2153,7 @@
         
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Invalid method for estimating RM&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">)</span> <span class="o">*</span> <span class="mi">5</span>
+            <span class="k">return</span> <span class="kc">None</span>
             
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">terr_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify &#39;terr_crop&#39; for rms crop if you want to use RMsynth or RMquad&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">,</span>
@@ -2047,6 +2162,8 @@
         
         <span class="c1">## get data ##</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1">## run fitting for RM ##</span>
         <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">:</span>
@@ -2070,20 +2187,32 @@
                                           <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
 
 
+        <span class="c1"># put into pyfit structure</span>
+        <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">calc_PA</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">])</span>
 
-        <span class="c1">##=====================##</span>
-        <span class="c1">##     Do Plotting     ##</span>
-        <span class="c1">##=====================##</span>
+        <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+            <span class="n">angs</span> <span class="o">=</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">1e12</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">90</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">))</span>
 
-        <span class="c1">## plot diagnostics ##</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">PA</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">PA_err</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">rmquad</span><span class="p">,</span>
+                 <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set_posterior</span><span class="p">(</span><span class="s1">&#39;rm&#39;</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set_posterior</span><span class="p">(</span><span class="s1">&#39;pa0&#39;</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span><span class="p">,</span> <span class="n">pa0_err</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">set_posterior</span><span class="p">(</span><span class="s1">&#39;f0&#39;</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># set values to par class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">RM</span> <span class="o">=</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">)</span>
+
+        <span class="c1"># plot</span>
         <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-            <span class="n">plot_RM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">_is_fit</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Frequency [MHz]&quot;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;PA [deg]&quot;</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
 
-        <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span><span class="p">,</span> <span class="n">f0</span></div>
+        <span class="k">return</span> <span class="n">p</span></div>
 
 
 
@@ -2100,24 +2229,33 @@
 
 <div class="viewcode-block" id="FRB.plot_PA">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_PA">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_PA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plot_PA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Info:</span>
-<span class="sd">            Plot Position angle, Stokes Spectra and I ds at once as a mosaic</span>
-<span class="sd">            if RM is not provided, them RM will be fitted and used.</span>
+<span class="sd">        Plot Figure with PA profile, Stokes Time series data, and Stokes I dyspec. If RM is not </span>
+<span class="sd">        specified, will be fitted first.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            method (str): Method for RM fitting</span>
-<span class="sd">                          [RMquad] -&gt; Quadratic fitting using scipy.curve_fit()</span>
-<span class="sd">                          [RMsynth] -&gt; Fit RM using RM synthesis (RMtools)</span>
-<span class="sd">            Ldebias_threshold (float): Threshold for Debiased Linear fraction</span>
-<span class="sd">            plot_L (bool): Plot Linear Fraction (L) instead of stokes Q and U</span>
-<span class="sd">            fit_params (dict): **kwargs for RM fitting method</span>
-<span class="sd">            filename (str): Filename to save mosaic figure</span>
-<span class="sd">            **kwargs</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Ldebias_threshold : float, optional</span>
+<span class="sd">            Sigma threshold for PA masking, by default 2.0</span>
+<span class="sd">        plot_L : bool, optional</span>
+<span class="sd">            Plot Linear polarisation L stokes time series instead of U and Q, by default False</span>
+<span class="sd">        flipPA : bool, optional</span>
+<span class="sd">            Plot PA between [0, 180] degrees instead of [-90, 90], by default False</span>
+<span class="sd">        fit_params : dict, optional</span>
+<span class="sd">            keyword parameters for fitting method, by default None \n</span>
+<span class="sd">            [RMquad] - Scipy.optimise.curve_fit keyword params \n</span>
+<span class="sd">            [RMsynth] - RMtools_1D.run_synth keyword params</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename of figure to save to, by default None</span>
 
-<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        p : pyfit.fit</span>
+<span class="sd">            pyfit class fitting structure</span>
+<span class="sd">        fig : figure</span>
+<span class="sd">            Return figure instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Plotting PA&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
@@ -2128,18 +2266,20 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">terr_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Need to specify &#39;terr_crop&#39; for rms estimation&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-            <span class="k">return</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">RM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">RM</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">pa0</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">f0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_RM</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> 
-                                                        <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fit_params</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;RM not specified, either provide an RM or fit for one using .fit_RM()&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         
         <span class="c1">## get data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">,</span> 
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">,</span> 
                        <span class="s2">&quot;tI&quot;</span><span class="p">,</span>  <span class="s2">&quot;tQ&quot;</span><span class="p">,</span>  <span class="s2">&quot;tU&quot;</span><span class="p">,</span> 
-                       <span class="s2">&quot;fQ&quot;</span><span class="p">,</span>  <span class="s2">&quot;fU&quot;</span><span class="p">,</span> <span class="s2">&quot;tV&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        
+                       <span class="s2">&quot;fQ&quot;</span><span class="p">,</span>  <span class="s2">&quot;fU&quot;</span><span class="p">,</span> <span class="s2">&quot;tV&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
 
         <span class="c1">## calculate PA</span>
         <span class="n">stk_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dsQ&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">],</span> <span class="s2">&quot;dsU&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="s2">&quot;tQerr&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="s2">&quot;Qerr&quot;</span><span class="p">],</span>
@@ -2163,7 +2303,7 @@
             <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
 
         <span class="n">plot_stokes</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
-                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span><span class="p">)</span>
 
         <span class="c1">## plot dynamic spectra</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
@@ -2190,7 +2330,7 @@
 
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-        <span class="k">return</span></div>
+        <span class="k">return</span> <span class="n">fig</span></div>
 
 
 
@@ -2218,61 +2358,77 @@
 <div class="viewcode-block" id="FRB.plot_PA_multi">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_PA_multi">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_PA_multi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">tcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Info:</span>
-<span class="sd">                Plot Position angle for multiple components, Stokes Spectra and I ds at once as a mosaic</span>
-<span class="sd">                if RM is not provided, them RM will be fitted and used.</span>
+                    <span class="n">tcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot PA for multiple different components and sitch together. If RM is not specified, will be</span>
+<span class="sd">        fitted for each component. \n</span>
+<span class="sd">        Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop </span>
+<span class="sd">        will be used instead for each seperate track.</span>
 
-<span class="sd">            Args:</span>
-<span class="sd">                method (str): Method for RM fitting</span>
-<span class="sd">                            [RMquad] -&gt; Quadratic fitting using scipy.curve_fit()</span>
-<span class="sd">                            [RMsynth] -&gt; Fit RM using RM synthesis (RMtools)</span>
-<span class="sd">                Ldebias_threshold (float): Threshold for Debiased Linear fraction</span>
-<span class="sd">                tcrops (list): List of t_crop for each component</span>
-<span class="sd">                fcrops (list): List of f_crop for each component</span>
-<span class="sd">                plot_L (bool): Plot Linear Fraction (L) instead of stokes Q and U</span>
-<span class="sd">                fit_params (dict): **kwargs for RM fitting method</span>
-<span class="sd">                filename (str): Filename to save mosaic figure</span>
-<span class="sd">                **kwargs</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            Method to perform Rotation Measure fitting, by default &quot;RMquad&quot; \n</span>
+<span class="sd">            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n</span>
+<span class="sd">            [RMsynth] - Use the RM-tools RM-Synthesis method</span>
+<span class="sd">        Ldebias_threshold : float, optional</span>
+<span class="sd">            sigma threshold for PA masking, by default 2.0</span>
+<span class="sd">        plot_L : bool, optional</span>
+<span class="sd">            Plot Linear polarisation L stokes time series instead of U and Q, by default False</span>
+<span class="sd">        flipPA : bool, optional</span>
+<span class="sd">            Plot PA between [0, 180] degrees instead of [-90, 90], by default False</span>
+<span class="sd">        tcrops : _type_, optional</span>
+<span class="sd">            _description_, by default None</span>
+<span class="sd">        fcrops : _type_, optional</span>
+<span class="sd">            _description_, by default None</span>
+<span class="sd">        fit_params : dict, optional</span>
+<span class="sd">            keyword parameters for fitting method, by default None \n</span>
+<span class="sd">            [RMquad] - Scipy.optimise.curve_fit keyword params \n</span>
+<span class="sd">            [RMsynth] - RMtools_1D.run_synth keyword params</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            filename of figure to save to, by default None</span>
+<span class="sd">        plot_err_type : str, optional</span>
+<span class="sd">            type of error to plot, by default &quot;regions&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting multiple PA components&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting multiple PA components&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+        <span class="n">tcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
+        <span class="n">fcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)</span>
 
-            <span class="n">tcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
-            <span class="n">fcrops</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)</span>
+        <span class="c1"># initialise crops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># initialise parameters</span>
+        <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">fit_params</span><span class="p">)</span>
 
-            <span class="c1"># initialise crops</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            
-            <span class="c1"># initialise parameters</span>
-            <span class="n">fit_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="c1"># run function</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">()</span>
 
-            <span class="c1"># run function</span>
-            <span class="n">freqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">()</span>
+        <span class="c1"># check the units of tcrops/fcrops</span>
+        <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fcrops</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">f_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
 
-            <span class="c1"># check the units of tcrops/fcrops</span>
-            <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                        <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
-            
-            <span class="k">if</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fcrops</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                        <span class="n">_</span><span class="p">,</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">f_lim</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
+        <span class="c1"># combine dict</span>
+        <span class="n">full_par</span> <span class="o">=</span> <span class="n">merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">(),</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">())</span>
 
-            <span class="c1"># combine dict</span>
-            <span class="n">full_par</span> <span class="o">=</span> <span class="n">merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">(),</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">())</span>
+        <span class="c1"># check data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isvalid</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">,</span> <span class="s2">&quot;dsV&quot;</span><span class="p">]):</span>
+            <span class="k">return</span> 
 
-            <span class="n">RM</span><span class="p">,</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">multicomp_PA</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">,</span> <span class="n">freqs</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
-                                <span class="n">Ldebias_threshold</span><span class="o">=</span><span class="n">Ldebias_threshold</span><span class="p">,</span> <span class="n">plot_L</span><span class="o">=</span><span class="n">plot_L</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="n">flipPA</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="n">full_par</span><span class="p">,</span>
-                                <span class="n">tcrops</span><span class="o">=</span><span class="n">tcrops</span><span class="p">,</span> <span class="n">fcrops</span><span class="o">=</span><span class="n">fcrops</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">,</span>
-                                 <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
-            
-            <span class="k">return</span> </div>
+        <span class="n">RM</span><span class="p">,</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">multicomp_PA</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">,</span> <span class="n">freqs</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+                            <span class="n">Ldebias_threshold</span><span class="o">=</span><span class="n">Ldebias_threshold</span><span class="p">,</span> <span class="n">plot_L</span><span class="o">=</span><span class="n">plot_L</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="n">flipPA</span><span class="p">,</span> <span class="n">par</span><span class="o">=</span><span class="n">full_par</span><span class="p">,</span>
+                            <span class="n">tcrops</span><span class="o">=</span><span class="n">tcrops</span><span class="p">,</span> <span class="n">fcrops</span><span class="o">=</span><span class="n">fcrops</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span><span class="p">,</span>
+                                <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        
+        <span class="k">return</span> </div>
 </div>
 
 

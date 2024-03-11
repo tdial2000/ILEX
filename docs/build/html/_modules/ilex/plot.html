@@ -218,21 +218,28 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_data">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">typ</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Plot data</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        data (ndarray): Stokes Dynamic spectrum</span>
-<span class="sd">        typ (str): type of data to plot</span>
-<span class="sd">                    [ds] -&gt; Dynamic spectra</span>
-<span class="sd">                    [t] -&gt; Time series</span>
-<span class="sd">                    [f] -&gt; Spectra</span>
-<span class="sd">        tlim (List): Time bounds (limits) in [ms]</span>
-<span class="sd">        flim (List): Freq bounds (limits) in [MHz]</span>
-<span class="sd">        ax (axes): Axes handle</span>
-<span class="sd">        filename (str): To save figure to</span>
+<span class="sd">    Plot data</span>
 
-<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dat : Dict(np.ndarray)</span>
+<span class="sd">        Dictionary of stokes data, can include any data products</span>
+<span class="sd">    typ : str, optional</span>
+<span class="sd">        Type of data to plot, by default &quot;dsI&quot; \n</span>
+<span class="sd">        [ds] - dynamic spectra \n</span>
+<span class="sd">        [t] - time series \n</span>
+<span class="sd">        [f] - frequency spectra</span>
+<span class="sd">    ax : Axes, optional</span>
+<span class="sd">        axes handle, by default None</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        filename to save figure to, by default None</span>
+<span class="sd">    plot_err_type : str, optional</span>
+<span class="sd">        type of error plotting, by default &quot;lines&quot;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        Return Figure instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">##==================##</span>
@@ -307,182 +314,13 @@
     <span class="c1">##================##</span>
     <span class="c1">## PLOT END GUARD ##</span>
     <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span>
-
+    
     <span class="k">return</span> <span class="kc">None</span></div>
-
-
-
-
-
-
-
-<span class="c1">## [ PLOT SCINTILLATION ] ##</span>
-<span class="c1"># TODO: change args [p] for [w, a] par types</span>
-<div class="viewcode-block" id="plot_scintband">
-<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_scintband">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_scintband</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_err</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        plot scintillation bandwidth</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        x (ndarray): x data</span>
-<span class="sd">        y (ndarray): y data</span>
-<span class="sd">        y_err (ndarray): y data error</span>
-<span class="sd">        w (float): scintillation bandwidth</span>
-<span class="sd">        a (float): amplitude</span>
-<span class="sd">        filename (str): filename to save figure to</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        fig (figure): figure handle</span>
-
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    
-    <span class="c1">##==================##</span>
-    <span class="c1">## PLOT START GUARD ##</span>
-    <span class="c1">##==================##</span>
-    <span class="n">fig_flag</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">fig_flag</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
-
-
-    
-    <span class="c1"># start setting up axes</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency Lag [Mhz]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;normalised acf&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-
-    <span class="c1"># plot data</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
-
-    <span class="c1"># plot error bars if applicable</span>
-    <span class="k">if</span> <span class="n">y_err</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># error bars</span>
-        <span class="n">_plot_err</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">y_err</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
-
-    <span class="c1"># plot model</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">lorentz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">a</span><span class="p">))</span>
-
-    <span class="c1"># write decorrelation bandwidth in legend title</span>
-    <span class="n">leg_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">nu_</span><span class="se">{{</span><span class="s2">dc</span><span class="se">}}</span><span class="s2"> = </span><span class="se">{{</span><span class="si">{</span><span class="n">w</span><span class="si">:</span><span class="s2">.4f</span><span class="se">}}</span><span class="si">}</span><span class="s2">$ MHz&quot;</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">leg_title</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">14</span><span class="p">)</span>
-
-
-
-
-    <span class="c1">##================##</span>
-    <span class="c1">## PLOT END GUARD ##</span>
-    <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">fig</span>
-
-    <span class="k">return</span> <span class="kc">None</span></div>
-
-
-
-    
-
-
-
-
-
-
-<span class="c1">## [ PLOT SCATTERING TIMESCALE ] ##</span>
-<div class="viewcode-block" id="plot_tscatt">
-<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_tscatt">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_tscatt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_err</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">npulse</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        plot scattering timescale</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        x (ndarray): x data</span>
-<span class="sd">        y (ndarray): y data</span>
-<span class="sd">        y_err (ndarray): y data error</span>
-<span class="sd">        ax (axes): Axes handle</span>
-<span class="sd">        npulse (int): Number of convolved pulses from fit</span>
-<span class="sd">        p (dict): parameters to pass, derived from get_tscatt()</span>
-<span class="sd">        filename (str): filename to save figure to</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        fig (figure): figure handle</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1">##==================##</span>
-    <span class="c1">## PLOT START GUARD ##</span>
-    <span class="c1">##==================##</span>
-    <span class="n">fig_flag</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">fig_flag</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span>
-
-
-
-
-
-
-    <span class="c1"># add to figure</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;normalised arb.&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-
-    <span class="c1"># plot data</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
-    
-    <span class="c1"># plot error bars if applicable</span>
-    <span class="k">if</span> <span class="n">y_err</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># error bars</span>
-        <span class="n">_plot_err</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">y_err</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
-
-
-    <span class="c1"># plot model</span>
-    <span class="n">pvals</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_bestfit</span><span class="p">()</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">scatt_pulse_profile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">pvals</span><span class="p">))</span>
-
-    <span class="c1"># plot scattered gaussian models</span>
-    <span class="n">tail_s</span> <span class="o">=</span> <span class="n">scat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pvals</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">npulse</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">y_modl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pvals</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mu</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">pvals</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sig</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]),</span>
-                             <span class="n">tail_s</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">pvals</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;a</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_modl</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_modl</span><span class="p">),</span> <span class="s1">&#39;--&#39;</span><span class="p">)</span>
-
-
-    <span class="c1"># make legend to show scattering timescale</span>
-    <span class="n">leg_title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="se">\\</span><span class="s2">tau_</span><span class="se">{{</span><span class="s2">s</span><span class="se">}}</span><span class="s2"> = </span><span class="se">{{</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="se">}}</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="s2">-</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">plus</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="se">}}</span><span class="si">}</span><span class="s2">^</span><span class="se">{{</span><span class="s2">+</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">minus</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="se">}}</span><span class="si">}</span><span class="s2">$ ms&quot;</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">leg_title</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
-
-    
-
-
-    
-
-    <span class="c1">##================##</span>
-    <span class="c1">## PLOT END GUARD ##</span>
-    <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">fig</span>
-
-    <span class="k">return</span> <span class="kc">None</span></div>
-
-
-
-
-
 
 
 
@@ -494,24 +332,37 @@
 <span class="k">def</span> <span class="nf">plot_RM</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rm</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Plot RM against PA spectra</span>
+<span class="sd">    Plot RM fit</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        Q (ndarray): stokes Q spectra</span>
-<span class="sd">        U (ndarray): stokes U spectra</span>
-<span class="sd">        f (ndarray): frequency array</span>
-<span class="sd">        rm (float): rotation measure</span>
-<span class="sd">        pa0 (float): position angle</span>
-<span class="sd">        f0 (float): reference frequency</span>
-<span class="sd">        ax (axes): axes handle</span>
-<span class="sd">        filename (str): name to save figure to, if None figure is </span>
-<span class="sd">                        not saved.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f : np.ndarray</span>
+<span class="sd">        Frequency array</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q spectrum</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U spectrum</span>
+<span class="sd">    Qerr : np.ndarray, optional</span>
+<span class="sd">        Stokes Q error spectrum, by default None</span>
+<span class="sd">    Uerr : np.ndarray, optional</span>
+<span class="sd">        Stokes U error spectrum, by default None</span>
+<span class="sd">    rm : float, optional</span>
+<span class="sd">        Rotation Measure [rad/m^2], by default 0.0</span>
+<span class="sd">    pa0 : float, optional</span>
+<span class="sd">        position angle at f0, by default 0.0</span>
+<span class="sd">    f0 : float, optional</span>
+<span class="sd">        reference frequency [MHz], by default 0.0</span>
+<span class="sd">    ax : Axes, optional</span>
+<span class="sd">        Axes handle, by default None</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        filename to save figure to, by default None</span>
+<span class="sd">    plot_err_type : str, optional</span>
+<span class="sd">        type of error to plot, by default &quot;lines&quot;</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">        fig: returns figure handle if ax handle not passed and </span>
-<span class="sd">             filename not given</span>
-
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        Return figure instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">##==================##</span>
@@ -564,12 +415,12 @@
     <span class="c1">##================##</span>
     <span class="c1">## PLOT END GUARD ##</span>
     <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span>
-
+    
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -590,20 +441,29 @@
 <span class="k">def</span> <span class="nf">plot_PA</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Plot Position angle and error as function of time in units degrees</span>
+<span class="sd">    Plot PA profile</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        x (ndarray): x axis to plot PA units in [ms]</span>
-<span class="sd">        PA (ndarray): position angle</span>
-<span class="sd">        PA_err (ndarray): position angle error</span>
-<span class="sd">        ax (axes): axes handle</span>
-<span class="sd">        filename (str): filename of saved figure</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data</span>
+<span class="sd">    PA : np.ndarray</span>
+<span class="sd">        Position angle</span>
+<span class="sd">    PA_err : np.ndarray</span>
+<span class="sd">        PA error</span>
+<span class="sd">    ax : Axes, optional</span>
+<span class="sd">        Axes handle, by default None</span>
+<span class="sd">    flipPA : bool, optional</span>
+<span class="sd">        plot PA over [0, 180] degrees instead of [-90, 90], by default False</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        filename to save figure to, by default None</span>
+<span class="sd">    plot_err_type : str, optional</span>
+<span class="sd">        type of error to plot, by default &quot;lines&quot;</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">        fig (figure): returns figure handle if ax handle not passed and </span>
-<span class="sd">                      filename not given</span>
-
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        Return figure instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">##==================##</span>
@@ -644,12 +504,12 @@
     <span class="c1">##================##</span>
     <span class="c1">## PLOT END GUARD ##</span>
     <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span>
-
+    
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
@@ -658,7 +518,10 @@
 
 
 
-
+<div class="viewcode-block" id="plot_stokes_ratios">
+<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_stokes_ratios">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_stokes_ratios</span><span class="p">():</span>
+    <span class="k">pass</span></div>
 
 
 
@@ -669,33 +532,42 @@
 <div class="viewcode-block" id="plot_stokes">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_stokes">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">debias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
-            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Plot Stokes time series/spectra</span>
+<span class="sd">    Plot Stokes data, by default stokes I, Q, U and V data is plotted</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        x (ndarray): x axis data, either time/frequency</span>
-<span class="sd">        stk_data (dict): dictionary of stokes data</span>
-<span class="sd">                         [I] -&gt; Stokes I time/frequency data</span>
-<span class="sd">                         [Q] -&gt; Stokes Q time/frequency data</span>
-<span class="sd">                         [U] -&gt; Stokes U time/frequency data</span>
-<span class="sd">                         [V] -&gt; Stokes V time/frequency data</span>
-<span class="sd">                         [Ierr] -&gt; (Optional) for calculating L debiased</span>
-<span class="sd">        stk_err (dict): dictionary of stokes errors</span>
-<span class="sd">        lims (list): limits of x axis, either time in [ms] or freq in [MHz]</span>
-<span class="sd">                     be treated as spectra, else if not as time </span>
-<span class="sd">                     series</span>
-<span class="sd">        L (bool): If True, plots the Linear pol data &#39;L&#39; instead</span>
-<span class="sd">                  of Q and U</span>
-<span class="sd">        ax (axes): axes handle</span>
-<span class="sd">        stk_type (str): Time series &quot;t&quot; or spectra &quot;f&quot;</span>
-<span class="sd">        filename (str): name of figure file to save</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dat : Dict(np.ndarray)</span>
+<span class="sd">        Dictionary of stokes data, can include any data products but must include the following: \n</span>
+<span class="sd">        [I] - Stokes I data \n</span>
+<span class="sd">        [Q] - Stokes Q data \n</span>
+<span class="sd">        [U] - Stokes U data \n</span>
+<span class="sd">        [V] - Stokes V data \n</span>
+<span class="sd">        [Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True</span>
+<span class="sd">    plot_L : bool, optional</span>
+<span class="sd">        Plot stokes L instead of Q and U, by default False</span>
+<span class="sd">    Ldebias : bool, optional</span>
+<span class="sd">        Plot stokes L debias, by default False</span>
+<span class="sd">    debias_threshold : float, optional</span>
+<span class="sd">        sigma threshold for error masking, data that is &lt; debias_threshold * Ierr, mask it out or</span>
+<span class="sd">        else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</span>
+<span class="sd">    stk_type : str, optional</span>
+<span class="sd">        Type of stokes data to plot, &quot;f&quot; for Stokes Frequency data or &quot;t&quot; for time data, by default &quot;f&quot;</span>
+<span class="sd">    stk2plot : str, optional</span>
+<span class="sd">        string of stokes to plot, for example if &quot;QV&quot;, only stokes Q and V are plotted, by default &quot;IQUV&quot;</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        name of file to save figure image, by default None</span>
+<span class="sd">    plot_err_type : str, optional</span>
+<span class="sd">        Choose between two methods of plotting the error in the data, by default &quot;regions&quot; \n</span>
+<span class="sd">        [regions] - Show error in data as shaded regions</span>
+<span class="sd">        [lines] - Show error in data as tics in markers</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        fig: if filename and ax not specified, returns figure</span>
-<span class="sd">             handle.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        Return figure instance</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -724,7 +596,7 @@
     <span class="n">st</span> <span class="o">=</span> <span class="n">stk_type</span>
 
     <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="n">xdat</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">Ldebias</span> <span class="ow">or</span> <span class="n">stk_ratio</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">Ldebias</span><span class="p">:</span>
         <span class="n">data_list</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span>
 
     <span class="c1"># get data</span>
@@ -736,17 +608,12 @@
     <span class="k">if</span> <span class="n">plot_L</span><span class="p">:</span>
         <span class="n">col</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">:</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span><span class="s1">&#39;b&#39;</span><span class="p">}</span>
 
-        <span class="c1"># calc L</span>
         <span class="k">if</span> <span class="n">Ldebias</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Ierr&quot;</span><span class="p">])</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Lerr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span>
+                                        <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_L</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">])</span>
-        
-        <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Lerr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Qerr&quot;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> 
-                                   <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Uerr&quot;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">Lmask</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mf">0.0</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Lerr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Lerr&quot;</span><span class="p">][</span><span class="n">Lmask</span><span class="p">]</span><span class="o">/</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">][</span><span class="n">Lmask</span><span class="p">])</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;L&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Lerr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_L</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span>
+                                        <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">])</span>
 
         <span class="c1"># update stk2plot</span>
         <span class="n">stk</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -758,55 +625,9 @@
         <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk</span>
 
 
-    <span class="c1"># check if stk ratios being used</span>
-    <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
-    <span class="n">marker</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">stk_ratio</span><span class="p">:</span>
-        <span class="c1"># get mask for ratios</span>
-        <span class="n">stk_mask</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">debias_threshold</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span>
-
-        <span class="c1"># this is done assuming freq errors are arrays and time errors</span>
-        <span class="c1"># are scalars</span>
-        <span class="n">Ierr</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk2plot</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">S</span> <span class="o">!=</span> <span class="s2">&quot;I&quot;</span><span class="p">:</span>
-                <span class="n">Xerr</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-                    <span class="n">Xerr</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
-                <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_ratio</span><span class="p">(</span>
-                    <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Xerr</span><span class="p">)</span>
-        
-        <span class="c1"># normalize I and Ierr, for completeness</span>
-        <span class="n">Iratio</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">]</span>
-
-        <span class="c1"># rough calculation</span>
-        <span class="k">if</span> <span class="n">st</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">][</span><span class="n">stk_mask</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">]</span>
-        <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Iratio</span>
-
-        <span class="c1"># now time/freq array</span>
-        <span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-        <span class="nb">print</span><span class="p">(</span><span class="n">pdat</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk2plot</span><span class="p">:</span>
-            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-            <span class="k">if</span> <span class="n">st</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span> <span class="ow">and</span> <span class="n">err_flag</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">])</span>
-                <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][</span><span class="o">~</span><span class="n">stk_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-
-
-        <span class="c1"># set additional plotting parameters</span>
-        <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="c1"># since masked stokes data may be segmented, we want to avoid drawing a line</span>
-        <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
-        
     <span class="c1"># now we are ready to plot stokes data</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">S</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stk2plot</span><span class="p">):</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="n">marker</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="n">linestyle</span><span class="p">,</span>
-                <span class="n">markersize</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
             <span class="n">_plot_err</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span>
              <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
@@ -818,92 +639,40 @@
     <span class="c1">##================##</span>
     <span class="c1">## PLOT END GUARD ##</span>
     <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig_flag</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fig_flag</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span>
-
-    <span class="k">return</span> <span class="kc">None</span> </div>
-
-
+    
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 
 
 
 
-
-
-
-
-
-<div class="viewcode-block" id="plot_poincare">
-<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_poincare">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_poincare</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_data</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
-                    <span class="n">plot_on_surface</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cbar_lims</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">cbar_label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">plot_P</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="create_poincare_sphere">
+<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.create_poincare_sphere">[docs]</a>
+<span class="k">def</span> <span class="nf">create_poincare_sphere</span><span class="p">(</span><span class="n">cbar_lims</span><span class="p">,</span> <span class="n">cbar_label</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Plot RM against PA spectra</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        Q (ndarray): stokes Q spectra</span>
-<span class="sd">        U (ndarray): stokes U spectra</span>
-<span class="sd">        f (ndarray): frequency array</span>
-<span class="sd">        rm (float): rotation measure</span>
-<span class="sd">        pa0 (float): position angle</span>
-<span class="sd">        f0 (float): reference frequency</span>
-<span class="sd">        ax (axes): axes handle</span>
-<span class="sd">        filename (str): name to save figure to, if None figure is </span>
-<span class="sd">                        not saved.</span>
+<span class="sd">    Create poincare sphere plot</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cbar_lims : list(float)</span>
+<span class="sd">        colorbar limits</span>
+<span class="sd">    cbar_label : str</span>
+<span class="sd">        colorbar label </span>
 
 <span class="sd">    Returns</span>
-<span class="sd">        fig: returns figure handle if ax handle not passed and </span>
-<span class="sd">             filename not given</span>
-
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        figure instance</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;Ierr&quot;</span><span class="p">]</span>
-
-    <span class="c1"># get data</span>
-    <span class="n">pdat</span><span class="p">,</span> <span class="n">err_flag</span> <span class="o">=</span> <span class="n">_data_from_dict</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">data_list</span><span class="p">)</span>
-
-
-
-    <span class="c1">##==================##</span>
-    <span class="c1">## PLOT START GUARD ##</span>
-    <span class="c1">##==================##</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span> <span class="o">=</span> <span class="s1">&#39;3d&#39;</span><span class="p">)</span>
-
-
-    <span class="k">def</span> <span class="nf">cart2sph</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
-
-        <span class="c1"># sgn(y)</span>
-        <span class="n">sgny</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">sgny</span><span class="p">[</span><span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="n">sgny</span><span class="p">[</span><span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-
-        <span class="c1"># r</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">z</span> <span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-
-        <span class="c1"># theta</span>
-        <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">z</span><span class="o">/</span><span class="n">r</span><span class="p">)</span>
-
-        <span class="c1"># phi</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="n">sgny</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span>
-
-    
-    <span class="k">def</span> <span class="nf">sph2cart</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">):</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span>
-
 
 
     <span class="k">def</span> <span class="nf">set_axes_equal</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">Axes</span><span class="p">):</span>
@@ -958,6 +727,73 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
 
 
+    <span class="c1"># create colorbar</span>
+    <span class="n">ax_c</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">])</span>
+    <span class="n">ax_c</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax_c</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cbar_lims</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+                <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">ax_c</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">cbar_label</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1"># split into two functions, one to plot sphere, other to plot track in 3D</span>
+<div class="viewcode-block" id="plot_poincare_track">
+<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_poincare_track">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_poincare_track</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">plot_data</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">plot_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">normalise</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot Stokes data on a Poincare Sphere.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dat : Dict(np.ndarray)</span>
+<span class="sd">        Dictionary of stokes data, can include any data products but must include the following: \n</span>
+<span class="sd">        [I] - Stokes I data \n</span>
+<span class="sd">        [Q] - Stokes Q data \n</span>
+<span class="sd">        [U] - Stokes U data \n</span>
+<span class="sd">        [V] - Stokes V data \n</span>
+<span class="sd">        [Ierr] - Stokes I error data</span>
+<span class="sd">    filename : str, optional</span>
+<span class="sd">        filename to save figure to, by default None</span>
+<span class="sd">    stk_type : str, optional</span>
+<span class="sd">        types of stokes data to plot, by default &quot;f&quot; \n</span>
+<span class="sd">        [f] - Plot as a function of frequency \n</span>
+<span class="sd">        [t] - Plot as a function of time </span>
+<span class="sd">    sigma : float, optional</span>
+<span class="sd">        Error threshold used for masking stokes data in the case that stokes/I is being calculated \n</span>
+<span class="sd">        this avoids deviding by potentially small numbers and getting weird results,by default 2.0</span>
+<span class="sd">    plot_data : bool, optional</span>
+<span class="sd">        Plot Data on Poincare sphere, by default True</span>
+<span class="sd">    plot_model : bool, optional</span>
+<span class="sd">        Plot Polynomial fitted data on Poincare sphere, by default False</span>
+<span class="sd">    normalise : bool, optional</span>
+<span class="sd">        Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        Maximum order of Polynomial fit, by default 5</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : figure</span>
+<span class="sd">        Return figure instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;Ierr&quot;</span><span class="p">]</span>
+
+    <span class="c1"># get data</span>
+    <span class="n">pdat</span><span class="p">,</span> <span class="n">err_flag</span> <span class="o">=</span> <span class="n">_data_from_dict</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">data_list</span><span class="p">)</span>
+
     <span class="c1"># calculate stokes ratios</span>
     <span class="c1"># choice of normalizing against stokes I or P</span>
     <span class="n">P</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -965,27 +801,16 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">err_flag</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stk/P requires all stokes err&quot;</span><span class="p">)</span>
-        <span class="n">plot_P</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="n">plot_P</span><span class="p">:</span>
-        <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> 
-                       <span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> 
-                       <span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Verr&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">P</span>
+        <span class="n">normalise</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">normalise</span><span class="p">:</span>
+        <span class="n">P</span><span class="p">,</span> <span class="n">Perr</span> <span class="o">=</span> <span class="n">calc_Pdebiased</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">],</span>
+                                <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;Verr&#39;</span><span class="p">])</span>
     <span class="n">stk_mask</span> <span class="o">=</span> <span class="n">P</span> <span class="o">&gt;=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">Perr</span>
     <span class="n">stk_i</span> <span class="o">=</span> <span class="p">{}</span>
     
     <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QUV&quot;</span><span class="p">:</span>
         <span class="n">stk_i</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="n">S</span><span class="p">][</span><span class="n">stk_mask</span><span class="p">]</span><span class="o">/</span><span class="n">P</span><span class="p">[</span><span class="n">stk_mask</span><span class="p">]</span>
-
     <span class="n">stk_o</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">stk_i</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">plot_on_surface</span><span class="p">:</span>
-        <span class="c1"># get angles first</span>
-        <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span> <span class="o">=</span> <span class="n">cart2sph</span><span class="p">(</span><span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">])</span>
-
-        <span class="c1"># imprint on surface of sphere</span>
-        <span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">stk_i</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sph2cart</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
-
 
     <span class="c1"># model stokes data</span>
     <span class="k">if</span> <span class="n">plot_model</span><span class="p">:</span>
@@ -993,7 +818,7 @@
         <span class="n">stk_mo</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QUV&quot;</span><span class="p">:</span>
             <span class="n">stk_m</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_curve</span><span class="p">(</span><span class="n">stk_i</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">samp</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
-            <span class="n">stk_mo</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_curve</span><span class="p">(</span><span class="n">stk_o</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">samp</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+            <span class="c1"># stk_mo[S] = model_curve(stk_o[S], n = n, samp = 1000)</span>
 
     <span class="c1"># plot stokes data</span>
     <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
@@ -1008,38 +833,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cols</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">stk_m</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span></div>
+
     
-    <span class="c1"># plot model data if applicable</span>
-    <span class="k">if</span> <span class="n">plot_model</span><span class="p">:</span>
-        <span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-        <span class="n">ax2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">cbar_label</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Norm Stokes&quot;</span><span class="p">)</span>
-
-        <span class="c1"># plot each model and data for stokes</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">S</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s2">&quot;QUV&quot;</span><span class="p">):</span>
-            <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">cbar_lims</span><span class="p">,</span> <span class="n">stk_o</span><span class="p">[</span><span class="n">S</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">stk_o</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">default_col</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">)</span>
-            <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">cbar_lims</span><span class="p">,</span> <span class="n">stk_mo</span><span class="p">[</span><span class="n">S</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="n">stk_mo</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
-        <span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-
-
-    <span class="c1"># create colorbar</span>
-    <span class="n">ax_c</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">])</span>
-    <span class="n">ax_c</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">ax_c</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cbar_lims</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-                <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
-    <span class="n">ax_c</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">cbar_label</span><span class="p">)</span>
-
-    <span class="c1">##================##</span>
-    <span class="c1">## PLOT END GUARD ##</span>
-    <span class="c1">##================##</span>
-    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">fig</span>
-
-    <span class="k">return</span> <span class="kc">None</span></div>
-
 </pre></div>
 
            </div>

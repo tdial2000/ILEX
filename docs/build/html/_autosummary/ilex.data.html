@@ -53,8 +53,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.average"><code class="docutils literal notranslate"><span class="pre">average()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_L"><code class="docutils literal notranslate"><span class="pre">calc_L()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_Ldebiased"><code class="docutils literal notranslate"><span class="pre">calc_Ldebiased()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_P"><code class="docutils literal notranslate"><span class="pre">calc_P()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_PA"><code class="docutils literal notranslate"><span class="pre">calc_PA()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_PAdebiased"><code class="docutils literal notranslate"><span class="pre">calc_PAdebiased()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_Pdebiased"><code class="docutils literal notranslate"><span class="pre">calc_Pdebiased()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_freqs"><code class="docutils literal notranslate"><span class="pre">calc_freqs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_ratio"><code class="docutils literal notranslate"><span class="pre">calc_ratio()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.ccf"><code class="docutils literal notranslate"><span class="pre">ccf()</span></code></a></li>
@@ -77,6 +79,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 </ul>
 </li>
@@ -135,7 +138,7 @@ real-valued data</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.average">
-<span class="sig-name descname"><span class="pre">average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.average" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.average" title="Link to this definition"></a></dt>
 <dd><p>average in either frequency or time</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -157,27 +160,30 @@ to None, in which case a uniform weighting is applied.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.calc_L">
-<span class="sig-name descname"><span class="pre">calc_L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_L"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_L" title="Link to this definition"></a></dt>
-<dd><p>Calculate Stokes L</p>
+<span class="sig-name descname"><span class="pre">calc_L</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_L"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_L" title="Link to this definition"></a></dt>
+<dd><p>Calculate L</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
 <li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>L</strong> – Stokes L data</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>L</strong> (<em>np.ndarray</em>) – L data</p></li>
+<li><p><strong>Lerr</strong> (<em>np.ndarray</em>) – L errors</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.calc_Ldebiased">
-<span class="sig-name descname"><span class="pre">calc_Ldebiased</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_Ldebiased"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_Ldebiased" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">calc_Ldebiased</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_Ldebiased"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_Ldebiased" title="Link to this definition"></a></dt>
 <dd><p>Calculate De-biased Linear polarisation fraction
 (see Everett &amp; Weisberg+2001)</p>
 <dl class="field-list simple">
@@ -186,13 +192,41 @@ to None, in which case a uniform weighting is applied.</p></li>
 <li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
 <li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
 <li><p><strong>Ierr</strong> (<em>np.ndarray</em>) – Stokes U err data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>L_debias</strong> – Stokes L debias</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>L_debias</strong> (<em>np.ndarray</em>) – Stokes L debias</p></li>
+<li><p><strong>Lerr</strong> (<em>np.ndarray</em>) – L errors</p></li>
+</ul>
+</p>
 </dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.calc_P">
+<span class="sig-name descname"><span class="pre">calc_P</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Verr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_P"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_P" title="Link to this definition"></a></dt>
+<dd><p>Calculate P</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
+<li><p><strong>V</strong> (<em>np.ndarray</em>) – Stokes V data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
+<li><p><strong>Verr</strong> (<em>np.ndarray</em>) – Stokes V error</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>P</strong> (<em>np.ndarray</em>) – P data</p></li>
+<li><p><strong>Perr</strong> (<em>np.ndarray</em>) – P errors</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -244,6 +278,33 @@ stokes L debiased</p>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>PA</strong> (<em>np.ndarray</em>) – Position Angle (PA)</p></li>
 <li><p><strong>PAerr</strong> (<em>np.ndarray</em>) – Position Angle err</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.calc_Pdebiased">
+<span class="sig-name descname"><span class="pre">calc_Pdebiased</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">V</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Verr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_Pdebiased"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_Pdebiased" title="Link to this definition"></a></dt>
+<dd><p>Calculate De-biased Linear polarisation fraction then calculate
+total polarisation (see Everett &amp; Weisberg+2001)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
+<li><p><strong>V</strong> (<em>np.ndarray</em>) – Stokes V data</p></li>
+<li><p><strong>Ierr</strong> (<em>np.ndarray</em>) – Stokes U err data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
+<li><p><strong>Verr</strong> (<em>np.ndarray</em>) – Stokes V error</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>P_debias</strong> (<em>np.ndarray</em>) – P debias</p></li>
+<li><p><strong>Perr</strong> (<em>np.ndarray</em>) – P errors</p></li>
 </ul>
 </p>
 </dd>
@@ -393,7 +454,7 @@ the freq axis is axis = 0</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.pslice">
-<span class="sig-name descname"><span class="pre">pslice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#pslice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.pslice" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">pslice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#pslice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.pslice" title="Link to this definition"></a></dt>
 <dd><p>Slice 1D or 2D data in phase, between 0.0-1.0 which represents the
 start and end of ndarray along given axis. If array is 1D, given axis
 is set to 0.</p>
@@ -460,7 +521,7 @@ model</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.scrunch">
-<span class="sig-name descname"><span class="pre">scrunch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#scrunch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.scrunch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">scrunch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#scrunch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.scrunch" title="Link to this definition"></a></dt>
 <dd><p>Scrunch data along a given axis, weights may also be applied.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

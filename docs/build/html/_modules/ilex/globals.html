@@ -76,13 +76,30 @@
 <div class="viewcode-block" id="globals_">
 <a class="viewcode-back" href="../../_autosummary/ilex.globals.html#ilex.globals.globals_">[docs]</a>
 <span class="k">class</span> <span class="nc">globals_</span><span class="p">:</span>
-    <span class="k">pass</span></div>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Container for Global parameters</span>
+
+<span class="sd">  Attributes</span>
+<span class="sd">  ----------</span>
+<span class="sd">  hkeys : List</span>
+<span class="sd">    List of HTR crop products</span>
+<span class="sd">  DATA : List</span>
+<span class="sd">    List of HTR products</span>
+<span class="sd">  p : Dict</span>
+<span class="sd">    Dictionary of FRB parameters</span>
+<span class="sd">  mp : Dict</span>
+<span class="sd">    Dictionary of FRB meta-parameters</span>
+<span class="sd">  hp : Dict</span>
+<span class="sd">    Dictionary of FRB hyper-parameters</span>
+<span class="sd">  </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">pass</span></div>
 
 
 
 <span class="n">_G</span> <span class="o">=</span> <span class="n">globals_</span><span class="p">()</span>
 
-<span class="c1">#dict of HTR products</span>
+<span class="c1">#dict of HTR crop products</span>
 <span class="n">_G</span><span class="o">.</span><span class="n">hkeys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span><span class="s2">&quot;fI&quot;</span><span class="p">,</span>
             <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span><span class="s2">&quot;tQ&quot;</span><span class="p">,</span><span class="s2">&quot;fQ&quot;</span><span class="p">,</span>
             <span class="s2">&quot;dsU&quot;</span><span class="p">,</span><span class="s2">&quot;tU&quot;</span><span class="p">,</span><span class="s2">&quot;fU&quot;</span><span class="p">,</span>
@@ -97,7 +114,7 @@
 <span class="n">_G</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;FRBXXXXXX&quot;</span><span class="p">,</span> <span class="s2">&quot;RA&quot;</span><span class="p">:</span> <span class="s2">&quot;00:00:00.0000&quot;</span><span class="p">,</span> <span class="s2">&quot;DEC&quot;</span><span class="p">:</span> <span class="s2">&quot;00:00:00.0000&quot;</span><span class="p">,</span>
                       <span class="s2">&quot;DM&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;bw&quot;</span><span class="p">:</span> <span class="mi">336</span><span class="p">,</span> <span class="s2">&quot;cfreq&quot;</span><span class="p">:</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="s2">&quot;t_lim&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3100.0</span><span class="p">],</span>
                         <span class="s2">&quot;f_lim&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">336.0</span><span class="p">],</span> <span class="s2">&quot;nchan&quot;</span><span class="p">:</span> <span class="mi">336</span><span class="p">,</span> <span class="s2">&quot;nsamp&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
-                          <span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;RM&quot;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;pa0&quot;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;fW&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> 
+                          <span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;RM&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;pa0&quot;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;fW&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> 
                           <span class="s2">&quot;tW&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;czap&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
 
 <span class="c1"># dict of frb meta params</span>

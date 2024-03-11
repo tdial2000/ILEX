@@ -132,6 +132,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if verbose file exists, else create new one</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">vfile</span> <span class="o">=</span> <span class="n">get_filepath</span><span class="p">(</span><span class="n">verbose_file</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">vfile</span><span class="p">:</span>
@@ -207,14 +208,22 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.log">[docs]</a>
 <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Print String with a few utility options</span>
+<span class="sd">    Logging function, used to replace the python &#39;print&#39; function</span>
+<span class="sd">    with extra functionality for ILEX</span>
 
-<span class="sd">        ##==== inputs ====##</span>
-<span class="sd">        str:            String to print out to console</span>
-<span class="sd">        stype:          Message type</span>
-<span class="sd">                        [log] -&gt; print out as is</span>
-<span class="sd">                        [warn] -&gt; print out as warning</span>
-<span class="sd">                        [err] -&gt; print out as error</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr : str </span>
+<span class="sd">        string to print</span>
+<span class="sd">    stype : str, optional</span>
+<span class="sd">        type of message to print, by default &quot;log&quot; \n</span>
+<span class="sd">        [log] - Normal print, shown in white \n</span>
+<span class="sd">        [warn] - Warn message, shown in yellow \n</span>
+<span class="sd">        [err] - Error message, shown in red</span>
+<span class="sd">    lpf : bool, optional</span>
+<span class="sd">        If true, the message will also label the parent function of the log function call, by default True</span>
+<span class="sd">    lpf_col : str, optional</span>
+<span class="sd">        Color to label parent function, by default &#39;None&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">get_verbose</span><span class="p">():</span>

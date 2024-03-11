@@ -24,5 +24,6 @@
    ilex.multicomp_pol
    ilex.par
    ilex.plot
+   ilex.pyfit
    ilex.utils
 

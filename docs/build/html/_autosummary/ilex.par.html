@@ -58,6 +58,11 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.par</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.par.FRB_metaparams"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.t_crop"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.t_crop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.f_crop"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.f_crop</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.tN"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.tN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.fN"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.fN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.norm"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.norm</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.copy"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.copy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.empty_metapar"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.empty_metapar()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_metaparams.metapar2dict"><code class="docutils literal notranslate"><span class="pre">FRB_metaparams.metapar2dict()</span></code></a></li>
@@ -65,6 +70,25 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.par.FRB_params"><code class="docutils literal notranslate"><span class="pre">FRB_params</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.name"><code class="docutils literal notranslate"><span class="pre">FRB_params.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.RA"><code class="docutils literal notranslate"><span class="pre">FRB_params.RA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.DEC"><code class="docutils literal notranslate"><span class="pre">FRB_params.DEC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.DM"><code class="docutils literal notranslate"><span class="pre">FRB_params.DM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.bw"><code class="docutils literal notranslate"><span class="pre">FRB_params.bw</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.cfreq"><code class="docutils literal notranslate"><span class="pre">FRB_params.cfreq</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.t_lim"><code class="docutils literal notranslate"><span class="pre">FRB_params.t_lim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.f_lim"><code class="docutils literal notranslate"><span class="pre">FRB_params.f_lim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.dt"><code class="docutils literal notranslate"><span class="pre">FRB_params.dt</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.df"><code class="docutils literal notranslate"><span class="pre">FRB_params.df</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.nchan"><code class="docutils literal notranslate"><span class="pre">FRB_params.nchan</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.nsamp"><code class="docutils literal notranslate"><span class="pre">FRB_params.nsamp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.UP"><code class="docutils literal notranslate"><span class="pre">FRB_params.UP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.RM"><code class="docutils literal notranslate"><span class="pre">FRB_params.RM</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.f0"><code class="docutils literal notranslate"><span class="pre">FRB_params.f0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.pa0"><code class="docutils literal notranslate"><span class="pre">FRB_params.pa0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.tW"><code class="docutils literal notranslate"><span class="pre">FRB_params.tW</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.fW"><code class="docutils literal notranslate"><span class="pre">FRB_params.fW</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.norm"><code class="docutils literal notranslate"><span class="pre">FRB_params.norm</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.copy"><code class="docutils literal notranslate"><span class="pre">FRB_params.copy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.default_par"><code class="docutils literal notranslate"><span class="pre">FRB_params.default_par()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.par.FRB_params.empty_par"><code class="docutils literal notranslate"><span class="pre">FRB_params.empty_par()</span></code></a></li>
@@ -82,6 +106,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 </ul>
 </li>
@@ -117,51 +142,348 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="ilex.par.FRB_metaparams">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FRB_metaparams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terr_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EMPTY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_metaparams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_metaparams" title="Link to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Class for FRB meta-params</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_metaparams.t_crop">
+<span class="sig-name descname"><span class="pre">t_crop</span></span><a class="headerlink" href="#ilex.par.FRB_metaparams.t_crop" title="Link to this definition"></a></dt>
+<dd><p>Time crop</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_metaparams.f_crop">
+<span class="sig-name descname"><span class="pre">f_crop</span></span><a class="headerlink" href="#ilex.par.FRB_metaparams.f_crop" title="Link to this definition"></a></dt>
+<dd><p>Frequency crop</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_metaparams.tN">
+<span class="sig-name descname"><span class="pre">tN</span></span><a class="headerlink" href="#ilex.par.FRB_metaparams.tN" title="Link to this definition"></a></dt>
+<dd><p>Factor for time averaging</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_metaparams.fN">
+<span class="sig-name descname"><span class="pre">fN</span></span><a class="headerlink" href="#ilex.par.FRB_metaparams.fN" title="Link to this definition"></a></dt>
+<dd><p>Factor for frequency averaging</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_metaparams.norm">
+<span class="sig-name descname"><span class="pre">norm</span></span><a class="headerlink" href="#ilex.par.FRB_metaparams.norm" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_crop</strong> (<em>List</em>) – Time crop</p></li>
+<li><p><strong>f_crop</strong> (<em>List</em>) – Frequency crop</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Factor for time averaging</p></li>
+<li><p><strong>fN</strong> (<em>int</em>) – Factor for frequency averaging</p></li>
+<li><p><strong>norm</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_metaparams.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_metaparams.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_metaparams.copy" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return Copy of Meta-params instance</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_metaparams.empty_metapar">
 <span class="sig-name descname"><span class="pre">empty_metapar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_metaparams.empty_metapar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_metaparams.empty_metapar" title="Link to this definition"></a></dt>
-<dd><p>Set all meta parameters to None:</p>
+<dd><p>Set all meta parameters to None</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_metaparams.metapar2dict">
 <span class="sig-name descname"><span class="pre">metapar2dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_metaparams.metapar2dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_metaparams.metapar2dict" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return Dictionary of meta-parameters</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_metaparams.set_metapar">
 <span class="sig-name descname"><span class="pre">set_metapar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_metaparams.set_metapar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_metaparams.set_metapar" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Set meta-parameters</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ilex.par.FRB_params">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FRB_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'FRBXXXXXX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RA</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEC</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1271.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">3100.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">336.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fW</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tW</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">czap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EMPTY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FRB_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'FRBXXXXXX'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RA</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEC</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'00:00:00.0000'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1271.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">3100.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">336.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fW</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tW</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">czap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EMPTY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params" title="Link to this definition"></a></dt>
 <dd><p>FRB parameter structure</p>
-<p>##==== parameters ====##
-name:           name of FRB
-RA:             Right ascension
-DEC:            Declination
-DM:             Dispersion Measure
-bw:             Bandwidth (MHz)
-cfreq:          Central Frequency (MHz)</p>
-<p>t_lim:          Time bounds (ms)
-f_lim:          Frequency bounds (MHz)
-dt:             delta time (ms)
-df:             delta frequency (MHz)
-nchan:          Number of channels
-nsamp:          Number of samples</p>
-<p>UP:             Upper bandwidth</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ilex.par.FRB_params.name" title="Link to this definition"></a></dt>
+<dd><p>name of FRB</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.RA">
+<span class="sig-name descname"><span class="pre">RA</span></span><a class="headerlink" href="#ilex.par.FRB_params.RA" title="Link to this definition"></a></dt>
+<dd><p>Right ascension</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.DEC">
+<span class="sig-name descname"><span class="pre">DEC</span></span><a class="headerlink" href="#ilex.par.FRB_params.DEC" title="Link to this definition"></a></dt>
+<dd><p>Declination</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.DM">
+<span class="sig-name descname"><span class="pre">DM</span></span><a class="headerlink" href="#ilex.par.FRB_params.DM" title="Link to this definition"></a></dt>
+<dd><p>Dispersion Measure [pc/cm^3]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.bw">
+<span class="sig-name descname"><span class="pre">bw</span></span><a class="headerlink" href="#ilex.par.FRB_params.bw" title="Link to this definition"></a></dt>
+<dd><p>Bandwidth [MHz]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.cfreq">
+<span class="sig-name descname"><span class="pre">cfreq</span></span><a class="headerlink" href="#ilex.par.FRB_params.cfreq" title="Link to this definition"></a></dt>
+<dd><p>Central Frequency [MHz]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.t_lim">
+<span class="sig-name descname"><span class="pre">t_lim</span></span><a class="headerlink" href="#ilex.par.FRB_params.t_lim" title="Link to this definition"></a></dt>
+<dd><p>Time bounds [ms]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.f_lim">
+<span class="sig-name descname"><span class="pre">f_lim</span></span><a class="headerlink" href="#ilex.par.FRB_params.f_lim" title="Link to this definition"></a></dt>
+<dd><p>Frequency bounds [MHz]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.dt">
+<span class="sig-name descname"><span class="pre">dt</span></span><a class="headerlink" href="#ilex.par.FRB_params.dt" title="Link to this definition"></a></dt>
+<dd><p>delta time [ms]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.df">
+<span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#ilex.par.FRB_params.df" title="Link to this definition"></a></dt>
+<dd><p>delta frequency [MHz]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.nchan">
+<span class="sig-name descname"><span class="pre">nchan</span></span><a class="headerlink" href="#ilex.par.FRB_params.nchan" title="Link to this definition"></a></dt>
+<dd><p>Number of channels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.nsamp">
+<span class="sig-name descname"><span class="pre">nsamp</span></span><a class="headerlink" href="#ilex.par.FRB_params.nsamp" title="Link to this definition"></a></dt>
+<dd><p>Number of samples</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.UP">
+<span class="sig-name descname"><span class="pre">UP</span></span><a class="headerlink" href="#ilex.par.FRB_params.UP" title="Link to this definition"></a></dt>
+<dd><p>Upper bandwidth</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.RM">
+<span class="sig-name descname"><span class="pre">RM</span></span><a class="headerlink" href="#ilex.par.FRB_params.RM" title="Link to this definition"></a></dt>
+<dd><p>Rotation Measure [Rad/m^2]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.f0">
+<span class="sig-name descname"><span class="pre">f0</span></span><a class="headerlink" href="#ilex.par.FRB_params.f0" title="Link to this definition"></a></dt>
+<dd><p>Reference frequency [MHz]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.pa0">
+<span class="sig-name descname"><span class="pre">pa0</span></span><a class="headerlink" href="#ilex.par.FRB_params.pa0" title="Link to this definition"></a></dt>
+<dd><p>Positon angle at f0</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.tW">
+<span class="sig-name descname"><span class="pre">tW</span></span><a class="headerlink" href="#ilex.par.FRB_params.tW" title="Link to this definition"></a></dt>
+<dd><p>time weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.fW">
+<span class="sig-name descname"><span class="pre">fW</span></span><a class="headerlink" href="#ilex.par.FRB_params.fW" title="Link to this definition"></a></dt>
+<dd><p>frequency weights</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.par.FRB_params.norm">
+<span class="sig-name descname"><span class="pre">norm</span></span><a class="headerlink" href="#ilex.par.FRB_params.norm" title="Link to this definition"></a></dt>
+<dd><p>Type of normalisation</p>
+<p>[max] - normalise using maximum</p>
+<p>[absmax] - normalise using absolute maximum</p>
+<p>[None] - Skip normalisation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – name of FRB</p></li>
+<li><p><strong>RA</strong> (<em>str</em>) – Right ascension</p></li>
+<li><p><strong>DEC</strong> (<em>str</em>) – Declination</p></li>
+<li><p><strong>DM</strong> (<em>float</em>) – Dispersion Measure [pc/cm^3]</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth [MHz]</p></li>
+<li><p><strong>cfreq</strong> (<em>float</em>) – Central Frequency [MHz]</p></li>
+<li><p><strong>t_lim</strong> (<em>List</em>) – Time bounds [ms]</p></li>
+<li><p><strong>f_lim</strong> (<em>List</em>) – Frequency bounds [MHz]</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – delta time [ms]</p></li>
+<li><p><strong>df</strong> (<em>float</em>) – delta frequency [MHz]</p></li>
+<li><p><strong>nchan</strong> (<em>int</em>) – Number of channels</p></li>
+<li><p><strong>nsamp</strong> (<em>int</em>) – Number of samples</p></li>
+<li><p><strong>UP</strong> (<em>bool</em>) – Upper bandwidth</p></li>
+<li><p><strong>RM</strong> (<em>float</em>) – Rotation Measure [Rad/m^2]</p></li>
+<li><p><strong>f0</strong> (<em>float</em>) – Reference frequency [MHz]</p></li>
+<li><p><strong>pa0</strong> (<em>float</em>) – Positon angle at f0</p></li>
+<li><p><strong>tW</strong> (<em>np.ndarray</em>) – time weights</p></li>
+<li><p><strong>fW</strong> (<em>np.ndarray</em>) – frequency weights</p></li>
+<li><p><strong>norm</strong> (<em>str</em>) – <p>Type of normalisation</p>
+<p>[max] - normalise using maximum</p>
+<p>[absmax] - normalise using absolute maximum</p>
+<p>[None] - Skip normalisation</p>
+</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.copy" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return copy of parameter class</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.default_par">
@@ -184,18 +506,51 @@ nsamp:          Number of samples</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.lim2phase">
 <span class="sig-name descname"><span class="pre">lim2phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_lim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_lim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.lim2phase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.lim2phase" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Provide time [ms] and Freq [MHz] limits and using params, convert
+to time and freq phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_lim</strong> (<em>List</em>) – Time limits in [ms]</p></li>
+<li><p><strong>f_lim</strong> (<em>List</em>) – Freq limits in [MHz]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>t_crop</strong> (<em>list, optional</em>) – Time crop, in phase, by default None</p></li>
+<li><p><strong>f_crop</strong> (<em>list, optional</em>) – Freq crop, in phase, by default None</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.load_params">
 <span class="sig-name descname"><span class="pre">load_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.load_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.load_params" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load params from file - To implement??</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – param file name, by default None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.mkpar_from_params">
 <span class="sig-name descname"><span class="pre">mkpar_from_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frb_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.mkpar_from_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.mkpar_from_params" title="Link to this definition"></a></dt>
-<dd><p>Checks if any par. parameters have been updated and
-creates a new par() instance to use</p>
+<dd><p>Make new copy of params instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frb_params</strong> (<em>dict</em><em>, </em><em>optional</em>) – keyword parameters, by default None</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>params</strong> – New instance of FRB params</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ilex.par.FRB_params" title="ilex.par.FRB_params">FRB_params</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -207,23 +562,62 @@ creates a new par() instance to use</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.phase2lim">
 <span class="sig-name descname"><span class="pre">phase2lim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.phase2lim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.phase2lim" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Provide time and frequency phases, based on parameters convert
+to ms and MHz crops</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_crop</strong> (<em>list</em><em>, </em><em>optional</em>) – Time crop, in phase, by default None</p></li>
+<li><p><strong>f_crop</strong> (<em>list</em><em>, </em><em>optional</em>) – Freq crop, in phase, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>t_lim</strong> (<em>List</em>) – Time limits in [ms]</p></li>
+<li><p><strong>f_lim</strong> (<em>List</em>) – Freq limits in [MHz]</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.save_params">
 <span class="sig-name descname"><span class="pre">save_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.save_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.save_params" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Save current parameters to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to save params to, by default None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.set_par">
 <span class="sig-name descname"><span class="pre">set_par</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.set_par"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.set_par" title="Link to this definition"></a></dt>
 <dd><p>Set attributes of par class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>Dict</em>) – Keyword parameters</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.par.FRB_params.update_from_crop">
 <span class="sig-name descname"><span class="pre">update_from_crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/par.html#FRB_params.update_from_crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.par.FRB_params.update_from_crop" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Update Parameters based on time and frequency crops + averaging</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_crop</strong> (<em>list</em><em>, </em><em>optional</em>) – time crop, by default [0.0, 1.0]</p></li>
+<li><p><strong>f_crop</strong> (<em>list</em><em>, </em><em>optional</em>) – frequency crop, by default [0.0, 1.0]</p></li>
+<li><p><strong>tN</strong> (<em>int</em><em>, </em><em>optional</em>) – Factor for time averaging, by default 1</p></li>
+<li><p><strong>fN</strong> (<em>int</em><em>, </em><em>optional</em>) – Factor for frequency averaging, by default 1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

@@ -57,11 +57,11 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.multicomp_pol</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.multicomp_pol.multicomp_PA"><code class="docutils literal notranslate"><span class="pre">multicomp_PA()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.multicomp_pol.multicomp_poincare"><code class="docutils literal notranslate"><span class="pre">multicomp_poincare()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 </ul>
 </li>
@@ -97,48 +97,38 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.multicomp_pol.multicomp_PA">
 <span class="sig-name descname"><span class="pre">multicomp_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freqs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMquad'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ldebias_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tcrops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcrops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flipPA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_err_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lines'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/multicomp_pol.html#multicomp_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.multicomp_pol.multicomp_PA" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Multicomponent Polarisation, does full RM fitting and PA plotting/spectra plotting for each
+<dd><p>Multicomponent Polarisation, does full RM fitting and PA plotting/spectra plotting for each
 component specified by tcrops and fcrops</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stk</strong> (<em>dict</em>) – Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra
-[I] - Stokes I
-[Q] - Stokes Q
-[U] - Stokes U
-[V] - Stokes V</p></li>
+<li><p><strong>stk</strong> (<em>dict</em>) – <p>Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra</p>
+<p>[I] - Stokes I</p>
+<p>[Q] - Stokes Q</p>
+<p>[U] - Stokes U</p>
+<p>[V] - Stokes V</p>
+</p></li>
 <li><p><strong>freqs</strong> (<em>ndarray</em>) – Full Frequency array [MHz]</p></li>
-<li><p><strong>method</strong> (<em>str</em>) – Method for RM fitting
-[RMquad] - Use Quadratic function and Scipy.curve_fit
-[RMsynth] - Use RM synthesis from [RMtools] from CIRCADA [<a class="reference external" href="https://github.com/CIRADA-Tools/RM-Tools">https://github.com/CIRADA-Tools/RM-Tools</a>]</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – <p>Method for RM fitting</p>
+<p>[RMquad] - Use Quadratic function and Scipy.curve_fit</p>
+<p>[RMsynth] - Use RM synthesis from [RMtools] from CIRCADA [<a class="reference external" href="https://github.com/CIRADA-Tools/RM-Tools">https://github.com/CIRADA-Tools/RM-Tools</a>]</p>
+</p></li>
 <li><p><strong>Ldebias_threshold</strong> (<em>float</em>) – Threshold for Debiased linear fraction in PA masking</p></li>
 <li><p><strong>dt</strong> (<em>float</em>) – Time resolution in [ms] of stk data</p></li>
+<li><p><strong>plot_L</strong> (<em>bool</em>) – Plot Linear Polarisation instead of Stokes Q and U, by default False</p></li>
 <li><p><strong>tcrops</strong> (<em>list</em>) – List of Time phase limits for each component</p></li>
 <li><p><strong>fcrops</strong> (<em>list</em>) – List of Freq phase limits for each component</p></li>
-<li><p><strong>par</strong> (<em>dict</em>) – List of parameters for data processing, see _proc_data() in _frb_proc() for a list of params</p></li>
-<li><p><strong>plot_L</strong> (<em>bool</em>) – Plot Linear Fraction (L) instead of stokes Q and U</p></li>
+<li><p><strong>par</strong> (<em>dict</em>) – List of parameters for data processing, see master_proc_data() in master_proc() for a list of params</p></li>
+<li><p><strong>plot_L</strong> – Plot Linear Fraction (L) instead of stokes Q and U</p></li>
 <li><p><strong>filename</strong> (<em>str</em>) – Save plots to files with a common prefix</p></li>
-<li><p><strong>**kwargs</strong> – Keyword arguments for fitting processes (see method for RM fitting)</p></li>
+<li><p><strong>flipPA</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot PA from [0, 180] instead of [-90, 90], by default False</p></li>
+<li><p><strong>ncols</strong> (<em>number</em><em> of </em><em>colums when plotting a grid</em><em> of </em><em>different RM fitted components</em>) – </p></li>
+<li><p><strong>**kwargs</strong> (<em>Dict</em>) – Keyword arguments for fitting processes (see method for RM fitting)</p></li>
+<li><p><strong>Returns</strong> – </p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of fitted RMs for each components
-PA (ndarray): Position angle for full data
-PA_err (ndarray): Position angle error “”</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>RMs (list)</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.multicomp_pol.multicomp_poincare">
-<span class="sig-name descname"><span class="pre">multicomp_poincare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freqs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tcrops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fcrops</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_on_surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_P</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">1.0]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/multicomp_pol.html#multicomp_poincare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.multicomp_pol.multicomp_poincare" title="Link to this definition"></a></dt>
-<dd></dd></dl>
 
 </section>
 

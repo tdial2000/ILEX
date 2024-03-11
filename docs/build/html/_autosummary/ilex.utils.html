@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="ilex.plot" href="ilex.plot.html" /> 
+    <link rel="prev" title="ilex.pyfit" href="ilex.pyfit.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_checktype"><code class="docutils literal notranslate"><span class="pre">dict_checktype()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_get"><code class="docutils literal notranslate"><span class="pre">dict_get()</span></code></a></li>
@@ -64,13 +65,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_isall"><code class="docutils literal notranslate"><span class="pre">dict_isall()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_null"><code class="docutils literal notranslate"><span class="pre">dict_null()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.get_stk_from_datalist"><code class="docutils literal notranslate"><span class="pre">get_stk_from_datalist()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.interactive_off"><code class="docutils literal notranslate"><span class="pre">interactive_off()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.interactive_on"><code class="docutils literal notranslate"><span class="pre">interactive_on()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.merge_dicts"><code class="docutils literal notranslate"><span class="pre">merge_dicts()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.plotnum2grid"><code class="docutils literal notranslate"><span class="pre">plotnum2grid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.save_data"><code class="docutils literal notranslate"><span class="pre">save_data()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.stitch_components_together"><code class="docutils literal notranslate"><span class="pre">stitch_components_together()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.struct_"><code class="docutils literal notranslate"><span class="pre">struct_</span></code></a></li>
 </ul>
 </li>
@@ -108,63 +106,153 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.dict_checktype">
 <span class="sig-name descname"><span class="pre">dict_checktype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_checktype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_checktype" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check if all entries of Dict are type = t</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>Dict</em>) – Dictionary</p></li>
+<li><p><strong>t</strong> (<em>Type</em><em>(</em><em>)</em>) – type to check against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.dict_get">
 <span class="sig-name descname"><span class="pre">dict_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get a sub-set of the Dictionary based on keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>Dict</em>) – Original dictionary</p></li>
+<li><p><strong>keys</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of items to retrieve</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_dict</strong> – Sub-set of Dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.dict_init">
 <span class="sig-name descname"><span class="pre">dict_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dicts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_init" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Initilise any number of dictionaries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A number of Dictionaries</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>*dicts</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.dict_isall">
 <span class="sig-name descname"><span class="pre">dict_isall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictB</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_isall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_isall" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check if Entires in Dict A match those in Dict B</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dictA</strong> (<em>Dict</em>) – Dict A</p></li>
+<li><p><strong>dictB</strong> (<em>Dict</em>) – Dict B</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 if True, 0 if False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.dict_null">
 <span class="sig-name descname"><span class="pre">dict_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_null"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_null" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Set all entries in a Dictionary to ‘None’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dic</strong> (<em>Dict</em>) – Dictionary</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dic</strong> – Dict with entries set to ‘None’</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.get_stk_from_datalist">
 <span class="sig-name descname"><span class="pre">get_stk_from_datalist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#get_stk_from_datalist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.get_stk_from_datalist" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.utils.interactive_off">
-<span class="sig-name descname"><span class="pre">interactive_off</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#interactive_off"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.interactive_off" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.utils.interactive_on">
-<span class="sig-name descname"><span class="pre">interactive_on</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#interactive_on"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.interactive_on" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Get Stokes characters, i.e. I, Q, U and V from list of Stokes
+products to make, i.e. “dsI”, “fQ” etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_list</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of data products to make</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stk</strong> – Stokes Characters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.load_data">
 <span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datafile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_data" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Load data to memory map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datafile</strong> (<em>str</em>) – filename or path</p></li>
+<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – is memorymap?, by default True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>data</strong> – loaded data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.mmap or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.merge_dicts">
 <span class="sig-name descname"><span class="pre">merge_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dicts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#merge_dicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.merge_dicts" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Combine multiple Dictionaries into 1 dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A number of dictionaries</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>*dicts</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.plotnum2grid">
 <span class="sig-name descname"><span class="pre">plotnum2grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nrows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#plotnum2grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.plotnum2grid" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Takes the number of axes you want and creates a grid,
+<dd><p>Takes the number of axes you want and creates a grid,
 one can constrain either the number of rows or colums to
 make the grid. If Neither is specified, will create the smallest
 sqaure grid to fit.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -174,11 +262,11 @@ sqaure grid to fit.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>number of rows of new grid
-grid_ncols (int): number of columns of new grid</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>grid_nrows (int)</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>grid_nrows</strong> (<em>int</em>) – number of rows of new grid</p></li>
+<li><p><strong>grid_ncols</strong> (<em>int</em>) – number of columns of new grid</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -186,32 +274,13 @@ grid_ncols (int): number of columns of new grid</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.save_data">
 <span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.save_data" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.utils.stitch_components_together">
-<span class="sig-name descname"><span class="pre">stitch_components_together</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#stitch_components_together"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.stitch_components_together" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Stitch data together, in the case that the x data segments
-are not contiguous, the difference between samples, assuming
-contigous within each segment, will be used to pad segments
-together with zeros</p>
-</dd>
-</dl>
+<dd><p>Save data to file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x_list</strong> (<em>list</em>) – List of data segments to patch together</p></li>
-<li><p><strong>y_list</strong> (<em>list</em>) – Optional, Also patch y list together, will
-follow x patching and stitch data along last axis</p></li>
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – data to save to file</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – filename to save data to</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>patched x data array
-y_patch (ndarray): Optional, patched y data array</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>x_patch (ndarray)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -227,7 +296,7 @@ y_patch (ndarray): Optional, patched y data array</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.plot.html" class="btn btn-neutral float-left" title="ilex.plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.pyfit.html" class="btn btn-neutral float-left" title="ilex.pyfit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

@@ -66,6 +66,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 </ul>
 </li>
@@ -119,15 +120,22 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.logging.log">
 <span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.log" title="Link to this definition"></a></dt>
-<dd><p>Print String with a few utility options</p>
-<p>##==== inputs ====##
-str:            String to print out to console
-stype:          Message type</p>
-<blockquote>
-<div><p>[log] -&gt; print out as is
-[warn] -&gt; print out as warning
-[err] -&gt; print out as error</p>
-</div></blockquote>
+<dd><p>Logging function, used to replace the python ‘print’ function
+with extra functionality for ILEX</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pstr</strong> (<em>str</em>) – string to print</p></li>
+<li><p><strong>stype</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>type of message to print, by default “log”</p>
+<p>[log] - Normal print, shown in white</p>
+<p>[warn] - Warn message, shown in yellow</p>
+<p>[err] - Error message, shown in red</p>
+</p></li>
+<li><p><strong>lpf</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, the message will also label the parent function of the log function call, by default True</p></li>
+<li><p><strong>lpf_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Color to label parent function, by default ‘None’</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

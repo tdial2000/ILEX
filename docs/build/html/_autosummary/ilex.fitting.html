@@ -52,26 +52,10 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.fitting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMquad"><code class="docutils literal notranslate"><span class="pre">fit_RMquad()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMsynth"><code class="docutils literal notranslate"><span class="pre">fit_RMsynth()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_par"><code class="docutils literal notranslate"><span class="pre">fit_par</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.val"><code class="docutils literal notranslate"><span class="pre">fit_par.val</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.plus"><code class="docutils literal notranslate"><span class="pre">fit_par.plus</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.minus"><code class="docutils literal notranslate"><span class="pre">fit_par.minus</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.keys"><code class="docutils literal notranslate"><span class="pre">fit_par.keys</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.add_param"><code class="docutils literal notranslate"><span class="pre">fit_par.add_param()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.get_bestfit"><code class="docutils literal notranslate"><span class="pre">fit_par.get_bestfit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.get_err"><code class="docutils literal notranslate"><span class="pre">fit_par.get_err()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.get_keys"><code class="docutils literal notranslate"><span class="pre">fit_par.get_keys()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.result2par"><code class="docutils literal notranslate"><span class="pre">fit_par.result2par()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.fit_par.static2par"><code class="docutils literal notranslate"><span class="pre">fit_par.static2par()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_scint"><code class="docutils literal notranslate"><span class="pre">fit_scint()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_tscatt"><code class="docutils literal notranslate"><span class="pre">fit_tscatt()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.func_fit"><code class="docutils literal notranslate"><span class="pre">func_fit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.lorentz"><code class="docutils literal notranslate"><span class="pre">lorentz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_scatt_pulse_profile_func"><code class="docutils literal notranslate"><span class="pre">make_scatt_pulse_profile_func()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.model_curve"><code class="docutils literal notranslate"><span class="pre">model_curve()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.priorUniform"><code class="docutils literal notranslate"><span class="pre">priorUniform()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.scat"><code class="docutils literal notranslate"><span class="pre">scat()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.scatt_pulse_profile"><code class="docutils literal notranslate"><span class="pre">scatt_pulse_profile()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.specindex"><code class="docutils literal notranslate"><span class="pre">specindex()</span></code></a></li>
@@ -85,6 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 </ul>
 </li>
@@ -180,226 +165,6 @@ pa at f0.</p>
 </dl>
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit_par</span></span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par" title="Link to this definition"></a></dt>
-<dd><p>Class for holding priors and posteriors of fitted functions.
-To Be Implemented - Stats functions</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.val">
-<span class="sig-name descname"><span class="pre">val</span></span><a class="headerlink" href="#ilex.fitting.fit_par.val" title="Link to this definition"></a></dt>
-<dd><p>bestfit posteriors of fitted function</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict(float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.plus">
-<span class="sig-name descname"><span class="pre">plus</span></span><a class="headerlink" href="#ilex.fitting.fit_par.plus" title="Link to this definition"></a></dt>
-<dd><p>Positive error</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict(float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.minus">
-<span class="sig-name descname"><span class="pre">minus</span></span><a class="headerlink" href="#ilex.fitting.fit_par.minus" title="Link to this definition"></a></dt>
-<dd><p>Negative error</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict(float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.keys">
-<span class="sig-name descname"><span class="pre">keys</span></span><a class="headerlink" href="#ilex.fitting.fit_par.keys" title="Link to this definition"></a></dt>
-<dd><p>Parameter names</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.add_param">
-<span class="sig-name descname"><span class="pre">add_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minus</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.add_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.add_param" title="Link to this definition"></a></dt>
-<dd><p>Add parameter to current instance of fit_par class</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<em>str</em>) – parameter name</p></li>
-<li><p><strong>val</strong> (<em>float</em>) – bestfit/median of posterior</p></li>
-<li><p><strong>plus</strong> (<em>float</em>) – Positive err</p></li>
-<li><p><strong>minus</strong> (<em>float</em>) – Negative err</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.get_bestfit">
-<span class="sig-name descname"><span class="pre">get_bestfit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.get_bestfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.get_bestfit" title="Link to this definition"></a></dt>
-<dd><p>Return bestfit/median values</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>bestfit</strong> – bestfit/median values</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dict(float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.get_err">
-<span class="sig-name descname"><span class="pre">get_err</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.get_err"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.get_err" title="Link to this definition"></a></dt>
-<dd><p>Get Positive and negative values of parameters</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>plus</strong> (<em>List(float)</em>) – Positive errs</p></li>
-<li><p><strong>minus</strong> (<em>List(float)</em>) – Negative errs</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.get_keys">
-<span class="sig-name descname"><span class="pre">get_keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.get_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.get_keys" title="Link to this definition"></a></dt>
-<dd><p>Return parameter names</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Parameter names</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List(str)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.result2par">
-<span class="sig-name descname"><span class="pre">result2par</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.result2par"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.result2par" title="Link to this definition"></a></dt>
-<dd><p>Get (result) class values from Bilby and save them to
-current instance of fit_par</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>result</strong> (<em>(</em><em>Bilby.result</em><em>)</em>) – Output of Bilby sampler</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.fitting.fit_par.static2par">
-<span class="sig-name descname"><span class="pre">static2par</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_par.static2par"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_par.static2par" title="Link to this definition"></a></dt>
-<dd><p>Add single value or static parameters to current instance
-of fit_par class</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dic</strong> (<em>Dict</em><em>(</em><em>float</em><em>)</em>) – Single value or static parameters</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.fitting.fit_scint">
-<span class="sig-name descname"><span class="pre">fit_scint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_priors</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_scint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_scint" title="Link to this definition"></a></dt>
-<dd><p>Fit spectra for scintillation bandwidth</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>f</strong> (<em>np.ndarray</em>) – Frequency array [MHz] [in asending order, low end of band first]</p></li>
-<li><p><strong>I</strong> (<em>np.ndarray</em>) – Stokes I spectra</p></li>
-<li><p><strong>priors</strong> (<em>Dict</em>) – <p>priors</p>
-<p>[a] - amplitude of lorentz function</p>
-<p>[w] - Scintillation bandwidth</p>
-<p>[sigma] - rms in freq</p>
-</p></li>
-<li><p><strong>static_priors</strong> (<em>Dict</em>) – <p>priors to keep static during fitting and their vales</p>
-<p>[sigma] - if sigma is kept static, an array can
-be used with the same size as f</p>
-</p></li>
-<li><p><strong>**kwargs</strong> (<em>Dict</em>) – Additional arguments for BILBY [run_sampler] function</p></li>
-<li><p><strong>Return</strong> – </p></li>
-<li><p><strong>p</strong> (<a class="reference internal" href="#ilex.fitting.fit_par" title="ilex.fitting.fit_par"><em>fit_par</em></a>) – Posterior data container</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.fitting.fit_tscatt">
-<span class="sig-name descname"><span class="pre">fit_tscatt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priors</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_priors</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_tscatt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_tscatt" title="Link to this definition"></a></dt>
-<dd><p>Fit time series with some n number of convolved
-gaussians</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>np.ndarray</em>) – Time array in [ms]</p></li>
-<li><p><strong>I</strong> (<em>np.ndarray</em>) – Stokes I time series</p></li>
-<li><p><strong>npulse</strong> (<em>int</em>) – Number of convolved gaussians to fit</p></li>
-<li><p><strong>priors</strong> (<em>Dict</em>) – <p>priors, for each pulse n:</p>
-<p>[a[n]] - amplitude</p>
-<p>[mu[n]] - Position in [ms]</p>
-<p>[sig[n]] - HWHM in [ms]</p>
-<p>[tau] - Scattering time scale</p>
-<p>[sigma] - rms in time</p>
-</p></li>
-<li><p><strong>static_priors</strong> (<em>Dict</em>) – <p>priors to keep static during fitting and their vales</p>
-<p>[sigma] - if sigma is static, an array can be used of the same size as t</p>
-</p></li>
-<li><p><strong>**kwargs</strong> (<em>Dict</em>) – Additional arguments for BILBY [run_sampler] function</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>p</strong> – Posterior data container</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ilex.fitting.fit_par" title="ilex.fitting.fit_par">fit_par</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.fitting.func_fit">
-<span class="sig-name descname"><span class="pre">func_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_priors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_priors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#func_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.func_fit" title="Link to this definition"></a></dt>
-<dd><p>General Purpose Function for Sampling Posterior of a function through
-Bilby. This function has the ability of constraining priors of a chosen
-function to keep constant during sampling which is done by wrapping chosen
-function in a temporary lambda function.</p>
-<p>This function also saves result.plot_data() and result.corner()</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>np.ndarray</em>) – X data</p></li>
-<li><p><strong>y</strong> (<em>np.ndarray</em>) – Y data</p></li>
-<li><p><strong>fit_func</strong> (<em>str</em>) – Function to sample</p></li>
-<li><p><strong>fit_priors</strong> (<em>dict</em><em>, </em><em>optional</em>) – Priors to sample, by default None</p></li>
-<li><p><strong>static_priors</strong> (<em>dict</em><em>, </em><em>optional</em>) – Parameters to keep constant during sampling, by default None</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>data container for posteriors</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ilex.fitting.fit_par" title="ilex.fitting.fit_par">fit_par</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.gaussian">
 <span class="sig-name descname"><span class="pre">gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.gaussian" title="Link to this definition"></a></dt>
@@ -444,6 +209,23 @@ function in a temporary lambda function.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.make_scatt_pulse_profile_func">
+<span class="sig-name descname"><span class="pre">make_scatt_pulse_profile_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#make_scatt_pulse_profile_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.make_scatt_pulse_profile_func" title="Link to this definition"></a></dt>
+<dd><p>Make scatter pulse profile wrapping function for fitting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of pulses in scatter profile</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>func</strong> – lambda function for scatter pulse profile with n pulses</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>__func__</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.model_curve">
 <span class="sig-name descname"><span class="pre">model_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#model_curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.model_curve" title="Link to this definition"></a></dt>
 <dd><p>Fit Polynomial model to data</p>
@@ -460,23 +242,6 @@ function in a temporary lambda function.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.fitting.priorUniform">
-<span class="sig-name descname"><span class="pre">priorUniform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#priorUniform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.priorUniform" title="Link to this definition"></a></dt>
-<dd><p>Convert Dictionary of Priors to Bilby Uniform prior instance</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>p</strong> (<em>Dict</em><em>(</em><em>List</em><em>(</em><em>float</em><em>)</em><em>)</em>) – Dictionary of priors for Bilby.run_sampler</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Bilby uniform priors</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Bilby.UniformPrior</p>
 </dd>
 </dl>
 </dd></dl>

@@ -92,32 +92,37 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    stk: (dict[memmap]) </span>
+<span class="sd">    stk: dict[np.memmap]</span>
 <span class="sd">        Dictionary of memory maps of Stokes Dynamic spectra</span>
 <span class="sd">    freq: (ndarray) </span>
 <span class="sd">        Array of frequencies before cropping/averaging (processing)</span>
-<span class="sd">    data_list: (list) </span>
+<span class="sd">    data_list: List </span>
 <span class="sd">        List of requested data products</span>
-<span class="sd">    par: (dict) </span>
+<span class="sd">    par: Dict </span>
 <span class="sd">        Parameters for data processing, the following are required \n</span>
 <span class="sd">        [t_crop]: Crop in Time phase (default = [0.0, 1.0]) \n</span>
 <span class="sd">        [f_crop]: Crop in Freq phase (default = [0.0, 1.0]) \n</span>
 <span class="sd">        [terr_crop]: Crop of Error Time phase (default = None) \n</span>
 <span class="sd">        [tN]: Factor in Time average (default = 1) \n</span>
-<span class="sd">        [fN]: Factor in Freq average (default = 1)</span>
-<span class="sd">        [tW]: Time weights (default = None)</span>
-<span class="sd">        [fW]: Freq weifhts (default = None)</span>
-<span class="sd">        [norm]: Method of normalisation (defualt = &quot;None&quot;)</span>
-<span class="sd">        [RM]: Rotation Measure (default = 0.0)</span>
-<span class="sd">        [cfreq]: Central Frequency (default = 1271.5)</span>
-<span class="sd">        [f0]: reference frequency (default = cfreq)</span>
+<span class="sd">        [fN]: Factor in Freq average (default = 1) \n</span>
+<span class="sd">        [tW]: Time weights (default = None) \n</span>
+<span class="sd">        [fW]: Freq weifhts (default = None) \n</span>
+<span class="sd">        [norm]: Method of normalisation (defualt = &quot;None&quot;) \n</span>
+<span class="sd">        [RM]: Rotation Measure (default = 0.0) \n</span>
+<span class="sd">        [cfreq]: Central Frequency (default = 1271.5) \n</span>
+<span class="sd">        [f0]: reference frequency (default = cfreq) \n</span>
 <span class="sd">        [pa0]: PA at f0 (default = 0.0)</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        _ds (dict): Dictionary of processed dynamic spectra</span>
-<span class="sd">        _t (dict): Dictionary of processed time series data</span>
-<span class="sd">        _f (dict): Dictionary of processed spectra data </span>
-<span class="sd">        freq (ndarray): Array of Frequencies in MHz</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    _ds : dict</span>
+<span class="sd">        Dictionary of processed dynamic spectra</span>
+<span class="sd">    _t :dict </span>
+<span class="sd">        Dictionary of processed time series data</span>
+<span class="sd">    _f : dict</span>
+<span class="sd">         Dictionary of processed spectra data </span>
+<span class="sd">    freq : ndarray</span>
+<span class="sd">         Array of Frequencies in MHz</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">## ============================== ##</span>

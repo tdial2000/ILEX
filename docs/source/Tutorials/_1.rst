@@ -38,7 +38,7 @@ Here we are going to plot the full Stokes I dynamic spectrum.
     frb.plot_data("dsI")
 
 .. image:: 220610_dsI.png
-   :width: 240pt
+   :width: 1080pt
 
 Everytime ILEX uses data for plotting etc. a crop is used, since FRBs are very narrow. To define a crop the ``t_crop``
 and ``f_crop`` parameters must be specified. By default they are ``[0, 1.0]`` which denotes the entire phase of the
@@ -50,7 +50,7 @@ dynamic spectrum. You can either specify a crop in terms of phase units, or in u
     frb.plot_data("dsI", t_crop = [20.9, 23.8], f_crop = [1103.5, 1200])
 
 .. image:: 220610_dsI_crop.png
-   :width: 240pt
+   :width: 1080pt
 
 There are various other plotting functions that ILEX provides, however, for 99% of cases a user may want to create
 there own plots. In which case, ILEX can act more like a data container to retrieve processed data for plotting.
@@ -78,7 +78,7 @@ davanced usage. As a simple excersise we will retrieve a crop of the above FRB a
     plt.show()
 
 .. image:: 220610_tI_crop.png
-   :width: 240pt
+   :width: 1080pt
 
 Saving data
 ===========

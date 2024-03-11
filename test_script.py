@@ -40,6 +40,16 @@ dynQ_file = "/fred/oz002/tdial/HTR_paper_data/230708/polcal_Q.npy"
 dynU_file = "/fred/oz002/tdial/HTR_paper_data/230708/polcal_U.npy"
 dynV_file = "/fred/oz002/tdial/HTR_paper_data/230708/polcal_V.npy"
 
+dynI_file = "/fred/oz002/askap/craft/craco/processing/output/220610/htr/220610_I_dynspec_1457.624.npy"
+dynQ_file = "/fred/oz002/askap/craft/craco/processing/output/220610/htr/220610_Q_dynspec_1457.624.npy"
+dynU_file = "/fred/oz002/askap/craft/craco/processing/output/220610/htr/220610_U_dynspec_1457.624.npy"
+dynV_file = "/fred/oz002/askap/craft/craco/processing/output/220610/htr/220610_V_dynspec_1457.624.npy"
+
+dynI_file = "/fred/oz002/tdial/ilex/examples/220610_dsI.npy"
+dynQ_file = "/fred/oz002/tdial/ilex/examples/220610_dsQ.npy"
+dynU_file = "/fred/oz002/tdial/ilex/examples/220610_dsU.npy"
+dynV_file = "/fred/oz002/tdial/ilex/examples/220610_dsV.npy"
+
 # dynI_file = "/fred/oz002/tdial/HTR_paper_data/211212/211212_I.npy"
 # dynQ_file = "/fred/oz002/tdial/HTR_paper_data/211212/211212_Q.npy"
 # dynU_file = "/fred/oz002/tdial/HTR_paper_data/211212/211212_U.npy"
@@ -47,21 +57,44 @@ dynV_file = "/fred/oz002/tdial/HTR_paper_data/230708/polcal_V.npy"
 
 
 frb = FRB(verbose = True)
-frb.set(cfreq = 919.5, bw = 336, t_crop = [40, 52], f_crop = [700, 1080])
-# frb.load_data(ds_I = dynI_file, ds_Q = dynQ_file, 
-#               ds_U = dynU_file, ds_V = dynV_file)
-frb.load_data(ds_I = dynI_file)
-
-frb.fit_RM(terr_crop = [0, 35], method = "RMsynth")
-
+frb.set(cfreq = 1271.5, bw = 336, dt = 50e-3, df = 4, t_crop = [20.9, 23.8], f_crop = [1103.5, 1200], plot_err_type = 'regions')
 frb.load_data(ds_I = dynI_file, ds_Q = dynQ_file, 
               ds_U = dynU_file, ds_V = dynV_file)
 
-frb.plot_PA(terr_crop = [0, 35])
+# frb.plot_data("dsI", filename = "/fred/oz002/tdial/ilex/docs/source/Tutorials/220610_dsI_crop.png")
+# get time series profile 
+priors = {'a1': [0.5, 0.8], 'mu1': [21.0, 22.0], 'sig1': [0.1, 1.0], 'tau': [0.01, 2.0]}
+frb.set(t_crop = [20.9, 23.8], f_crop = [1103.5, 1200])     # set crop params
+p = frb.fit_RM(method = "RMsynth", terr_crop = [0, 15], t_crop = [21.4, 21.6])
+frb.plot_PA(terr_crop = [0, 15], plot_L = True, plot = True, filename = "/fred/oz002/tdial/ilex/docs/source/Tutorials/220610_PA.png")
+# p.plot(filename = "/fred/oz002/tdial/ilex/docs/source/Tutorials/220610_RM.png")
+# p = frb.fit_tscatt(method = "bayesian", plot = True, priors = priors)
+# p.stats()
+# tI = frb.get_data(data_list = ["tI"], get = True)['tI']     # get data
 
-frb.fit_RM(terr_crop = [0, 35], method = "RMsynth")
+# # make x axis array
+# x = np.linspace(*frb.par.t_lim, tI.size)
 
-frb.plot_PA(terr_crop = [0, 35], plot_L = True)
+# # plot 
+# plt.figure(figsize = (12,8))
+# plt.plot(x, tI)
+# plt.xlabel("Time [ms]")
+# plt.ylabel("Flux Density (arb.)")
+# plt.savefig("/fred/oz002/tdial/ilex/docs/source/Tutorials/220610_tI_crop.png")
+# plt.show()
+# frb.load_data(ds_I = dynI_file)
+# frb.save_data(["dsI", "dsQ", "dsU", "dsV"], name = "/fred/oz002/tdial/ilex/examples/220610")
+
+# frb.fit_RM(terr_crop = [0, 35], method = "RMsynth")
+
+# frb.load_data(ds_I = dynI_file, ds_Q = dynQ_file, 
+#               ds_U = dynU_file, ds_V = dynV_file)
+
+# frb.plot_PA(terr_crop = [0, 35])
+
+# frb.fit_RM(terr_crop = [0, 35], method = "RMsynth")
+
+# frb.plot_PA(terr_crop = [0, 35], plot_L = True)
 
 
 # frb.save_data(data_list = ["fI", "fQ", "fU", "fV", "dsQ", "tV"], name = "/fred/oz002/tdial/test_ILEX_MAKE/vela")

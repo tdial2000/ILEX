@@ -164,6 +164,8 @@ class FRB:
                               t_lim = t_lim, f_lim = f_lim, 
                               RM = RM, f0 = f0, pa0 = pa0)
 
+        self.par.set_par(dt = 1e-3, df = 1)
+
         self.this_par = self.par.copy()
         self.prev_par = FRB_params(EMPTY = True)
 
@@ -264,8 +266,8 @@ class FRB:
 
             self.par.nchan = x.shape[0]                     # assumed that dyn spec is [freq,time]
             self.par.nsamp = x.shape[1]        
-            self.par.df    = self.par.bw / self.par.nchan           # delta freq in (MHz)
-            self.par.dt    = 1e-3 / self.par.df                     # delta time in (ms) [micro seconds]
+            # self.par.df    = self.par.bw / self.par.nchan           # delta freq in (MHz)
+            # self.par.dt    = 1e-3 / self.par.df                     # delta time in (ms) [micro seconds]
             self.par.t_lim  = [0.0, self.par.dt * self.par.nsamp]
 
             self.empty = False
@@ -842,7 +844,7 @@ class FRB:
         hyperpar = {}
         for key in _G.hp.keys():
             if key in kwargs.keys():
-                setattr(self, key, kwargs.keys())
+                setattr(self, key, kwargs[key])
             
         # set verbose
         set_verbose(self.verbose)
@@ -1610,7 +1612,7 @@ class FRB:
 
     ## [ PLOT LORENTZ OF CROP ] ##
     def fit_scintband(self, method = "bayesian",priors: dict = None, statics: dict = None, 
-                     fit_params: dict = None, plot = False, filename: str = None, **kwargs):
+                     fit_params: dict = None, plot = False, redo = False, filename: str = None, **kwargs):
         """
         Fit for, Find and plot Scintillation bandwidth in FRB
 
@@ -1671,7 +1673,7 @@ class FRB:
                 residuals = self.residuals)
 
         # fit
-        p.fit()
+        p.fit(redo = redo)
 
         # calculate modulation index
         # see (Macquart. j. P. et al, 2019) - [The spectral Properties of the bright FRB population]
@@ -1694,7 +1696,7 @@ class FRB:
         
         
         if plot:
-            p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf")
+            p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", filename = filename)
 
         # update instance par
         self._save_new_params()
@@ -1714,7 +1716,7 @@ class FRB:
 
     ## [ FIT SCATTERING TIMESCALE ] ##
     def fit_tscatt(self, method = "bayesian", npulse = 1, priors: dict = None, statics: dict = None, 
-                   fit_params: dict = None, plot = False, filename: str = None, **kwargs):
+                   fit_params: dict = None, plot = False, redo = False, filename: str = None, **kwargs):
         """
         Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
 
@@ -1781,7 +1783,7 @@ class FRB:
                 residuals = self.residuals) 
 
         # fit 
-        p.fit()
+        p.fit(redo = redo)
         
         # print best fit parameters
         if self.verbose:
@@ -1790,7 +1792,7 @@ class FRB:
 
         # plot
         if plot:
-            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)")
+            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)", filename = filename)
 
         # save instance parameters
         self._save_new_params()
@@ -2092,7 +2094,8 @@ class FRB:
         # plot
         if plot:
             p._is_fit = True
-            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90])
+            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90],
+            filename = filename)
 
 
         self._save_new_params()
@@ -2207,6 +2210,9 @@ class FRB:
         fig.subplots_adjust(hspace = 0)
         AX['P'].get_xaxis().set_visible(False)
         AX['S'].get_xaxis().set_visible(False)
+
+        if filename is not None:
+            plt.savefig(filename)
 
 
         self._save_new_params()

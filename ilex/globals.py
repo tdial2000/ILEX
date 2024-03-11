@@ -45,4 +45,5 @@ _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None"}
 
 # dict of hyper parameters``
-_G.hp = {'verbose': False, 'force': False, 'savefig': False}
+_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_err_type': 'regions',
+         'residuals': True}

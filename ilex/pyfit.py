@@ -1012,12 +1012,14 @@ class fit:
 
 
 
-    def plot(self, **ax_kw):
+    def plot(self, filename = None, **ax_kw):
         """
         Plot fitted model and data
 
         Parameters
         ----------
+        filename : str
+            name of output image file, default is None
         **ax_kw : Dict
             keyword parameters for plotting
         """
@@ -1070,6 +1072,10 @@ class fit:
         # last figure changes
         fig.tight_layout()        
         fig.subplots_adjust(hspace = 0)
+
+        # save file
+        if filename is not None:
+            plt.savefig(filename)
 
         plt.show()
 

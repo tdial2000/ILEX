@@ -39,3 +39,4 @@ html_theme = "sphinx_rtd_theme"
 # html_theme_options = {'style_nav_header_background':'red'}
 # html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
 html_static_path = ['_static']
+pygments_style = 'sphinx'

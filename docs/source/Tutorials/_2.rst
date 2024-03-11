@@ -23,7 +23,7 @@ A quick and dirty method for fitting the time series profile is using the ``leas
     frb.fit_tscatt(method = "least squares", plot = True)
 
 .. image:: 220610_tI_fit1.png
-   :wdith: 240pt
+   :wdith: 720pt
 
 In most cases, an FRB burst will be more complicated. In which case a more robust method using the ``bayesian``
 toggle is nessesary. To do so, priors need to be given.
@@ -37,7 +37,7 @@ toggle is nessesary. To do so, priors need to be given.
     p = frb.fit_tscatt(method = "bayesian", priors = priors, plot = True)
 
 .. image:: 220610_tI_fit2.png
-   :width: 240pt
+   :width: 720pt
 
 We can also return the ``p``, the fitting utility class which has a number of useful features. Most notable is showing
 the stats of the modelling.
@@ -90,7 +90,7 @@ We will fit for the RM first. Once this method runs the fitted RM will be saved 
     pa0:  1.0076283903583936     (rad)
 
 .. image:: 220610_RM.png
-   :width: 240pt
+   :width: 720pt
 
 Once RM is calculated, we can plot a bunch of polarisation properties using the master method ``.plot_PA()``.
 
@@ -99,5 +99,5 @@ Once RM is calculated, we can plot a bunch of polarisation properties using the 
     frb.plot_PA(terr_crop = [0, 15], plot_L = True, plot = True)
 
 .. image:: 220610_PA.png
-   :width: 240pt
+   :width: 720pt
 

@@ -69,11 +69,11 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
             return np.mean(x[:,:N_new].reshape(x.shape[0],N_new // N, N),axis = 2)
         
         else:
-            log("axis must be 1[-1] or 0", lpf = False)
+            print("axis must be 1[-1] or 0")
             return x
         
     else:
-        log("ndims must equal 1 or 2..", lpf = False)
+        print("ndims must equal 1 or 2..")
         return x
     
 
@@ -106,8 +106,8 @@ def scrunch(x: np.ndarray, axis: int = 0, weights = None):
 
     if type(weights) == np.ndarray:
         if weights.size != x.shape[axis]:
-            log(f"weights {weights.size} != xdata {x.size}", lpf = False)
-            log("size of weights array mismatch, using uniform weighting instead", lpf = False)
+            print(f"weights {weights.size} != xdata {x.size}")
+            print("size of weights array mismatch, using uniform weighting instead")
             weights = 1.0
 
         else:
@@ -161,7 +161,7 @@ def pslice(x: np.ndarray, start: float, end: float, axis: int = 0):
         # time series
         start, end = int(start*x.size), int(end*x.size)
         if start < 0 or end > x.size:
-            log("Phase slicing must be between [0,1]", lpf = False)
+            print("Phase slicing must be between [0,1]")
             return None
         
         return x[start:end].copy()
@@ -177,11 +177,11 @@ def pslice(x: np.ndarray, start: float, end: float, axis: int = 0):
             return x[:,start:end].copy()
         
         else:
-            log("axis must be 1[-1] or 0", lpf = False)
+            print("axis must be 1[-1] or 0")
             return x
     
     else:
-        log("ndims must be either 1 or 2", lpf = False)
+        print("ndims must be either 1 or 2")
         return x
 
 
@@ -481,8 +481,8 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
                            (stk_den['tQ']**2 + stk_den['tU']**2)**2)
 
     # calculate de-baised L and mask PA 
-    L_debias = calc_Ldebiased(stk_den['tQ'], stk_den['tU'], stk['tIerr'])
-    PA_mask = L_debias < Ldebias_threshold * stk['tIerr']
+    L_debias,_ = calc_Ldebiased(stk_den['tQ'], stk_den['tU'], stk['tIerr'])
+    PA_mask = L_debias < (Ldebias_threshold * stk['tIerr'])
 
     # mask PA
     PA[PA_mask] = np.nan
@@ -494,9 +494,9 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
 
 
 
-def calc_L(Q, U):
+def calc_L(Q, U, Qerr = None, Uerr = None):
     """
-    Calculate Stokes L
+    Calculate L
 
     Parameters
     ----------
@@ -504,21 +504,42 @@ def calc_L(Q, U):
         Stokes Q data
     U : np.ndarray
         Stokes U data
+    Qerr : np.ndarray
+        Stokes Q error
+    Uerr : np.ndarray
+        Stokes U error
 
     Returns
     -------
     L : np.ndarray
-        Stokes L data
+        L data
+    Lerr : np.ndarray
+        L errors
     """
 
-    return np.sqrt(Q**2 + U**2)
+    # calc L
+    L = np.sqrt(Q**2 + U**2)
+
+    # calc Error in L
+    Lerr = None
+    if (Qerr is not None) and (Uerr is not None):
+        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2)
+        Lmask = L != 0.0
+        Lerr[Lmask] = Lerr[Lmask]/L[Lmask]
+        Lerr[~Lmask] = np.nan
+
+    return L, Lerr
 
 
 
 
 
 
-def calc_Ldebiased(Q, U, Ierr):
+
+
+
+
+def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
     """
     Calculate De-biased Linear polarisation fraction
     (see Everett & Weisberg+2001)
@@ -531,11 +552,17 @@ def calc_Ldebiased(Q, U, Ierr):
         Stokes U data
     Ierr : np.ndarray
         Stokes U err data
+    Qerr : np.ndarray
+        Stokes Q error
+    Uerr : np.ndarray
+        Stokes U error
 
     Returns
     -------
     L_debias : np.ndarray
         Stokes L debias
+    Lerr : np.ndarray
+        L errors
     """
 
     L_meas = np.sqrt(Q**2 + U**2)
@@ -543,7 +570,118 @@ def calc_Ldebiased(Q, U, Ierr):
     L_debias[np.isnan(L_debias)] = 0
     L_debias[L_meas/Ierr < 1.57] = 0
 
-    return L_debias
+    Lerr = None
+    if (Qerr is not None) and (Uerr is not None):
+        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2)
+        Lmask = L_debias != 0.0
+        Lerr[Lmask] = Lerr[Lmask]/L_debias[Lmask]
+        Lerr[~Lmask] = np.nan
+
+    return L_debias, Lerr
+
+
+
+
+
+
+
+
+def calc_P(Q, U, V, Qerr = None, Uerr = None, Verr = None):
+    """
+    Calculate P
+
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
+    V : np.ndarray
+        Stokes V data
+    Qerr : np.ndarray
+        Stokes Q error
+    Uerr : np.ndarray
+        Stokes U error
+    Verr : np.ndarray
+        Stokes V error
+
+    Returns
+    -------
+    P : np.ndarray
+        P data
+    Perr : np.ndarray
+        P errors
+    """
+
+    # calculate L
+    L, Lerr = calc_L(Q, U, Qerr, Uerr)
+    # calculate P
+    P = np.sqrt(L**2 + V**2)
+
+    # calculate Perr
+    Perr = None
+    if (Lerr is not None) and (Verr is not None):
+        Perr = np.sqrt(L**2*Lerr**2 + V**2*Verr**2)
+        Pmask = P != 0.0
+        Perr[Pmask] = Perr[Pmask]/P[Pmask]
+        Perr[~Pmask] = np.nan
+
+    return P, Perr
+
+
+
+
+
+
+
+
+def calc_Pdebiased(Q, U, V, Ierr, Qerr = None, Uerr = None, Verr = None):
+    """
+    Calculate De-biased Linear polarisation fraction then calculate
+    total polarisation (see Everett & Weisberg+2001)
+
+    Parameters
+    ----------
+    Q : np.ndarray
+        Stokes Q data
+    U : np.ndarray
+        Stokes U data
+    V : np.ndarray
+        Stokes V data
+    Ierr : np.ndarray
+        Stokes U err data
+    Qerr : np.ndarray
+        Stokes Q error
+    Uerr : np.ndarray
+        Stokes U error
+    Verr : np.ndarray
+        Stokes V error
+
+    Returns
+    -------
+    P_debias : np.ndarray
+        P debias
+    Perr : np.ndarray
+        P errors
+    """
+
+    # calc L debais
+    L_debias, Lerr = calc_Ldebiased(Q, U, Ierr, Qerr, Uerr)
+    # calc P 
+    P_debias = np.sqrt(L_debias**2 + V**2)
+
+    # calc P err
+    Perr = None
+    if (Lerr is not None) and (Verr is not None):
+        Perr = np.sqrt(L_debias**2*Lerr**2 + V**2*Verr**2)
+        Pmask = P_debias != 0.0
+        Perr[Pmask] = Perr[Pmask]/P_debias[Pmask]
+        Perr[~Pmask] = np.nan
+
+    return P_debias, Perr
+
+
+
 
 
 

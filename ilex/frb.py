@@ -17,10 +17,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 from time import time
 import math
-import os
+import os, sys
 from copy import deepcopy
 import inspect
-
+from .pyfit import fit
 
 ## import utils ##
 from .utils import (load_data, save_data, dict_get,
@@ -30,20 +30,21 @@ from .utils import (load_data, save_data, dict_get,
 from .data import *
 
 ## import FRB stats ##
-from .fitting import fit_scint, fit_RMquad, fit_RMsynth, fit_tscatt
+from .fitting import (fit_RMquad, fit_RMsynth, lorentz,
+                     make_scatt_pulse_profile_func)
 
 ## import FRB params ##
 from .par import FRB_params, FRB_metaparams
 
-## import FRB htr functions ##
-from .htr import make_stokes
+# ## import FRB htr functions ##
+# from .htr import make_stokes
 
 ## import globals ##
 from .globals import _G, globals_ 
 
 ## import plot functions ##
-from .plot import (plot_scintband, plot_tscatt, plot_RM, plot_PA, plot_stokes,      
-                  plot_poincare, plot_data)
+from .plot import (plot_RM, plot_PA, plot_stokes,      
+                  plot_poincare_track, create_poincare_sphere, plot_data)
 
 ## import processing functions ##
 # from .FRBproc import proc_data
@@ -216,6 +217,10 @@ class FRB:
         self.savefig = False            # save figures instead of plotting them
 
         self.pcol = 'cyan'              # color for verbose printing
+        self.plot_err_type = "lines"    # type of errorbar plot
+        self.residuals = False          # plot residuals when plotting fits
+
+        self._isinstance = False        # if data instance is valid
 
 
 
@@ -304,7 +309,7 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, filename = None, param_file = None, **kwargs):
+    def save_data(self, data_list = None, name = None, **kwargs):
         """
         Save current instance data
 
@@ -312,16 +317,58 @@ class FRB:
         ----------
         data_list : List(str), optional
             List of data to save, by default None
-        filename : str, optional
-            Common Pre-fix for saved data, by default None
-        param_file : str, optional
-            filename for parameter file, by default None
+        name : str, optional
+            Common Pre-fix for saved data, by default None, if None the name parameter of the
+            FRB class will be used.
         """
 
-        # TODO:
+        log("Saving the following data products:", lpf_col = self.pcol)
+        for data in data_list:
+            log(f"[{data}]", lpf_col = self.pcol)
 
+        # get data
+        pdat = self.get_data(data_list, get = True)
+        if not self._isdata():
+            return 
         
+
+        if name is None:
+            frbname = self.par.name
+            if frbname is None:
+                frbname = "FRBXXXXXX"
+            name = os.path.join(os.getcwd(), frbname)
+
+        # save data
+        for data in pdat.keys():
+            np.save(name + f"_{data}.npy", pdat[data])
+
         return
+
+
+
+
+    def set(self, **kwargs):
+        """
+        Set FRB parameters, see class parameters
+        """
+
+        # update pars
+        par = self._from_kwargs_get_par(**kwargs)
+        self.par.set_par(**par)
+
+        # update metapars
+        metapar = self._from_kwargs_get_metapar(**kwargs)
+        self.metapar.set_metapar(**metapar)
+
+        # update hyperpars
+        self._update_hyperpar(**kwargs)
+
+        print(self.metapar.metapar2dict)
+        print(self.par)
+
+
+
+
 
 
     def get_freqs(self):
@@ -387,7 +434,8 @@ class FRB:
             if not self._isvalid(data_products):
                 log("Loaded data not avaliable or incorrect DS shapes", stype = "err",
                     lpf_col = self.pcol)
-                return 0
+                self._isinstance = False
+                return 
 
 
             ## make new instances
@@ -400,6 +448,7 @@ class FRB:
         else:
             log("Loading previous crop", lpf_col = self.pcol)
 
+        self._isinstance = True
 
         # check if get is true
         if get:
@@ -806,6 +855,13 @@ class FRB:
         Update parameters with keywords for current instance
 
         """  
+        # copy over current hyperparams to kwargs
+        metapar = self.metapar.metapar2dict()
+        kw = kwargs.keys()
+        for key in metapar.keys():
+            if key not in kw:
+                kwargs[key] = metapar[key]
+
         # make sure metaparameters are updated first  
         self._proc_kwargs(**kwargs)
         
@@ -901,6 +957,9 @@ class FRB:
                 new_t,_ = self.par.lim2phase(t_lim = prev_t)
                 kwargs['t_crop'][0], kwargs['t_crop'][1] = new_t[0], new_t[1]
 
+                if kwargs['t_crop'][0] < 0.0: kwargs['t_crop'][0] = 0.0
+                if kwargs['t_crop'][1] > 1.0: kwargs['t_crop'][1] = 1.0
+
                 log(f"Converting Time crop {prev_t} ms -> {kwargs['t_crop']} phase units", lpf = False)
 
         # check if t_crop has been given in units of ms
@@ -910,19 +969,25 @@ class FRB:
                 _, new_f = self.par.lim2phase(f_lim = prev_f)
                 kwargs['f_crop'][0], kwargs['f_crop'][1] = new_f[0], new_f[1]
 
+                if kwargs['f_crop'][0] < 0.0: kwargs['f_crop'][0] = 0.0
+                if kwargs['f_crop'][1] > 1.0: kwargs['f_crop'][1] = 1.0
+
                 log(f"Converting Freq crop {prev_f} MHz -> {kwargs['f_crop']} phase units", lpf = False)
 
         # check if terr_crop has been given in units of ms
         if "terr_crop" in keys:
-            if kwargs['terr_crop'][0] > 1.0 or kwargs['terr_crop'][1] > 1.0:
-                prev_t = kwargs['terr_crop'].copy()
-                new_t,_ = self.par.lim2phase(t_lim = prev_t)
-                kwargs['terr_crop'][0], kwargs['terr_crop'][1] = new_t[0], new_t[1]
+            if kwargs['terr_crop'] is not None:
+                if kwargs['terr_crop'][0] > 1.0 or kwargs['terr_crop'][1] > 1.0:
+                    prev_t = kwargs['terr_crop'].copy()
+                    new_t,_ = self.par.lim2phase(t_lim = prev_t)
+                    kwargs['terr_crop'][0], kwargs['terr_crop'][1] = new_t[0], new_t[1]
 
-                log(f"Converting err Time crop {prev_t} ms -> {kwargs['terr_crop']} phase units", lpf = False)
+                    if kwargs['terr_crop'][0] < 0.0: kwargs['terr_crop'][0] = 0.0
+                    if kwargs['terr_crop'][1] > 1.0: kwargs['terr_crop'][1] = 1.0
+
+                    log(f"Converting err Time crop {prev_t} ms -> {kwargs['terr_crop']} phase units", lpf = False)
         
-
-
+            
 
 
 
@@ -957,12 +1022,14 @@ class FRB:
         for key in data_products:
             # check if none
             if self.ds[key] is None:
+                log(f"Missing data for [{key}]")
                 return 0
             
             data_shape.append(list(self.ds[key].shape))
         
         # check if shape of all data matches
         if not all(x==data_shape[0] for x in data_shape):
+            log("Data shape mismatch between loaded Dynamic spectra")
             return 0
 
         return 1
@@ -978,6 +1045,10 @@ class FRB:
 
         return self.this_metapar.terr_crop is not None
     
+
+    def _isdata(self):
+
+        return self._isinstance
 
 
 
@@ -1148,8 +1219,10 @@ class FRB:
         kwargs['f_crop'] = [0.0, 1.0]  
 
         # get dynI spectra (first scrunch)
+        
         self.get_data("dsI", **kwargs)
-
+        if not self._isdata():
+            return None
         
 
 
@@ -1219,7 +1292,11 @@ class FRB:
         t_crop = [0.0,1.0]
         t_crop[0] = p_start + sig_i[0]/tpro.size*(p_end - p_start)
         t_crop[1] = p_start + sig_i[-1]/tpro.size*(p_end - p_start)
+        width = t_crop[1] - t_crop[0]
+        t_crop[0] -= 0.1*width
+        t_crop[1] += 0.1*width
 
+        self.metapar.set_metapar(t_crop = t_crop)
 
         log("New t_crop: [{:.5f}, {:.5f}]".format(t_crop[0],t_crop[1]), lpf_col = self.pcol)
 
@@ -1350,6 +1427,8 @@ class FRB:
         
         #fill figure
         ds = self.get_data(data, get = True, **kwargs)[data]
+        if not self._isdata():
+            return None
 
         # dynamic spectra
         AX[0].imshow(ds,aspect = 'auto',extent = [self.this_par.t_lim[0], self.this_par.t_lim[1], 
@@ -1417,6 +1496,8 @@ class FRB:
 
         # get data
         pdat = self.get_data(data_list = data, get = True, **kwargs)
+        if not self._isdata():
+            return None
 
         stk = data[-1]
 
@@ -1444,8 +1525,7 @@ class FRB:
 
 
     def plot_stokes(self, plot_L = False, Ldebias = False, debias_threshold = 2.0, 
-            stk_type = "f", stk_ratio = False, stk2plot = "IQUV", filename: str = None,
-            plot_err_type = "regions", **kwargs):
+            stk_type = "f", stk2plot = "IQUV", filename: str = None, **kwargs):
         """
         Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
@@ -1460,16 +1540,10 @@ class FRB:
             else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
         stk_type : str, optional
             Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
-        stk_ratio : bool, optional
-            Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False
         stk2plot : str, optional
             string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
         filename : str, optional
             name of file to save figure image, by default None
-        plot_err_type : str, optional
-            Choose between two methods of plotting the error in the data, by default "regions" \n
-            [regions] - Show error in data as shaded regions
-            [lines] - Show error in data as tics in markers
         **kwargs : Dict
             FRB parameter keywords
 
@@ -1483,7 +1557,10 @@ class FRB:
         log(f"plotting stokes data", lpf_col = self.pcol)
 
         # get data
-        self.get_data(data_list = [f"{stk_type}I", f"{stk_type}Q", f"{stk_type}U", f"{stk_type}V"], **kwargs)
+        data_list = [f"{stk_type}I", f"{stk_type}Q", f"{stk_type}U", f"{stk_type}V"]
+        self.get_data(data_list = data_list, **kwargs)
+        if not self._isdata():
+            return None
 
         err_flag = self._iserr()
 
@@ -1515,8 +1592,8 @@ class FRB:
 
         # plot
         fig = plot_stokes(pstk, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
-                    debias_threshold = debias_threshold, stk_ratio = stk_ratio, stk2plot = stk2plot,
-                    filename = filename, plot_err_type = plot_err_type) 
+                    debias_threshold = debias_threshold, stk2plot = stk2plot,
+                    filename = filename, plot_err_type = self.plot_err_type) 
     
 
         self._save_new_params()
@@ -1532,16 +1609,20 @@ class FRB:
 
 
     ## [ PLOT LORENTZ OF CROP ] ##
-    def fit_scintband(self, fit_priors: dict = None, static_priors: dict = None, fit_params: dict = None,
-                      plot = False, filename: str = None, plot_err_type = "regions", **kwargs):
+    def fit_scintband(self, method = "bayesian",priors: dict = None, statics: dict = None, 
+                     fit_params: dict = None, plot = False, filename: str = None, **kwargs):
         """
         Fit for, Find and plot Scintillation bandwidth in FRB
 
         Parameters
         ----------
-        fit_priors : dict, optional
+        method : str
+            method for fitting \n
+            [bayesian] - Use Bilby bayesian Statistics \n
+            [least squares] - Use Scipy.Curve_fit least squares 
+        priors : dict, optional
             Priors for sampling, by default None
-        static_priors : dict, optional
+        statics : dict, optional
             priors to keep constant, by default None
         fit_params : dict, optional
             extra arguments for Bilby.run_sampler function, by default None
@@ -1549,21 +1630,11 @@ class FRB:
             plot data, by default False
         filename : str, optional
             Save figure to file, by default None
-        plot_err_type : str, optional
-            Choose between two methods of plotting the error in the data, by default "regions" \n
-            [regions] - Show error in data as shaded regions
-            [lines] - Show error in data as tics in markers, by default "regions"
 
         Returns
         -------
-        p: fit_par
-            Posterior class data-structure
-        spec_lags: np.ndarray
-            Spectral lags
-        spec_acf: np.ndarray
-            ACF of spectral data, excluding zero-lag 
-        fig: figure
-            Return figure instance
+        p: pyfit.fit
+            pyfit class structure
         """
         
         log("Fitting for Scintillation bandwidth", lpf_col = self.pcol)
@@ -1572,8 +1643,7 @@ class FRB:
         ##====================##
 
         # initilise dicts
-        fit_priors, static_priors, fit_params = dict_init(fit_priors, static_priors, 
-                                                          fit_params)
+        priors, statics, fit_params = dict_init(priors, statics, fit_params)
 
         # init pars
         self._load_new_params(**kwargs)
@@ -1586,27 +1656,36 @@ class FRB:
 
         # get data crop and spectrum
         self.get_data("fI", **kwargs)
+        if not self._isdata():
+            return None
+        
+        # caculate acf of residuals
+        y = acf(residuals(self._f['I']))
+        # lags
+        x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
+                         y.size)
 
-        p = fit_scint(self._freq, self._f['I'], priors = fit_priors, 
-                      static_priors = static_priors, **fit_params)
+        # create instance of fitting
+        p = fit(x = x, y = y, func = lorentz, prior = priors,
+                static = statics, fit_keywords = fit_params, method = method,
+                residuals = self.residuals)
 
-        if self.verbose:
-            print(p)
-
+        # fit
+        p.fit()
 
         # calculate modulation index
         # see (Macquart. j. P. et al, 2019) - [The spectral Properties of the bright FRB population]
-        m = p.val['a']**0.5
+        m = p.posterior['a'].val**0.5
 
         #  using error propogation and quick calculus to obtain error
-        temp_err = (abs(p.plus['a']) + abs(p.minus['a']))/2 
-        err = 0.5*temp_err/p.val['a']
+        temp_err = (abs(p.posterior['a'].p) + abs(p.posterior['a'].m))/2 
+        err = 0.5*temp_err/p.posterior['a'].val
+
+        p.set_posterior('m', m, err, err)
         
-        p.add_param('m', m, err, err)
-
-        log("Modulated Index:", lpf_col = self.pcol)
-        log(f"m:    {m} (+{err}/-{err})", lpf = False)
-
+        if self.verbose:
+            p.stats()
+            print(p)
 
         ##===================##
         ##   do plotting     ##
@@ -1614,16 +1693,110 @@ class FRB:
 
         
         
-        fig = None
-        if plot:        
-            fig = plot_scintband(x = spec_lags, y = spec_acf, y_err = p.val['sigma'], 
-                                 w = p.val['w'], a = p.val['a'], filename = filename,
-                                 plot_err_type = plot_err_type)
+        if plot:
+            p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf")
 
         # update instance par
         self._save_new_params()
 
-        return p, spec_lags, spec_acf, fig
+        return p
+
+
+
+
+
+
+
+
+
+
+
+
+    ## [ FIT SCATTERING TIMESCALE ] ##
+    def fit_tscatt(self, method = "bayesian", npulse = 1, priors: dict = None, statics: dict = None, 
+                   fit_params: dict = None, plot = False, filename: str = None, **kwargs):
+        """
+        Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
+
+        Parameters
+        ----------
+        method : str
+            method for fitting \n
+            [bayesian] - Use Bilby bayesian Statistics \n
+            [least squares] - Use Scipy.Curve_fit least squares 
+        npulse : int, optional
+            Number of gaussian to fit, by default 1
+        priors : dict, optional
+            Priors for sampling, by default None
+        statics : dict, optional
+            Priors to keep constant during fitting, by default None
+        fit_params : dict, optional
+            Keyword parameters for Bilby.run_sampler, by default None
+        plot : bool, optional
+            plot data after modelling is complete, by default False
+        filename : str, optional
+            filename to save final plot to, by default None
+
+        Returns
+        -------
+        p: pyfit.fit
+            pyfit class structure
+        """        
+        log("Fitting for Scattering Time", lpf_col = self.pcol)
+        ##====================##
+        ## check if data valid##
+        ##====================##
+
+        # initilaise dicts
+        priors, statics, fit_params = dict_init(priors, statics, fit_params)
+
+        # init par
+        self._load_new_params(**kwargs)
+
+
+        ##====================##
+        ##  proc data to fit  ##
+        ##====================##
+        
+        # get data
+        y = self.get_data("tI", get = True, **kwargs)["tI"]
+        if not self._isdata():
+            return None
+
+        # create time profile
+        x = np.linspace(*self.this_par.t_lim,y.size)
+
+        err = None
+        if self._iserr():
+            err = self._t['Ierr']*np.ones(y.size)
+
+
+        ##==================##
+        ##   Do Fitting     ##
+        ##==================##
+
+        # create instance of fitting
+        p = fit(x = x, y = y, yerr = err, func = make_scatt_pulse_profile_func(npulse),
+                prior = priors, static = statics, fit_keywords = fit_params, method = method,
+                residuals = self.residuals) 
+
+        # fit 
+        p.fit()
+        
+        # print best fit parameters
+        if self.verbose:
+            p.stats()
+            print(p)
+
+        # plot
+        if plot:
+            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)")
+
+        # save instance parameters
+        self._save_new_params()
+
+        return p
+
     
 
 
@@ -1638,7 +1811,7 @@ class FRB:
 
 
     def plot_poincare(self, filename = None, stk_type = "f", sigma = 2.0, plot_data = True,
-                        plot_model = False, plot_P = False, n = 5, plot_on_surface = True, **kwargs):
+                        plot_model = False, n = 5, normalise = True, **kwargs):
         """
         Plot Stokes data on a Poincare Sphere.
 
@@ -1657,9 +1830,7 @@ class FRB:
             Plot Data on Poincare sphere, by default True
         plot_model : bool, optional
             Plot Polynomial fitted data on Poincare sphere, by default False
-        plot_P : bool, optional
-            Plot stokes/P instead of stokes/I, by default False
-        plot_on_surface : bool, optional
+        normalise : bool, optional
             Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
         n : int, optional
             Maximum order of Polynomial fit, by default 5
@@ -1688,7 +1859,10 @@ class FRB:
             data_list += [f"{stk_type}{S}"]
 
         data = self.get_data(data_list = data_list, get = True, **kwargs)
+        if not self._isdata():
+            return None
 
+        # what type of data, time or freq
         if stk_type == "t":
             pdat = self._t
             cbar_lims = self.this_par.t_lim
@@ -1699,10 +1873,13 @@ class FRB:
             cbar_label = "Frequency [MHz]"
 
         # plot poincare sphere
-        fig = plot_poincare(pdat, sigma = sigma, filename = filename,
-                    plot_data = plot_data, plot_model = plot_model, plot_P = plot_P,
-                    n = n, cbar_lims = cbar_lims, cbar_label = cbar_label)
+        fig, ax = create_poincare_sphere(cbar_lims = cbar_lims, cbar_label = cbar_label)
 
+        plot_poincare_track(pdat, ax, sigma = sigma, filename = filename,
+                    plot_data = plot_data, plot_model = plot_model, normalise = normalise,
+                    n = n)
+
+        plt.show()
 
         self._save_new_params()
 
@@ -1710,180 +1887,91 @@ class FRB:
 
 
 
-    def plot_poincare_multi(self, stk_type = "f", tcrops = None, fcrops = None, 
-                            filename: str = None, plot_data = True, plot_model = False,
-                            plot_on_surface = True, plot_P = False, n = 5, **kwargs):
-        """
-        Plot multiple tracks on a Poincare Sphere. Each Track is represented by
-        a seperate crop, i.e. a set of of t_crop and f_crop. \n
-        Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop 
-        will be used instead for each seperate track.
 
-        Parameters
-        ----------
-        stk_type : str, optional
-            Type of stokes data, by default "f" \n
-            [f] - Plot data as function of frequency \n
-            [t] - Plot data as function of time
-        tcrops : List(List), optional
-            List of t_crop's, one for each track to plot, by default None
-        fcrops : List(List), optional
-            List of f_crop's, one for each track to plot, by default None
-        filename : str, optional
-            filename to save figure to, by default None
-        plot_data : bool, optional
-            plot data on Poincare sphere, by default True
-        plot_model : bool, optional
-            Plot Polynomial fitted model of data on Poincare sphere, by default False
-        plot_on_surface : bool, optional
-            Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
-        plot_P : bool, optional
-            Plot Stokes/P instead of Stokes/I, by default False
-        n : int, optional
-            Maximum polynomial order for model fitting, by default 5
 
-        Returns
-        -------
-        fig : figure
-            Return figure instance
-        """        
-        log(f"Plotting multiple Poincare tracks", lpf_col = self.pcol)
 
-        tcrops = deepcopy(tcrops)
-        fcrops = deepcopy(fcrops)
 
-        # initialise crops
-        self._load_new_params(**kwargs)
 
-        # run function
-        freqs = self.par.get_freqs()
 
-        # check the units of tcrops/fcrops
-        if tcrops is not None:
-            for i, crop in enumerate(tcrops):
-                if crop[0] > 1.0 or crop[1] > 1.0:
-                    tcrops[i], _ = self.par.lim2phase(t_lim = crop)
+
+
+
+
+
+
+    # def plot_poincare_multi(self, stk_type = "f", tcrops = None, fcrops = None, 
+    #                         filename: str = None, plot_data = True, plot_model = False,
+    #                         plot_on_surface = True, plot_P = False, n = 5, **kwargs):
+    #     """
+    #     Plot multiple tracks on a Poincare Sphere. Each Track is represented by
+    #     a seperate crop, i.e. a set of of t_crop and f_crop. \n
+    #     Note: If either tcrops or fcrops is unspecified, the FRB instance of t_crop or f_crop 
+    #     will be used instead for each seperate track.
+
+    #     Parameters
+    #     ----------
+    #     stk_type : str, optional
+    #         Type of stokes data, by default "f" \n
+    #         [f] - Plot data as function of frequency \n
+    #         [t] - Plot data as function of time
+    #     tcrops : List(List), optional
+    #         List of t_crop's, one for each track to plot, by default None
+    #     fcrops : List(List), optional
+    #         List of f_crop's, one for each track to plot, by default None
+    #     filename : str, optional
+    #         filename to save figure to, by default None
+    #     plot_data : bool, optional
+    #         plot data on Poincare sphere, by default True
+    #     plot_model : bool, optional
+    #         Plot Polynomial fitted model of data on Poincare sphere, by default False
+    #     plot_on_surface : bool, optional
+    #         Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+    #     plot_P : bool, optional
+    #         Plot Stokes/P instead of Stokes/I, by default False
+    #     n : int, optional
+    #         Maximum polynomial order for model fitting, by default 5
+
+    #     Returns
+    #     -------
+    #     fig : figure
+    #         Return figure instance
+    #     """        
+    #     log(f"Plotting multiple Poincare tracks", lpf_col = self.pcol)
+
+    #     tcrops = deepcopy(tcrops)
+    #     fcrops = deepcopy(fcrops)
+
+    #     # initialise crops
+    #     self._load_new_params(**kwargs)
+
+    #     # run function
+    #     freqs = self.par.get_freqs()
+
+    #     # check the units of tcrops/fcrops
+    #     if tcrops is not None:
+    #         for i, crop in enumerate(tcrops):
+    #             if crop[0] > 1.0 or crop[1] > 1.0:
+    #                 tcrops[i], _ = self.par.lim2phase(t_lim = crop)
         
-        if fcrops is not None:
-            for i, crop in enumerate(fcrops):
-                if crop[0] > 1.0 or crop[1] > 1.0:
-                    _, fcrops[i] = self.par.lim2phase(f_lim = crop)
+    #     if fcrops is not None:
+    #         for i, crop in enumerate(fcrops):
+    #             if crop[0] > 1.0 or crop[1] > 1.0:
+    #                 _, fcrops[i] = self.par.lim2phase(f_lim = crop)
 
-        # combine dict
-        full_par = merge_dicts(self.this_par.par2dict(),
-                            self.this_metapar.metapar2dict())
+    #     # combine dict
+    #     full_par = merge_dicts(self.this_par.par2dict(),
+    #                         self.this_metapar.metapar2dict())
 
-        # run multicomp_poincare function
-        fig = multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, 
-                            par = full_par, tcrops = tcrops, fcrops = fcrops, filename = filename,
-                            plot_data = plot_data, plot_model = plot_model, n = n,
-                            plot_on_surface = plot_on_surface, plot_P = plot_P)
+    #     # run multicomp_poincare function
+    #     fig = multicomp_poincare(self.ds, freqs, stk_type = stk_type, dt = self.par.dt, 
+    #                         par = full_par, tcrops = tcrops, fcrops = fcrops, filename = filename,
+    #                         plot_data = plot_data, plot_model = plot_model, n = n,
+    #                         plot_on_surface = plot_on_surface, plot_P = plot_P)
         
-        return fig
+    #     return fig
 
 
 
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ## [ FIT SCATTERING TIMESCALE ] ##
-    def fit_tscatt(self, npulse = 1, fit_priors: dict = None, static_priors: dict = None, fit_params: dict = None, 
-                      plot = False, filename: str = None, plot_err_type = "regions", **kwargs):
-        """
-        Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
-
-        Parameters
-        ----------
-        npulse : int, optional
-            Number of gaussian to fit, by default 1
-        fit_priors : dict, optional
-            Priors for sampling, by default None
-        static_priors : dict, optional
-            Priors to keep constant during fitting, by default None
-        fit_params : dict, optional
-            Keyword parameters for Bilby.run_sampler, by default None
-        plot : bool, optional
-            plot data after modelling is complete, by default False
-        filename : str, optional
-            filename to save final plot to, by default None
-        plot_err_type : str, optional
-            type of errors to plot, by default "regions"
-
-        Returns
-        -------
-        p : fit_par
-            fit_par instance with parameters of tscatter fitting
-        fig : figure
-            Return figure instance
-        """        
-        log("Fitting for Scattering Time", lpf_col = self.pcol)
-        ##====================##
-        ## check if data valid##
-        ##====================##
-
-        # initilaise dicts
-        fit_priors, static_priors, fit_params = dict_init(fit_priors, static_priors,
-                                                          fit_params)
-
-        # init par
-        self._load_new_params(**kwargs)
-
-
-        ##====================##
-        ##  proc data to fit  ##
-        ##====================##
-        
-        # get data
-        y = self.get_data("tI", get = True, **kwargs)["tI"]
-
-        # create time profile
-        x = np.linspace(*self.this_par.t_lim,y.size)
-
-        # if error queiried, put in static
-        if self._iserr():
-            # needs to be in list form as per bilby sigma code
-            static_priors['sigma'] = float(self._t['Ierr'])
-
-
-        ##==================##
-        ##   Do Fitting     ##
-        ##==================##
-
-        p = fit_tscatt(t = x, I = y, npulse = npulse, priors = fit_priors,
-                       static_priors=static_priors, **fit_params)   
-        
-        # print best fit parameters
-        if self.verbose:
-            print(p)
-
-
-
-
-        ##=====================##
-        ##     Do Plotting     ##
-        ##=====================##
-
-        if plot:
-            fig = plot_tscatt(x = x, y = y, y_err = p.val["sigma"], p = p, npulse = npulse, 
-                              filename = filename, plot_err_type = plot_err_type)
-
-        # save instance parameters
-        self._save_new_params()
-
-        return p, fig
 
 
 
@@ -1913,7 +2001,7 @@ class FRB:
 
 
     def fit_RM(self, method = "RMquad", plot = True, fit_params: dict = None, 
-               filename: str = None, plot_err_type = "regions", **kwargs):
+               filename: str = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
 
@@ -1931,13 +2019,11 @@ class FRB:
             [RMsynth] - RMtools_1D.run_synth keyword params
         filename : str, optional
             filename to save figure to, by default None
-        plot_err_type : str, optional
-            type of error to plot, by default "regions"
 
         Returns
         -------
-        _type_
-            _description_
+        p : pyfit.fit
+            pyfit class fitting structure
         """
         log(f"Retrieving RM", lpf_col = self.pcol)
 
@@ -1953,7 +2039,7 @@ class FRB:
         
         else:
             log("Invalid method for estimating RM", stype = "err", lpf_col = self.pcol)
-            return (None, ) * 5
+            return None
             
         if self.this_metapar.terr_crop is None:
             log("Must specify 'terr_crop' for rms crop if you want to use RMsynth or RMquad", stype = "err",
@@ -1962,6 +2048,8 @@ class FRB:
         
         ## get data ##
         self.get_data(data_list, **kwargs)
+        if not self._isdata():
+            return None
 
         ## run fitting for RM ##
         if method == "RMquad":
@@ -1985,20 +2073,32 @@ class FRB:
                                           **fit_params)
 
 
+        # put into pyfit structure
+        PA, PA_err = calc_PA(self._f['Q'], self._f['U'], self._f['Qerr'], self._f['Uerr'])
 
-        ##=====================##
-        ##     Do Plotting     ##
-        ##=====================##
+        def rmquad(f, rm, pa0):
+            angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+            return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
 
-        ## plot diagnostics ##
+        p = fit(x = self._freq, y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
+                 residuals = self.residuals)
+        p.set_posterior('rm', rm, rm_err, rm_err)
+        p.set_posterior('pa0', pa0, pa0_err, pa0_err)
+        p.set_posterior('f0', f0, 0.0, 0.0)
+
+        # set values to par class
+        self.par.set_par(RM = rm, pa0 = pa0, f0 = f0)
+
+        # plot
         if plot:
-            plot_RM(self._freq, self._f['Q'], self._f['U'], self._f['Qerr'],
-                    self._f['Uerr'], rm, pa0, f0, filename = filename, plot_err_type = plot_err_type)
+            p._is_fit = True
+            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90])
+
 
         self._save_new_params()
 
 
-        return rm, rm_err, pa0, pa0_err, f0
+        return p
 
 
 
@@ -2012,18 +2112,14 @@ class FRB:
 
 
 
-    def plot_PA(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
-                fit_params: dict = None, filename: str = None, plot_err_type = "regions", **kwargs):
+    def plot_PA(self, Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
+                fit_params: dict = None, filename: str = None, **kwargs):
         """
         Plot Figure with PA profile, Stokes Time series data, and Stokes I dyspec. If RM is not 
         specified, will be fitted first.
 
         Parameters
         ----------
-        method : str, optional
-            Method to perform Rotation Measure fitting, by default "RMquad" \n
-            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
-            [RMsynth] - Use the RM-tools RM-Synthesis method
         Ldebias_threshold : float, optional
             Sigma threshold for PA masking, by default 2.0
         plot_L : bool, optional
@@ -2036,11 +2132,11 @@ class FRB:
             [RMsynth] - RMtools_1D.run_synth keyword params
         filename : str, optional
             filename of figure to save to, by default None
-        plot_err_type : str, optional
-            type of error to plot, by default "regions"
 
         Returns
         -------
+        p : pyfit.fit
+            pyfit class fitting structure
         fig : figure
             Return figure instance
         """
@@ -2053,18 +2149,20 @@ class FRB:
 
         if self.this_metapar.terr_crop is None:
             log("Need to specify 'terr_crop' for rms estimation", stype = "err", lpf_col = self.pcol)
-            return
+            return None
 
         if self.this_par.RM is None:
-            self.par.RM,_,self.par.pa0,_,self.par.f0 = self.fit_RM(method = method, 
-                                                        plot = True, fit_params = fit_params, **kwargs)
+            log("RM not specified, either provide an RM or fit for one using .fit_RM()", lpf_col = self.pcol, stype = "err")
+            return None
 
         
         ## get data
-        self.get_data(["dsI", "dsQ", "dsU", 
+        data_list = ["dsI", "dsQ", "dsU", 
                        "tI",  "tQ",  "tU", 
-                       "fQ",  "fU", "tV"], **kwargs)
-        
+                       "fQ",  "fU", "tV"]
+        self.get_data(data_list, **kwargs)
+        if not self._isdata():
+            return None
 
         ## calculate PA
         stk_data = {"dsQ":self._ds["Q"], "dsU":self._ds["U"], "tQerr":self._t["Qerr"],
@@ -2088,7 +2186,7 @@ class FRB:
             pdat[f"{S}err"] = self._t[f"{S}err"]
 
         plot_stokes(pdat, ax = AX['S'], stk_type = "t", plot_L = plot_L, Ldebias = True, 
-                    plot_err_type = plot_err_type)
+                    plot_err_type = self.plot_err_type)
 
         ## plot dynamic spectra
         AX['D'].imshow(self._ds['I'], aspect = 'auto', 
@@ -2140,8 +2238,7 @@ class FRB:
 
 
     def plot_PA_multi(self, method = "RMquad", Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
-                    tcrops = None, fcrops = None, fit_params: dict = None, filename = None,
-                    plot_err_type = "regions", **kwargs):
+                    tcrops = None, fcrops = None, fit_params: dict = None, filename = None, **kwargs):
         """
         Plot PA for multiple different components and sitch together. If RM is not specified, will be
         fitted for each component. \n
@@ -2202,9 +2299,13 @@ class FRB:
         full_par = merge_dicts(self.this_par.par2dict(),
                             self.this_metapar.metapar2dict())
 
+        # check data
+        if not self._isvalid(["dsI", "dsQ", "dsU", "dsV"]):
+            return 
+
         RM, PA, PA_err = multicomp_PA(stk = self.ds, freqs = freqs, method = method, dt = self.par.dt,
                             Ldebias_threshold=Ldebias_threshold, plot_L=plot_L, flipPA = flipPA, par=full_par,
-                            tcrops=tcrops, fcrops=fcrops, filename = filename, plot_err_type = plot_err_type,
+                            tcrops=tcrops, fcrops=fcrops, filename = filename, plot_err_type = self.plot_err_type,
                                 **fit_params)
         
         return 

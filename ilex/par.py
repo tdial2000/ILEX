@@ -364,7 +364,7 @@ class FRB_params:
             f_phase[0] = (f_lim[0] - self.f_lim[0]) / lim_width
             f_phase[1] = (f_lim[1] - self.f_lim[0]) / lim_width
 
-            if not self.UP:
+            if self.UP:
                 f_phase[0], f_phase[1] = 1.0 - f_phase[1], 1.0 - f_phase[0]
 
         return t_phase, f_phase
@@ -452,6 +452,8 @@ class FRB_params:
         for key in kwargs.keys():
             if key in _G.p.keys():
                 setattr(self, key, kwargs[key])
+
+        self.f_lim  = [self.cfreq - 0.5*self.bw, self.cfreq + 0.5*self.bw] # frequency range
 
         
     def get_freqs(self):

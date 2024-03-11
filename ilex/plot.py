@@ -247,191 +247,6 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_err_type =
 
 
 
-
-
-## [ PLOT SCINTILLATION ] ##
-# TODO: change args [p] for [w, a] par types
-def plot_scintband(x, y, y_err = None, w = 0.0, a = 0.0, ax = None, filename: str = None,
-                    plot_err_type = "lines"):
-    """
-    Plot Scintillation bandwidth model and residual data
-
-    Parameters
-    ----------
-    x : np.ndarray
-        X data
-    y : np.ndarray
-        Y data
-    y_err : np.ndarray, optional
-        Y error data, by default None
-    w : float, optional
-        Scintillation bandwidth, by default 0.0
-    a : float, optional
-        square of modulation index, by default 0.0
-    ax : Axes, optional
-        Axes handle, by default None
-    filename : str, optional
-        filename to save figure to, by default None
-    plot_err_type : str, optional
-        type of error to plot, by default "lines"
-
-    Returns
-    -------
-    fig : figure
-        Return figure instance
-    """
-    
-    ##==================##
-    ## PLOT START GUARD ##
-    ##==================##
-    fig_flag = True
-    if ax is None:
-        fig_flag = False
-        fig = plt.figure(figsize = (10, 6))
-        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-
-
-    
-    # start setting up axes
-    ax.set_xlabel("Frequency Lag [Mhz]", fontsize = 12)
-    ax.set_ylabel("normalised acf", fontsize = 12)
-
-    # plot data
-    ax.scatter(x, y, c = 'k', s = 1.5)
-
-    # plot error bars if applicable
-    if y_err is not None:
-        # error bars
-        _plot_err(x, y, yerr = y_err, ax = ax, col = [0., 0., 0., 0.5], plot_type = plot_err_type)
-
-    # plot model
-    ax.plot(np.linspace(0,x[-1],x.size), lorentz(x, w, a))
-
-    # write decorrelation bandwidth in legend title
-    leg_title = f"$\\nu_{{dc}} = {{{w:.4f}}}$ MHz"
-    ax.legend(title = leg_title, fontsize = 14)
-
-
-
-
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None
-
-
-    
-
-
-
-
-
-
-## [ PLOT SCATTERING TIMESCALE ] ##
-def plot_tscatt(x, y, y_err = None, ax = None, p = None, npulse: int = 1, filename: str = None,
-                plot_err_type = "lines"):
-    """
-    Plot time series fit, a sum of convolved gaussians
-
-    Parameters
-    ----------
-    x : np.ndarray
-        X data
-    y : np.ndarray
-        Y data
-    y_err : np.ndarray, optional
-        Y error data, by default None
-    ax : Axes, optional
-        Axes handle, by default None
-    p : Dict, optional
-        Dictionary of parameters for each convolved gaussian in time series, by default None
-    npulse : int, optional
-        number of convolved gaussians, by default 1
-    filename : str, optional
-        filename to save figure to, by default None
-    plot_err_type : str, optional
-        type of error to plot, by default "lines"
-
-    Returns
-    -------
-    fig : figure
-        Return figure handle
-    """
-
-    ##==================##
-    ## PLOT START GUARD ##
-    ##==================##
-    fig_flag = True
-    if ax is None:
-        fig_flag = False
-        fig = plt.figure(figsize = (10, 6))
-        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-
-
-
-
-
-
-    # add to figure
-    ax.set_xlabel("Time [ms]", fontsize = 12)
-    ax.set_ylabel("normalised arb.", fontsize = 12)
-
-    # plot data
-    ax.scatter(x, y, c = 'k', s = 1.5)
-    
-    # plot error bars if applicable
-    if y_err is not None:
-        # error bars
-        _plot_err(x, y, yerr = y_err, ax = ax, col = [0., 0., 0., 0.5], plot_type = plot_err_type)
-
-
-    # plot model
-    pvals = p.get_bestfit()
-    ax.plot(x, scatt_pulse_profile(x,pvals))
-
-    # plot scattered gaussian models
-    tail_s = scat(x, pvals['tau'])
-    for i in range(1,npulse+1):
-        y_modl = np.convolve(gaussian(x, 1, pvals[f"mu{i}"], pvals[f"sig{i}"]),
-                             tail_s, mode = "same")
-        ax.plot(x, pvals[f"a{i}"] * y_modl/np.max(y_modl), '--')
-
-
-    # make legend to show scattering timescale
-    leg_title = f"$\\tau_{{s}} = {{{p.val['tau']:.4f}}}_{{-{p.plus['tau']:.4f}}}^{{+{p.minus['tau']:.4f}}}$ ms"
-    ax.legend(title = leg_title, fontsize = 12)
-
-    
-
-
-    
-
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None
-
-
-
-
-
-
-
-
-
-
 def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
             ax = None, filename: str = None, plot_err_type = "lines"):
     """
@@ -617,8 +432,8 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
 
 
 
-
-
+def plot_stokes_ratios():
+    pass
 
 
 
@@ -626,7 +441,7 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
 
 
 def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0, 
-            stk_type = "f", stk_ratio = False, stk2plot = "IQUV", ax = None, filename: str = None,
+            stk_type = "f", stk2plot = "IQUV", ax = None, filename: str = None,
             plot_err_type = "lines"):
     """
     Plot Stokes data, by default stokes I, Q, U and V data is plotted
@@ -649,8 +464,6 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
         else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
     stk_type : str, optional
         Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
-    stk_ratio : bool, optional
-        Plot Stokes ratios, i.e. Q/I, U/I, V/I, by default False
     stk2plot : str, optional
         string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
     filename : str, optional
@@ -692,7 +505,7 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
     st = stk_type
 
     data_list = ["I", "Q", "U", "V", xdat]
-    if Ldebias or stk_ratio:
+    if Ldebias:
         data_list += [f"Ierr"]
 
     # get data
@@ -704,17 +517,12 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
     if plot_L:
         col = {"I":'k', "L":'r', "V":'b'}
 
-        # calc L
         if Ldebias:
-            pdat["L"] = calc_Ldebiased(pdat["Q"], pdat["U"], pdat["Ierr"])
+            pdat["L"], pdat["Lerr"] = calc_Ldebiased(pdat['Q'], pdat['U'],
+                                        pdat['Ierr'], pdat['Qerr'], pdat['Uerr'])
         else:
-            pdat["L"] = calc_L(pdat["Q"], pdat["U"])
-        
-        if err_flag:
-            pdat["Lerr"] = np.sqrt(pdat["Q"]**2*pdat["Qerr"]**2 + 
-                                   pdat["U"]**2*pdat["Uerr"]**2)
-            Lmask = pdat["L"] != 0.0
-            pdat["Lerr"] = np.nanmean(pdat["Lerr"][Lmask]/pdat["L"][Lmask])
+            pdat["L"], pdat["Lerr"] = calc_L(pdat['Q'], pdat['U'], pdat['Qerr'],
+                                        pdat['Uerr'])
 
         # update stk2plot
         stk = ""
@@ -726,55 +534,9 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
         stk2plot = stk
 
 
-    # check if stk ratios being used
-    linestyle = '-'
-    marker = None
-    if stk_ratio:
-        # get mask for ratios
-        stk_mask = pdat["I"] >= debias_threshold*pdat["Ierr"]
-
-        # this is done assuming freq errors are arrays and time errors
-        # are scalars
-        Ierr = pdat["Ierr"]
-
-        for S in stk2plot:
-            if S != "I":
-                Xerr = None
-                if err_flag:
-                    Xerr = pdat[f"{S}err"]
-                pdat[f"{S}"], pdat[f"{S}err"] = calc_ratio(
-                    pdat[f"I"], pdat[f"{S}"], Ierr, Xerr)
-        
-        # normalize I and Ierr, for completeness
-        Iratio = pdat[f"I"]/pdat[f"I"]
-
-        # rough calculation
-        if st == "t":
-            pdat[f"Ierr"] *= np.nanstd(1/pdat[f"I"][stk_mask])
-        else:
-            pdat[f"Ierr"] /= pdat[f"I"]
-        pdat[f"I"] = Iratio
-
-        # now time/freq array
-        pdat[xdat][~stk_mask] = np.nan
-
-        print(pdat)
-        for S in stk2plot:
-            pdat[f"{S}"][~stk_mask] = np.nan
-
-            if st == "f" and err_flag:
-                print(pdat[f"{S}err"])
-                pdat[f"{S}err"][~stk_mask] = np.nan
-
-
-        # set additional plotting parameters
-        linestyle = '' # since masked stokes data may be segmented, we want to avoid drawing a line
-        marker = '.'
-        
     # now we are ready to plot stokes data
     for i, S in enumerate(stk2plot):
-        ax.plot(pdat[xdat], pdat[f"{S}"], color = col[S], label = S, marker = marker, linestyle = linestyle,
-                markersize = 5)
+        ax.plot(pdat[xdat], pdat[f"{S}"], color = col[S], label = S)
         if err_flag:
             _plot_err(pdat[xdat], pdat[f"{S}"], pdat[f"{S}err"], ax = ax, col= col[S],
              plot_type = plot_err_type)
@@ -798,94 +560,25 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
 
 
 
-
-
-
-
-
-
-
-def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False, 
-                    plot_on_surface = True, n = 5, filename: str = None, cbar_lims = [0.0, 1.0], cbar_label = "", plot_P = False):
+def create_poincare_sphere(cbar_lims, cbar_label):
     """
-    Plot Stokes data on a Poincare Sphere.
-
+    Create poincare sphere plot
+    
     Parameters
     ----------
-    dat : Dict(np.ndarray)
-        Dictionary of stokes data, can include any data products but must include the following: \n
-        [I] - Stokes I data \n
-        [Q] - Stokes Q data \n
-        [U] - Stokes U data \n
-        [V] - Stokes V data \n
-        [Ierr] - Stokes I error data
-    filename : str, optional
-        filename to save figure to, by default None
-    stk_type : str, optional
-        types of stokes data to plot, by default "f" \n
-        [f] - Plot as a function of frequency \n
-        [t] - Plot as a function of time 
-    sigma : float, optional
-        Error threshold used for masking stokes data in the case that stokes/I is being calculated \n
-        this avoids deviding by potentially small numbers and getting weird results,by default 2.0
-    plot_data : bool, optional
-        Plot Data on Poincare sphere, by default True
-    plot_model : bool, optional
-        Plot Polynomial fitted data on Poincare sphere, by default False
-    plot_P : bool, optional
-        Plot stokes/P instead of stokes/I, by default False
-    plot_on_surface : bool, optional
-        Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
-    n : int, optional
-        Maximum order of Polynomial fit, by default 5
+    cbar_lims : list(float)
+        colorbar limits
+    cbar_label : str
+        colorbar label 
 
     Returns
     -------
     fig : figure
-        Return figure instance
-    """    
-
-    data_list = ["I", "Q", "U", "V", "Ierr"]
-
-    # get data
-    pdat, err_flag = _data_from_dict(dat, data_list)
-
-
-
-    ##==================##
-    ## PLOT START GUARD ##
-    ##==================##
+        figure instance
+    
+    """
     fig = plt.figure(figsize = (12,12))
     ax = fig.add_subplot(111, projection = '3d')
-
-
-    def cart2sph(x, y, z):
-
-        # sgn(y)
-        sgny = np.zeros(y.size)
-        sgny[y < 0] = -1
-        sgny[y > 0] = 1
-
-        # r
-        r = np.sqrt(x**2 + y**2 + z **2)
-
-        # theta
-        theta = np.arccos(z/r)
-
-        # phi
-        phi = sgny * np.arccos(x/np.sqrt(x**2 + y**2))
-
-        return phi, theta
-
-    
-    def sph2cart(r, phi, theta):
-
-        x = r * np.sin(phi) * np.cos(theta)
-        y = r * np.sin(phi) * np.sin(theta)
-        z = r * np.cos(phi)
-
-        return x, y, z
-
 
 
     def set_axes_equal(ax: plt.Axes):
@@ -940,6 +633,70 @@ def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False,
     ax.set_axis_off()
 
 
+    # create colorbar
+    ax_c = fig.add_axes([0.2, 0.07, 0.6, 0.02])
+    ax_c.get_yaxis().set_visible(False)
+    ax_c.imshow(np.linspace(0,1.0, 256).reshape(1, 256)[::-1], aspect = 'auto', extent = [*cbar_lims, 0.0, 1.0],
+                cmap = 'viridis')
+    ax_c.set_xlabel(cbar_label)
+
+    return fig, ax
+
+
+
+
+
+
+
+
+
+
+
+
+# split into two functions, one to plot sphere, other to plot track in 3D
+def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = False,
+                    normalise = True, n = 5, filename: str = None):
+    """
+    Plot Stokes data on a Poincare Sphere.
+
+    Parameters
+    ----------
+    dat : Dict(np.ndarray)
+        Dictionary of stokes data, can include any data products but must include the following: \n
+        [I] - Stokes I data \n
+        [Q] - Stokes Q data \n
+        [U] - Stokes U data \n
+        [V] - Stokes V data \n
+        [Ierr] - Stokes I error data
+    filename : str, optional
+        filename to save figure to, by default None
+    stk_type : str, optional
+        types of stokes data to plot, by default "f" \n
+        [f] - Plot as a function of frequency \n
+        [t] - Plot as a function of time 
+    sigma : float, optional
+        Error threshold used for masking stokes data in the case that stokes/I is being calculated \n
+        this avoids deviding by potentially small numbers and getting weird results,by default 2.0
+    plot_data : bool, optional
+        Plot Data on Poincare sphere, by default True
+    plot_model : bool, optional
+        Plot Polynomial fitted data on Poincare sphere, by default False
+    normalise : bool, optional
+        Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
+    n : int, optional
+        Maximum order of Polynomial fit, by default 5
+
+    Returns
+    -------
+    fig : figure
+        Return figure instance
+    """    
+
+    data_list = ["I", "Q", "U", "V", "Ierr"]
+
+    # get data
+    pdat, err_flag = _data_from_dict(dat, data_list)
+
     # calculate stokes ratios
     # choice of normalizing against stokes I or P
     P = pdat['I'].copy()
@@ -947,27 +704,16 @@ def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False,
 
     if not err_flag:
         print("stk/P requires all stokes err")
-        plot_P = False
-    if plot_P:
-        P = np.sqrt(pdat['Q']**2 + pdat['U']**2 + pdat['V']**2)
-        Perr = np.sqrt((pdat['Q']*pdat['Qerr'])**2 + 
-                       (pdat['U']*pdat['Uerr'])**2 + 
-                       (pdat['V']*pdat['Verr'])**2)/P
+        normalise = False
+    if normalise:
+        P, Perr = calc_Pdebiased(pdat['Q'], pdat['U'], pdat['V'], pdat['Ierr'],
+                                pdat['Qerr'], pdat['Uerr'], pdat['Verr'])
     stk_mask = P >= sigma * Perr
     stk_i = {}
     
     for S in "QUV":
         stk_i[S] = pdat[S][stk_mask]/P[stk_mask]
-
     stk_o = deepcopy(stk_i)
-
-    if plot_on_surface:
-        # get angles first
-        phi, theta = cart2sph(stk_i['Q'], stk_i['U'], stk_i['V'])
-
-        # imprint on surface of sphere
-        stk_i['Q'], stk_i['U'], stk_i['V'] = sph2cart(1.0, phi, theta)
-
 
     # model stokes data
     if plot_model:
@@ -975,7 +721,7 @@ def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False,
         stk_mo = {}
         for S in "QUV":
             stk_m[S] = model_curve(stk_i[S], n = n, samp = 1000)
-            stk_mo[S] = model_curve(stk_o[S], n = n, samp = 1000)
+            # stk_mo[S] = model_curve(stk_o[S], n = n, samp = 1000)
 
     # plot stokes data
     if plot_data:
@@ -992,32 +738,3 @@ def plot_poincare(dat, sigma = 2.0, plot_data = True, plot_model = False,
             for i in range(stk_m['Q'].size - 1):
                 ax.plot(stk_m['Q'][i:i+2], stk_m['U'][i:i+2], stk_m['V'][i:i+2], color = cols[i], linewidth = 3)
     
-    # plot model data if applicable
-    if plot_model:
-        fig2, ax2 = plt.subplots(1, 1, figsize = (10, 10))
-        ax2.set(xlabel = cbar_label, ylabel = "Norm Stokes")
-
-        # plot each model and data for stokes
-        for i, S in enumerate("QUV"):
-            ax2.plot(np.linspace(*cbar_lims, stk_o[S].size), stk_o[S], color = default_col[i+1], label = S)
-            ax2.plot(np.linspace(*cbar_lims, stk_mo[S].size), stk_mo[S], color = 'k')
-        ax2.legend()
-
-
-    # create colorbar
-    ax_c = fig.add_axes([0.2, 0.07, 0.6, 0.02])
-    ax_c.get_yaxis().set_visible(False)
-    ax_c.imshow(np.linspace(0,1.0, 256).reshape(1, 256)[::-1], aspect = 'auto', extent = [*cbar_lims, 0.0, 1.0],
-                cmap = 'viridis')
-    ax_c.set_xlabel(cbar_label)
-
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None

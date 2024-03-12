@@ -190,7 +190,6 @@ class FRB_params:
         fN : int, optional
             Factor for frequency averaging, by default 1
         """    
-
         # TODO: Maybe find a smarter way to do this
         # reverse f_crop if Upper sideband
         # if self.UP:

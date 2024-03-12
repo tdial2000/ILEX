@@ -20,10 +20,10 @@ the Stokes Power dynamic spectrum, i.e. ``ds_I``
 
 .. code-block:: python
 
-    frb = FRB(name = VELA, cfreq = 1271.5, bw = 336, dt = 50e-3, df = 4)
+    frb = FRB(name = "FRB220610", cfreq = 1271.5, bw = 336, dt = 50e-3, df = 4)
     frb.load_data(ds_I = "examples/220610_dsI.npy")
 
-In the above code, we initialised an instance of the FRB class. We named the instance ``VELA`` and set the 
+In the above code, we initialised an instance of the FRB class. We named the instance ``FRB220610`` and set the 
 *central frequency* and *bandwidth* of the observation to ``cfreq = 1271.5 MHz`` and ``bw = 336 MHZ`` respectively. 
 The vela example Dynamic spectra data has a time resolution of ``50ms`` and frequency resolution of ``4MHz``.
 

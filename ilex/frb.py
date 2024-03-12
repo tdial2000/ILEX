@@ -363,10 +363,10 @@ class FRB:
         self.metapar.set_metapar(**metapar)
 
         # update hyperpars
-        self._update_hyperpar(**kwargs)
+        self._update_hyperpar(**kwargs)        
 
-        print(self.metapar.metapar2dict)
-        print(self.par)
+        log(self.metapar.metapar2dict, lpf_col = self.pcol)
+        log(self.par, lpf_col = self.pcol)
 
 
 
@@ -2090,10 +2090,11 @@ class FRB:
 
         # set values to par class
         self.par.set_par(RM = rm, pa0 = pa0, f0 = f0)
+        p._is_fit = True
 
         # plot
         if plot:
-            p._is_fit = True
+            
             p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90],
             filename = filename)
 

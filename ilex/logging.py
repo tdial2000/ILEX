@@ -138,6 +138,10 @@ def log(pstr, stype = "log", lpf = True, lpf_col = 'None', ):
     if not get_verbose():
         return
 
+    if type(pstr) != str:
+        # convert to str if possible
+        pstr = str(pstr)
+
     # get parent function name
     if lpf:
         fname = inspect.getouterframes(inspect.currentframe())[1][3]

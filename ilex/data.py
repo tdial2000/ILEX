@@ -567,8 +567,8 @@ def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
 
     L_meas = np.sqrt(Q**2 + U**2)
     L_debias = Ierr * np.sqrt((L_meas/Ierr)**2 - 1)
-    L_debias[np.isnan(L_debias)] = 0
-    L_debias[L_meas/Ierr < 1.57] = 0
+    # L_debias[np.isnan(L_debias)] = 0
+    # L_debias[L_meas/Ierr < 1.57] = 0
 
     Lerr = None
     if (Qerr is not None) and (Uerr is not None):

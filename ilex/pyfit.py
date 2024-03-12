@@ -1012,7 +1012,7 @@ class fit:
 
 
 
-    def plot(self, filename = None, **ax_kw):
+    def plot(self, show = True, filename = None, **ax_kw):
         """
         Plot fitted model and data
 
@@ -1055,7 +1055,7 @@ class fit:
         y_fit = self.get_model()
         if y_fit is None:
             return
-        AX[0].plot(self.x, y_fit, color = 'r')
+        AX[0].plot(self.x, y_fit, color = 'orchid', linewidth = 3)
 
         # plot errorbars if specified
         if self.yerr is not None:
@@ -1077,7 +1077,8 @@ class fit:
         if filename is not None:
             plt.savefig(filename)
 
-        plt.show()
+        if show:
+            plt.show()
 
         return fig
 

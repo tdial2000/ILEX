@@ -37,8 +37,7 @@ _G.DATA = "IQUVXY"
 _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000",
                       "DM": 0.0, "bw": 336, "cfreq": 1271.5, "t_lim": [0.0, 3100.0],
                         "f_lim": [0.0,336.0], "nchan": 336, "nsamp": 0, "dt": 1e-3,
-                          "df": 1.0, "RM":None, "f0":None, "pa0":0.0, "fW": None, 
-                          "tW": None, "czap": ""}
+                          "df": 1.0, "RM":None, "f0":None, "pa0":0.0, "czap": ""}
 
 # dict of frb meta params
 _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
@@ -46,4 +45,10 @@ _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
 
 # dict of hyper parameters``
 _G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_err_type': 'regions',
-         'residuals': True}
+         'residuals': True, 'apply_tW': True, 'apply_fW': True}
+
+
+
+## constants
+c = 2.997924538e8       # Speed of light [m/s]
+kDM = 4.14938e3         # DM constant

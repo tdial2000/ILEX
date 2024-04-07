@@ -28,6 +28,7 @@ def get_args():
     parser.add_argument("--parfile", help = "Parameter file containning info about FRB", type = str)
     parser.add_argument("-t", help = "Integration times", nargs='+', default = [1, 3, 10, 30, 100, 300, 1000], type = int)
     parser.add_argument("--nsamp", help = "halfwidth of crop to take around maximum point, in samples", type = int, default = 100)
+    parser.add_argument("--tN", help = "Averaging factor in time, help find maximum and align spectrum", type = int, default = 10)
     parser.add_argument("--defaraday_ds", help = "De-faraday rotate dynamic spectra", action = "store_true")
     parser.add_argument("--filename", help = "Save to file", type = str, default = None)
 
@@ -65,7 +66,7 @@ def plot_mosaic(args):
 
 
     # get bounds of data, find max point of burst and take window around it to plot
-    data = frb.get_data(["tI"], get = True, t_crop = [0.0, 1.0], tN = 100)
+    data = frb.get_data(["tI"], get = True, t_crop = [0.0, 1.0], tN = args.tN)
     Imax = float(np.argmax(data['tI']))/data['tI'].size                         # position of max in burst
     Imax_ms = Imax * (frb.par.t_lim[1] - frb.par.t_lim[0]) + frb.par.t_lim[0]   
     phasew = pmax*args.nsamp/frb.ds['I'].shape[1]                               # width of immediate burst in phase units
@@ -75,7 +76,7 @@ def plot_mosaic(args):
     # enumerate through each given time resolution
     for i, t in enumerate(args.t):
         # calculate time crop
-        twidth = t*1e-3*args.nsamp
+        twidth = t*frb.par.dt*args.nsamp
         tcrop = [Imax_ms - twidth, Imax_ms + twidth]
         print(tcrop)
 
@@ -134,7 +135,7 @@ def plot_mosaic(args):
         # plot stokes time series profiles
         frb.plot_stokes(ax = AX[f"t{t}"], stk_type = "t", plot_L = pars['plots']['plot_L'], t_crop = tcrop, tN = t,
                 Ldebais = pars['plots']['Ldebias'], debias_threshold = pars['plots']['debias_threshold'])
-        AX[f"t{t}"].set_title(f"{t} $\\mu$s")
+        AX[f"t{t}"].set_title(f"{t*frb.par.dt*1e3:.0f} $\\mu$s")
         AX[f"t{t}"].set_xlim(frb.prev_par.t_lim)
         
 

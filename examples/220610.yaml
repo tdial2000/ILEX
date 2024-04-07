@@ -25,13 +25,13 @@ par:   # parameters
 metapar:   # metaparameters
   t_crop:     [20.9, 23.8]
   f_crop:     [1103.5, 1200]
-  terr_crop:  null
+  terr_crop:  [0.0, 15.0]
   tN:         1
   fN:         1
   norm:       "None"
 
 hyperpar:   # hyperparameters
-  verbose:        False
+  verbose:        True
   force:          False
   savefig:        False
   plot_err_type:  "regions"
@@ -87,7 +87,7 @@ fits:
 
 
 multi:
-  tcrops: null
+  tcrops: [[21.3, 21.7], [21.8, 22.5]]
   fcrops: null
 
 

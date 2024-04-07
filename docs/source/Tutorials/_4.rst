@@ -155,7 +155,7 @@ time will be ``t * dt`` where ``dt`` is specified in the config file.
     python3 plot_dynspec_mosaic.py --parfile examples/220610.yaml -t 1 10 50 --nsamp 20 --tN 1 
 
 .. image:: plot_mosaic_example.png
-   :width 720pt
+   :width: 720pt
 
 
 Plot interactive Dynamic spectrum
@@ -195,7 +195,14 @@ example uses the ``examples/220610.yaml`` config file:
     --showbounds            # Show bounds of each component
     --filename filepath     # Save figure in .png type format with given name
 
-.. image:: plot_interactive_example.png
+Example shown below. Note, the results are not ideal, in this case it doesn't make sense to split a single pulse into 2 components, 
+this is only for demonstrative purposes.
+
+.. code-block:: console
+
+    python3 plot_PA_multi.py --parfile examples/220610.yaml --showbounds
+
+.. image:: plot_multi_PA_example.png
    :width: 720pt
 
-   
+

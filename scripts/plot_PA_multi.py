@@ -95,11 +95,13 @@ def _PA_multi(args):
         tcrops[i] = frb.prev_metapar.t_crop.copy()
         fcrops[i] = frb.prev_metapar.f_crop.copy()
 
-    print(tcrops, fcrops)
+    t_crophase, _ = frb.par.lim2phase(t_lim = frb.metapar.t_crop)
 
     # get full tcrop bounds
-    tcrop_full = [np.min(tcrops), np.max(tcrops)]
+    tcrop_full = [min(np.min(tcrops), t_crophase[0]), max(np.max(tcrops), t_crophase[1])]
     fcrop_full = [np.min(fcrops), np.max(fcrops)]
+
+    print(tcrop_full)
 
 
     # get full data to use for plotting

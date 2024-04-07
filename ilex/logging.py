@@ -10,7 +10,7 @@ import inspect
 from os import path, getcwd
 import os
 
-verbose_file = "_verbose.txt"
+verbose_file = "files/_verbose.txt"
 
 
 
@@ -53,7 +53,7 @@ def check_verbosefile():
 
     vfile = get_filepath(verbose_file)
 
-    if not vfile:
+    if not path.isfile(vfile):
         with open(vfile, 'w') as f:
             pass
     

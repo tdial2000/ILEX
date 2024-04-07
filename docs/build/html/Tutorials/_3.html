@@ -93,6 +93,47 @@
 aditional plotting/fitting options that can easily be tweaked in one placed. These config files are also used in the
 <a href="#id1"><span class="problematic" id="id2">`additional ILEX scripts`_</span></a> provided. A config file can be made by either using the <a href="#id3"><span class="problematic" id="id4">`make_FRBconfig.py`_</span></a> script or by directly copying the
 <code class="docutils literal notranslate"><span class="pre">defaut.yaml</span></code> file in <code class="docutils literal notranslate"><span class="pre">ilex/files/</span></code>. An FRB config file looks something like the following:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span><span class="w">  </span><span class="c1"># file paths for stokes dynamic spectra</span>
+<span class="w">  </span><span class="nt">dsI</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;220610_dsI.npy&quot;</span>
+<span class="w">  </span><span class="nt">dsQ</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;220610_dsQ.npy&quot;</span>
+<span class="w">  </span><span class="nt">dsU</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;220610_dsU.npy&quot;</span>
+<span class="w">  </span><span class="nt">dsV</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;220610_dsV.npy&quot;</span>
+
+<span class="nt">par</span><span class="p">:</span><span class="w">   </span><span class="c1"># parameters</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w">   </span><span class="s">&quot;FRB220610&quot;</span>
+<span class="w">  </span><span class="nt">RA</span><span class="p">:</span><span class="w">     </span><span class="s">&quot;00:00:00.0000&quot;</span>
+<span class="w">  </span><span class="nt">DEC</span><span class="p">:</span><span class="w">    </span><span class="s">&quot;00:00:00.0000&quot;</span>
+<span class="w">  </span><span class="nt">DM</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
+<span class="w">  </span><span class="nt">bw</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">336</span>
+<span class="w">  </span><span class="nt">cfreq</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">1271.5</span>
+<span class="w">  </span><span class="nt">t_lim</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">3100.0</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">f_lim</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">336.0</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">nchan</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">336</span>
+<span class="w">  </span><span class="nt">nsamp</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">dt</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
+<span class="w">  </span><span class="nt">df</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">4.0</span>
+<span class="w">  </span><span class="nt">RM</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">  </span><span class="nt">f0</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">  </span><span class="nt">pa0</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
+<span class="w">  </span><span class="nt">czap</span><span class="p">:</span><span class="w">   </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1"># to be implemented</span>
+
+<span class="nt">metapar</span><span class="p">:</span><span class="w">   </span><span class="c1"># metaparameters</span>
+<span class="w">  </span><span class="nt">t_crop</span><span class="p">:</span><span class="w">     </span><span class="p p-Indicator">[</span><span class="nv">20.9</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">23.8</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">f_crop</span><span class="p">:</span><span class="w">     </span><span class="p p-Indicator">[</span><span class="nv">1103.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1200</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">terr_crop</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">  </span><span class="nt">tN</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">fN</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">norm</span><span class="p">:</span><span class="w">       </span><span class="s">&quot;None&quot;</span>
+
+<span class="nt">hyperpar</span><span class="p">:</span><span class="w">   </span><span class="c1"># hyperparameters</span>
+<span class="w">  </span><span class="nt">verbose</span><span class="p">:</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">  </span><span class="nt">force</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">  </span><span class="nt">savefig</span><span class="p">:</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">  </span><span class="nt">plot_err_type</span><span class="p">:</span><span class="w">  </span><span class="s">&quot;regions&quot;</span>
+<span class="w">  </span><span class="nt">residuals</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="w">  </span><span class="nt">plotPosterior</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
 </section>
 <section id="using-the-frb-config-file">
 <h2>Using the FRB config file<a class="headerlink" href="#using-the-frb-config-file" title="Link to this heading"></a></h2>

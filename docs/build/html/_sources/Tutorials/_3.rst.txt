@@ -10,6 +10,7 @@ aditional plotting/fitting options that can easily be tweaked in one placed. The
 ``defaut.yaml`` file in ``ilex/files/``. An FRB config file looks something like the following:
 
 .. code-block:: yaml
+    
     data:  # file paths for stokes dynamic spectra
       dsI: "220610_dsI.npy"
       dsQ: "220610_dsQ.npy"
@@ -68,6 +69,6 @@ An FRB config file can be used when either creating an FRB instance or when usin
 
 .. image:: 220610_dsI_crop.png
    :width: 720pt
-   
+
 
 

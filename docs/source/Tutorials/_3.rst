@@ -6,11 +6,11 @@ Overview
 
 For ease of use users have the option of creating an FRB config file that holds all the parameter, metaparameter, hyperparameter and
 aditional plotting/fitting options that can easily be tweaked in one placed. These config files are also used in the 
-`additional ILEX scripts`_ provided. A config file can be made by either using the `make_FRBconfig.py`_ script or by directly copying the 
+additional ILEX scripts provided. A config file can be made by either using the make_FRBconfig.py script or by directly copying the 
 ``defaut.yaml`` file in ``ilex/files/``. An FRB config file looks something like the following:
 
 .. code-block:: yaml
-    
+
     data:  # file paths for stokes dynamic spectra
       dsI: "220610_dsI.npy"
       dsQ: "220610_dsQ.npy"

@@ -20,8 +20,292 @@ from .globals import _G
 from .utils import dict_init
 import numpy as np
 import math
+import inspect
+from .fitting import *
 
 from .logging import log
+
+
+
+class weights:
+    """
+    Weights structure, using for storing weights or weight functions that can be
+    evaluated.
+
+
+    Attributes
+    ----------
+    W: ndarray or array-like
+        weights
+    x: ndarray or array-like
+        sample array defining weights, used for interpolation and function evaluation
+    func: <lambda>
+        function to evaluate to get weights
+    method: str
+        method to retrive weights \n
+        [None] - Retrieve weights as is, either scalar or array \n
+        [interp] - interpolate weights based on bounds and W (weights) \n
+        [func] - Retrieve weights by evaluating function
+    args: dict
+        dictionary of arguments used in evaluating weights function
+    norm: bool, optional
+        Normalise weights, default is True
+    
+    
+    """
+
+    def __init__(self, W = None, x = None, func = None, method = None, args = None, norm = True):
+
+        args = dict_init(args)
+
+        self.W = None
+        self.x = None
+        self.func = None
+        self.method = "None"
+        self.args = {}
+        self.norm = None
+
+        self._set(W = W, x = x, func = func, method = method, args = args, norm = norm)
+
+
+    def set(self, **kwargs):
+        """
+        Set parameters
+
+        """         
+
+        weights_kwargs = {}
+
+        for key in kwargs.keys():
+            if key in ["W", "x", "func", "method", "args", "norm"]:
+                weights_kwargs[key] = deepcopy(kwargs[key])
+
+        self._set(**weights_kwargs)
+        
+
+    def _set(self, W = None, x = None, func = None, method = None, args = None, norm = True):
+        
+        # set normalisation parameter
+        self.norm = norm
+
+        # set attributes
+        if W is not None:
+            if hasattr(W, "__len__"):
+                self.W = W.copy()
+            elif isinstance(self.W, float):
+                self.W = W
+            else:
+                log("[W] weights instance attribute must be a float or array-like", stype = "warn")
+        
+
+        if x is not None:
+            if hasattr(x, "__len__"):
+                self.x = x.copy()
+            else:
+                log("[x] weights instance attribute must be array-like", stype = "warn")
+
+        if func is not None:
+            # if func is string
+            if isinstance(func, str):
+                self.func = eval(func)
+        
+            # if func is callable, directly set 
+            elif callable(func):
+                self.func = func
+        
+            else:
+                log("function must either be a string to evaluate, or a callable function.", stype = "err")
+
+
+        if method is not None:
+            if method not in ["interp", "func"]:
+                log(f"Invalid Method for Weighting, using {self.method}", stype = "warn")
+            else:
+                self.method = method    
+
+        if args is not None:
+            if not isinstance(args, dict):
+                log("args must be in dict format", stype = "err")
+            if self.func is not None:
+                func_keys = inspect.getargspec(self.func)[0][1:]
+                if_flag = False
+                missing_args = []
+                new_args = {}
+                for key in func_keys:
+                    if key in args.keys():
+                        new_args[key] = args[key]
+                    else:
+                        if_flag = True
+                        missing_args += key
+                
+                if if_flag: 
+                    log(f"Not all args have been specified for this function {missing_args}", stype = "warn")
+
+                self.args = deepcopy(args)
+
+            else:
+                log("func not given, can't determine args", stype = "warn")
+
+        return
+
+    
+
+    def get_weights(self, x = None, method = None):
+        """
+        Get weights
+
+        Parameters
+        ----------
+        x : ndarray or array-like, optional
+            if specified, will interp or evaluate func using this array rather then self.x, by default None
+        method : str, optional
+            method used for retrieving weights, if not spefified, uses self.method, by default None
+
+        Returns
+        -------
+        W : ndarray or array-like
+            Weights
+        """        
+
+        if method is not None:
+            self.set(method = method)
+        
+        # get weights from .W attribute
+        if self.method == "None":
+            outw = self._get_weights_from_W()
+
+        # interp weights based on 
+        if self.method == "interp":
+            outw = self._get_weights_from_interp(x)
+
+        if self.method == "func":
+            outw = self._get_weights_from_func(x)
+
+        # normalise
+        if self.norm and (outw is not None) and hasattr(outw, "__len__"):
+            Wsum = np.mean(outw)
+            if Wsum == 0.0:
+                log("Weights sum to zero, cannot normalize!", stype = "warn")
+                return outw
+            return outw / Wsum
+
+        else:
+            return outw
+
+
+
+
+
+    def _get_weights_from_W(self):
+
+        if self.W is not None:
+            if isinstance(self.W, float):
+                return self.W
+            elif hasattr(self.W, "__len__"):
+                return self.W.copy()
+        else:
+            log("No Weights specified, returning None object", stype = "err")
+            return None
+        
+
+    def _get_weights_from_interp(self, x = None):
+
+        if self.W is None:
+            log("No weights specified, returning None object", stype = "err")
+            return None
+
+        if self.x is None:
+            log("No x array specified for interpolation, for interpolation a weights array [W] with ", stype = "err")
+            log("array [x] of same size must be defined in the weights class before interpolation is performed.", stype = "err")
+            return None
+
+        # check x
+        if x is None:
+            log("No x array given for interpolation, returning the full array of weights", stype = "warn")
+            return self.W
+
+        # check if bounds of x is larger than [x] saved in weights instance
+        if (x[0] < self.x[0]) or (x[-1] > self.x[-1]):
+            log("Bounds of specified array x larger than array [x] of weights instance, for any x values outside", stype = "warn")
+            log("the known weights range they will be set to the bounded values of the weights array.", stype = "warn")
+
+        # perform interpolation
+        return np.interp(x, self.x, self.W)
+
+
+    def _get_weights_from_func(self, x = None):
+        
+        if not self._check_func_and_args():
+            return None
+
+        if x is None:
+            
+            if self.x is None:
+                log("Must specify [x] array", stype = "err")
+                return None
+            else:
+                log("Using stored [x] array of weights instance", stype = "warn")
+                return self.func(self.x, **self.args)
+
+        else:
+            return self.func(x, **self.args)
+
+
+    def _check_func_and_args(self):
+
+        if self.func is None:
+            log("Must specify a function", stype = "err")
+            return 0
+
+        if self.args is None:
+            log("Must specify args for func", stype = "err")
+            return 0
+        
+        if (not callable(self.func)) or (not isinstance(self.args, dict)):
+            print("func must be callable and args a dictionary of args to evaluate the function", stype = "err")
+            return 0
+        
+        # check if all args are there
+        for key in inspect.getargspec(self.func)[0][1:]:
+            if key not in self.args.keys():
+                log(f"argument [{key}] not specified, cannot evaulate function", stype = "err")
+                return 0
+
+        # if all pass return 1
+        return 1
+
+
+
+
+
+    def __str__(self):
+        pstr = ""
+        if self.W is not None:
+            if hasattr(self.W, "__len__"):
+                Ws = f"[{self.W.shape}]"
+            elif isinstance(self.W, float):
+                Ws = self.W
+        else:
+            Ws = None
+        pstr += "[W]".ljust(10) + f"= {Ws}\n"
+
+        if self.x is not None:
+            pstr += "[x]".ljust(10) + f"= {self.x.shape}\n"
+        else:
+            pstr += "[x]".ljust(10) + "= None\n"
+
+        pstr += "[func]".ljust(10) + f"= {self.func}\n"
+        pstr += "[method]".ljust(10) + f"= {self.method}\n"
+
+        if self.args is not None:
+            pstr += "[args]".ljust(10) + "=\n"
+            for key in self.args.keys():
+                pstr += f"[{key}]".ljust(20).rjust(16) + f"{self.args[key]}\n"
+        else:
+            pstr += "[args]".ljust(10) + "= None\n"
+
+        return pstr
+
 
 
 class FRB_params:
@@ -129,8 +413,7 @@ class FRB_params:
     def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
                        DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
-                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],fW = None,                   
-                       tW = None,                   norm: str = "max",
+                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],norm: str = "max",
                        czap = None,                 EMPTY = False):
 
         # parameters
@@ -143,8 +426,8 @@ class FRB_params:
         self.RM     = RM                # rotation measure
         self.f0     = f0                # reference frequency
         self.pa0    = pa0               # reference PA
-        self.fW     = fW                # frequency weightings
-        self.tW     = tW                # time weightings
+        self.fW     = weights()         # frequency weightings
+        self.tW     = weights()         # time weightings
         self.czap   = czap              # frequencies to zap in string form
 
         # define base parameters, these will be used when changing the crop parameters, 
@@ -192,8 +475,9 @@ class FRB_params:
         """    
         # TODO: Maybe find a smarter way to do this
         # reverse f_crop if Upper sideband
-        # if self.UP:
-        #     f_crop = [1.0 - f_crop[1], 1.0 - f_crop[0]]
+        f_crop_copy = f_crop.copy()
+        if self.UP:
+            f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]
 
         # update params given new crop and averaging
         # update resolutions
@@ -204,80 +488,81 @@ class FRB_params:
         # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping
         lim_width = self.t_lim[1] - self.t_lim[0]
         tlim0 = self.t_lim[0]
-        self.t_lim[0] =  math.floor(t_crop[0] * self.nsamp) * lim_width / self.nsamp + tlim0
-        self.t_lim[1] =  math.floor(t_crop[1] * self.nsamp) * lim_width / self.nsamp + tlim0
+        self.t_lim[0] = int(t_crop[0]*self.nsamp/tN)*tN * lim_width/self.nsamp + tlim0
+        self.t_lim[1] = int(t_crop[1]*self.nsamp/tN)*tN * lim_width/self.nsamp + tlim0
 
         # update f_lim 
         lim_width = self.f_lim[1] - self.f_lim[0]
         flim0 = self.f_lim[0]
-        self.f_lim[0] =  math.floor(f_crop[0] * self.nchan) * lim_width / self.nchan + flim0
-        self.f_lim[1] =  math.floor(f_crop[1] * self.nchan) * lim_width / self.nchan + flim0
+        self.f_lim[0] = int(f_crop_copy[0]*self.nchan/fN)*fN * lim_width/self.nchan + flim0
+        self.f_lim[1] = int(f_crop_copy[1]*self.nchan/fN)*fN * lim_width/self.nchan + flim0
+        
 
         # update bw and cfreq
         self.bw = self.f_lim[1] - self.f_lim[0]
         self.cfreq = self.f_lim[0] + 0.5*self.bw
 
         # update nchan and nsamp
-        self.nchan = int((math.floor(f_crop[1] * self.nchan) - math.floor(f_crop[0] * self.nchan))/fN)
+        self.nchan = int((math.floor(f_crop_copy[1] * self.nchan) - math.floor(f_crop_copy[0] * self.nchan))/fN)
         self.nsamp = int((math.floor(t_crop[1] * self.nsamp) - math.floor(t_crop[0] * self.nsamp))/tN)
 
 
 
-    # function to load paramters from parameter file
-    def load_params(self, filename: str = None):
-        """
-        Load params from file - To implement??
+    # # function to load paramters from parameter file
+    # def load_params(self, filename: str = None):
+    #     """
+    #     Load params from file - To implement??
 
-        Parameters
-        ----------
-        filename : str, optional
-            param file name, by default None
-        """        
+    #     Parameters
+    #     ----------
+    #     filename : str, optional
+    #         param file name, by default None
+    #     """        
 
-        if filename is None:
-            log("Parameter file must be valid", lpf_col = self.pcol)
-            return
+    #     if filename is None:
+    #         log("Parameter file must be valid", lpf_col = self.pcol)
+    #         return
 
-        # load into object
-        with open(filename, 'r') as file:
-            params = yaml.safe_load(file)
+    #     # load into object
+    #     with open(filename, 'r') as file:
+    #         params = yaml.safe_load(file)
 
-        for _,key in enumerate(params.keys()):
-            setattr(self,key,params[key])
+    #     for _,key in enumerate(params.keys()):
+    #         setattr(self,key,params[key])
 
-        log(f"Parameters loaded from [{filename}]", lpf_col = self.pcol)
+    #     log(f"Parameters loaded from [{filename}]", lpf_col = self.pcol)
 
-        return 
+    #     return 
 
 
     
-    # function to get limits from crop
-    def save_params(self, filename: str = None):
-        """
-        Save current parameters to file
+    # # function to get limits from crop
+    # def save_params(self, filename: str = None):
+    #     """
+    #     Save current parameters to file
 
-        Parameters
-        ----------
-        filename : str, optional
-            filename to save params to, by default None
-        """        
+    #     Parameters
+    #     ----------
+    #     filename : str, optional
+    #         filename to save params to, by default None
+    #     """        
         
-        if filename is None:
-            log("parameter file must be valid", lpf_col = self.pcol)
-            return
+    #     if filename is None:
+    #         log("parameter file must be valid", lpf_col = self.pcol)
+    #         return
 
-        # build yaml .object
-        params = {}
-        for _,key in enumerate(_G.p.keys()):
-            params[key] = getattr(self, key)
+    #     # build yaml .object
+    #     params = {}
+    #     for _,key in enumerate(_G.p.keys()):
+    #         params[key] = getattr(self, key)
         
-        # save object to .yaml file
-        with open(filename, 'w') as file:
-            yaml.safe_dump(params, file)
+    #     # save object to .yaml file
+    #     with open(filename, 'w') as file:
+    #         yaml.safe_dump(params, file)
 
-        log(f"Parameters saved to [{filename}]", lpf_col = self.pcol)
+    #     log(f"Parameters saved to [{filename}]", lpf_col = self.pcol)
 
-        return
+    #     return
         
     
     # function to save parameters to parameter file
@@ -451,8 +736,36 @@ class FRB_params:
         for key in kwargs.keys():
             if key in _G.p.keys():
                 setattr(self, key, kwargs[key])
+        
 
         self.f_lim  = [self.cfreq - 0.5*self.bw, self.cfreq + 0.5*self.bw] # frequency range
+
+
+    def set_weights(self, xtype = "t", **kwargs):
+        """
+        Set properties of weights instances
+
+        Parameters
+        ----------
+        xtype: str
+            Type of weights \n
+            "t" - Time weights \n
+            "f" - Freq weights
+
+        **kwargs: Dict
+            Keyword arguments for weights instance
+        """
+
+        if xtype == "t": # time weights
+            self.tW.set(**kwargs)
+
+        elif xtype == "f": # freq weights
+            self.fW.set(**kwargs)
+        
+        else:
+            log("xtype must be either 't' for time, or 'f' for freq", stype = "err")
+        
+        return 
 
         
     def get_freqs(self):
@@ -465,6 +778,12 @@ class FRB_params:
         else:
             return np.linspace(self.cfreq - self.bw/2 + self.df/2, self.cfreq + self.bw/2 - self.df/2,
                             self.nchan)
+
+    def get_times(self):
+        """
+        Get time bins
+        """
+        return np.linspace(*self.t_lim, self.nsamp, endpoint = False)
 
 
     def empty_par(self):

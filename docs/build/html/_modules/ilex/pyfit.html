@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.pyfit &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -96,6 +96,7 @@
 <span class="kn">import</span> <span class="nn">bilby</span>
 <span class="kn">from</span> <span class="nn">bilby.core.utils.io</span> <span class="kn">import</span> <span class="n">check_directory_exists_and_if_not_mkdir</span>
 <span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
 <span class="c1">#----------------------------------------#</span>
@@ -289,6 +290,8 @@
 <span class="sd">        bic error</span>
 <span class="sd">    residuals : bool</span>
 <span class="sd">        if true, plot residuals when .plot() is called</span>
+<span class="sd">    plotPosterior : bool</span>
+<span class="sd">        if true, save image of posterior corner plot</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -311,6 +314,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prior</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># for least squares method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># stats (general)</span>
@@ -337,6 +341,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_stats</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span> <span class="o">=</span> <span class="kc">True</span>
 
 
 
@@ -466,7 +471,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># check if the right attr types</span>
-        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior&quot;</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">dict</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> is not of type &#39;dict&#39;&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="mi">0</span>
@@ -476,7 +481,7 @@
             <span class="k">return</span> <span class="mi">0</span>
 
         <span class="c1"># check if keys of priors, statics and posteriors match</span>
-        <span class="n">full_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">full_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
                 <span class="n">full_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">key</span><span class="p">]</span>
@@ -503,6 +508,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prior</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">static</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
+
+        <span class="c1"># set bounds</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">full_keys</span>
     
         <span class="k">return</span> <span class="mi">1</span>
@@ -543,9 +554,19 @@
                 
             <span class="c1"># check</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">typ</span><span class="p">):</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: prior [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be of type &#39;</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">&#39; for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; fitting method&quot;</span><span class="p">)</span>
-                    <span class="k">return</span> <span class="mi">0</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting bounds of least squares parameter </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to median prior&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: prior [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be of type &#39;float&#39; for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; fitting method&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: prior [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be of type &#39;list&#39; for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; fitting method&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="mi">0</span>
 
         <span class="c1"># passed</span>
         <span class="k">return</span> <span class="mi">1</span>
@@ -633,7 +654,7 @@
         <span class="k">if</span> <span class="n">model_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">model_vals</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">model_vals</span><span class="p">)</span></div>
 
 
 
@@ -676,6 +697,55 @@
         
         <span class="k">return</span> <span class="n">_vals</span></div>
 
+
+
+<div class="viewcode-block" id="fit.get_mean_err">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_mean_err">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mean_err</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get mean errors of posterior</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : bool, optional</span>
+<span class="sd">            if true, retrieve errors of posteriors defined in function</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        _errs : dict</span>
+<span class="sd">            dictionary of errors for posteriors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check attributes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="c1"># check if posteriors valid</span>
+        <span class="n">func_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior must be valid to plot model&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">_posterior</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior is of wrong type, must be of type &#39;_posterior&#39;, something went wrong&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="n">_errs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_errs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_errs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+        
+        <span class="k">return</span> <span class="n">_errs</span></div>
 
 
 
@@ -724,6 +794,11 @@
 <span class="sd">        ----------</span>
 <span class="sd">        func : bool</span>
 <span class="sd">            if true, only retrieve posteriors of parameters of function to be modelled, default is True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        posteriors : dict</span>
+<span class="sd">            Dictionary of posterior median/mean best values</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">():</span>
@@ -804,13 +879,16 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         
-        <span class="k">return</span>
+       
 
         <span class="c1"># set statics to posterior</span>
         <span class="n">func_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_args</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> 
+                
+            
+        <span class="k">return</span>
         
     
 
@@ -946,17 +1024,18 @@
         <span class="c1"># fit using least squares</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
 
-            <span class="c1"># convert prior dict to list in order!</span>
+            <span class="c1"># convert prior dict to list in order! convert bounds to curve_fit bounds</span>
             <span class="n">priors_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
-                <span class="n">priors_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>
+                <span class="n">priors_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>                
+                <span class="n">b_min</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">b_max</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
 
             <span class="n">_val</span><span class="p">,</span> <span class="n">_err</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">priors_list</span><span class="p">,</span> 
-                                    <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
+                                    <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_curve_fit2posterior</span><span class="p">(</span><span class="n">_val</span><span class="p">,</span> <span class="n">_err</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:])</span>
-
-
 
 
         <span class="c1"># fit using bilby bayesian inference</span>
@@ -972,21 +1051,26 @@
                     <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
                 <span class="n">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
+
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">bil_priors</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
+
                 
             <span class="c1"># init likelihood function</span>
             <span class="n">likelihood</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">GaussianLikelihood</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">func_wrap</span><span class="p">,</span>
                                         <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">)</span>
             
             <span class="c1"># run sampler</span>
-            <span class="n">result_</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">run_sampler</span><span class="p">(</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">_priorUniform</span><span class="p">(</span><span class="n">priors</span><span class="p">),</span>
+            <span class="n">result_</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">run_sampler</span><span class="p">(</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">_priorUniform</span><span class="p">(</span><span class="n">bil_priors</span><span class="p">),</span>
                                     <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
 
             <span class="c1"># get posteriors</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_results2posterior</span><span class="p">(</span><span class="n">result_</span><span class="p">)</span>
 
             <span class="c1"># plot bilby outputs for diagnostic purposes</span>
-            <span class="n">result_</span><span class="o">.</span><span class="n">plot_with_data</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-            <span class="n">result_</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span><span class="p">:</span>
+                <span class="n">result_</span><span class="o">.</span><span class="n">plot_with_data</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                <span class="n">result_</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
 
 
         <span class="c1"># last stats to save </span>
@@ -1035,7 +1119,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span>
 
         <span class="c1"># calculate chi squared and reduced chi squared</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rchi2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
 
         <span class="c1"># calculate errors in chi squared and reduced chi squared</span>
@@ -1117,14 +1201,23 @@
 
 <div class="viewcode-block" id="fit.plot">
 <a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">ax_kw</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">ax_kw</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot fitted model and data</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
+<span class="sd">        show : bool, optional</span>
+<span class="sd">            if true, display plot </span>
+<span class="sd">        filename : str</span>
+<span class="sd">            name of output image file, default is None</span>
 <span class="sd">        **ax_kw : Dict</span>
 <span class="sd">            keyword parameters for plotting</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : plt._figure_</span>
+<span class="sd">            figure instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span><span class="p">:</span>
@@ -1137,7 +1230,7 @@
 
         <span class="c1"># now plot, create axis</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">AX</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
-                    <span class="n">num</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Figure model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">num</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Figure model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sharex</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
             <span class="n">AX</span> <span class="o">=</span> <span class="n">AX</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
@@ -1155,10 +1248,10 @@
         <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
 
         <span class="c1"># plot model</span>
-        <span class="n">y_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">y_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">y_fit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 
         <span class="c1"># plot errorbars if specified</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1176,7 +1269,12 @@
         <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>        
         <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="c1"># save file</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">fig</span></div>
 

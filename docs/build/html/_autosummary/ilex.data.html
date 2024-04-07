@@ -5,7 +5,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.data &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
@@ -76,7 +76,6 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
@@ -145,12 +144,11 @@ real-valued data</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>ndarray</em>) – data to average over</p></li>
 <li><p><strong>axis</strong> (<em>int</em>) – axis to average over</p></li>
-<li><p><strong>weights</strong> (<em>ndarray</em>) – weights to apply to data when summing over. By default this is set
-to None, in which case a uniform weighting is applied.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – Averaging/donwsampling factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>x</strong> – Average data</p>
+<dd class="field-even"><p><strong>x</strong> – Averaged data</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray</p>
@@ -263,13 +261,11 @@ stokes L debiased</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>stk</strong> (<em>Dict</em><em>(</em><em>np.ndarray</em><em>)</em>) – <p>Dictionary of Stokes data</p>
-<p>[dsQ] - Stokes Q dynamic spectra</p>
-<p>[dsU] - Stokes U dynamic spectra</p>
+<p>[tQ] - Stokes Q dynamic spectra</p>
+<p>[tU] - Stokes U dynamic spectra</p>
 <p>[tQerr] - Stokes Q average rms over time</p>
 <p>[tUerr] - Stokes U average rms over time</p>
 <p>[tIerr] - Stokes I average rms over time</p>
-<p>[fQerr] - Stokes Q frequency dependent rms</p>
-<p>[fUerr] - Stokes U frequency dependent rms</p>
 </p></li>
 <li><p><strong>Ldebias_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – sigma threshold for masking PA, by default 2.0</p></li>
 </ul>

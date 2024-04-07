@@ -5,7 +5,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.pyfit &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
@@ -55,7 +55,6 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.pyfit</a><ul>
@@ -80,7 +79,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.bic"><code class="docutils literal notranslate"><span class="pre">fit.bic</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.bic_err"><code class="docutils literal notranslate"><span class="pre">fit.bic_err</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.residuals"><code class="docutils literal notranslate"><span class="pre">fit.residuals</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plotPosterior"><code class="docutils literal notranslate"><span class="pre">fit.plotPosterior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.fit"><code class="docutils literal notranslate"><span class="pre">fit.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_mean_err"><code class="docutils literal notranslate"><span class="pre">fit.get_mean_err()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_model"><code class="docutils literal notranslate"><span class="pre">fit.get_model()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_post_val"><code class="docutils literal notranslate"><span class="pre">fit.get_post_val()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_posteriors"><code class="docutils literal notranslate"><span class="pre">fit.get_posteriors()</span></code></a></li>
@@ -354,6 +355,17 @@ including model plotting and statistics such as chi2.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.plotPosterior">
+<span class="sig-name descname"><span class="pre">plotPosterior</span></span><a class="headerlink" href="#ilex.pyfit.fit.plotPosterior" title="Link to this definition"></a></dt>
+<dd><p>if true, save image of posterior corner plot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.fit" title="Link to this definition"></a></dt>
@@ -361,6 +373,23 @@ including model plotting and statistics such as chi2.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>redo</strong> (<em>bool</em>) – redo fitting (in case BILBY is being used, remove cached results of any previous fit), default is False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.get_mean_err">
+<span class="sig-name descname"><span class="pre">get_mean_err</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.get_mean_err"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.get_mean_err" title="Link to this definition"></a></dt>
+<dd><p>Get mean errors of posterior</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, retrieve errors of posteriors defined in function</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>_errs</strong> – dictionary of errors for posteriors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -385,6 +414,12 @@ including model plotting and statistics such as chi2.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>bool</em>) – if true, only retrieve posteriors of parameters of function to be modelled, default is True</p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>posteriors</strong> – Dictionary of posterior median/mean best values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -401,11 +436,21 @@ including model plotting and statistics such as chi2.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">ax_kw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.plot" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">ax_kw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.plot" title="Link to this definition"></a></dt>
 <dd><p>Plot fitted model and data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**ax_kw</strong> (<em>Dict</em>) – keyword parameters for plotting</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, display plot</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – name of output image file, default is None</p></li>
+<li><p><strong>**ax_kw</strong> (<em>Dict</em>) – keyword parameters for plotting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>plt._figure_</p>
 </dd>
 </dl>
 </dd></dl>

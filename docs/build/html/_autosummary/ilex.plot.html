@@ -5,7 +5,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.plot &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
@@ -55,14 +55,12 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.plot</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.create_poincare_sphere"><code class="docutils literal notranslate"><span class="pre">create_poincare_sphere()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_PA"><code class="docutils literal notranslate"><span class="pre">plot_PA()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_RM"><code class="docutils literal notranslate"><span class="pre">plot_RM()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_data"><code class="docutils literal notranslate"><span class="pre">plot_data()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_help"><code class="docutils literal notranslate"><span class="pre">plot_help()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_poincare_track"><code class="docutils literal notranslate"><span class="pre">plot_poincare_track()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_stokes"><code class="docutils literal notranslate"><span class="pre">plot_stokes()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_stokes_ratios"><code class="docutils literal notranslate"><span class="pre">plot_stokes_ratios()</span></code></a></li>
@@ -203,11 +201,6 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="ilex.plot.plot_help">
-<span class="sig-name descname"><span class="pre">plot_help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_help" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="ilex.plot.plot_poincare_track">
 <span class="sig-name descname"><span class="pre">plot_poincare_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_poincare_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_poincare_track" title="Link to this definition"></a></dt>
 <dd><p>Plot Stokes data on a Poincare Sphere.</p>
@@ -252,11 +245,12 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dat</strong> (<em>Dict</em><em>(</em><em>np.ndarray</em><em>)</em>) – <p>Dictionary of stokes data, can include any data products but must include the following:</p>
-<p>[I] - Stokes I data</p>
-<p>[Q] - Stokes Q data</p>
-<p>[U] - Stokes U data</p>
-<p>[V] - Stokes V data</p>
-<p>[Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True</p>
+<p>[&lt;x&gt;I] - Stokes I data</p>
+<p>[&lt;x&gt;Q] - Stokes Q data</p>
+<p>[&lt;x&gt;U] - Stokes U data</p>
+<p>[&lt;x&gt;V] - Stokes V data</p>
+<p>[&lt;x&gt;Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True</p>
+<p>where &lt;x&gt; is either ‘t’ for time and ‘f’ for freq</p>
 </p></li>
 <li><p><strong>plot_L</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L instead of Q and U, by default False</p></li>
 <li><p><strong>Ldebias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L debias, by default False</p></li>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.data &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -89,9 +89,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">correlate</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
-
-<span class="c1"># constants</span>
-<span class="n">c</span> <span class="o">=</span> <span class="mf">2.997924538e8</span> <span class="c1"># Speed of light [m/s]</span>
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <span class="c1">##===============================================##</span>
@@ -111,15 +109,14 @@
 <span class="sd">    x: ndarray</span>
 <span class="sd">       data to average over</span>
 <span class="sd">    axis: int </span>
-<span class="sd">          axis to average over</span>
-<span class="sd">    weights: ndarray</span>
-<span class="sd">          weights to apply to data when summing over. By default this is set</span>
-<span class="sd">          to None, in which case a uniform weighting is applied.</span>
+<span class="sd">        axis to average over</span>
+<span class="sd">    N: int</span>
+<span class="sd">        Averaging/donwsampling factor</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    x: ndarray </span>
-<span class="sd">       Average data</span>
+<span class="sd">       Averaged data</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -555,13 +552,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    stk : Dict(np.ndarray)</span>
 <span class="sd">        Dictionary of Stokes data \n</span>
-<span class="sd">        [dsQ] - Stokes Q dynamic spectra \n</span>
-<span class="sd">        [dsU] - Stokes U dynamic spectra \n</span>
+<span class="sd">        [tQ] - Stokes Q dynamic spectra \n</span>
+<span class="sd">        [tU] - Stokes U dynamic spectra \n</span>
 <span class="sd">        [tQerr] - Stokes Q average rms over time \n</span>
 <span class="sd">        [tUerr] - Stokes U average rms over time \n</span>
-<span class="sd">        [tIerr] - Stokes I average rms over time \n</span>
-<span class="sd">        [fQerr] - Stokes Q frequency dependent rms \n</span>
-<span class="sd">        [fUerr] - Stokes U frequency dependent rms </span>
+<span class="sd">        [tIerr] - Stokes I average rms over time </span>
 <span class="sd">    Ldebias_threshold : float, optional</span>
 <span class="sd">        sigma threshold for masking PA, by default 2.0</span>
 
@@ -572,19 +567,13 @@
 <span class="sd">    PAerr : np.ndarray</span>
 <span class="sd">        Position Angle err </span>
 <span class="sd">    &quot;&quot;&quot;</span>    
-    
-    <span class="c1"># calculate time series and de-noise</span>
-    <span class="n">stk_den</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># denoised stk data</span>
-    <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QU&quot;</span><span class="p">:</span>
-        <span class="n">stk_den</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ds</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">stk</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;f</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][:,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-
     <span class="c1"># calculate PA and error</span>
-    <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">])</span>
-    <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
-                           <span class="p">(</span><span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">])</span>
+    <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
+                           <span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="c1"># calculate de-baised L and mask PA </span>
-    <span class="n">L_debias</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">stk_den</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">])</span>
+    <span class="n">L_debias</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">])</span>
     <span class="n">PA_mask</span> <span class="o">=</span> <span class="n">L_debias</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">Ldebias_threshold</span> <span class="o">*</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">])</span>
 
     <span class="c1"># mask PA</span>
@@ -633,6 +622,7 @@
         <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span><span class="o">/</span><span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span>
         <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">L</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lerr</span></div>
 
@@ -685,6 +675,7 @@
         <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span><span class="o">/</span><span class="n">L_debias</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span>
         <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">L_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">L_debias</span><span class="p">,</span> <span class="n">Lerr</span></div>
 
@@ -737,6 +728,7 @@
         <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span><span class="o">/</span><span class="n">P</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span>
         <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">P</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">P</span><span class="p">,</span> <span class="n">Perr</span></div>
 
@@ -792,6 +784,7 @@
         <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span><span class="o">/</span><span class="n">P_debias</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span>
         <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">P_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">P_debias</span><span class="p">,</span> <span class="n">Perr</span></div>
 

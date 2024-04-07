@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.par &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -94,8 +94,301 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">dict_init</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
+
+
+
+<div class="viewcode-block" id="weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights">[docs]</a>
+<span class="k">class</span> <span class="nc">weights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Weights structure, using for storing weights or weight functions that can be</span>
+<span class="sd">    evaluated.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    W: ndarray or array-like</span>
+<span class="sd">        weights</span>
+<span class="sd">    x: ndarray or array-like</span>
+<span class="sd">        sample array defining weights, used for interpolation and function evaluation</span>
+<span class="sd">    func: &lt;lambda&gt;</span>
+<span class="sd">        function to evaluate to get weights</span>
+<span class="sd">    method: str</span>
+<span class="sd">        method to retrive weights \n</span>
+<span class="sd">        [None] - Retrieve weights as is, either scalar or array \n</span>
+<span class="sd">        [interp] - interpolate weights based on bounds and W (weights) \n</span>
+<span class="sd">        [func] - Retrieve weights by evaluating function</span>
+<span class="sd">    args: dict</span>
+<span class="sd">        dictionary of arguments used in evaluating weights function</span>
+<span class="sd">    norm: bool, optional</span>
+<span class="sd">        Normalise weights, default is True</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">func</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="weights.set">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set parameters</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>         
+
+        <span class="n">weights_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">]:</span>
+                <span class="n">weights_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="o">**</span><span class="n">weights_kwargs</span><span class="p">)</span></div>
+
+        
+
+    <span class="k">def</span> <span class="nf">_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        
+        <span class="c1"># set normalisation parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+        <span class="c1"># set attributes</span>
+        <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[W] weights instance attribute must be a float or array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+        
+
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[x] weights instance attribute must be array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if func is string</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        
+            <span class="c1"># if func is callable, directly set </span>
+            <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;function must either be a string to evaluate, or a callable function.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;interp&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">]:</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid Method for Weighting, using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>    
+
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;args must be in dict format&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">func_keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">if_flag</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">missing_args</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">new_args</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_keys</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">new_args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">if_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">missing_args</span> <span class="o">+=</span> <span class="n">key</span>
+                
+                <span class="k">if</span> <span class="n">if_flag</span><span class="p">:</span> 
+                    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not all args have been specified for this function </span><span class="si">{</span><span class="n">missing_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;func not given, can&#39;t determine args&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span>
+
+    
+
+<div class="viewcode-block" id="weights.get_weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.get_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get weights</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray or array-like, optional</span>
+<span class="sd">            if specified, will interp or evaluate func using this array rather then self.x, by default None</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            method used for retrieving weights, if not spefified, uses self.method, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        W : ndarray or array-like</span>
+<span class="sd">            Weights</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">)</span>
+        
+        <span class="c1"># get weights from .W attribute</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_W</span><span class="p">()</span>
+
+        <span class="c1"># interp weights based on </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;interp&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_interp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;func&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># normalise</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">and</span> <span class="p">(</span><span class="n">outw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">outw</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="n">Wsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outw</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Wsum</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Weights sum to zero, cannot normalize!&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">outw</span>
+            <span class="k">return</span> <span class="n">outw</span> <span class="o">/</span> <span class="n">Wsum</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">outw</span></div>
+
+
+
+
+
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_W</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No Weights specified, returning None object&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No weights specified, returning None object&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No x array specified for interpolation, for interpolation a weights array [W] with &quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;array [x] of same size must be defined in the weights class before interpolation is performed.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># check x</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No x array given for interpolation, returning the full array of weights&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+
+        <span class="c1"># check if bounds of x is larger than [x] saved in weights instance</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Bounds of specified array x larger than array [x] of weights instance, for any x values outside&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;the known weights range they will be set to the bounded values of the weights array.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="c1"># perform interpolation</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_func_and_args</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify [x] array&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Using stored [x] array of weights instance&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_check_func_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify a function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify args for func&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;func must be callable and args a dictionary of args to evaluate the function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="c1"># check if all args are there</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;argument [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] not specified, cannot evaulate function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># if all pass return 1</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+
+
+
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">Ws</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">Ws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Ws</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[W]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">Ws</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[x]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[x]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;= None</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[func]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[method]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[args]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;=</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">pstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[args]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;= None</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">pstr</span></div>
+
+
 
 
 <div class="viewcode-block" id="FRB_params">
@@ -205,8 +498,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>    <span class="n">RA</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span>    <span class="n">DEC</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> 
                        <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DM&#39;</span><span class="p">],</span>      <span class="n">bw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;bw&#39;</span><span class="p">],</span>    <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;cfreq&#39;</span><span class="p">],</span> 
                        <span class="n">t_lim</span>  <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_lim&#39;</span><span class="p">],</span>      <span class="n">f_lim</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f_lim&#39;</span><span class="p">],</span>   <span class="n">RM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">],</span>
-                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span><span class="n">fW</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>                   
-                       <span class="n">tW</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>                   <span class="n">norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span><span class="n">norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
                        <span class="n">czap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>                 <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 
         <span class="c1"># parameters</span>
@@ -219,8 +511,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">RM</span>     <span class="o">=</span> <span class="n">RM</span>                <span class="c1"># rotation measure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>     <span class="o">=</span> <span class="n">f0</span>                <span class="c1"># reference frequency</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pa0</span>    <span class="o">=</span> <span class="n">pa0</span>               <span class="c1"># reference PA</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fW</span>     <span class="o">=</span> <span class="n">fW</span>                <span class="c1"># frequency weightings</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tW</span>     <span class="o">=</span> <span class="n">tW</span>                <span class="c1"># time weightings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># frequency weightings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># time weightings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">czap</span>   <span class="o">=</span> <span class="n">czap</span>              <span class="c1"># frequencies to zap in string form</span>
 
         <span class="c1"># define base parameters, these will be used when changing the crop parameters, </span>
@@ -268,11 +560,11 @@
 <span class="sd">        fN : int, optional</span>
 <span class="sd">            Factor for frequency averaging, by default 1</span>
 <span class="sd">        &quot;&quot;&quot;</span>    
-
         <span class="c1"># TODO: Maybe find a smarter way to do this</span>
         <span class="c1"># reverse f_crop if Upper sideband</span>
-        <span class="c1"># if self.UP:</span>
-        <span class="c1">#     f_crop = [1.0 - f_crop[1], 1.0 - f_crop[0]]</span>
+        <span class="n">f_crop_copy</span> <span class="o">=</span> <span class="n">f_crop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
+            <span class="n">f_crop_copy</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
         <span class="c1"># update params given new crop and averaging</span>
         <span class="c1"># update resolutions</span>
@@ -283,87 +575,82 @@
         <span class="c1"># NOTE: Must correct for int casting that is used for phase slicing and averaging chopping</span>
         <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">tlim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span><span class="o">*</span><span class="n">tN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span><span class="o">*</span><span class="n">tN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
 
         <span class="c1"># update f_lim </span>
         <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">flim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span>  <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">*</span> <span class="n">lim_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span><span class="o">*</span><span class="n">fN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span><span class="o">*</span><span class="n">fN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+        
 
         <span class="c1"># update bw and cfreq</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span>
 
         <span class="c1"># update nchan and nsamp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">))</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">))</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">))</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span></div>
 
 
 
 
-    <span class="c1"># function to load paramters from parameter file</span>
-<div class="viewcode-block" id="FRB_params.load_params">
-<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.load_params">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Load params from file - To implement??</span>
+    <span class="c1"># # function to load paramters from parameter file</span>
+    <span class="c1"># def load_params(self, filename: str = None):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Load params from file - To implement??</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        filename : str, optional</span>
-<span class="sd">            param file name, by default None</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     filename : str, optional</span>
+    <span class="c1">#         param file name, by default None</span>
+    <span class="c1">#     &quot;&quot;&quot;        </span>
 
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Parameter file must be valid&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-            <span class="k">return</span>
+    <span class="c1">#     if filename is None:</span>
+    <span class="c1">#         log(&quot;Parameter file must be valid&quot;, lpf_col = self.pcol)</span>
+    <span class="c1">#         return</span>
 
-        <span class="c1"># load into object</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="c1">#     # load into object</span>
+    <span class="c1">#     with open(filename, &#39;r&#39;) as file:</span>
+    <span class="c1">#         params = yaml.safe_load(file)</span>
 
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">,</span><span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+    <span class="c1">#     for _,key in enumerate(params.keys()):</span>
+    <span class="c1">#         setattr(self,key,params[key])</span>
 
-        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters loaded from [</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+    <span class="c1">#     log(f&quot;Parameters loaded from [{filename}]&quot;, lpf_col = self.pcol)</span>
 
-        <span class="k">return</span> </div>
-
+    <span class="c1">#     return </span>
 
 
     
-    <span class="c1"># function to get limits from crop</span>
-<div class="viewcode-block" id="FRB_params.save_params">
-<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.save_params">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Save current parameters to file</span>
+    <span class="c1"># # function to get limits from crop</span>
+    <span class="c1"># def save_params(self, filename: str = None):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Save current parameters to file</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        filename : str, optional</span>
-<span class="sd">            filename to save params to, by default None</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     filename : str, optional</span>
+    <span class="c1">#         filename to save params to, by default None</span>
+    <span class="c1">#     &quot;&quot;&quot;        </span>
         
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;parameter file must be valid&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
-            <span class="k">return</span>
+    <span class="c1">#     if filename is None:</span>
+    <span class="c1">#         log(&quot;parameter file must be valid&quot;, lpf_col = self.pcol)</span>
+    <span class="c1">#         return</span>
 
-        <span class="c1"># build yaml .object</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="c1">#     # build yaml .object</span>
+    <span class="c1">#     params = {}</span>
+    <span class="c1">#     for _,key in enumerate(_G.p.keys()):</span>
+    <span class="c1">#         params[key] = getattr(self, key)</span>
         
-        <span class="c1"># save object to .yaml file</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+    <span class="c1">#     # save object to .yaml file</span>
+    <span class="c1">#     with open(filename, &#39;w&#39;) as file:</span>
+    <span class="c1">#         yaml.safe_dump(params, file)</span>
 
-        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameters saved to [</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
+    <span class="c1">#     log(f&quot;Parameters saved to [{filename}]&quot;, lpf_col = self.pcol)</span>
 
-        <span class="k">return</span></div>
-
+    <span class="c1">#     return</span>
         
     
     <span class="c1"># function to save parameters to parameter file</span>
@@ -554,8 +841,39 @@
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        
 
         <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span>  <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="p">]</span> <span class="c1"># frequency range</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_params.set_weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.set_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set properties of weights instances</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xtype: str</span>
+<span class="sd">            Type of weights \n</span>
+<span class="sd">            &quot;t&quot; - Time weights \n</span>
+<span class="sd">            &quot;f&quot; - Freq weights</span>
+
+<span class="sd">        **kwargs: Dict</span>
+<span class="sd">            Keyword arguments for weights instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">xtype</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="c1"># time weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">xtype</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="c1"># freq weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;xtype must be either &#39;t&#39; for time, or &#39;f&#39; for freq&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> </div>
 
 
         
@@ -571,6 +889,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FRB_params.get_times">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.get_times">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get time bins</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">,</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></div>
 
 
 

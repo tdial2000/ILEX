@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.utils &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -89,6 +89,7 @@
 <span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">_G</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">import</span> <span class="nn">yaml</span><span class="o">,</span> <span class="nn">os</span>
 
 
 <span class="c1"># empty structure</span>
@@ -449,6 +450,55 @@
 
 
 
+
+<div class="viewcode-block" id="load_param_file">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_param_file">[docs]</a>
+<span class="k">def</span> <span class="nf">load_param_file</span><span class="p">(</span><span class="n">param_file</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load in param file and compare with default params file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    param_file : str</span>
+<span class="sd">        parameter file to load in</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    params : Dict</span>
+<span class="sd">        parameters, compared with defaults</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># open param file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">param_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1"># open default param file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/default.yaml&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">deffile</span><span class="p">:</span>
+        <span class="n">def_pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">deffile</span><span class="p">)</span>
+    
+    <span class="c1"># initialise defaults in pars</span>
+    <span class="k">def</span> <span class="nf">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        p : pars</span>
+<span class="sd">        d : default pars</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+                    <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># check if dict instance</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+    
+        <span class="k">return</span> <span class="n">p</span>
+    
+    <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">)</span></div>
 
 
 

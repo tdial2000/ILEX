@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.htr &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -93,6 +93,7 @@
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="n">rotate_data</span><span class="p">,</span> <span class="n">average</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 
@@ -263,19 +264,25 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.htr.html#ilex.htr.make_ds">[docs]</a>
 <span class="k">def</span> <span class="nf">make_ds</span><span class="p">(</span><span class="n">xpol</span><span class="p">,</span> <span class="n">ypol</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">nFFT</span> <span class="o">=</span> <span class="mi">336</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Make Stokes Dynamic spectra with specified stft length </span>
+<span class="sd">    Make dynamic spectra from complex X, Y polarisation time series arrays</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        xpol (mmap): X polarisation</span>
-<span class="sd">        ypol (mmap): Y polarisation</span>
-<span class="sd">        stokes (str): Stokes dynspec to make</span>
-<span class="sd">        nFFT (int): Number of channels </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xpol : np.ndarray or array-like</span>
+<span class="sd">        X time series polarisation data</span>
+<span class="sd">    ypol : np.ndarray or array-like</span>
+<span class="sd">        Y time series polarisation data</span>
+<span class="sd">    S : str, optional</span>
+<span class="sd">        type of Stokes dynamic spectra to make, options are [&#39;I&#39;, &#39;Q&#39;, &#39;U&#39;, &#39;V&#39;], by default &quot;I&quot;</span>
+<span class="sd">    nFFT : int, optional</span>
+<span class="sd">        number of frequency channels in final dynamic spectrum, by default 336</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        ds (ndarray): Raw Dynamic spectrum</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds: np.ndarray</span>
+<span class="sd">        dynamic spectrum</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
 
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">prog_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[Stokes] = </span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2"> with [nFFT] = </span><span class="si">{</span><span class="n">nFFT</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="n">Stk_Func</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span><span class="n">stk_I</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span><span class="n">stk_Q</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">:</span><span class="n">stk_U</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span><span class="n">stk_V</span><span class="p">}</span>
@@ -335,23 +342,31 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.htr.html#ilex.htr.pulse_fold">[docs]</a>
 <span class="k">def</span> <span class="nf">pulse_fold</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">DM</span><span class="p">,</span> <span class="n">cfreq</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">MJD0</span><span class="p">,</span> <span class="n">MJD1</span><span class="p">,</span> <span class="n">F0</span><span class="p">,</span> <span class="n">F1</span><span class="p">,</span> <span class="n">sphase</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Takes Pulsar dynamic spectrum and folds it, removes periods</span>
-<span class="sd">        at far left and right sides to avoid band artifacts produced during</span>
-<span class="sd">        de-dispersion.</span>
+<span class="sd">    Takes Pulsar dynamic spectrum and folds it, removes periods</span>
+<span class="sd">    at far left and right sides to avoid band artifacts produced during</span>
+<span class="sd">    de-dispersion.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        ds (ndarray): dynamic spectrum</span>
-<span class="sd">        MJD0 (float): Initial Epoch MJD</span>
-<span class="sd">        MJD1 (float): Observation MJD</span>
-<span class="sd">        F0 (float): initial Epoch Frequency period</span>
-<span class="sd">        F1 (float): Spin-down rate</span>
-<span class="sd">        sphase (float): Starting phase of folding, if not given</span>
-<span class="sd">                        will be estimated (best done using &quot;I&quot; ds)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds : np.ndarray or array-like </span>
+<span class="sd">        dynamic spectrum</span>
+<span class="sd">    MJD0 : float</span>
+<span class="sd">        Initial Epoch MJD</span>
+<span class="sd">    MJD1 : float</span>
+<span class="sd">        Observation MJD</span>
+<span class="sd">    F0 : float </span>
+<span class="sd">        initial Epoch Frequency period</span>
+<span class="sd">    F1 : float </span>
+<span class="sd">        Spin-down rate</span>
+<span class="sd">    sphase : float </span>
+<span class="sd">        Starting phase of folding, if not given will be estimated (best done using &quot;I&quot; ds)</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        ds_f (ndarray): Raw folded Dynamic spectra</span>
-<span class="sd">        sphase (float): Starting phase of folding from original dynspec</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ds_f : np.ndarray </span>
+<span class="sd">    Raw folded Dynamic spectra</span>
+<span class="sd">    sphase : float</span>
+<span class="sd">    Starting phase of folding from original dynspec</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pulse Folding Dynspec...&quot;</span><span class="p">)</span>
@@ -422,24 +437,32 @@
 <span class="k">def</span> <span class="nf">baseline_correction</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">guard</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> 
                         <span class="n">baseline</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span> <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">rbounds</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Info:</span>
-<span class="sd">        Get baseline corrections to the Dynamic spectra data</span>
+<span class="sd">    Get baseline corrections to the Dynamic spectra data</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        ds (ndarray): Dynamic spectra</span>
-<span class="sd">        sigma (float): S/N threshold for bounds</span>
-<span class="sd">        guard (float): Time in [ms] between rough bounds and rms crop region</span>
-<span class="sd">        baseline (float): Width of buffer in [ms] to estimate baseline</span>
-<span class="sd">                          correction</span>
-<span class="sd">        tN (int): Time Averaging factor for Dynamic spectrum, helps with</span>
-<span class="sd">                    S/N calculation.</span>
-<span class="sd">        rbounds (list): Bounds of FRB burst, if Unspecified, the code will do a rough S/N</span>
-<span class="sd">                        calculation to determine a bursts bounds</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds : np.ndarray or array-like </span>
+<span class="sd">        Dynamic spectra</span>
+<span class="sd">    sigma : float </span>
+<span class="sd">        S/N threshold for bounds</span>
+<span class="sd">    guard : float </span>
+<span class="sd">        Time in [ms] between rough bounds and rms crop region</span>
+<span class="sd">    baseline : float </span>
+<span class="sd">        Width of buffer in [ms] to estimate baseline correction</span>
+<span class="sd">    tN : int </span>
+<span class="sd">        Time Averaging factor for Dynamic spectrum, helps with S/N calculation.</span>
+<span class="sd">    rbounds : list </span>
+<span class="sd">        Bounds of FRB burst, if Unspecified, the code will do a rough S/N calculation </span>
+<span class="sd">        to determine a bursts bounds</span>
 
-<span class="sd">    Returns: </span>
-<span class="sd">        bs_mean (ndarray): Baseline mean</span>
-<span class="sd">        bs_std (ndarray): Baseline std</span>
-<span class="sd">        rbounds (ndarray): Bounds of FRB burst in Phase units</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bs_mean : np.ndarray or array-like </span>
+<span class="sd">        Baseline mean</span>
+<span class="sd">    bs_std : np.ndarray or array-like </span>
+<span class="sd">        Baseline std</span>
+<span class="sd">    rbounds : np.ndarray or array-like </span>
+<span class="sd">        Bounds of FRB burst in Phase units</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>      
 

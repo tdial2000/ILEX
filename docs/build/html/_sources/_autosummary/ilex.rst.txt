@@ -21,7 +21,6 @@
    ilex.htr
    ilex.logging
    ilex.master_proc
-   ilex.multicomp_pol
    ilex.par
    ilex.plot
    ilex.pyfit

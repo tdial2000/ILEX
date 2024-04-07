@@ -5,7 +5,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.utils &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
@@ -54,7 +54,6 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
@@ -66,6 +65,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_null"><code class="docutils literal notranslate"><span class="pre">dict_null()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.get_stk_from_datalist"><code class="docutils literal notranslate"><span class="pre">get_stk_from_datalist()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_param_file"><code class="docutils literal notranslate"><span class="pre">load_param_file()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.merge_dicts"><code class="docutils literal notranslate"><span class="pre">merge_dicts()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.plotnum2grid"><code class="docutils literal notranslate"><span class="pre">plotnum2grid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.save_data"><code class="docutils literal notranslate"><span class="pre">save_data()</span></code></a></li>
@@ -228,6 +228,23 @@ products to make, i.e. “dsI”, “fQ” etc.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.mmap or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.load_param_file">
+<span class="sig-name descname"><span class="pre">load_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_param_file" title="Link to this definition"></a></dt>
+<dd><p>Load in param file and compare with default params file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param_file</strong> (<em>str</em>) – parameter file to load in</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>params</strong> – parameters, compared with defaults</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
 </dd>
 </dl>
 </dd></dl>

@@ -5,7 +5,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ilex.htr &mdash; ILEX 0.9.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
   
@@ -67,7 +67,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.multicomp_pol.html">ilex.multicomp_pol</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
@@ -106,31 +105,26 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.htr.baseline_correction">
 <span class="sig-name descname"><span class="pre">baseline_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#baseline_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.baseline_correction" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Get baseline corrections to the Dynamic spectra data</p>
-</dd>
-</dl>
+<dd><p>Get baseline corrections to the Dynamic spectra data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<em>ndarray</em>) – Dynamic spectra</p></li>
+<li><p><strong>ds</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Dynamic spectra</p></li>
 <li><p><strong>sigma</strong> (<em>float</em>) – S/N threshold for bounds</p></li>
 <li><p><strong>guard</strong> (<em>float</em>) – Time in [ms] between rough bounds and rms crop region</p></li>
-<li><p><strong>baseline</strong> (<em>float</em>) – Width of buffer in [ms] to estimate baseline
-correction</p></li>
-<li><p><strong>tN</strong> (<em>int</em>) – Time Averaging factor for Dynamic spectrum, helps with
-S/N calculation.</p></li>
-<li><p><strong>rbounds</strong> (<em>list</em>) – Bounds of FRB burst, if Unspecified, the code will do a rough S/N
-calculation to determine a bursts bounds</p></li>
+<li><p><strong>baseline</strong> (<em>float</em>) – Width of buffer in [ms] to estimate baseline correction</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Time Averaging factor for Dynamic spectrum, helps with S/N calculation.</p></li>
+<li><p><strong>rbounds</strong> (<em>list</em>) – Bounds of FRB burst, if Unspecified, the code will do a rough S/N calculation
+to determine a bursts bounds</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Baseline mean
-bs_std (ndarray): Baseline std
-rbounds (ndarray): Bounds of FRB burst in Phase units</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bs_mean (ndarray)</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>bs_mean</strong> (<em>np.ndarray or array-like</em>) – Baseline mean</p></li>
+<li><p><strong>bs_std</strong> (<em>np.ndarray or array-like</em>) – Baseline std</p></li>
+<li><p><strong>rbounds</strong> (<em>np.ndarray or array-like</em>) – Bounds of FRB burst in Phase units</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -166,24 +160,21 @@ the padding relative to the original size of dataset, the worse the data, so use
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.htr.make_ds">
 <span class="sig-name descname"><span class="pre">make_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xpol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ypol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nFFT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">336</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#make_ds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.make_ds" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Make Stokes Dynamic spectra with specified stft length</p>
-</dd>
-</dl>
+<dd><p>Make dynamic spectra from complex X, Y polarisation time series arrays</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>xpol</strong> (<em>mmap</em>) – X polarisation</p></li>
-<li><p><strong>ypol</strong> (<em>mmap</em>) – Y polarisation</p></li>
-<li><p><strong>stokes</strong> (<em>str</em>) – Stokes dynspec to make</p></li>
-<li><p><strong>nFFT</strong> (<em>int</em>) – Number of channels</p></li>
+<li><p><strong>xpol</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – X time series polarisation data</p></li>
+<li><p><strong>ypol</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Y time series polarisation data</p></li>
+<li><p><strong>S</strong> (<em>str</em><em>, </em><em>optional</em>) – type of Stokes dynamic spectra to make, options are [‘I’, ‘Q’, ‘U’, ‘V’], by default “I”</p></li>
+<li><p><strong>nFFT</strong> (<em>int</em><em>, </em><em>optional</em>) – number of frequency channels in final dynamic spectrum, by default 336</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Raw Dynamic spectrum</p>
+<dd class="field-even"><p><strong>ds</strong> – dynamic spectrum</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ds (ndarray)</p>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -233,30 +224,28 @@ the padding relative to the original size of dataset, the worse the data, so use
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.htr.pulse_fold">
 <span class="sig-name descname"><span class="pre">pulse_fold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MJD0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MJD1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#pulse_fold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.pulse_fold" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Info:</dt><dd><p>Takes Pulsar dynamic spectrum and folds it, removes periods
+<dd><p>Takes Pulsar dynamic spectrum and folds it, removes periods
 at far left and right sides to avoid band artifacts produced during
 de-dispersion.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<em>ndarray</em>) – dynamic spectrum</p></li>
+<li><p><strong>ds</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – dynamic spectrum</p></li>
 <li><p><strong>MJD0</strong> (<em>float</em>) – Initial Epoch MJD</p></li>
 <li><p><strong>MJD1</strong> (<em>float</em>) – Observation MJD</p></li>
 <li><p><strong>F0</strong> (<em>float</em>) – initial Epoch Frequency period</p></li>
 <li><p><strong>F1</strong> (<em>float</em>) – Spin-down rate</p></li>
-<li><p><strong>sphase</strong> (<em>float</em>) – Starting phase of folding, if not given
-will be estimated (best done using “I” ds)</p></li>
+<li><p><strong>sphase</strong> (<em>float</em>) – Starting phase of folding, if not given will be estimated (best done using “I” ds)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Raw folded Dynamic spectra
-sphase (float): Starting phase of folding from original dynspec</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ds_f (ndarray)</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>ds_f</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><em>Raw folded Dynamic spectra</em></p></li>
+<li><p><strong>sphase</strong> (<em>float</em>)</p></li>
+<li><p><em>Starting phase of folding from original dynspec</em></p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>

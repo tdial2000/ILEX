@@ -1,0 +1,112 @@
+data:
+  dsI: null
+  dsQ: null
+  dsU: null
+  dsV: null
+
+par:
+  name:   "FRBXXXXXX"
+  RA:     "00:00:00.0000"
+  DEC:    "00:00:00.0000"
+  DM:     0.0
+  bw:     336
+  cfreq:  1271.5
+  t_lim:  [0.0, 3100.0]
+  f_lim:  [0.0, 336.0]
+  nchan:  336
+  nsamp:  0
+  dt:     1e-3
+  df:     1.0
+  RM:     null
+  f0:     null
+  pa0:    0.0
+  czap:   ""  # to be implemented
+
+metapar:
+  t_crop:     [0.0, 1.0]
+  f_crop:     [0.0, 1.0]
+  terr_crop:  null
+  tN:         1
+  fN:         1
+  norm:       "None"
+
+hyperpar:
+  verbose:        False
+  force:          False
+  savefig:        False
+  plot_err_type:  "regions"
+  residuals:      True
+  plotPosterior:  True
+
+
+
+#---------------------------#
+# Additional Script options #
+
+plots:
+  plot_err_type:    "regions"
+
+  # plotting stokes data
+  plot_L:           False
+  Ldebias:          False
+  debias_threshold: 2.0
+
+  # plotting poincare sphere data
+  plot_data:        True
+  plot_model:       True
+  n:                True
+  normalise:        True
+
+  # plotting PA
+  flipPA:           False
+
+
+fits:
+  # for all fitting methods
+  fitmethod:  "bayesian"
+  redo:       False
+
+  # for Time scattering fitting
+  tscatt:
+    npulse:     1
+    priors:     {}
+    statics:    {}
+    fit_params: {}
+
+  # scintillation
+  scint:
+    priors:     {}
+    statics:    {}
+    fit_params: {}
+    n:          5
+
+  # RM fitting
+  fitRM:
+    method:     "RMsynth"
+    fit_params: {}
+
+
+multi:
+  tcrops: null
+  fcrops: null
+
+
+weights:
+  # time weights
+  time:
+    method: "None"
+    W:      null
+    x:      null
+    norm:   True
+    func:   null
+    args:   null
+
+  # freq weights
+  freq:
+    method: "None"
+    W:      null
+    x:      null
+    norm:   True
+    func:   null
+    args:   null
+

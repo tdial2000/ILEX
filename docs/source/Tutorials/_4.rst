@@ -202,7 +202,7 @@ this is only for demonstrative purposes.
 
     python3 plot_PA_multi.py --parfile examples/220610.yaml --showbounds
 
-.. image:: plot_multi_PA_example.png
+.. image:: plot_examplePA_plot.png
    :width: 720pt
 
 

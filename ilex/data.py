@@ -15,9 +15,7 @@
 import numpy as np
 from scipy.signal import correlate
 from copy import deepcopy
-
-# constants
-c = 2.997924538e8 # Speed of light [m/s]
+from .globals import *
 
 
 ##===============================================##
@@ -35,15 +33,14 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
     x: ndarray
        data to average over
     axis: int 
-          axis to average over
-    weights: ndarray
-          weights to apply to data when summing over. By default this is set
-          to None, in which case a uniform weighting is applied.
+        axis to average over
+    N: int
+        Averaging/donwsampling factor
 
     Returns
     -------
     x: ndarray 
-       Average data
+       Averaged data
     
     """
 
@@ -452,13 +449,11 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
     ----------
     stk : Dict(np.ndarray)
         Dictionary of Stokes data \n
-        [dsQ] - Stokes Q dynamic spectra \n
-        [dsU] - Stokes U dynamic spectra \n
+        [tQ] - Stokes Q dynamic spectra \n
+        [tU] - Stokes U dynamic spectra \n
         [tQerr] - Stokes Q average rms over time \n
         [tUerr] - Stokes U average rms over time \n
-        [tIerr] - Stokes I average rms over time \n
-        [fQerr] - Stokes Q frequency dependent rms \n
-        [fUerr] - Stokes U frequency dependent rms 
+        [tIerr] - Stokes I average rms over time 
     Ldebias_threshold : float, optional
         sigma threshold for masking PA, by default 2.0
 
@@ -469,19 +464,13 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
     PAerr : np.ndarray
         Position Angle err 
     """    
-    
-    # calculate time series and de-noise
-    stk_den = {}    # denoised stk data
-    for S in "QU":
-        stk_den[f't{S}'] = np.mean(stk[f"ds{S}"] - stk[f"f{S}err"][:, None], axis = 0)
-
     # calculate PA and error
-    PA = 0.5 * np.arctan2(stk_den['tU'], stk_den['tQ'])
-    PAerr = 0.5 * np.sqrt((stk_den['tQ']**2*stk['tUerr']**2 + stk_den['tU']**2*stk['tQerr']**2)/
-                           (stk_den['tQ']**2 + stk_den['tU']**2)**2)
+    PA = 0.5 * np.arctan2(stk['tU'], stk['tQ'])
+    PAerr = 0.5 * np.sqrt((stk['tQ']**2*stk['tUerr']**2 + stk['tU']**2*stk['tQerr']**2)/
+                           (stk['tQ']**2 + stk['tU']**2)**2)
 
     # calculate de-baised L and mask PA 
-    L_debias,_ = calc_Ldebiased(stk_den['tQ'], stk_den['tU'], stk['tIerr'])
+    L_debias,_ = calc_Ldebiased(stk['tQ'], stk['tU'], stk['tIerr'])
     PA_mask = L_debias < (Ldebias_threshold * stk['tIerr'])
 
     # mask PA
@@ -527,6 +516,7 @@ def calc_L(Q, U, Qerr = None, Uerr = None):
         Lmask = L != 0.0
         Lerr[Lmask] = Lerr[Lmask]/L[Lmask]
         Lerr[~Lmask] = np.nan
+        L[~Lmask] = np.nan
 
     return L, Lerr
 
@@ -567,8 +557,8 @@ def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
 
     L_meas = np.sqrt(Q**2 + U**2)
     L_debias = Ierr * np.sqrt((L_meas/Ierr)**2 - 1)
-    # L_debias[np.isnan(L_debias)] = 0
-    # L_debias[L_meas/Ierr < 1.57] = 0
+    L_debias[np.isnan(L_debias)] = 0
+    L_debias[L_meas/Ierr < 1.57] = 0
 
     Lerr = None
     if (Qerr is not None) and (Uerr is not None):
@@ -576,6 +566,7 @@ def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
         Lmask = L_debias != 0.0
         Lerr[Lmask] = Lerr[Lmask]/L_debias[Lmask]
         Lerr[~Lmask] = np.nan
+        L_debias[~Lmask] = np.nan
 
     return L_debias, Lerr
 
@@ -625,6 +616,7 @@ def calc_P(Q, U, V, Qerr = None, Uerr = None, Verr = None):
         Pmask = P != 0.0
         Perr[Pmask] = Perr[Pmask]/P[Pmask]
         Perr[~Pmask] = np.nan
+        P[~Pmask] = np.nan
 
     return P, Perr
 
@@ -677,6 +669,7 @@ def calc_Pdebiased(Q, U, V, Ierr, Qerr = None, Uerr = None, Verr = None):
         Pmask = P_debias != 0.0
         Perr[Pmask] = Perr[Pmask]/P_debias[Pmask]
         Perr[~Pmask] = np.nan
+        P_debias[~Pmask] = np.nan
 
     return P_debias, Perr
 

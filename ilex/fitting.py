@@ -21,6 +21,7 @@ import bilby
 from copy import deepcopy
 import sys, inspect
 from .logging import log
+from math import ceil, floor
 
 # rm synthesis
 from RMtools_1D.do_RMsynth_1D import run_rmsynth
@@ -33,8 +34,7 @@ from .data import *
 
 from .pyfit import fit
 
-# constants
-c = 2.997924538e8 # Speed of light [m/s]
+from .globals import *
 
 
 
@@ -132,7 +132,8 @@ def gaussian(x, a, mu, sig):
     return a*np.exp(-(x-mu)**2/(2*sig**2))
 
 
-def scat(x, tau):
+
+def scat(dx, tau, sig = 10):
     """
     1 sided (positive side) exponential Scattering tail function
 
@@ -142,6 +143,8 @@ def scat(x, tau):
         X data
     tau : float
         Scattering Timescale
+    sig: float
+        number of standard deviations for defined scat function from mean
 
     Returns
     -------
@@ -150,15 +153,21 @@ def scat(x, tau):
     """
 
     # create x with same time resolution
-    dt = x[1] - x[0]
+    _w = int(ceil(tau*sig/dx)) 
+    x = np.linspace(-_w*dx, _w*dx, 2*_w+1)
     hw = x.size//2
     yscat = np.zeros(x.size)
 
     # only fill one side, since this is a one sided
     # exponential
-    yscat[x.size-hw:] = np.exp(-np.linspace(0,dt*(hw-1),hw)/(tau))
+    yscat[hw:] = np.exp(-x[hw:]/(tau))
 
     return yscat
+
+
+
+
+
 
 
 def specindex(x, a, alpha):
@@ -191,10 +200,15 @@ def specindex(x, a, alpha):
 ##===============================================##
 ##          Advanced fitting functions           ##
 ##===============================================##
-# TODO: Make so the scat pulse is a small as possible, maybe also implement deconvolution
 def scatt_pulse_profile(x, p):
     """
-    Scattering time series profile with n pulses
+    Scattering time series profile with n pulses. Numerical convolution if done incorrectly
+    can shift the resultant data in an undesirable way. One way to avoid this is to take a large window
+    around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.
+    This of course isn't realistic when taking a crop of data whose bounds cut through potential signal. 
+
+    To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until 
+    symmetrical, this avoids any potential shifting due to improper convolution. 
 
     Parameters
     ----------
@@ -212,23 +226,64 @@ def scatt_pulse_profile(x, p):
     y: np.ndarray
         Y data array
     """
-
-    npulses = (len(p) - 1)//3
-
-
-    #combined guassians
+    # create empty output array
     y = np.zeros(x.size)
-    conv = np.zeros(x.size)
-    stail = scat(x,p['tau'])
+    
+    # create scattering tail 
+    dt = x[1] - x[0]
+    npulses = (len(p) - 1)//3
+    stail = scat(dt,p['tau'])
 
+    # Each gaussian will be isolated and convolved seperatley with enough padding for a complete
+    # uniform convolution with zero shifting due to numerical error.
     for i in range(npulses):
-        
-        conv = np.convolve(gaussian(x,1,p['mu'+str(i+1)],p['sig'+str(i+1)]),
-                            stail,mode = "same")
 
-        y += p['a'+str(i+1)] * conv/np.max(conv)
+        # make gaussian with sigma 5
+        xe = int(floor((p[f"mu{i+1}"] + p[f"sig{i+1}"]*5)/dt))
+        xs = int(floor((p[f"mu{i+1}"] - p[f"sig{i+1}"]*5)/dt))
+    
+        # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve
+        if xe-xs + 1 < stail.size:
+            # expand to same size as stail
+            lendif = int(ceil((stail.size - (xe-xs+1))/2))
+            xe += lendif
+            xs -= lendif
+            
+            
+        x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)
+            
+        # crop bounded signal
+        ps = int(floor(x[0]/dt))
+        xs -= ps
+        xe -= ps
+
+        # handle edge cases
+        if xs >= x.size:
+            continue
+
+        if xe <= 0:
+            continue
+
+        # make pulse
+        pulse_i = gaussian(x_i, 1, p[f"mu{i+1}"], p[f"sig{i+1}"])
+
+        # convolve
+        conv = np.convolve(pulse_i, stail, mode = "same")
+        pulse_ind = [0, conv.size]
+        
+        if xs < 0:
+            pulse_ind[0] = 0 - xs
+            xs = 0
+        if xe + 1 > x.size:
+            pulse_ind[1] -= (xe+1 - x.size)
+            xe = x.size
+
+        y[xs:xe+1] += p[f"a{i+1}"] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)
 
     return y
+
+
+
 
 
 

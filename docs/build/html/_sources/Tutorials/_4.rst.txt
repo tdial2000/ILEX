@@ -1,0 +1,17 @@
+ILEX scripts
+------------
+
+The following is a list of scripts that can be used to either create new FRB dynamic spectra or create different plots.
+
+
+Quickly plot Dynamic spectra
+============================
+
+Quickly plot dynamic spectrum
+
+.. code-block:: console
+    python3 plot_dynspec.py filepath
+
+    # options
+    --tN        # averaging factor in time
+

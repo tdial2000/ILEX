@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ilex" href="../_autosummary/ilex.html" />
+    <link rel="next" title="Using the FRB.yaml config file" href="_3.html" />
     <link rel="prev" title="Using ILEX" href="_1.html" /> 
 </head>
 
@@ -51,8 +51,11 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Advanced ILEX</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#time-series-and-time-scatter-fitting">Time series and time scatter Fitting</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fitting-rm-and-plotting-position-angle-pa-profile">Fitting RM and plotting Position Angle (PA) Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weighting-data">Weighting data</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="_3.html">ILEX config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_4.html">ILEX scripts</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
@@ -91,7 +94,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ilex.frb</span> <span class="kn">import</span> <span class="n">FRB</span>
 
 <span class="c1"># initialise FRB instance and load data</span>
-<span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">VELA</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span>
+<span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRB220610&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span>
             <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1103.5</span><span class="p">,</span> <span class="mi">1200</span><span class="p">])</span>
 <span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_I</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
 </pre></div>
@@ -160,6 +163,18 @@ the stats of the modelling.</p>
 </div>
 <a class="reference internal image-reference" href="../_images/220610_PA.png"><img alt="../_images/220610_PA.png" src="../_images/220610_PA.png" style="width: 720pt;" /></a>
 </section>
+<section id="weighting-data">
+<h2>Weighting data<a class="headerlink" href="#weighting-data" title="Link to this heading"></a></h2>
+<p>One Useful feature of ILEX is weighting. The <code class="docutils literal notranslate"><span class="pre">frb.par.tW</span></code> and <code class="docutils literal notranslate"><span class="pre">frb.par.fW</span></code> attributes are <code class="docutils literal notranslate"><span class="pre">weights</span></code> class instances that
+can be used to respectivley weight data in time when making spectra, or weight data in frequency when making time profiles. The
+<code class="docutils literal notranslate"><span class="pre">weights</span></code> class found in <code class="docutils literal notranslate"><span class="pre">ilex.par</span></code> has many methods for making weights, we will use <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">func</span></code> which will allow us
+to define a weighting function. The plots below show the before and after of applying a set of time weights before scrunching in
+time to form a spectra of stokes I.</p>
+<a class="reference internal image-reference" href="../_images/spec_before_W.png"><img alt="../_images/spec_before_W.png" src="../_images/spec_before_W.png" style="width: 720pt;" /></a>
+<a class="reference internal image-reference" href="../_images/spec_after_W.png"><img alt="../_images/spec_after_W.png" src="../_images/spec_after_W.png" style="width: 720pt;" /></a>
+<p>We can be a little more creative with how we define our weights. Lets define a function based on the posterior of our time
+series profile we fitted before.</p>
+</section>
 </section>
 
 
@@ -167,7 +182,7 @@ the stats of the modelling.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="_1.html" class="btn btn-neutral float-left" title="Using ILEX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../_autosummary/ilex.html" class="btn btn-neutral float-right" title="ilex" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="_3.html" class="btn btn-neutral float-right" title="Using the FRB.yaml config file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

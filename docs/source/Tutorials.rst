@@ -8,3 +8,5 @@ The following tutorials will go through using ILEX.
 
    Using ILEX <Tutorials/_1>
    Advanced ILEX <Tutorials/_2>
+   ILEX config <Tutorials/_3>
+   ILEX scripts <Tutorials/_4>

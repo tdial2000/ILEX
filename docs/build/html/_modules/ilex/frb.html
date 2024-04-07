@@ -217,8 +217,8 @@
 <span class="sd">        Cropped time array [ms]</span>
 <span class="sd">    verbose: bool </span>
 <span class="sd">        Enable logging</span>
-<span class="sd">    force: bool </span>
-<span class="sd">        En-force use of any loaded cropped data regardless of parameter differences</span>
+<span class="sd">    force_reload: bool </span>
+<span class="sd">        force reloading of data, if set to False and no parameters have been changed, the data will be reused, by default is True</span>
 <span class="sd">    savefig: bool </span>
 <span class="sd">        Save all created figures to files</span>
 <span class="sd">    pcol: str </span>
@@ -248,7 +248,8 @@
                        <span class="n">t_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>               <span class="n">f_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>           <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                        <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>                 <span class="n">t_lim</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_lim&#39;</span><span class="p">],</span>   <span class="n">f_lim</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f_lim&#39;</span><span class="p">],</span>
                        <span class="n">RM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">],</span>      <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>  <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span>
-                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">hp</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">],</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">],</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yaml_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                       <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">hp</span><span class="p">[</span><span class="s1">&#39;verbose&#39;</span><span class="p">],</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">],</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">],</span> 
+                       <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;df&#39;</span><span class="p">],</span>      <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>        <span class="n">yaml_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create FRB instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -256,9 +257,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">par</span> <span class="o">=</span> <span class="n">FRB_params</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="n">RA</span> <span class="o">=</span> <span class="n">RA</span><span class="p">,</span> <span class="n">DEC</span> <span class="o">=</span> <span class="n">DEC</span><span class="p">,</span> 
                               <span class="n">DM</span> <span class="o">=</span> <span class="n">DM</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="n">bw</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="n">cfreq</span><span class="p">,</span>
                               <span class="n">t_lim</span> <span class="o">=</span> <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span> <span class="o">=</span> <span class="n">f_lim</span><span class="p">,</span> 
-                              <span class="n">RM</span> <span class="o">=</span> <span class="n">RM</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">dt</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+                              <span class="n">RM</span> <span class="o">=</span> <span class="n">RM</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prev_par</span> <span class="o">=</span> <span class="n">FRB_params</span><span class="p">(</span><span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
@@ -310,7 +309,7 @@
         <span class="c1"># set verbose</span>
         <span class="n">set_verbose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">force</span> <span class="o">=</span> <span class="kc">False</span>              <span class="c1"># Force use of Parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_reload</span> <span class="o">=</span> <span class="kc">True</span>        <span class="c1"># Force use of Parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">savefig</span> <span class="o">=</span> <span class="kc">False</span>            <span class="c1"># save figures instead of plotting them</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;cyan&#39;</span>              <span class="c1"># color for verbose printing</span>
@@ -396,8 +395,6 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>                     <span class="c1"># assumed that dyn spec is [freq,time]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>        
-            <span class="c1"># self.par.df    = self.par.bw / self.par.nchan           # delta freq in (MHz)</span>
-            <span class="c1"># self.par.dt    = 1e-3 / self.par.df                     # delta time in (ms) [micro seconds]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">t_lim</span>  <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">nsamp</span><span class="p">]</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">empty</span> <span class="o">=</span> <span class="kc">False</span>
@@ -615,13 +612,17 @@
 <span class="sd">            0 if failed, 1 if passed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_reload</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;forcing reload of data&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dict_isall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">(),</span> 
-                          <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">())</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">:</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">par2dict</span><span class="p">()):</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;params do not match&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="mi">0</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dict_isall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">(),</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">())</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">force</span><span class="p">:</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span><span class="o">.</span><span class="n">metapar2dict</span><span class="p">()):</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;metaparams do not match&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="mi">0</span>
 
@@ -830,9 +831,16 @@
                                         <span class="n">f_crop</span> <span class="o">=</span> <span class="n">full_par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_tW</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Retrieving Time Weights&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;=======================&quot;</span><span class="p">)</span>
             <span class="n">full_par</span><span class="p">[</span><span class="s1">&#39;tW&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">temp_w_par</span><span class="o">.</span><span class="n">get_times</span><span class="p">())</span>
+            <span class="n">log</span><span class="p">(</span><span class="n">temp_w_par</span><span class="o">.</span><span class="n">tW</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_fW</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Retrieving Freq Weights&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;=======================&quot;</span><span class="p">)</span>
             <span class="n">full_par</span><span class="p">[</span><span class="s1">&#39;fW&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">fW</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">temp_w_par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
+            <span class="n">log</span><span class="p">(</span><span class="n">temp_w_par</span><span class="o">.</span><span class="n">fW</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
 
         <span class="c1"># pass through to backend processing script</span>
         <span class="n">_ds</span><span class="p">,</span> <span class="n">_t</span><span class="p">,</span> <span class="n">_f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span> <span class="o">=</span> <span class="n">master_proc_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> 

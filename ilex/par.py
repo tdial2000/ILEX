@@ -92,8 +92,10 @@ class weights:
         if W is not None:
             if hasattr(W, "__len__"):
                 self.W = W.copy()
-            elif isinstance(self.W, float):
+            elif isinstance(W, float):
                 self.W = W
+            elif isinstance(W, int):
+                self.W = float(W)
             else:
                 log("[W] weights instance attribute must be a float or array-like", stype = "warn")
         
@@ -118,7 +120,7 @@ class weights:
 
 
         if method is not None:
-            if method not in ["interp", "func"]:
+            if method not in ["interp", "func", "None"]:
                 log(f"Invalid Method for Weighting, using {self.method}", stype = "warn")
             else:
                 self.method = method    
@@ -414,7 +416,8 @@ class FRB_params:
                        DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
                        f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],norm: str = "max",
-                       czap = None,                 EMPTY = False):
+                       dt: float = _G.p['dt'],      df: float = _G.p['df'],  czap = None,
+                       EMPTY = False):
 
         # parameters
         self.name   = name              # name of FRB
@@ -438,8 +441,8 @@ class FRB_params:
         self.f_lim  = [cfreq - 0.5*bw, cfreq + 0.5*bw]             # frequency range
 
         # calculate resolutions
-        self.dt     = 1e-3              # delta time in ms
-        self.df     = 1                 # delta frequency in MHz
+        self.dt     = dt                # delta time in ms
+        self.df     = df                # delta frequency in MHz
 
         # dimensions
         self.nchan = None               # number of channels

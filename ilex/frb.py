@@ -141,8 +141,8 @@ class FRB:
         Cropped time array [ms]
     verbose: bool 
         Enable logging
-    force: bool 
-        En-force use of any loaded cropped data regardless of parameter differences
+    force_reload: bool 
+        force reloading of data, if set to False and no parameters have been changed, the data will be reused, by default is True
     savefig: bool 
         Save all created figures to files
     pcol: str 
@@ -172,7 +172,8 @@ class FRB:
                        t_crop = None,               f_crop = None,           tN: int = 1,
                        fN: int = 1,                 t_lim = _G.p['t_lim'],   f_lim = _G.p['f_lim'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
-                       verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], terr_crop = None, yaml_file = None):
+                       verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
+                       df: float = _G.p['df'],      terr_crop = None,        yaml_file = None):
         """
         Create FRB instance
         """
@@ -180,9 +181,7 @@ class FRB:
         self.par = FRB_params(name = name, RA = RA, DEC = DEC, 
                               DM = DM, bw = bw, cfreq = cfreq,
                               t_lim = t_lim, f_lim = f_lim, 
-                              RM = RM, f0 = f0, pa0 = pa0)
-
-        self.par.set_par(dt = 1e-3, df = 1)
+                              RM = RM, f0 = f0, pa0 = pa0, dt = dt, df = df)
 
         self.this_par = self.par.copy()
         self.prev_par = FRB_params(EMPTY = True)
@@ -234,7 +233,7 @@ class FRB:
         # set verbose
         set_verbose(self.verbose)
 
-        self.force = False              # Force use of Parameters
+        self.force_reload = True        # Force use of Parameters
         self.savefig = False            # save figures instead of plotting them
 
         self.pcol = 'cyan'              # color for verbose printing
@@ -318,8 +317,6 @@ class FRB:
 
             self.par.nchan = x.shape[0]                     # assumed that dyn spec is [freq,time]
             self.par.nsamp = x.shape[1]        
-            # self.par.df    = self.par.bw / self.par.nchan           # delta freq in (MHz)
-            # self.par.dt    = 1e-3 / self.par.df                     # delta time in (ms) [micro seconds]
             self.par.t_lim  = [0.0, self.par.dt * self.par.nsamp]
 
             self.empty = False
@@ -524,13 +521,17 @@ class FRB:
             0 if failed, 1 if passed
         """
 
+        if self.force_reload:
+            log("forcing reload of data", stype = "warn")
+            return 0
+
         if not dict_isall(self.prev_par.par2dict(), 
-                          self.this_par.par2dict()) and not self.force:
+                          self.this_par.par2dict()):
             log("params do not match", stype = "warn")
             return 0
         
         if not dict_isall(self.prev_metapar.metapar2dict(),
-                          self.this_metapar.metapar2dict()) and not self.force:
+                          self.this_metapar.metapar2dict()):
             log("metaparams do not match", stype = "warn")
             return 0
 
@@ -739,9 +740,16 @@ class FRB:
                                         f_crop = full_par['f_crop'])
 
         if self.apply_tW:
+            log("Retrieving Time Weights")
+            log("=======================")
             full_par['tW'] = self.par.tW.get_weights(x = temp_w_par.get_times())
+            log(temp_w_par.tW, lpf = False)
         if self.apply_fW:
+            log("Retrieving Freq Weights")
+            log("=======================")
             full_par['fW'] = self.par.fW.get_weights(x = temp_w_par.get_freqs())
+            log(temp_w_par.fW, lpf = False)
+
 
         # pass through to backend processing script
         _ds, _t, _f, self._freq = master_proc_data(self.ds, freqs, 

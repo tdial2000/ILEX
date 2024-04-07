@@ -98,14 +98,6 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
 
 
-    ## weight ##    
-    log(f"Applying Freq Weights = {fw_flag}", lpf = False)
-    log(f"Applying Time Weights = {tw_flag}", lpf = False)
-    stk_ds = _weight(stk = stk, stk_ds = stk_ds, stk_list = stk_list, 
-                    par = par, err = err_flag)
-
-
-
     ## normalise ##
     log(f"Applying normalisation = {par['norm']}", lpf = False)
     stk_ds = _normalise(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
@@ -124,41 +116,61 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
                                 freq = freq, par = par, err = err_flag)
 
     
-
     ## average ##
     log(f"Applying Time Averaging = {par['tN']}", lpf = False)
     log(f"Applying Freq Averaging = {par['fN']}", lpf = False)
     stk_ds = _average(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
                     par = par, err = err_flag)
 
+
+
     # also average freq array
     freq = average(freq, N = par['fN'])
 
-        
 
     ## ========================= ##
     ## SAVING DATA TO CONTAINERS ##
     ## ========================= ## 
     for S in stk_list:
-        # dynamic spectra
+
+
+
+
+        #------ dynamic spectra -------#
         if S in ds_list:
             _ds[S] = stk_ds[S].copy()
-        
-        # time series
+
+
+
+
+
+
+        #------- time series -------#
         if S in t_list:
-            _t[S] = np.mean(stk_ds[S], axis = 0)
+            _t[S] = _scrunch(stk_ds[S], xtype = "t", W = _average_weight(par['fW'], par['fN']))
             if err_flag:
+
                 # for time series error, can average both t and f
-                err_ds = average(stk_ds[f"{S}err"], axis = 0, N = par['fN'])
+                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'])
                 err_ds = average(err_ds, axis = 1, N = par['tN'])
+                # err_ds = f_weight(err_ds, _average_weight(par['fW'], par['fW']))
                 _t[f"{S}err"] = _time_err(err_ds)
+
+
+
+
+
+
+
+
 
         #freq spectra
         if S in f_list:
-            _f[S] = np.mean(stk_ds[S], axis = 1)
+            _f[S] = _scrunch(stk_ds[S], xtype = "f", W = _average_weight(par['tW'], par['tN']))
             if err_flag:
                 # for freq error, best to not avearge in time
-                err_ds = average(stk_ds[f"{S}err"], axis = 0, N = par['fN'])
+                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'])
+                # err_ds = t_weight(err_ds, par['tW'])
                 _f[f"{S}err"] = _freq_err(err_ds, par['t_crop'], par['terr_crop'])
         
         # del temp data
@@ -175,7 +187,19 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
 
 
-
+def _average_weight(W, N):
+    
+    if W is None:
+        return None
+    
+    if np.isscalar(W):
+        return W
+    
+    if hasattr(W, "__len__"):
+        return average(x = W, N = N)
+    
+    print("Someting went wrong with averaging weights!!")
+    return None
 
 
 
@@ -188,14 +212,19 @@ def _proc_par(par):
     Further process parameters
     """
 
+    # defaults
+    def_m = deepcopy(_G.p)
+    for key in ["tW", "fW"]:    # add extra params
+        def_m[key] = None
+
     # check if any are missing
     keys = par.keys()
-    parkeys = _G.p.keys()
+    parkeys = def_m.keys()
     metaparkeys = _G.mp.keys()
 
     for pk in parkeys:
         if pk not in keys:
-            par[pk] = _G.p[pk]
+            par[pk] = def_m[pk]
     for mpk in metaparkeys:
         if mpk not in keys:
             par[mpk] = _G.mp[mpk]
@@ -276,6 +305,21 @@ def _crop(stk, stk_ds, stk_list, par, err = False):
     
     return stk_ds
 
+
+
+def _scrunch(x, xtype = "t", W = None):
+    """
+    scrunch data with either a box car or weights
+
+    
+    """
+
+    if xtype == "t":    # if i'm making a time array, weight freqs
+        return np.mean(f_weight(x, W), axis = 0) 
+    
+    elif xtype == "f":  # if i'm making a freq array, weight times
+        return np.mean(t_weight(x, W), axis = 1)
+    
 
 
 

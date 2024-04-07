@@ -24,21 +24,11 @@ import os
 from .fitting import (lorentz, scatt_pulse_profile, scat,
                        gaussian, model_curve)
 
+from .globals import c
+
 from .data import *
 # constants
-c = 2.997924538e8 # Speed of light [m/s]
 default_col = plt.rcParams['axes.prop_cycle'].by_key()['color']
-
-
-def plot_help():
-    help_path = os.path.join(os.environ['ILEX_PATH'],"help/plot_help.txt")
-    with open(help_path, 'r') as f:
-        help_string = f.read()
-
-    print(help_string)
-
-    return
-
 
 #--------------------#
 # to set up as global set func
@@ -96,8 +86,8 @@ def _data_from_dict(dic, keys):
 
 
 
-def _plot_err_as_lines(x, y, err, ax, col = 'k', linestyle = ''):
-
+def _plot_err_as_lines(x, y, err, ax, col = 'k', linestyle = '', **kwargs):
+    ax.scatter(x, y, c = col, s = 6, **kwargs)
     ax.errorbar(x, y, yerr = err, linestyle = linestyle, ecolor = col, 
                 alpha = 0.5)
 
@@ -105,21 +95,21 @@ def _plot_err_as_lines(x, y, err, ax, col = 'k', linestyle = ''):
 
 
 
-def _plot_err_as_regions(x, y, err, ax, col = 'k'):
-    ax.plot(x, y, color = col)
+def _plot_err_as_regions(x, y, err, ax, col = 'k', **kwargs):
+    ax.plot(x, y, color = col, **kwargs)
     ax.fill_between(x, y-err, y+err, color = col, alpha = 0.5,
                     edgecolor = None)
 
     return
 
 
-def _plot_err(x, y, err, ax, col = 'k', linestyle = '', plot_type = "lines"):
+def _plot_err(x, y, err, ax, col = 'k', linestyle = '', plot_type = "lines", **kwargs):
 
     if plot_type == "lines":
-        _plot_err_as_lines(x, y, err, ax, col = col, linestyle = linestyle)
+        _plot_err_as_lines(x, y, err, ax, col = col, linestyle = linestyle, **kwargs)
     
     elif plot_type == "regions":
-        _plot_err_as_regions(x, y, err, ax, col = col)
+        _plot_err_as_regions(x, y, err, ax, col = col, **kwargs)
     
     return
 
@@ -450,11 +440,12 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
     ----------
     dat : Dict(np.ndarray)
         Dictionary of stokes data, can include any data products but must include the following: \n
-        [I] - Stokes I data \n
-        [Q] - Stokes Q data \n
-        [U] - Stokes U data \n
-        [V] - Stokes V data \n
-        [Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True
+        [<x>I] - Stokes I data \n
+        [<x>Q] - Stokes Q data \n
+        [<x>U] - Stokes U data \n
+        [<x>V] - Stokes V data \n
+        [<x>Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True \n
+        where <x> is either 't' for time and 'f' for freq
     plot_L : bool, optional
         Plot stokes L instead of Q and U, by default False
     Ldebias : bool, optional
@@ -504,9 +495,9 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
 
     st = stk_type
 
-    data_list = ["I", "Q", "U", "V", xdat]
+    data_list = [f"{st}I", f"{st}Q", f"{st}U", f"{st}V", xdat]
     if Ldebias:
-        data_list += [f"Ierr"]
+        data_list += [f"{st}Ierr"]
 
     # get data
     pdat, err_flag = _data_from_dict(dat, data_list)
@@ -518,11 +509,12 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
         col = {"I":'k', "L":'r', "V":'b'}
 
         if Ldebias:
-            pdat["L"], pdat["Lerr"] = calc_Ldebiased(pdat['Q'], pdat['U'],
-                                        pdat['Ierr'], pdat['Qerr'], pdat['Uerr'])
+            pdat[f"{st}L"], pdat[f"{st}Lerr"] = calc_Ldebiased(pdat[f"{st}Q"], pdat[f"{st}U"],
+                                        pdat[f'{st}Ierr'], pdat[f'{st}Qerr'], pdat[f'{st}Uerr'])
         else:
-            pdat["L"], pdat["Lerr"] = calc_L(pdat['Q'], pdat['U'], pdat['Qerr'],
-                                        pdat['Uerr'])
+            pdat[f"{st}L"], pdat[f"{st}Lerr"] = calc_L(pdat[f'{st}Q'], pdat[f'{st}U'], pdat[f'{st}Qerr'],
+                                        pdat[f'{st}Uerr'])
+
 
         # update stk2plot
         stk = ""
@@ -536,10 +528,11 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, debias_threshold = 2.0,
 
     # now we are ready to plot stokes data
     for i, S in enumerate(stk2plot):
-        ax.plot(pdat[xdat], pdat[f"{S}"], color = col[S], label = S)
+        main_line, = ax.plot(pdat[xdat], pdat[f"{st}{S}"], color = col[S], label = S)
         if err_flag:
-            _plot_err(pdat[xdat], pdat[f"{S}"], pdat[f"{S}err"], ax = ax, col= col[S],
-             plot_type = plot_err_type)
+            main_line.remove()
+            _plot_err(pdat[xdat], pdat[f"{st}{S}"], pdat[f"{st}{S}err"], ax = ax, col= col[S],
+             plot_type = plot_err_type, label = S)
     
     ax.legend()
 

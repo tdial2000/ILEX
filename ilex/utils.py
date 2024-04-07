@@ -15,6 +15,7 @@ import numpy as np
 from .globals import _G
 from copy import deepcopy
 from .logging import log
+import yaml, os
 
 
 # empty structure
@@ -343,6 +344,52 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
 
 
 
+def load_param_file(param_file):
+    """
+    Load in param file and compare with default params file
+
+    Parameters
+    ----------
+    param_file : str
+        parameter file to load in
+    
+    Returns
+    -------
+    params : Dict
+        parameters, compared with defaults
+    """
+
+    # open param file
+    with open(param_file) as file:
+        pars = yaml.safe_load(file)
+
+    # open default param file
+    with open(os.path.join(os.environ['ILEX_PATH'], "files/default.yaml")) as deffile:
+        def_pars = yaml.safe_load(deffile)
+    
+    # initialise defaults in pars
+    def _init_pars(p, d):
+        """
+        p : pars
+        d : default pars
+        """
+
+        for key in d.keys():
+            if key not in p.keys():
+                if hasattr(d[key], '__len__'):
+                    p[key] = deepcopy(d[key])
+                else:
+                    p[key] = d[key]
+            
+            else:
+                # check if dict instance
+                if isinstance(d[key], dict):
+                    _init_pars(p[key], d[key])
+
+    
+        return p
+    
+    return _init_pars(pars, def_pars)
 
 
 

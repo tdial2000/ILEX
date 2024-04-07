@@ -10,6 +10,7 @@ Quickly plot Dynamic spectra
 Quickly plot dynamic spectrum
 
 .. code-block:: console
+    
     python3 plot_dynspec.py filepath
 
     # options

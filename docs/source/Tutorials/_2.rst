@@ -23,7 +23,7 @@ A quick and dirty method for fitting the time series profile is using the ``leas
     frb.fit_tscatt(method = "least squares", plot = True)
 
 .. image:: 220610_tI_fit1.png
-   :wdith: 720pt
+   :width: 720pt
 
 In most cases, an FRB burst will be more complicated. In which case a more robust method using the ``bayesian``
 toggle is nessesary. To do so, priors need to be given.
@@ -134,7 +134,7 @@ We can be a little more creative with how we define our weights. Lets define a f
 series profile we fitted before.
 
 .. code-block:: python
-    
+
     # import function to make scattering pulse function
     from ilex.fitting import make_scatt_pulse_profile_func
 

@@ -104,6 +104,7 @@
 <span class="n">frb</span><span class="o">.</span><span class="n">fit_tscatt</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;least squares&quot;</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<a class="reference internal image-reference" href="../_images/220610_tI_fit1.png"><img alt="../_images/220610_tI_fit1.png" src="../_images/220610_tI_fit1.png" style="width: 720pt;" /></a>
 <p>In most cases, an FRB burst will be more complicated. In which case a more robust method using the <code class="docutils literal notranslate"><span class="pre">bayesian</span></code>
 toggle is nessesary. To do so, priors need to be given.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># priors</span>
@@ -170,10 +171,36 @@ can be used to respectivley weight data in time when making spectra, or weight d
 <code class="docutils literal notranslate"><span class="pre">weights</span></code> class found in <code class="docutils literal notranslate"><span class="pre">ilex.par</span></code> has many methods for making weights, we will use <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">func</span></code> which will allow us
 to define a weighting function. The plots below show the before and after of applying a set of time weights before scrunching in
 time to form a spectra of stokes I.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># lets make a simple scalar weight that multiplies the samples in time</span>
+<span class="c1"># by -1 so we can see it works</span>
+<span class="c1"># lets plot the before and after</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;fI&quot;</span><span class="p">)</span>     <span class="c1"># before</span>
+
+<span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;fI&quot;</span><span class="p">)</span>     <span class="c1"># after</span>
+<span class="c1"># NOTE: the None method is used to specify we want to take the values weights.W as</span>
+<span class="c1"># the weights</span>
+</pre></div>
+</div>
 <a class="reference internal image-reference" href="../_images/spec_before_W.png"><img alt="../_images/spec_before_W.png" src="../_images/spec_before_W.png" style="width: 720pt;" /></a>
 <a class="reference internal image-reference" href="../_images/spec_after_W.png"><img alt="../_images/spec_after_W.png" src="../_images/spec_after_W.png" style="width: 720pt;" /></a>
 <p>We can be a little more creative with how we define our weights. Lets define a function based on the posterior of our time
 series profile we fitted before.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import function to make scattering pulse function</span>
+<span class="kn">from</span> <span class="nn">ilex.fitting</span> <span class="kn">import</span> <span class="n">make_scatt_pulse_profile_func</span>
+
+<span class="c1"># make scatt function based on number of pulses, in this case 1</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">make_scatt_pulse_profile_func</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># define a dictionary of the posteriors of the fiting</span>
+<span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a1&#39;</span><span class="p">:</span> <span class="mf">0.706</span><span class="p">,</span> <span class="s1">&#39;mu1&#39;</span><span class="p">:</span> <span class="mf">21.546</span><span class="p">,</span> <span class="s1">&#39;sig1&#39;</span><span class="p">:</span> <span class="mf">0.173</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="mf">0.540</span><span class="p">}</span>
+
+<span class="c1"># another method of setting the weights in either time or frequency (xtype)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">profile</span><span class="p">)</span>
+
+<span class="c1"># now weight, The rest is left to you, why not plot it?</span>
+</pre></div>
+</div>
 </section>
 </section>
 

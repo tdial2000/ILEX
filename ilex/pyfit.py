@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 import bilby
 from bilby.core.utils.io import check_directory_exists_and_if_not_mkdir
 import glob, os
+import math
 
 
 #----------------------------------------#
@@ -213,6 +214,8 @@ class fit:
         bic error
     residuals : bool
         if true, plot residuals when .plot() is called
+    plotPosterior : bool
+        if true, save image of posterior corner plot
 
     """
 
@@ -235,6 +238,7 @@ class fit:
         self.prior = {}
         self.static = {}
         self.posterior = {}
+        self.bounds = {}    # for least squares method
         self.keys = []
 
         # stats (general)
@@ -261,6 +265,7 @@ class fit:
         self._is_stats = False
         self._is_fit = False
         self.residuals = True
+        self.plotPosterior = True
 
 
 
@@ -387,7 +392,7 @@ class fit:
         """
 
         # check if the right attr types
-        for pkey in ["prior", "static", "posterior"]:
+        for pkey in ["prior", "static", "posterior", "bounds"]:
             if type(getattr(self, pkey)) != dict:
                 print(f"[fit]: {pkey} is not of type 'dict'")
                 return 0
@@ -397,7 +402,7 @@ class fit:
             return 0
 
         # check if keys of priors, statics and posteriors match
-        full_keys = list(_merge_dicts(self.posterior, self.prior, self.static).keys())
+        full_keys = list(_merge_dicts(self.posterior, self.prior, self.static, self.bounds).keys())
         for key in self.keys:
             if key not in full_keys:
                 full_keys += [key]
@@ -424,6 +429,12 @@ class fit:
         self.prior = _if_no_key_set_none(self.prior, full_keys)
         self.posterior = _if_no_key_set_none(self.posterior, full_keys)
         self.static = _if_no_key_set_none(self.static, full_keys)
+
+        # set bounds
+        for key in full_keys:
+            if key not in self.bounds.keys():
+                self.bounds[key] = [-math.inf, math.inf]
+
         self.keys = full_keys
     
         return 1
@@ -464,9 +475,19 @@ class fit:
                 
             # check
             else:
-                if not isinstance(self.prior[key], typ):
-                    print(f"[fit]: prior [{key}] = {self.prior[key]} must be of type '{typ}' for '{self.method}' fitting method")
-                    return 0
+
+                if self.method == "least squares":
+                    if isinstance(self.prior[key], list):
+                        print(f"Converting bounds of least squares parameter {key} to median prior")
+                        self.bounds[key] = self.prior[key].copy()
+                        self.prior[key] = (self.prior[key][1] - self.prior[key][0])/2 + self.prior[key][0]
+                    if not isinstance(self.prior[key], float):
+                        print(f"[fit]: prior [{key}] = {self.prior[key]} must be of type 'float' for '{self.method}' fitting method")
+                        return 0
+                if self.method == "bayesian":
+                    if not isinstance(self.prior[key], list):
+                        print(f"[fit]: prior [{key}] = {self.prior[key]} must be of type 'list' for '{self.method}' fitting method")
+                        return 0
 
         # passed
         return 1
@@ -552,7 +573,7 @@ class fit:
         if model_vals is None:
             return None
 
-        return self.func(self.x, **model_vals)
+        return self.x, self.func(self.x, **model_vals)
 
 
     
@@ -592,6 +613,52 @@ class fit:
         
         return _vals
 
+
+    def get_mean_err(self, func = True):
+        """
+        Get mean errors of posterior
+
+        Parameters
+        ----------
+        func : bool, optional
+            if true, retrieve errors of posteriors defined in function
+
+        Returns
+        -------
+        _errs : dict
+            dictionary of errors for posteriors
+
+        """
+        # check attributes
+        if not self._check_attr():
+            return
+
+        self._check_params_keys()
+
+        # check if posteriors valid
+        func_keys = self._get_func_args()
+
+        for key in func_keys:
+            if self.posterior[key] is None:
+                print(f"[fit] '{key}' posterior must be valid to plot model")
+                return None
+            elif not isinstance(self.posterior[key], _posterior):
+                print(f"[fit] '{key}' posterior is of wrong type, must be of type '_posterior', something went wrong")
+                return None
+
+        args = self.keys
+
+        if func:
+            args = self._get_func_args()
+
+        _errs = {}
+        for key in args:
+            if self.posterior[key] is None:
+                _errs[key] = None
+            else:
+                _errs[key] = (abs(self.posterior[key].p) + abs(self.posterior[key].m))/2
+        
+        return _errs
 
 
 
@@ -634,6 +701,11 @@ class fit:
         ----------
         func : bool
             if true, only retrieve posteriors of parameters of function to be modelled, default is True
+
+        Returns
+        -------
+        posteriors : dict
+            Dictionary of posterior median/mean best values
         """
 
         if not self._check_params_keys():
@@ -707,13 +779,16 @@ class fit:
         for i, key in enumerate(keys):
             self.posterior[key] = _posterior(val[i], err[i], err[i])
         
-        return
+       
 
         # set statics to posterior
         func_args = self._get_func_args()
         for key in func_args:
             if self.static[key] is not None:
-                self.posterior[key] = _posterior(self.static[key])
+                self.posterior[key] = _posterior(self.static[key]) 
+                
+            
+        return
         
     
 
@@ -847,17 +922,18 @@ class fit:
         # fit using least squares
         if self.method == "least squares":
 
-            # convert prior dict to list in order!
+            # convert prior dict to list in order! convert bounds to curve_fit bounds
             priors_list = []
+            b_min, b_max = [], []
             for key in inspect.getargspec(func_wrap)[0][1:]:
-                priors_list += [priors_wrap[key]]
+                priors_list += [priors_wrap[key]]                
+                b_min += [self.bounds[key][0]]
+                b_max += [self.bounds[key][1]]
 
             _val, _err = curve_fit(func_wrap, self.x, self.y, p0 = priors_list, 
-                                    sigma = self.yerr, **self.fit_keywords)
+                                    sigma = self.yerr, bounds = (b_min, b_max), **self.fit_keywords)
 
             self._curve_fit2posterior(_val, _err, inspect.getargspec(func_wrap)[0][1:])
-
-
 
 
         # fit using bilby bayesian inference
@@ -873,21 +949,26 @@ class fit:
                     label = self.fit_keywords["label"]
                 _clean_bilby_run(outdir, label)
 
+
+            keys = inspect.getargspec(func_wrap)[0][1:]
+            bil_priors = _dict_get(priors, keys)
+
                 
             # init likelihood function
             likelihood = bilby.likelihood.GaussianLikelihood(self.x, self.y, func_wrap,
                                         sigma = self.yerr)
             
             # run sampler
-            result_ = bilby.run_sampler(likelihood = likelihood, priors = _priorUniform(priors),
+            result_ = bilby.run_sampler(likelihood = likelihood, priors = _priorUniform(bil_priors),
                                     **self.fit_keywords)
 
             # get posteriors
             self._results2posterior(result_)
 
             # plot bilby outputs for diagnostic purposes
-            result_.plot_with_data(func_wrap, self.x, self.y)
-            result_.plot_corner()
+            if self.plotPosterior:
+                result_.plot_with_data(func_wrap, self.x, self.y)
+                result_.plot_corner()
 
 
         # last stats to save 
@@ -935,7 +1016,7 @@ class fit:
         self.dof = self.y.size - self.nfitpar
 
         # calculate chi squared and reduced chi squared
-        self.chi2 = np.sum((self.y - self.get_model())**2/(sigma**2))
+        self.chi2 = np.sum((self.y - self.get_model()[1])**2/(sigma**2))
         self.rchi2 = self.chi2/self.dof
 
         # calculate errors in chi squared and reduced chi squared
@@ -1018,10 +1099,17 @@ class fit:
 
         Parameters
         ----------
+        show : bool, optional
+            if true, display plot 
         filename : str
             name of output image file, default is None
         **ax_kw : Dict
             keyword parameters for plotting
+
+        Returns
+        -------
+        fig : plt._figure_
+            figure instance
         """
 
         if not self._is_fit:
@@ -1034,7 +1122,7 @@ class fit:
 
         # now plot, create axis
         fig, AX = plt.subplots(rows, 1, figsize = (12, 10), 
-                    num = f"Figure model: {self.func.__name__}")
+                    num = f"Figure model: {self.func.__name__}", sharex = True)
 
         if self.residuals:
             AX = AX.flatten()
@@ -1052,7 +1140,7 @@ class fit:
         AX[0].scatter(self.x, self.y, c = 'k', s = 10)
 
         # plot model
-        y_fit = self.get_model()
+        _, y_fit = self.get_model()
         if y_fit is None:
             return
         AX[0].plot(self.x, y_fit, color = 'orchid', linewidth = 3)

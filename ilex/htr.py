@@ -19,6 +19,7 @@ from scipy.fft import fft, ifft, next_fast_len
 import sys, os
 from .data import rotate_data, average
 from math import ceil
+from .globals import *
 
 
 
@@ -169,19 +170,25 @@ Stk_Func = {"I":stk_I, "Q":stk_Q, "U":stk_U, "V":stk_V}
 
 def make_ds(xpol, ypol, S = "I", nFFT = 336):
     """
-    Info:
-        Make Stokes Dynamic spectra with specified stft length 
+    Make dynamic spectra from complex X, Y polarisation time series arrays
 
-    Args:
-        xpol (mmap): X polarisation
-        ypol (mmap): Y polarisation
-        stokes (str): Stokes dynspec to make
-        nFFT (int): Number of channels 
+    Parameters
+    ----------
+    xpol : np.ndarray or array-like
+        X time series polarisation data
+    ypol : np.ndarray or array-like
+        Y time series polarisation data
+    S : str, optional
+        type of Stokes dynamic spectra to make, options are ['I', 'Q', 'U', 'V'], by default "I"
+    nFFT : int, optional
+        number of frequency channels in final dynamic spectrum, by default 336
 
-    Returns:
-        ds (ndarray): Raw Dynamic spectrum
+    Returns
+    -------
+    ds: np.ndarray
+        dynamic spectrum
+    """    
 
-    """
     prog_str = f"[Stokes] = {S} with [nFFT] = {nFFT}"
 
     Stk_Func = {"I":stk_I, "Q":stk_Q, "U":stk_U, "V":stk_V}
@@ -238,23 +245,31 @@ def make_ds(xpol, ypol, S = "I", nFFT = 336):
 
 def pulse_fold(ds, DM, cfreq, bw, MJD0, MJD1, F0, F1, sphase = None):
     """
-    Info:
-        Takes Pulsar dynamic spectrum and folds it, removes periods
-        at far left and right sides to avoid band artifacts produced during
-        de-dispersion.
+    Takes Pulsar dynamic spectrum and folds it, removes periods
+    at far left and right sides to avoid band artifacts produced during
+    de-dispersion.
 
-    Args:
-        ds (ndarray): dynamic spectrum
-        MJD0 (float): Initial Epoch MJD
-        MJD1 (float): Observation MJD
-        F0 (float): initial Epoch Frequency period
-        F1 (float): Spin-down rate
-        sphase (float): Starting phase of folding, if not given
-                        will be estimated (best done using "I" ds)
+    Parameters
+    ----------
+    ds : np.ndarray or array-like 
+        dynamic spectrum
+    MJD0 : float
+        Initial Epoch MJD
+    MJD1 : float
+        Observation MJD
+    F0 : float 
+        initial Epoch Frequency period
+    F1 : float 
+        Spin-down rate
+    sphase : float 
+        Starting phase of folding, if not given will be estimated (best done using "I" ds)
 
-    Returns:
-        ds_f (ndarray): Raw folded Dynamic spectra
-        sphase (float): Starting phase of folding from original dynspec
+    Returns
+    -------
+    ds_f : np.ndarray 
+    Raw folded Dynamic spectra
+    sphase : float
+    Starting phase of folding from original dynspec
 
     """
     print("Pulse Folding Dynspec...")
@@ -322,24 +337,32 @@ def pulse_fold(ds, DM, cfreq, bw, MJD0, MJD1, F0, F1, sphase = None):
 def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0, 
                         baseline: float = 50.0, tN: int = 50, rbounds = None):
     """
-    Info:
-        Get baseline corrections to the Dynamic spectra data
+    Get baseline corrections to the Dynamic spectra data
 
-    Args:
-        ds (ndarray): Dynamic spectra
-        sigma (float): S/N threshold for bounds
-        guard (float): Time in [ms] between rough bounds and rms crop region
-        baseline (float): Width of buffer in [ms] to estimate baseline
-                          correction
-        tN (int): Time Averaging factor for Dynamic spectrum, helps with
-                    S/N calculation.
-        rbounds (list): Bounds of FRB burst, if Unspecified, the code will do a rough S/N
-                        calculation to determine a bursts bounds
+    Parameters
+    ----------
+    ds : np.ndarray or array-like 
+        Dynamic spectra
+    sigma : float 
+        S/N threshold for bounds
+    guard : float 
+        Time in [ms] between rough bounds and rms crop region
+    baseline : float 
+        Width of buffer in [ms] to estimate baseline correction
+    tN : int 
+        Time Averaging factor for Dynamic spectrum, helps with S/N calculation.
+    rbounds : list 
+        Bounds of FRB burst, if Unspecified, the code will do a rough S/N calculation 
+        to determine a bursts bounds
 
-    Returns: 
-        bs_mean (ndarray): Baseline mean
-        bs_std (ndarray): Baseline std
-        rbounds (ndarray): Bounds of FRB burst in Phase units
+    Returns
+    -------
+    bs_mean : np.ndarray or array-like 
+        Baseline mean
+    bs_std : np.ndarray or array-like 
+        Baseline std
+    rbounds : np.ndarray or array-like 
+        Bounds of FRB burst in Phase units
 
     """      
 

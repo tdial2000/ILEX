@@ -1,8 +1,8 @@
 data:  # file paths for stokes dynamic spectra
-  dsI: "220610_dsI.npy"
-  dsQ: "220610_dsQ.npy"
-  dsU: "220610_dsU.npy"
-  dsV: "220610_dsV.npy"
+  dsI: "examples/220610_dsI.npy"
+  dsQ: "examples/220610_dsQ.npy"
+  dsU: "examples/220610_dsU.npy"
+  dsV: "examples/220610_dsV.npy"
 
 par:   # parameters
   name:   "FRB220610"
@@ -34,7 +34,7 @@ hyperpar:   # hyperparameters
   verbose:        True
   force:          False
   savefig:        False
-  plot_err_type:  "regions"
+  plot_type:  "regions"
   residuals:      True
   plotPosterior:  True
 
@@ -44,7 +44,7 @@ hyperpar:   # hyperparameters
 # Additional Script options #
 
 plots:
-  plot_err_type:    "regions"
+  plot_type:    "regions"
 
   # plotting stokes data
   plot_L:           False

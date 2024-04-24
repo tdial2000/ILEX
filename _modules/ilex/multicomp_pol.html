@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.multicomp_pol &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.multicomp_pol</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.multicomp_pol</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 21/01/2024 </span>
+<span class="c1">##</span>
+<span class="c1">## Multi-component polarisation functions</span>
+<span class="c1">## PA, RM</span>
+<span class="c1">## </span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## imports </span>
+<span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>         <span class="c1"># data functions</span>
+<span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="o">*</span>      <span class="c1"># fitting functions</span>
+<span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="o">*</span>         <span class="c1"># plotting functions</span>
+<span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>    <span class="c1"># logging</span>
+<span class="kn">from</span> <span class="nn">.master_proc</span> <span class="kn">import</span> <span class="n">_proc_par</span><span class="p">,</span> <span class="n">master_proc_data</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">plotnum2grid</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="c1"># plotting params</span>
+<span class="n">default_col</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.prop_cycle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">by_key</span><span class="p">()[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+
+
+<span class="c1"># NOTE:</span>
+<span class="c1"># in the case of using the ilex interface and t_lim[0] is something other than 0.0,</span>
+<span class="c1"># then this functions x axis in time won&#39;t be accurate</span>
+
+<div class="viewcode-block" id="multicomp_PA">
+<a class="viewcode-back" href="../../_autosummary/ilex.multicomp_pol.html#ilex.multicomp_pol.multicomp_PA">[docs]</a>
+<span class="k">def</span> <span class="nf">multicomp_PA</span><span class="p">(</span><span class="n">stk</span><span class="p">,</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">par</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fcrops</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multicomponent Polarisation, does full RM fitting and PA plotting/spectra plotting for each</span>
+<span class="sd">    component specified by tcrops and fcrops</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stk : dict</span>
+<span class="sd">        Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra \n</span>
+<span class="sd">        [I] - Stokes I \n</span>
+<span class="sd">        [Q] - Stokes Q \n</span>
+<span class="sd">        [U] - Stokes U \n</span>
+<span class="sd">        [V] - Stokes V</span>
+<span class="sd">    freqs : ndarray</span>
+<span class="sd">        Full Frequency array [MHz]</span>
+<span class="sd">    method : str </span>
+<span class="sd">        Method for RM fitting \n</span>
+<span class="sd">        [RMquad] - Use Quadratic function and Scipy.curve_fit \n</span>
+<span class="sd">        [RMsynth] - Use RM synthesis from [RMtools] from CIRCADA [https://github.com/CIRADA-Tools/RM-Tools]</span>
+<span class="sd">    Ldebias_threshold : float </span>
+<span class="sd">        Threshold for Debiased linear fraction in PA masking</span>
+<span class="sd">    dt : float </span>
+<span class="sd">        Time resolution in [ms] of stk data</span>
+<span class="sd">    plot_L: bool, optional</span>
+<span class="sd">        Plot Linear Polarisation instead of Stokes Q and U, by default False</span>
+<span class="sd">    tcrops : list</span>
+<span class="sd">        List of Time phase limits for each component</span>
+<span class="sd">    fcrops : list</span>
+<span class="sd">        List of Freq phase limits for each component</span>
+<span class="sd">    par : dict</span>
+<span class="sd">        List of parameters for data processing, see master_proc_data() in master_proc() for a list of params</span>
+<span class="sd">    plot_L : bool</span>
+<span class="sd">        Plot Linear Fraction (L) instead of stokes Q and U</span>
+<span class="sd">    filename : str </span>
+<span class="sd">        Save plots to files with a common prefix</span>
+<span class="sd">    flipPA : bool, optional</span>
+<span class="sd">        Plot PA from [0, 180] instead of [-90, 90], by default False</span>
+<span class="sd">    ncols : number of colums when plotting a grid of different RM fitted components</span>
+<span class="sd">    **kwargs: Dict</span>
+<span class="sd">        Keyword arguments for fitting processes (see method for RM fitting)</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if tcrops and fcrops are same length</span>
+    <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify time and/or freq crops for each component&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="k">elif</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fcrops</span><span class="p">):</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;number of time and freq crops must be equal&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>    
+            <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
+
+    <span class="c1"># initialise par</span>
+    <span class="n">par</span> <span class="o">=</span> <span class="n">_proc_par</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+
+    <span class="c1"># initialise crops</span>
+    <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tcrops</span> <span class="o">=</span> <span class="p">[</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fcrops</span> <span class="o">=</span> <span class="p">[</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
+        
+    
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting PA for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span><span class="si">}</span><span class="s2"> components&quot;</span><span class="p">)</span>
+
+    <span class="c1"># check if error time crop is given</span>
+    <span class="k">if</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify Time phase crop for estimating off-pulse errors&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
+    
+
+    <span class="c1"># initialise useful parameters</span>
+    <span class="n">ncomps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>                    <span class="c1"># number of components</span>
+    <span class="n">tMAX</span> <span class="o">=</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">stk</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>           <span class="c1"># amount of time across htr data</span>
+
+
+    <span class="c1"># initialise containers</span>
+    <span class="n">RM</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncomps</span>
+    <span class="n">RM_err</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncomps</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="p">[</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">]]</span> <span class="o">*</span> <span class="n">ncomps</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ncomps</span>
+    <span class="n">PA</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">PA_err</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="c1"># RM parameters</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting RM to Quadratic function&quot;</span><span class="p">)</span>
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fQ&#39;</span><span class="p">,</span> <span class="s1">&#39;fU&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RMsynth&quot;</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting RM using RM synthesis&quot;</span><span class="p">)</span>
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;fI&quot;</span><span class="p">,</span> <span class="s2">&quot;fQ&quot;</span><span class="p">,</span> <span class="s2">&quot;fU&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Invalid method for RM fitting&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span> <span class="o">*</span> <span class="mi">3</span>
+
+
+    <span class="c1"># create figure to plot RM fits</span>
+    <span class="n">fig_RM</span><span class="p">,</span> <span class="n">AX_RM</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="o">*</span><span class="n">plotnum2grid</span><span class="p">(</span><span class="n">ncols</span> <span class="o">=</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">ncomps</span><span class="p">),</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">14</span><span class="p">))</span>
+    <span class="n">AX_RM</span> <span class="o">=</span> <span class="n">AX_RM</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+
+    <span class="c1">#-------------#</span>
+    <span class="c1"># FIT FOR RM  #</span>
+    <span class="c1">#-------------#                  </span>
+
+    <span class="c1"># loop over components and fit RM</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t_crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
+
+        <span class="c1"># update tcrop and fcrop</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># get data</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_f</span><span class="p">,</span> <span class="n">_freq</span> <span class="o">=</span> <span class="n">master_proc_data</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="n">data_list</span><span class="p">,</span> 
+                                <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">:</span>
+            <span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">RM_err</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pa0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">fit_RMquad</span><span class="p">(</span><span class="n">Q</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">U</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> 
+                                                <span class="n">Uerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span> <span class="n">f</span> <span class="o">=</span> <span class="n">_freq</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RMsynth&quot;</span><span class="p">:</span>
+            <span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">RM_err</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">f0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pa0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fit_RMsynth</span><span class="p">(</span><span class="n">I</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">U</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span>
+                                                    <span class="n">Ierr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">],</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span>
+                                                    <span class="n">f</span> <span class="o">=</span> <span class="n">_freq</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitted RM: </span><span class="si">{</span><span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">RM_err</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># plot RM fit</span>
+        <span class="n">plot_RM</span><span class="p">(</span><span class="n">Q</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">U</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span> 
+                    <span class="n">f</span> <span class="o">=</span> <span class="n">_freq</span><span class="p">,</span> <span class="n">rm</span> <span class="o">=</span> <span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> 
+                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Component </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">ncols</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;PA [deg]&quot;</span><span class="p">)</span>
+            
+    <span class="c1"># remove rest of unused axes</span>
+    <span class="n">gridx</span><span class="p">,</span> <span class="n">gridy</span> <span class="o">=</span> <span class="n">plotnum2grid</span><span class="p">(</span><span class="n">ncols</span> <span class="o">=</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">ncomps</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncomps</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">ncomps</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="n">ncols</span><span class="p">,</span> <span class="n">ncomps</span><span class="p">):</span>
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">),</span><span class="n">gridx</span><span class="o">*</span><span class="n">gridy</span><span class="p">):</span>
+        <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+
+    
+
+
+
+
+
+    <span class="c1">#---------------#</span>
+    <span class="c1"># calc PA       #</span>
+    <span class="c1">#---------------#</span>
+
+    <span class="c1"># create figure</span>
+    <span class="n">fig_PA</span><span class="p">,</span> <span class="n">AX_PA</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot_mosaic</span><span class="p">(</span><span class="s2">&quot;P;S;D&quot;</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
+            <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;height_ratios&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># data list</span>
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">,</span> 
+                       <span class="s2">&quot;tI&quot;</span><span class="p">,</span>  <span class="s2">&quot;tQ&quot;</span><span class="p">,</span>  <span class="s2">&quot;tU&quot;</span><span class="p">,</span> 
+                       <span class="s2">&quot;fQ&quot;</span><span class="p">,</span>  <span class="s2">&quot;fU&quot;</span><span class="p">,</span> <span class="s2">&quot;tV&quot;</span><span class="p">]</span>
+
+
+    <span class="c1"># loop over components and de-rotate then calc PA</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t_crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
+
+        <span class="c1"># update tcrop, fcrop, RM, pa0 and f0</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># get data</span>
+        <span class="n">_ds</span><span class="p">,</span> <span class="n">_t</span><span class="p">,</span> <span class="n">_f</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">master_proc_data</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="n">data_list</span><span class="p">,</span> 
+                                <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">)</span>
+
+        <span class="c1">## calculate PA</span>
+        <span class="n">stk_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dsQ&quot;</span><span class="p">:</span><span class="n">_ds</span><span class="p">[</span><span class="s2">&quot;Q&quot;</span><span class="p">],</span> <span class="s2">&quot;dsU&quot;</span><span class="p">:</span><span class="n">_ds</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="s2">&quot;tQerr&quot;</span><span class="p">:</span><span class="n">_t</span><span class="p">[</span><span class="s2">&quot;Qerr&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;tUerr&quot;</span><span class="p">:</span><span class="n">_t</span><span class="p">[</span><span class="s2">&quot;Uerr&quot;</span><span class="p">],</span> <span class="s2">&quot;tIerr&quot;</span><span class="p">:</span><span class="n">_t</span><span class="p">[</span><span class="s2">&quot;Ierr&quot;</span><span class="p">],</span> <span class="s2">&quot;fQerr&quot;</span><span class="p">:</span><span class="n">_f</span><span class="p">[</span><span class="s2">&quot;Qerr&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;fUerr&quot;</span><span class="p">:</span><span class="n">_f</span><span class="p">[</span><span class="s2">&quot;Uerr&quot;</span><span class="p">]}</span>
+
+        <span class="n">PA_i</span><span class="p">,</span> <span class="n">PA_err_i</span> <span class="o">=</span> <span class="n">calc_PAdebiased</span><span class="p">(</span><span class="n">stk_data</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="n">Ldebias_threshold</span><span class="p">)</span>
+
+
+        <span class="n">_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">tMAX</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">tMAX</span><span class="p">,</span> <span class="n">PA_i</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="c1">## plot PA</span>
+        <span class="n">plot_PA</span><span class="p">(</span><span class="n">_x</span><span class="p">,</span> <span class="n">PA_i</span><span class="p">,</span> <span class="n">PA_err_i</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">],</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="n">flipPA</span><span class="p">)</span>
+
+        <span class="c1">## plot stokes</span>
+        <span class="n">pdat</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span><span class="n">_x</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_t</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_t</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">plot_stokes</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+
+    
+    <span class="c1"># plot full Stokes I dynamic spectrum</span>
+    <span class="n">full_tcrop</span> <span class="o">=</span> <span class="p">[</span><span class="n">tcrops</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">tcrops</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">full_fcrop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+
+    <span class="c1"># update pars</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_tcrop</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_fcrop</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">_ds</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_freq</span> <span class="o">=</span> <span class="n">master_proc_data</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">],</span> 
+                                <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">)</span>
+    
+    <span class="n">t_lim</span> <span class="o">=</span> <span class="p">[</span><span class="n">full_tcrop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">tMAX</span><span class="p">,</span> <span class="n">full_tcrop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">tMAX</span><span class="p">]</span>
+    <span class="n">f_lim</span> <span class="o">=</span> <span class="p">[</span><span class="n">_freq</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">_freq</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">_ds</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">t_lim</span><span class="p">,</span> <span class="o">*</span><span class="n">f_lim</span><span class="p">])</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency [MHz]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
+
+    <span class="c1"># final figure params</span>
+    <span class="n">fig_PA</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">fig_PA</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_legend</span><span class="p">()</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+    <span class="c1"># make legend, use empty lineplots for legend</span>
+    
+    <span class="k">if</span> <span class="n">plot_L</span><span class="p">:</span>
+        <span class="n">leg_s</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">]</span> 
+        <span class="n">col_s</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
+        <span class="n">leg_lines</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span> 
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">leg_s</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">]</span>
+        <span class="n">col_s</span> <span class="o">=</span> <span class="n">default_col</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">leg_lines</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span>
+    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">leg_s</span><span class="p">):</span>
+        <span class="n">leg_lines</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([],[],</span><span class="n">label</span> <span class="o">=</span> <span class="n">lab</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col_s</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">leg_lines</span><span class="p">,</span> <span class="n">leg_s</span><span class="p">)</span>
+
+
+    <span class="c1"># print out infomation</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RM</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RM [</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]= </span><span class="si">{</span><span class="n">RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">RM_err</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">   [rad/m2]&quot;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">fig_PA</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1"># replace with using normal poincare plot multiple times</span>
+<span class="c1"># def multicomp_poincare(stk, freqs, stk_type = &quot;f&quot;, dt = 0.001, par: dict = None, </span>
+<span class="c1">#                         tcrops = None, fcrops = None, filename: str = None, sigma = 2.0, </span>
+<span class="c1">#                         plot_data = True, plot_model = False, plot_on_surface = True, </span>
+<span class="c1">#                         plot_P = False, n = 5, cbar_lims = [0.0, 1.0]):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Plot multiple tracks on Poincare sphere</span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     stk : dict</span>
+<span class="c1">#         Dictionary of memory maps for full STOKES IQUV HTR dynamic spectra \n</span>
+<span class="c1">#         [I] - Stokes I \n</span>
+<span class="c1">#         [Q] - Stokes Q \n</span>
+<span class="c1">#         [U] - Stokes U \n</span>
+<span class="c1">#         [V] - Stokes V</span>
+<span class="c1">#     freqs : ndarray</span>
+<span class="c1">#         Full Frequency array [MHz]</span>
+<span class="c1">#     stk_type : str, optional</span>
+<span class="c1">#         stokes data to plot, by default &quot;f&quot; \n</span>
+<span class="c1">#         [f] - plot stokes data as a function of frequency \n</span>
+<span class="c1">#         [t] - plot stokes data as a function of time</span>
+<span class="c1">#     dt : float, optional</span>
+<span class="c1">#         time resolution in [ms], by default 0.001</span>
+<span class="c1">#     tcrops : list</span>
+<span class="c1">#         List of Time phase limits for each component</span>
+<span class="c1">#     fcrops : list</span>
+<span class="c1">#         List of Freq phase limits for each component</span>
+<span class="c1">#     par : dict</span>
+<span class="c1">#         List of parameters for data processing, see master_proc_data() in master_proc() for a list of params</span>
+<span class="c1">#     filename : str, optional</span>
+<span class="c1">#         filename to save plot to, by default None</span>
+<span class="c1">#     sigma : float, optional</span>
+<span class="c1">#         error threshold when masking stokes/I ratios, by default 2.0</span>
+<span class="c1">#     plot_data : bool, optional</span>
+<span class="c1">#         plot data on Poincare sphere, by default True</span>
+<span class="c1">#     plot_model : bool, optional</span>
+<span class="c1">#         Plot Polynomial fitted model of data on Poincare sphere, by default False</span>
+<span class="c1">#     plot_on_surface : bool, optional</span>
+<span class="c1">#         Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True</span>
+<span class="c1">#     plot_P : bool, optional</span>
+<span class="c1">#         Plot Stokes/P instead of Stokes/I, by default False</span>
+<span class="c1">#     n : int, optional</span>
+<span class="c1">#         Maximum polynomial order for model fitting, by default 5</span>
+<span class="c1">#     cbar_lims : list, optional</span>
+<span class="c1">#         limits of colorbar, by default [0.0, 1.0]</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     fig : figure</span>
+<span class="c1">#         Return figure instance</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+
+<span class="c1">#     # check if tcrops and fcrops are same length</span>
+<span class="c1">#     if tcrops is None and fcrops is None:</span>
+<span class="c1">#         log(&quot;Must specify time and/or freq crops for each component&quot;, stype = &quot;err&quot;)</span>
+<span class="c1">#         return (None,) * 3</span>
+<span class="c1">#     elif tcrops is not None and fcrops is not None:</span>
+<span class="c1">#         if len(tcrops) != len(fcrops):</span>
+<span class="c1">#             log(&quot;number of time and freq crops must be equal&quot;, stype = &quot;err&quot;)    </span>
+<span class="c1">#             return (None,) * 3</span>
+
+<span class="c1">#     # initialise par</span>
+<span class="c1">#     par = _proc_par(par)</span>
+
+<span class="c1">#     if par[&#39;terr_crop&#39;] is None:</span>
+<span class="c1">#         log(&quot;Off-pulse regions needs to be specified&quot;, stype = &quot;err&quot;)</span>
+
+<span class="c1">#     # initialise crops</span>
+<span class="c1">#     if tcrops is None:</span>
+<span class="c1">#         tcrops = [par[&#39;t_crop&#39;]] * len(fcrops)</span>
+        
+<span class="c1">#     if fcrops is None:</span>
+<span class="c1">#         fcrops = [par[&#39;f_crop&#39;]] * len(tcrops)</span>
+        
+        
+<span class="c1">#     log(f&quot;Plotting poincare tracks for {len(tcrops)} components&quot;)</span>
+
+
+<span class="c1">#     # initialise useful parameters</span>
+<span class="c1">#     ncomps = len(tcrops)                    # number of components</span>
+<span class="c1">#     tMAX = dt * stk[&#39;I&#39;].shape[1]           # amount of time across htr data</span>
+
+<span class="c1">#     # make plot with sphere</span>
+<span class="c1">#     fig = plt.figure(figsize = (12,12))</span>
+<span class="c1">#     ax = fig.add_subplot(111, projection = &#39;3d&#39;)</span>
+
+<span class="c1">#     # figure for plotting tracks on 2D </span>
+<span class="c1">#     fig2, ax2 = plt.subplots(1, 1, figsize = (10,10))</span>
+<span class="c1">#     if stk_type == &quot;t&quot;:</span>
+<span class="c1">#         ax2.set(ylabel = &quot;Flux (arb.)&quot;, xlabel = &quot;Time [ms]&quot;)</span>
+<span class="c1">#     elif stk_type == &quot;f&quot;:</span>
+<span class="c1">#         ax2.set(ylabel = &quot;Flux (arb.)&quot;, xlabel = &quot;Freq [MHz]&quot;)</span>
+
+
+<span class="c1">#     def cart2sph(x, y, z):</span>
+
+<span class="c1">#         # sgn(y)</span>
+<span class="c1">#         sgny = np.zeros(y.size)</span>
+<span class="c1">#         sgny[y &lt; 0] = -1</span>
+<span class="c1">#         sgny[y &gt; 0] = 1</span>
+
+<span class="c1">#         # r</span>
+<span class="c1">#         r = np.sqrt(x**2 + y**2 + z **2)</span>
+
+<span class="c1">#         # theta</span>
+<span class="c1">#         theta = np.arccos(z/r)</span>
+
+<span class="c1">#         # phi</span>
+<span class="c1">#         phi = sgny * np.arccos(x/np.sqrt(x**2 + y**2))</span>
+
+<span class="c1">#         return phi, theta</span>
+
+    
+<span class="c1">#     def sph2cart(r, phi, theta):</span>
+
+<span class="c1">#         x = r * np.sin(phi) * np.cos(theta)</span>
+<span class="c1">#         y = r * np.sin(phi) * np.sin(theta)</span>
+<span class="c1">#         z = r * np.cos(phi)</span>
+
+<span class="c1">#         return x, y, z</span>
+
+
+<span class="c1">#     def set_axes_equal(ax: plt.Axes):</span>
+<span class="c1">#         &quot;&quot;&quot;Set 3D plot axes to equal scale.</span>
+
+<span class="c1">#         Make axes of 3D plot have equal scale so that spheres appear as</span>
+<span class="c1">#         spheres and cubes as cubes.  Required since `ax.axis(&#39;equal&#39;)`</span>
+<span class="c1">#         and `ax.set_aspect(&#39;equal&#39;)` don&#39;t work on 3D.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         limits = np.array([</span>
+<span class="c1">#             ax.get_xlim3d(),</span>
+<span class="c1">#             ax.get_ylim3d(),</span>
+<span class="c1">#             ax.get_zlim3d(),</span>
+<span class="c1">#         ])</span>
+<span class="c1">#         origin = np.mean(limits, axis=1)</span>
+<span class="c1">#         radius = 0.5 * np.max(np.abs(limits[:, 1] - limits[:, 0]))</span>
+<span class="c1">#         _set_axes_radius(ax, origin, radius)</span>
+
+<span class="c1">#     def _set_axes_radius(ax, origin, radius):</span>
+<span class="c1">#         x, y, z = origin</span>
+<span class="c1">#         ax.set_xlim3d([x - radius, x + radius])</span>
+<span class="c1">#         ax.set_ylim3d([y - radius, y + radius])</span>
+<span class="c1">#         ax.set_zlim3d([z - radius, z + radius])</span>
+
+
+<span class="c1">#     # plot sphere surface</span>
+<span class="c1">#     u = np.linspace(0, 2*np.pi, 200)</span>
+<span class="c1">#     v = np.linspace(0, np.pi, 200)</span>
+<span class="c1">#     u, v = np.meshgrid(u, v)</span>
+<span class="c1">#     x = np.sin(u) * np.cos(v)</span>
+<span class="c1">#     y = np.sin(u) * np.sin(v)</span>
+<span class="c1">#     z = np.cos(u)</span>
+<span class="c1">#     ax.plot_surface(x,y,z, color = [0.7, 0.7, 0.7, 0.3], shade = False)</span>
+<span class="c1">#     ax.plot_wireframe(np.sin(u), np.sin(u)*0, np.cos(u), color = [0.4, 0.4, 0.4, 0.5], linestyle = &#39;--&#39;)</span>
+<span class="c1">#     ax.plot_wireframe(np.sin(u)*0, np.sin(u), np.cos(u), color = [0.4, 0.4, 0.4, 0.5], linestyle = &#39;--&#39;)</span>
+<span class="c1">#     ax.plot_wireframe(np.sin(u), np.cos(u), np.cos(u)*0, color = [0.4, 0.4, 0.4, 0.5], linestyle = &#39;--&#39;)</span>
+
+<span class="c1">#     # plot axes </span>
+<span class="c1">#     fig.tight_layout()</span>
+<span class="c1">#     ax.plot([-1.0, 1.0], [0.0, 0.0], [0.0, 0.0], color = default_col[1], linestyle = &#39;-.&#39;)</span>
+<span class="c1">#     ax.plot([0.0, 0.0], [-1.0, 1.0], [0.0, 0.0], color = default_col[2], linestyle = &#39;-.&#39;)</span>
+<span class="c1">#     ax.plot([0.0, 0.0], [0.0, 0.0], [-1.0, 1.0], color = default_col[3], linestyle = &#39;-.&#39;)</span>
+<span class="c1">#     ax.text(1.2, 0, 0, &quot;Q&quot;, fontsize = 16, color = default_col[1])</span>
+<span class="c1">#     ax.text(0, 1.2, 0, &quot;U&quot;, fontsize = 16, color = default_col[2])</span>
+<span class="c1">#     ax.text(0, 0, 1.2, &quot;V&quot;, fontsize = 16, color = default_col[3])</span>
+<span class="c1">#     ax.set_xlim([-1.2, 1.2])</span>
+<span class="c1">#     ax.set_xlim([-1.2, 1.2])</span>
+<span class="c1">#     ax.set_xlim([-1.2, 1.2])</span>
+<span class="c1">#     ax.set_box_aspect([1,1,1])</span>
+<span class="c1">#     set_axes_equal(ax)</span>
+<span class="c1">#     ax.dist = 7.5</span>
+<span class="c1">#     ax.set_axis_off()</span>
+
+
+
+<span class="c1">#     # now loop through crops and plot tracks on sphere.</span>
+<span class="c1">#     st = stk_type</span>
+<span class="c1">#     data_list = [f&quot;{st}I&quot;, f&quot;{st}Q&quot;, f&quot;{st}U&quot;, f&quot;{st}V&quot;]</span>
+<span class="c1">#     for i, t_crop in enumerate(tcrops):</span>
+
+<span class="c1">#         # update tcrop, fcrop, RM, pa0 and f0</span>
+<span class="c1">#         par[&#39;t_crop&#39;] = t_crop</span>
+<span class="c1">#         par[&#39;f_crop&#39;] = fcrops[i]</span>
+
+<span class="c1">#         # get data</span>
+<span class="c1">#         _, _t, _f, _freq = master_proc_data(stk = stk, freq = freqs, data_list = data_list, </span>
+<span class="c1">#                                 par = par) </span>
+        
+<span class="c1">#         if stk_type == &quot;t&quot;:</span>
+<span class="c1">#             pdat = _t</span>
+<span class="c1">#             xdat = np.linspace(t_crop[0]*tMAX, t_crop[1]*tMAX, pdat[&#39;I&#39;].size)</span>
+<span class="c1">#             _f = None</span>
+        
+<span class="c1">#         elif stk_type == &quot;f&quot;:</span>
+<span class="c1">#             pdat = _f</span>
+<span class="c1">#             xdat = _freq</span>
+<span class="c1">#             _t = None</span>
+
+<span class="c1">#         # calculate Q/I, U/I, V/I</span>
+<span class="c1">#         P = pdat[&#39;I&#39;].copy()</span>
+<span class="c1">#         Perr = pdat[&#39;Ierr&#39;].copy()</span>
+<span class="c1">#         if plot_P:</span>
+<span class="c1">#             P = np.sqrt(pdat[&#39;Q&#39;]**2 + pdat[&#39;U&#39;]**2 + pdat[&#39;V&#39;]**2)</span>
+<span class="c1">#             Perr = np.sqrt((pdat[&#39;Q&#39;]*pdat[&#39;Qerr&#39;])**2 + </span>
+<span class="c1">#                         (pdat[&#39;U&#39;]*pdat[&#39;Uerr&#39;])**2 + </span>
+<span class="c1">#                         (pdat[&#39;V&#39;]*pdat[&#39;Verr&#39;])**2)/P</span>
+<span class="c1">#         stk_mask = P &gt;= sigma * Perr</span>
+<span class="c1">#         stk_i = {}</span>
+        
+<span class="c1">#         for S in &quot;QUV&quot;:</span>
+<span class="c1">#             stk_i[S] = pdat[S][stk_mask]/P[stk_mask]</span>
+<span class="c1">#         xdat = xdat[stk_mask]</span>
+
+<span class="c1">#         stk_o = deepcopy(stk_i)</span>
+
+
+<span class="c1">#         if plot_on_surface:</span>
+<span class="c1">#             # get angles first</span>
+<span class="c1">#             phi, theta = cart2sph(stk_i[&#39;Q&#39;], stk_i[&#39;U&#39;], stk_i[&#39;V&#39;])</span>
+
+<span class="c1">#             # imprint on surface of sphere</span>
+<span class="c1">#             stk_i[&#39;Q&#39;], stk_i[&#39;U&#39;], stk_i[&#39;V&#39;] = sph2cart(1.0, phi, theta)</span>
+
+
+<span class="c1">#         # model stokes data</span>
+<span class="c1">#         if plot_model:</span>
+<span class="c1">#             stk_m = {}</span>
+<span class="c1">#             stk_mo = {}</span>
+<span class="c1">#             for S in &quot;QUV&quot;:</span>
+<span class="c1">#                 stk_m[S] = model_curve(stk_i[S], n = n, samp = 1000)</span>
+<span class="c1">#                 stk_mo[S] = model_curve(stk_o[S], n = n, samp = 1000)</span>
+
+        
+<span class="c1">#         # plot data, we must be smart with how we plot these components.</span>
+<span class="c1">#         # easiest just to take a single color gradient for each track</span>
+<span class="c1">#         if plot_data:</span>
+<span class="c1">#             alph_s, alph_w = 1.0, 0.7/xdat.size</span>
+<span class="c1">#             for j in range(xdat.size):</span>
+<span class="c1">#                 ax.plot(stk_i[&#39;Q&#39;][j:j+2], stk_i[&#39;U&#39;][j:j+2], stk_i[&#39;V&#39;][j:j+2],</span>
+<span class="c1">#                         color = default_col[i], alpha = alph_s - alph_w*j, linewidth = 3)</span>
+                
+<span class="c1">#         # plot model</span>
+<span class="c1">#         if plot_model:</span>
+<span class="c1">#             if plot_data:</span>
+<span class="c1">#                 ax.plot(stk_m[&#39;Q&#39;], stk_m[&#39;U&#39;], stk_m[&#39;V&#39;], color = &#39;r&#39;, </span>
+<span class="c1">#                         linestyle = &#39;--&#39;, linewidth = 1.5)</span>
+<span class="c1">#             else:</span>
+<span class="c1">#                 alph_s, alph_w = 1.0, 0.7/stk_m[&#39;Q&#39;].size</span>
+<span class="c1">#                 for j in range(stk_m[&#39;Q&#39;].size):</span>
+<span class="c1">#                     ax.plot(stk_m[&#39;Q&#39;][j:j+2], stk_m[&#39;U&#39;][j:j+2], stk_m[&#39;V&#39;][j:j+2], </span>
+<span class="c1">#                             color = default_col[i], alpha = alph_s - alph_w*j, linewidth = 3)</span>
+        
+
+<span class="c1">#         #-----------</span>
+<span class="c1">#         # plot data on normal figure for diagnostic purposes</span>
+<span class="c1">#         #-----------</span>
+
+<span class="c1">#         # plot stokes </span>
+<span class="c1">#         markers = [&quot;o&quot;,&quot;+&quot;,&quot;^&quot;]</span>
+<span class="c1">#         for k, S in enumerate(&quot;QUV&quot;):</span>
+<span class="c1">#             ax2.plot(xdat, stk_o[S], color = default_col[i], marker = markers[k], </span>
+<span class="c1">#                      linestyle = &#39;&#39;)</span>
+<span class="c1">#             if plot_model:</span>
+<span class="c1">#                 ax2.plot(model_curve(xdat, n = 1, samp = 1000), stk_mo[S],</span>
+<span class="c1">#                 color = default_col[i], linestyle = &#39;--&#39;)</span>
+            
+        
+    
+<span class="c1">#     # make legend</span>
+<span class="c1">#     leg_lines = [None] * ncomps</span>
+<span class="c1">#     leg_lines2 = [None] * (ncomps + 3)</span>
+<span class="c1">#     leg_names = [None] * ncomps</span>
+<span class="c1">#     for i,_ in enumerate(tcrops):</span>
+<span class="c1">#         leg_lines[i], = ax.plot([],[],[], color = default_col[i])</span>
+<span class="c1">#         leg_lines2[i], = ax2.plot([],[], color = default_col[i])</span>
+<span class="c1">#         leg_names[i] = f&quot;Comp {i+1}&quot;</span>
+
+<span class="c1">#     leg_names2 = deepcopy(leg_names)</span>
+<span class="c1">#     leg_lines2[i+1], = ax.plot([],[], color = &#39;k&#39;, marker = markers[0])</span>
+<span class="c1">#     leg_names2 += [&quot;Q/I&quot;]</span>
+<span class="c1">#     leg_lines2[i+2], = ax.plot([],[], color = &#39;k&#39;, marker = markers[1])</span>
+<span class="c1">#     leg_names2 += [&quot;U/I&quot;]</span>
+<span class="c1">#     leg_lines2[i+3], = ax.plot([],[], color = &#39;k&#39;, marker = markers[2])</span>
+<span class="c1">#     leg_names2 += [&quot;V/I&quot;]</span>
+    
+<span class="c1">#     ax.legend(leg_lines, leg_names)</span>
+<span class="c1">#     ax2.legend(leg_lines2, leg_names2)</span>
+
+<span class="c1">#     # plot figure</span>
+<span class="c1">#     if filename is not None:</span>
+<span class="c1">#         plt.savefig(filename)</span>
+<span class="c1">#     plt.show()</span>
+<span class="c1">#     return fig</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

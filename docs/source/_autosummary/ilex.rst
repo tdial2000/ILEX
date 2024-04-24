@@ -24,5 +24,6 @@
    ilex.par
    ilex.plot
    ilex.pyfit
+   ilex.script_core
    ilex.utils
 

@@ -22,6 +22,7 @@ from copy import deepcopy
 import sys, inspect
 from .logging import log
 from math import ceil, floor
+import matplotlib.pyplot as plt
 
 # rm synthesis
 from RMtools_1D.do_RMsynth_1D import run_rmsynth
@@ -161,7 +162,6 @@ def scat(dx, tau, sig = 10):
     # only fill one side, since this is a one sided
     # exponential
     yscat[hw:] = np.exp(-x[hw:]/(tau))
-
     return yscat
 
 
@@ -281,6 +281,97 @@ def scatt_pulse_profile(x, p):
         y[xs:xe+1] += p[f"a{i+1}"] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)
 
     return y
+# def scatt_pulse_profile(x, p):
+#     """
+#     Scattering time series profile with n pulses. Numerical convolution if done incorrectly
+#     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window
+#     around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.
+#     This of course isn't realistic when taking a crop of data whose bounds cut through potential signal. 
+
+#     To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until 
+#     symmetrical, this avoids any potential shifting due to improper convolution. 
+
+#     Parameters
+#     ----------
+#     x: np.ndarray
+#         X data array
+#     p: Dict(float)
+#         dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n
+#         [a[n]] - Pulse amplitude \n
+#         [mu[n]] - Pulse position \n
+#         [sig[n]] - Pulse width \n
+#         [tau] - scattering timescale
+
+#     Returns
+#     -------
+#     y: np.ndarray
+#         Y data array
+#     """
+#     # create empty output array
+#     y = np.zeros(x.size)
+#     print(x)
+    
+#     # create scattering tail 
+#     dt = x[1] - x[0]
+#     npulses = (len(p) - 1)//3
+#     stail = scat(dt,p['tau'], sig = 3)
+#     print(stail.size)
+#     # plt.plot(np.linspace(0.0, 1.0, stail.size), stail)
+
+#     # Each gaussian will be isolated and convolved seperatley with enough padding for a complete
+#     # uniform convolution with zero shifting due to numerical error.
+#     for i in range(npulses):
+
+#         # make gaussian with sigma 5
+#         xe = int(floor((p[f"mu{i+1}"] + p[f"sig{i+1}"]*5)/dt))  #assuming starts at zero, at increments of 
+#         xs = int(floor((p[f"mu{i+1}"] - p[f"sig{i+1}"]*5)/dt))
+    
+#         # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve
+#         # if x.size < stail.size:
+#         #     # expand to same size as stail
+#         #     lendif = (stail.size - (x.size))
+#         #     xe += lendif
+#         #     xs -= lendif
+            
+            
+#         x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)
+#         print(x_i)
+
+#         # crop bounded signal
+#         ps = int(floor(x[0]/dt))
+#         xs -= ps
+#         xe -= ps
+
+#         # handle edge cases
+#         if xs >= x.size:
+#             continue
+
+#         if xe <= 0:
+#             continue
+
+#         # make pulse
+#         pulse_i = gaussian(x, 1, p[f"mu{i+1}"], p[f"sig{i+1}"])
+#         print(pulse_i.size)
+#         print(x.size)
+#         print(stail.size)
+#         # print(pulse_i.size)
+#         # plt.plot(x_i, pulse_i)
+
+#         # convolve
+#         conv = np.convolve(pulse_i, stail, mode = "same")
+#         # plt.plot(np.linspace(0,1.0, stail.size),stail)
+#         plt.plot(x, conv/np.max(conv)*p[f"a{i+1}"], label = f"{1/dt}")
+#         pulse_ind = [0, conv.size]
+        
+#         if xs < 0:
+#             pulse_ind[0] = 0 - xs
+#             xs = 0
+#         if xe + 1 > x.size:
+#             pulse_ind[1] -= (xe+1 - x.size)
+#             xe = x.size
+
+#         # y[xs:xe+1] += p[f"a{i+1}"] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)
+#     return y
 
 
 

@@ -393,6 +393,90 @@ def load_param_file(param_file):
 
 
 
+def _make_new_plotstyle_file():
+
+    with open(os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt"), 'w') as file:
+        pass
+
+    return
+
+
+def load_plotstyle():
+    """
+    Load in plotstyle file and compare with default plotstyle file
+    """
+
+    _default_plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt")
+    if not os.path.isfile(_default_plotstyle_file):
+        _make_new_plotstyle_file()
+
+    # read in _plotstyle file
+    with open(_default_plotstyle_file, 'r') as file:
+        line = file.readline().split(':')
+        filepath = line[1].strip()
+
+    if len(filepath) > 0:
+        # will use given file
+        plotstyle_file = filepath
+
+    else:
+        # will use default file
+        plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/default_plot_param_file.yaml")
+    
+
+    with open(plotstyle_file) as plf:
+        plot_pars = yaml.safe_load(plf)
+
+    # check if they match avalaible
+    # scatter
+    scatter_keys = plot_pars['scatter'].keys()
+    for key in scatter_keys:
+        if key not in _G.scatter_args:
+            del plot_pars['scatter'][key]
+
+    # plot
+    plot_keys = plot_pars['plot'].keys()
+    for key in plot_keys:
+        if key not in _G.plot_args:
+            del plot_pars['plot'][key]
+
+    # errorbars
+    errorbar_keys = plot_pars['errorbar'].keys()
+    for key in errorbar_keys:
+        if key not in _G.errorbar_args:
+            del plot_pars['errorbar'][key]
+    
+    return plot_pars
+
+
+    
+def set_plotstyle(filepath = None):
+    """
+    set plotstyle path, if not given, will be set to default.
+
+    Parameters
+    ----------
+    filepath : str, optional
+        filepath to plotstyle yaml file, by default None
+    """
+
+    if filepath is None:
+        filepath = ""
+
+    _default_plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt")
+    if not os.path.isfile(_default_plotstyle_file):
+        _make_new_plotstyle_file()
+
+    # read in _plotstyle file
+    with open(_default_plotstyle_file, 'w') as file:
+        line = file.write(f"filepath: {filepath}")
+
+    return
+
+
+
+
+
 
 
 

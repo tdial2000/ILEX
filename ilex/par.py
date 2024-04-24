@@ -455,11 +455,6 @@ class FRB_params:
             self.empty_par()
 
 
-
-
-    
-
-    # function to update from new crop
     def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],
                         tN: int = 1, fN: int = 1):
         """
@@ -509,63 +504,78 @@ class FRB_params:
         self.nchan = int((math.floor(f_crop_copy[1] * self.nchan) - math.floor(f_crop_copy[0] * self.nchan))/fN)
         self.nsamp = int((math.floor(t_crop[1] * self.nsamp) - math.floor(t_crop[0] * self.nsamp))/tN)
 
+    
 
-
-    # # function to load paramters from parameter file
-    # def load_params(self, filename: str = None):
+    # function to update from new crop
+    # def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],
+    #                     tN: int = 1, fN: int = 1):
     #     """
-    #     Load params from file - To implement??
+    #     Update Parameters based on time and frequency crops + averaging
 
     #     Parameters
     #     ----------
-    #     filename : str, optional
-    #         param file name, by default None
-    #     """        
+    #     t_crop : list, optional
+    #         time crop, by default [0.0, 1.0]
+    #     f_crop : list, optional
+    #         frequency crop, by default [0.0, 1.0]
+    #     tN : int, optional
+    #         Factor for time averaging, by default 1
+    #     fN : int, optional
+    #         Factor for frequency averaging, by default 1
+    #     """    
+    #     # TODO: Maybe find a smarter way to do this
+    #     # reverse f_crop if Upper sideband
+    #     f_crop_copy = f_crop.copy()
+    #     if self.UP:
+    #         f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]
 
-    #     if filename is None:
-    #         log("Parameter file must be valid", lpf_col = self.pcol)
-    #         return
+    #     # update params given new crop and averaging
+    #     # update resolutions
+    #     self.dt *= tN
+    #     self.df *= fN
 
-    #     # load into object
-    #     with open(filename, 'r') as file:
-    #         params = yaml.safe_load(file)
+    #     # update t_lim
+    #     # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping
+    #     t0_base = self.t_lim[0]
+    #     dt = (self.t_lim[1] - self.t_lim[0])/self.nsamp
 
-    #     for _,key in enumerate(params.keys()):
-    #         setattr(self,key,params[key])
+    #     # crop base resolution samples
+    #     t0 = int(t_crop[0] * self.nsamp)
+    #     t1 = int(t_crop[1] * self.nsamp)
+    #     t_w = ((t1 - t0) // tN) * tN
 
-    #     log(f"Parameters loaded from [{filename}]", lpf_col = self.pcol)
+    #     # correct max limit in time based on cropping due to averaging, then
+    #     # calculate new t limits in base time resolution, should align with the averaging
+    #     # that will be done
+    #     self.t_lim[0] = t0 * dt + 0.5 * dt * tN + t0_base
+    #     self.t_lim[1] = (t0 + t_w) * dt - 0.5 * dt * tN + t0_base
 
-    #     return 
+    #     # same thing with frequency
+
+    #     # update f_lim 
+    #     f0_base = self.f_lim[0]
+    #     df = (self.f_lim[1] - self.f_lim[0])/self.nchan
+
+    #     # crop base resolution
+    #     f0 = int(f_crop_copy[0] * self.nchan)
+    #     f1 = int(f_crop_copy[1] * self.nchan)
+    #     f_w = ((f1 - f0) // fN) * fN
+
+    #     # correct for cropping due to averaging
+    #     self.f_lim[0] = f0 * df + 0.5 * df * fN + f0_base
+    #     self.f_lim[1] = (f0 + f_w) * dt - 0.5 * df * fN + f0_base
+
+    #     # update bw and cfreq
+    #     self.bw = self.f_lim[1] - self.f_lim[0]
+    #     self.cfreq = self.f_lim[0] + 0.5*self.bw
+
+    #     # update nchan and nsamp
+    #     self.nchan = f_w
+    #     self.nsamp = t_w
+
 
 
     
-    # # function to get limits from crop
-    # def save_params(self, filename: str = None):
-    #     """
-    #     Save current parameters to file
-
-    #     Parameters
-    #     ----------
-    #     filename : str, optional
-    #         filename to save params to, by default None
-    #     """        
-        
-    #     if filename is None:
-    #         log("parameter file must be valid", lpf_col = self.pcol)
-    #         return
-
-    #     # build yaml .object
-    #     params = {}
-    #     for _,key in enumerate(_G.p.keys()):
-    #         params[key] = getattr(self, key)
-        
-    #     # save object to .yaml file
-    #     with open(filename, 'w') as file:
-    #         yaml.safe_dump(params, file)
-
-    #     log(f"Parameters saved to [{filename}]", lpf_col = self.pcol)
-
-    #     return
         
     
     # function to save parameters to parameter file

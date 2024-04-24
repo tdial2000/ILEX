@@ -26,7 +26,8 @@ import yaml
 ## import utils ##
 from .utils import (load_data, save_data, dict_get,
                     dict_init, dict_isall,
-                    merge_dicts, dict_null, get_stk_from_datalist, load_param_file)
+                    merge_dicts, dict_null, get_stk_from_datalist, load_param_file,
+                    set_plotstyle)
 
 from .data import *
 
@@ -237,7 +238,7 @@ class FRB:
         self.savefig = False            # save figures instead of plotting them
 
         self.pcol = 'cyan'              # color for verbose printing
-        self.plot_err_type = "lines"    # type of errorbar plot
+        self.plot_type = "scatter"    # type of errorbar plot
         self.residuals = False          # plot residuals when plotting fits
         self.plotPosterior = True      # plot posterior corner plot when plotting fits
 
@@ -305,6 +306,13 @@ class FRB:
             # set loaded files
             ds_I, ds_Q = yaml_pars['data']['dsI'], yaml_pars['data']['dsQ']
             ds_U, ds_V = yaml_pars['data']['dsU'], yaml_pars['data']['dsV']
+
+            # check if plotstyle file is given
+            set_plotstyle(yaml_pars['plots']['plotstyle_file'])
+            if yaml_pars['plots']['plotstyle_file'] is None:
+                log("Setting plotting style: Default")
+            else:
+                log(f"setting plotting style: {yaml_pars['plots']['plotstyle_file']}")
 
             _init = True
 
@@ -1470,7 +1478,7 @@ class FRB:
     ##===============================================##
     ##                Plotting Methods               ##
     ##===============================================##
-    def plot_data(self, data = "dsI", ax = None, filename: str = None, plot_err_type = "regions", **kwargs):
+    def plot_data(self, data = "dsI", ax = None, filename: str = None, **kwargs):
         """
         General Plotting function, choose to plot either dynamic spectrum or time series 
         data for all stokes parameters
@@ -1481,10 +1489,10 @@ class FRB:
             type of data to plot, by default "dsI"
         filename : str, optional
             filename to save figure to, by default None
-        plot_err_type : str, optional
-            type of error plotting, by default "regions"\n
+        plot_type : str, optional
+            type of error plotting, by default "scatter"\n
             [regions] - Show error in data as shaded regions
-            [lines] - Show error in data as tics in markers
+            [scatter] - Show error in data as tics in markers
 
         Returns
         -------
@@ -1507,7 +1515,7 @@ class FRB:
             pdat['time'] = np.array(self.this_par.t_lim)
 
         # plot 
-        fig = plot_data(pdat, data, ax = ax, filename = filename, plot_err_type = plot_err_type)
+        fig = plot_data(pdat, data, ax = ax, filename = filename, plot_type = self.plot_type)
 
         self._save_new_params()
 
@@ -1524,8 +1532,8 @@ class FRB:
 
 
 
-    def plot_stokes(self, ax = None, plot_L = False, Ldebias = False, debias_threshold = 2.0, 
-            stk_type = "f", stk2plot = "IQUV", filename: str = None, **kwargs):
+    def plot_stokes(self, ax = None, plot_L = False, Ldebias = False, sigma = 2.0, 
+            stk_type = "f", stk2plot = "IQUV", stk_ratio = False, filename: str = None, **kwargs):
         """
         Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
@@ -1537,13 +1545,15 @@ class FRB:
             Plot stokes L instead of Q and U, by default False
         Ldebias : bool, optional
             Plot stokes L debias, by default False
-        debias_threshold : float, optional
-            sigma threshold for error masking, data that is < debias_threshold * Ierr, mask it out or
+        sigma : float, optional
+            sigma threshold for error masking, data that is I < sigma * Ierr, mask it out or
             else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
         stk_type : str, optional
             Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
         stk2plot : str, optional
             string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
+        stk_ratio : bool, optional
+            if true, plot stokes ratios S/I
         filename : str, optional
             name of file to save figure image, by default None
         **kwargs : Dict
@@ -1580,8 +1590,8 @@ class FRB:
 
         # plot
         fig = plot_stokes(data, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
-                    debias_threshold = debias_threshold, stk2plot = stk2plot,
-                    filename = filename, plot_err_type = self.plot_err_type, ax = ax) 
+                    sigma = sigma, stk2plot = stk2plot, stk_ratio = stk_ratio,
+                    filename = filename, plot_type = self.plot_type, ax = ax) 
     
 
         self._save_new_params()
@@ -1745,15 +1755,9 @@ class FRB:
         x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
                          y.size)
 
-        # get error in y
-        yerr = None
-        # if self._iserr():
-        #     yerr = ccf(self._f['Ierr']**2, residuals(self._f['I'])**2)[1:]
-        #     yerr = np.sqrt(yerr + yerr[::-1])
-
-
 
         # create instance of fitting
+        yerr = None
         p = fit(x = x, y = y, yerr = yerr, func = lorentz, prior = priors,
                 static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior)
@@ -1866,6 +1870,8 @@ class FRB:
         ##==================##
 
         # create instance of fitting
+        # the implemented convolution algorithm requires that we snap to integer samples
+
         p = fit(x = x, y = y, yerr = err, func = make_scatt_pulse_profile_func(npulse),
                 prior = priors, static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior) 
@@ -2174,7 +2180,7 @@ class FRB:
             pdat[f"t{S}err"] = self._t[f"{S}err"]
 
         plot_stokes(pdat, ax = AX['S'], stk_type = "t", plot_L = plot_L, Ldebias = True, 
-                    plot_err_type = self.plot_err_type)
+                    plot_type = self.plot_type)
 
         ## plot dynamic spectra
         AX['D'].imshow(self._ds['I'], aspect = 'auto', 

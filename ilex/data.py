@@ -679,7 +679,7 @@ def calc_Pdebiased(Q, U, V, Ierr, Qerr = None, Uerr = None, Verr = None):
 
 
 
-def calc_ratio(I, X, Ierr = None, Xerr = None):
+def calc_ratio(I, X, Ierr = None, Xerr = None, keep_size = True):
     """
     Calculate Stokes Ratio X/I 
 
@@ -694,6 +694,8 @@ def calc_ratio(I, X, Ierr = None, Xerr = None):
         Stokes X/I err will also be calculated and returned
     Xerr : np.ndarray, optional
         Stokes [X] err data, by default None
+    keep_size : bool, optional
+        If true, the output of XIerr will be same as error in the case of single element input, default is True
 
     Returns
     -------
@@ -712,9 +714,10 @@ def calc_ratio(I, X, Ierr = None, Xerr = None):
         XIerr = np.sqrt((Xerr/I)**2 + (Ierr*X/I**2)**2)
 
         # check if array or scalar
-        if not hasattr(Ierr, "__len__") or not hasattr(Xerr, "__len__"):
-            # take standard deviation
-            XIerr = np.nanmean(XIerr)
+        if keep_size:
+            if not hasattr(Ierr, "__len__") or not hasattr(Xerr, "__len__"):
+                # take standard deviation
+                XIerr = np.nanmean(XIerr)
 
     return XI, XIerr
 

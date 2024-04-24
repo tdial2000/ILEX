@@ -1,3 +1,6 @@
+# imports
+from matplotlib.pyplot import Line2D
+import inspect
 
 class globals_:
   """
@@ -44,8 +47,14 @@ _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None"}
 
 # dict of hyper parameters``
-_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_err_type': 'regions',
+_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'scatter',
          'residuals': True, 'apply_tW': True, 'apply_fW': True}
+
+
+_G.scatter_args = ['s','c','marker','alpha', 'cmap', 'vmin','vmax','linewidths','edgecolors', 'label']
+_G.plot_args = list(inspect.signature(Line2D.set).parameters.keys())[1:]
+_G.errorbar_args = ['fmt', 'ecolor', 'elinewidth', 'capsize', 'capthick', 'barsabove'] 
+_G.errorbar_args += _G.plot_args
 
 
 

@@ -1,0 +1,21 @@
+scatter:
+
+  # marker info
+  s:  6
+  marker: 's'
+  edgecolors: 'k'
+
+errorbar:
+
+  # errorbar info
+  linestyle: ''
+  marker: null
+  capsize: 3.0
+  markeredgecolor: null
+
+
+plot:
+
+  # plotting
+  markersize: null
+

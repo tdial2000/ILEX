@@ -34,7 +34,7 @@ hyperpar:
   verbose:        False
   force:          False
   savefig:        False
-  plot_err_type:  "regions"
+  plot_type:  "scatter"
   residuals:      True
   plotPosterior:  True
 
@@ -44,12 +44,16 @@ hyperpar:
 # Additional Script options #
 
 plots:
-  plot_err_type:    "regions"
+  plot_type:           "scatter"
+  plotstyle_file:      null
 
   # plotting stokes data
-  plot_L:           False
-  Ldebias:          False
-  debias_threshold: 2.0
+  plot_L:               False
+  stk2plot:             "IQUV"
+  stk_ratio:            False
+  Ldebias:              False
+  Ldebias_threshold:    2.0
+  sigma:                2.0
 
   # plotting poincare sphere data
   plot_data:        True

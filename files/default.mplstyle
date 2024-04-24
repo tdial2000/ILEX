@@ -1,0 +1,33 @@
+#-------------------------------#
+# AXES PARAMETERS               #
+#-------------------------------#
+
+axes.titlesize : 20
+axes.labelsize : 16
+
+
+
+
+#-------------------------------#
+# LINES PARAMETERS              #
+#-------------------------------#
+
+lines.linewidth : 2
+lines.markersize : 10
+
+
+#-------------------------------#
+# TICKS PARAMETERS              #
+#-------------------------------#
+
+#------ X TICKS -------# 
+
+xtick.labelsize : 16
+xtick.labelcolor : black
+
+
+
+#------ Y TICKS -------#
+
+ytick.labelsize : 16
+ytick.labelcolor : black

@@ -129,7 +129,51 @@
 
 
 <span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">,</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;cmap&#39;</span><span class="p">,</span> <span class="s1">&#39;vmin&#39;</span><span class="p">,</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span><span class="s1">&#39;linewidths&#39;</span><span class="p">,</span><span class="s1">&#39;edgecolors&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span>
-<span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span> <span class="o">=</span> <span class="p">[]</span><span class="c1">#list(inspect.signature(Line2D.set).parameters.keys())[1:]</span>
+<span class="c1"># this command fails when building docs, so just brute forcing for now</span>
+<span class="c1">#list(inspect.signature(Line2D.set).parameters.keys())[1:]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;agg_filter&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;alpha&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;animated&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;antialiased&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_box&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_on&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_path&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;color&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dash_capstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dash_joinstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dashes&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;data&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;drawstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;fillstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;gapcolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;gid&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;in_layout&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;label&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;linestyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;linewidth&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;marker&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markeredgecolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markeredgewidth&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markerfacecolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markerfacecoloralt&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markersize&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markevery&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;mouseover&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;path_effects&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;picker&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;pickradius&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;rasterized&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sketch_params&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;snap&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;solid_capstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;solid_joinstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;transform&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;url&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;visible&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;xdata&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ydata&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;zorder&#39;</span><span class="p">]</span>
+ 
 <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fmt&#39;</span><span class="p">,</span> <span class="s1">&#39;ecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;elinewidth&#39;</span><span class="p">,</span> <span class="s1">&#39;capsize&#39;</span><span class="p">,</span> <span class="s1">&#39;capthick&#39;</span><span class="p">,</span> <span class="s1">&#39;barsabove&#39;</span><span class="p">]</span> 
 <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">+=</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span>
 

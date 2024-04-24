@@ -52,7 +52,51 @@ _G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'scatt
 
 
 _G.scatter_args = ['s','c','marker','alpha', 'cmap', 'vmin','vmax','linewidths','edgecolors', 'label']
-_G.plot_args = []#list(inspect.signature(Line2D.set).parameters.keys())[1:]
+# this command fails when building docs, so just brute forcing for now
+#list(inspect.signature(Line2D.set).parameters.keys())[1:]
+_G.plot_args = ['agg_filter',
+ 'alpha',
+ 'animated',
+ 'antialiased',
+ 'clip_box',
+ 'clip_on',
+ 'clip_path',
+ 'color',
+ 'dash_capstyle',
+ 'dash_joinstyle',
+ 'dashes',
+ 'data',
+ 'drawstyle',
+ 'fillstyle',
+ 'gapcolor',
+ 'gid',
+ 'in_layout',
+ 'label',
+ 'linestyle',
+ 'linewidth',
+ 'marker',
+ 'markeredgecolor',
+ 'markeredgewidth',
+ 'markerfacecolor',
+ 'markerfacecoloralt',
+ 'markersize',
+ 'markevery',
+ 'mouseover',
+ 'path_effects',
+ 'picker',
+ 'pickradius',
+ 'rasterized',
+ 'sketch_params',
+ 'snap',
+ 'solid_capstyle',
+ 'solid_joinstyle',
+ 'transform',
+ 'url',
+ 'visible',
+ 'xdata',
+ 'ydata',
+ 'zorder']
+ 
 _G.errorbar_args = ['fmt', 'ecolor', 'elinewidth', 'capsize', 'capthick', 'barsabove'] 
 _G.errorbar_args += _G.plot_args
 

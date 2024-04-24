@@ -98,9 +98,12 @@
 <span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="p">(</span><span class="n">lorentz</span><span class="p">,</span> <span class="n">scatt_pulse_profile</span><span class="p">,</span> <span class="n">scat</span><span class="p">,</span>
                        <span class="n">gaussian</span><span class="p">,</span> <span class="n">model_curve</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">c</span>
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">c</span><span class="p">,</span> <span class="n">_G</span>
 
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">load_plotstyle</span>
+
 <span class="c1"># constants</span>
 <span class="n">default_col</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.prop_cycle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">by_key</span><span class="p">()[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
 
@@ -160,36 +163,136 @@
 
 
 
-<span class="k">def</span> <span class="nf">_plot_err_as_lines</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">err</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">ecolor</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> 
-                <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="c1"># def _plot_err_as_lines(x, y, err, ax, col = &#39;k&#39;, linestyle = &#39;&#39;, **kwargs):</span>
+<span class="c1">#     ax.scatter(x, y, c = col, s = 6, **kwargs)</span>
+<span class="c1">#     ax.errorbar(x, y, yerr = err, linestyle = linestyle, ecolor = col, </span>
+<span class="c1">#                 alpha = 0.5)</span>
 
-    <span class="k">return</span> 
-
-
-
-<span class="k">def</span> <span class="nf">_plot_err_as_regions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="n">err</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="n">err</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-                    <span class="n">edgecolor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
-
-    <span class="k">return</span>
+<span class="c1">#     return </span>
 
 
-<span class="k">def</span> <span class="nf">_plot_err</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
-    <span class="k">if</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;lines&quot;</span><span class="p">:</span>
-        <span class="n">_plot_err_as_lines</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="n">linestyle</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="c1"># def _plot_err_as_regions(x, y, err, ax, col = &#39;k&#39;, **kwargs):</span>
+<span class="c1">#     ax.plot(x, y, color = col, **kwargs)</span>
+<span class="c1">#     ax.fill_between(x, y-err, y+err, color = col, alpha = 0.5,</span>
+<span class="c1">#                     edgecolor = None)</span>
+
+<span class="c1">#     return</span>
+
+
+<span class="c1"># def _plot_err(x, y, err, ax, col = &#39;k&#39;, linestyle = &#39;&#39;, plot_type = &quot;lines&quot;, **kwargs):</span>
+
+<span class="c1">#     if plot_type == &quot;lines&quot;:</span>
+<span class="c1">#         _plot_err_as_lines(x, y, err, ax, col = col, linestyle = linestyle, **kwargs)</span>
     
+<span class="c1">#     elif plot_type == &quot;regions&quot;:</span>
+<span class="c1">#         _plot_err_as_regions(x, y, err, ax, col = col, **kwargs)</span>
+    
+<span class="c1">#     return</span>
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="k">def</span> <span class="nf">_PLOT</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General plotting function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;scatter&quot;</span><span class="p">:</span>
+        <span class="n">_PLOT_SCATTER</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">plot_type</span> <span class="o">==</span> <span class="s2">&quot;regions&quot;</span><span class="p">:</span>
-        <span class="n">_plot_err_as_regions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">_PLOT_REGIONS</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Plot err style undefined/unsupported. &quot;</span><span class="p">)</span>
     
     <span class="k">return</span>
 
+<span class="k">def</span> <span class="nf">_PLOT_SCATTER</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot lines</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plot_pars</span> <span class="o">=</span> <span class="n">load_plotstyle</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span><span class="p">:</span>
+            <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span><span class="p">:</span>
+            <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># check if colors not in </span>
+    <span class="k">for</span> <span class="n">_p</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;facecolors&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="s1">&#39;c&#39;</span> <span class="ow">in</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span>
+    
+    <span class="k">for</span> <span class="n">_p</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;markerfacecolor&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">_p</span> <span class="ow">in</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">][</span><span class="n">_p</span><span class="p">]</span>
+    
+    
+
+    <span class="c1"># plot scatter</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">facecolors</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">ecolor</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> 
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">markerfacecolor</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span>
+                         <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">facecolors</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">ecolor</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">markerfacecolor</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span>
 
 
+<span class="k">def</span> <span class="nf">_PLOT_REGIONS</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot regions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">plot_pars</span> <span class="o">=</span> <span class="n">load_plotstyle</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span><span class="p">:</span>
+            <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;color&#39;</span> <span class="ow">in</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">][</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+
+    <span class="c1"># plot region</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="n">yerr</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="n">yerr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span>
+                        <span class="n">edgecolor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="n">yerr</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="n">yerr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span>
+                        <span class="n">edgecolor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+    
+    <span class="k">return</span>
 
 
 
@@ -203,7 +306,7 @@
 
 <div class="viewcode-block" id="plot_data">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_data">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">typ</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">typ</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot data</span>
 
@@ -220,8 +323,8 @@
 <span class="sd">        axes handle, by default None</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        filename to save figure to, by default None</span>
-<span class="sd">    plot_err_type : str, optional</span>
-<span class="sd">        type of error plotting, by default &quot;lines&quot;</span>
+<span class="sd">    plot_type : str, optional</span>
+<span class="sd">        type of plotting, by default &quot;scatter&quot;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -265,7 +368,7 @@
     <span class="c1"># utility functions</span>
     <span class="k">def</span> <span class="nf">plot_freq</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">fnname</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density&quot;</span><span class="p">)</span>
 
 
     <span class="c1"># check type </span>
@@ -277,22 +380,16 @@
     <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
         <span class="c1"># scrunch in freq</span>
         <span class="n">tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">tlim</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">tname</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density (arb.)&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-            <span class="n">_plot_err</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
-                        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+        <span class="n">_PLOT</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+                        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_type</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span>
         <span class="c1"># scrunch in time</span>
         <span class="n">fx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">flim</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density (arb.)&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-            <span class="n">_plot_err</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
-                        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+        <span class="n">_PLOT</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+                        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_type</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Invalid data type to plot&quot;</span><span class="p">)</span>
@@ -317,7 +414,7 @@
 <div class="viewcode-block" id="plot_RM">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_RM">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_RM</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rm</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot RM fit</span>
 
@@ -343,8 +440,8 @@
 <span class="sd">        Axes handle, by default None</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        filename to save figure to, by default None</span>
-<span class="sd">    plot_err_type : str, optional</span>
-<span class="sd">        type of error to plot, by default &quot;lines&quot;</span>
+<span class="sd">    plot_type : str, optional</span>
+<span class="sd">        type of error to plot, by default &quot;scatter&quot;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -375,21 +472,23 @@
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;PA [deg]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
 
     <span class="c1"># calc PA</span>
-    <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+    <span class="c1"># PA = 0.5 * np.arctan2(U, Q)</span>
+    <span class="n">PA</span><span class="p">,</span> <span class="n">PAerr</span> <span class="o">=</span> <span class="n">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">)</span>
     <span class="n">PA_fit</span> <span class="o">=</span> <span class="n">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">)</span>
 
-    <span class="c1"># plot </span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">PA</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">label</span>  <span class="o">=</span> <span class="s2">&quot;Measured PA&quot;</span><span class="p">)</span>                <span class="c1"># PA from data</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">PA_fit</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;RM: </span><span class="si">{</span><span class="n">rm</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">,    pa0: </span><span class="si">{</span><span class="n">pa0</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>      <span class="c1"># PA best fit line</span>
-    
-    
+    <span class="n">_PLOT</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">PA</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">PAerr</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+            <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_type</span><span class="p">)</span>
 
-    <span class="c1"># error plotting</span>
-    <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">)</span>
+    <span class="c1"># # plot </span>
+    <span class="c1"># # ax.scatter(f, PA * 180/np.pi, c = &#39;k&#39;, s = 5, label  = &quot;Measured PA&quot;)                # PA from data</span>
+    <span class="c1"># # ax.plot(f, PA_fit * 180/np.pi, &#39;r&#39;, label = f&quot;RM: {rm:.3f},    pa0: {pa0:.3f}&quot;)      # PA best fit line</span>
+    
+    <span class="c1"># # error plotting</span>
+    <span class="c1"># if err_flag:</span>
+    <span class="c1">#     _, PA_err = calc_PA(Q, U, Qerr, Uerr)</span>
         
-        <span class="n">_plot_err</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">PA</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> 
-        <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+    <span class="c1">#     _plot_err(f, PA * 180/np.pi, PA_err * 180/np.pi, ax = ax, col = [0., 0., 0., 0.5], </span>
+    <span class="c1">#     plot_type = plot_err_type)</span>
     
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
 
@@ -426,7 +525,7 @@
 <div class="viewcode-block" id="plot_PA">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_PA">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_PA</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
+            <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot PA profile</span>
 
@@ -444,8 +543,8 @@
 <span class="sd">        plot PA over [0, 180] degrees instead of [-90, 90], by default False</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        filename to save figure to, by default None</span>
-<span class="sd">    plot_err_type : str, optional</span>
-<span class="sd">        type of error to plot, by default &quot;lines&quot;</span>
+<span class="sd">    plot_type : str, optional</span>
+<span class="sd">        type of error to plot, by default &quot;scatter&quot;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -476,9 +575,9 @@
     
     <span class="c1"># plot PA</span>
     <span class="c1"># PA_mask = ~np.isnan(PA)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">PA</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">_plot_err</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">PA</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span>
-                <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">)</span>
+    <span class="c1"># ax.scatter(x, PA * 180/np.pi, c = &#39;k&#39;, s = 2)</span>
+    <span class="n">_PLOT</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">PA</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">PA_err</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_type</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">flipPA</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">])</span>
@@ -507,7 +606,7 @@
 
 <div class="viewcode-block" id="plot_stokes_ratios">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_stokes_ratios">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_stokes_ratios</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">plot_stokes_ratios</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="k">pass</span></div>
 
 
@@ -518,9 +617,9 @@
 
 <div class="viewcode-block" id="plot_stokes">
 <a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_stokes">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">debias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
-            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
+            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot Stokes data, by default stokes I, Q, U and V data is plotted</span>
 
@@ -538,19 +637,21 @@
 <span class="sd">        Plot stokes L instead of Q and U, by default False</span>
 <span class="sd">    Ldebias : bool, optional</span>
 <span class="sd">        Plot stokes L debias, by default False</span>
-<span class="sd">    debias_threshold : float, optional</span>
-<span class="sd">        sigma threshold for error masking, data that is &lt; debias_threshold * Ierr, mask it out or</span>
+<span class="sd">    sigma : float, optional</span>
+<span class="sd">        sigma threshold for error masking, I &lt; sigma * Ierr, mask it out or</span>
 <span class="sd">        else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</span>
 <span class="sd">    stk_type : str, optional</span>
 <span class="sd">        Type of stokes data to plot, &quot;f&quot; for Stokes Frequency data or &quot;t&quot; for time data, by default &quot;f&quot;</span>
 <span class="sd">    stk2plot : str, optional</span>
 <span class="sd">        string of stokes to plot, for example if &quot;QV&quot;, only stokes Q and V are plotted, by default &quot;IQUV&quot;</span>
+<span class="sd">    stk_ratio : bool, optional</span>
+<span class="sd">        if true, plot stokes ratios S/I</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        name of file to save figure image, by default None</span>
-<span class="sd">    plot_err_type : str, optional</span>
-<span class="sd">        Choose between two methods of plotting the error in the data, by default &quot;regions&quot; \n</span>
+<span class="sd">    plot_type : str, optional</span>
+<span class="sd">        Choose between two methods of plotting the error in the data, by default &quot;scatter&quot; \n</span>
 <span class="sd">        [regions] - Show error in data as shaded regions</span>
-<span class="sd">        [lines] - Show error in data as tics in markers</span>
+<span class="sd">        [scatter] - Show error in data as tics in markers</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -613,14 +714,29 @@
             <span class="n">stk</span> <span class="o">+=</span> <span class="s2">&quot;V&quot;</span>
         <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk</span>
 
+    
+    <span class="c1"># plot stokes ratios</span>
+    <span class="k">if</span> <span class="n">stk_ratio</span><span class="p">:</span>
+        <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk2plot</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="c1"># remove part of string</span>
+
+        <span class="c1"># get sigma mask</span>
+        <span class="n">sigma_mask</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}</span><span class="s2">I&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}</span><span class="s2">Ierr&quot;</span><span class="p">]</span>
+
+        <span class="c1"># calc ratios</span>
+        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk2plot</span><span class="p">:</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_ratio</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}</span><span class="s2">I&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span>
+                                                        <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}</span><span class="s2">Ierr&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">keep_size</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># mask values with too large errors</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="n">sigma_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][</span><span class="n">sigma_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+
 
     <span class="c1"># now we are ready to plot stokes data</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">S</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stk2plot</span><span class="p">):</span>
-        <span class="n">main_line</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
-            <span class="n">main_line</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-            <span class="n">_plot_err</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span>
-             <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">)</span>
+        <span class="n">_PLOT</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="n">xdat</span><span class="p">],</span> <span class="n">y</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">st</span><span class="si">}{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="n">S</span><span class="p">],</span>
+             <span class="n">plot_type</span> <span class="o">=</span> <span class="n">plot_type</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">S</span><span class="p">)</span>
     
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 

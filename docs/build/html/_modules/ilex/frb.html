@@ -100,7 +100,8 @@
 <span class="c1">## import utils ##</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_data</span><span class="p">,</span> <span class="n">save_data</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">,</span>
                     <span class="n">dict_init</span><span class="p">,</span> <span class="n">dict_isall</span><span class="p">,</span>
-                    <span class="n">merge_dicts</span><span class="p">,</span> <span class="n">dict_null</span><span class="p">,</span> <span class="n">get_stk_from_datalist</span><span class="p">,</span> <span class="n">load_param_file</span><span class="p">)</span>
+                    <span class="n">merge_dicts</span><span class="p">,</span> <span class="n">dict_null</span><span class="p">,</span> <span class="n">get_stk_from_datalist</span><span class="p">,</span> <span class="n">load_param_file</span><span class="p">,</span>
+                    <span class="n">set_plotstyle</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -313,7 +314,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">savefig</span> <span class="o">=</span> <span class="kc">False</span>            <span class="c1"># save figures instead of plotting them</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;cyan&#39;</span>              <span class="c1"># color for verbose printing</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;lines&quot;</span>    <span class="c1"># type of errorbar plot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span>    <span class="c1"># type of errorbar plot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="kc">False</span>          <span class="c1"># plot residuals when plotting fits</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span> <span class="o">=</span> <span class="kc">True</span>      <span class="c1"># plot posterior corner plot when plotting fits</span>
 
@@ -383,6 +384,13 @@
             <span class="c1"># set loaded files</span>
             <span class="n">ds_I</span><span class="p">,</span> <span class="n">ds_Q</span> <span class="o">=</span> <span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;dsQ&#39;</span><span class="p">]</span>
             <span class="n">ds_U</span><span class="p">,</span> <span class="n">ds_V</span> <span class="o">=</span> <span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;dsU&#39;</span><span class="p">],</span> <span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;dsV&#39;</span><span class="p">]</span>
+
+            <span class="c1"># check if plotstyle file is given</span>
+            <span class="n">set_plotstyle</span><span class="p">(</span><span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plotstyle_file&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plotstyle_file&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Setting plotting style: Default&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;setting plotting style: </span><span class="si">{</span><span class="n">yaml_pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plotstyle_file&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">_init</span> <span class="o">=</span> <span class="kc">True</span>
 
@@ -1566,7 +1574,7 @@
     <span class="c1">##===============================================##</span>
 <div class="viewcode-block" id="FRB.plot_data">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plot_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        General Plotting function, choose to plot either dynamic spectrum or time series </span>
 <span class="sd">        data for all stokes parameters</span>
@@ -1577,10 +1585,10 @@
 <span class="sd">            type of data to plot, by default &quot;dsI&quot;</span>
 <span class="sd">        filename : str, optional</span>
 <span class="sd">            filename to save figure to, by default None</span>
-<span class="sd">        plot_err_type : str, optional</span>
-<span class="sd">            type of error plotting, by default &quot;regions&quot;\n</span>
+<span class="sd">        plot_type : str, optional</span>
+<span class="sd">            type of error plotting, by default &quot;scatter&quot;\n</span>
 <span class="sd">            [regions] - Show error in data as shaded regions</span>
-<span class="sd">            [lines] - Show error in data as tics in markers</span>
+<span class="sd">            [scatter] - Show error in data as tics in markers</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1603,7 +1611,7 @@
             <span class="n">pdat</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">)</span>
 
         <span class="c1"># plot </span>
-        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="n">plot_err_type</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_data</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_type</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
 
@@ -1623,8 +1631,8 @@
 
 <div class="viewcode-block" id="FRB.plot_stokes">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.plot_stokes">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">debias_threshold</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
-            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">plot_stokes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> 
+            <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;IQUV&quot;</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot Stokes data, by default stokes I, Q, U and V data is plotted</span>
 
@@ -1636,13 +1644,15 @@
 <span class="sd">            Plot stokes L instead of Q and U, by default False</span>
 <span class="sd">        Ldebias : bool, optional</span>
 <span class="sd">            Plot stokes L debias, by default False</span>
-<span class="sd">        debias_threshold : float, optional</span>
-<span class="sd">            sigma threshold for error masking, data that is &lt; debias_threshold * Ierr, mask it out or</span>
+<span class="sd">        sigma : float, optional</span>
+<span class="sd">            sigma threshold for error masking, data that is I &lt; sigma * Ierr, mask it out or</span>
 <span class="sd">            else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</span>
 <span class="sd">        stk_type : str, optional</span>
 <span class="sd">            Type of stokes data to plot, &quot;f&quot; for Stokes Frequency data or &quot;t&quot; for time data, by default &quot;f&quot;</span>
 <span class="sd">        stk2plot : str, optional</span>
 <span class="sd">            string of stokes to plot, for example if &quot;QV&quot;, only stokes Q and V are plotted, by default &quot;IQUV&quot;</span>
+<span class="sd">        stk_ratio : bool, optional</span>
+<span class="sd">            if true, plot stokes ratios S/I</span>
 <span class="sd">        filename : str, optional</span>
 <span class="sd">            name of file to save figure image, by default None</span>
 <span class="sd">        **kwargs : Dict</span>
@@ -1679,8 +1689,8 @@
 
         <span class="c1"># plot</span>
         <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_stokes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">Ldebias</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="n">stk_type</span><span class="p">,</span>
-                    <span class="n">debias_threshold</span> <span class="o">=</span> <span class="n">debias_threshold</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk2plot</span><span class="p">,</span>
-                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_err_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">)</span> 
+                    <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">stk2plot</span><span class="p">,</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="n">stk_ratio</span><span class="p">,</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">)</span> 
     
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_save_new_params</span><span class="p">()</span>
@@ -1850,15 +1860,9 @@
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">bw</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
                          <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
-        <span class="c1"># get error in y</span>
-        <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># if self._iserr():</span>
-        <span class="c1">#     yerr = ccf(self._f[&#39;Ierr&#39;]**2, residuals(self._f[&#39;I&#39;])**2)[1:]</span>
-        <span class="c1">#     yerr = np.sqrt(yerr + yerr[::-1])</span>
-
-
 
         <span class="c1"># create instance of fitting</span>
+        <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">lorentz</span><span class="p">,</span> <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span>
                 <span class="n">static</span> <span class="o">=</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_keywords</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span>
                 <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">,</span> <span class="n">plotPosterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span><span class="p">)</span>
@@ -1974,6 +1978,8 @@
         <span class="c1">##==================##</span>
 
         <span class="c1"># create instance of fitting</span>
+        <span class="c1"># the implemented convolution algorithm requires that we snap to integer samples</span>
+
         <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">err</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">make_scatt_pulse_profile_func</span><span class="p">(</span><span class="n">npulse</span><span class="p">),</span>
                 <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_keywords</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span>
                 <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">,</span> <span class="n">plotPosterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span><span class="p">)</span> 
@@ -2291,7 +2297,7 @@
             <span class="n">pdat</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
 
         <span class="n">plot_stokes</span><span class="p">(</span><span class="n">pdat</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">plot_L</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
-                    <span class="n">plot_err_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_err_type</span><span class="p">)</span>
+                    <span class="n">plot_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_type</span><span class="p">)</span>
 
         <span class="c1">## plot dynamic spectra</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> 

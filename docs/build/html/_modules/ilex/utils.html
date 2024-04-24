@@ -503,6 +503,96 @@
 
 
 
+<span class="k">def</span> <span class="nf">_make_new_plotstyle_file</span><span class="p">():</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span>
+
+
+<div class="viewcode-block" id="load_plotstyle">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_plotstyle">[docs]</a>
+<span class="k">def</span> <span class="nf">load_plotstyle</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load in plotstyle file and compare with default plotstyle file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_default_plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">):</span>
+        <span class="n">_make_new_plotstyle_file</span><span class="p">()</span>
+
+    <span class="c1"># read in _plotstyle file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># will use given file</span>
+        <span class="n">plotstyle_file</span> <span class="o">=</span> <span class="n">filepath</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># will use default file</span>
+        <span class="n">plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/default_plot_param_file.yaml&quot;</span><span class="p">)</span>
+    
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">plotstyle_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">plf</span><span class="p">:</span>
+        <span class="n">plot_pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">plf</span><span class="p">)</span>
+
+    <span class="c1"># check if they match avalaible</span>
+    <span class="c1"># scatter</span>
+    <span class="n">scatter_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">scatter_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># plot</span>
+    <span class="n">plot_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">plot_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># errorbars</span>
+    <span class="n">errorbar_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">errorbar_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">plot_pars</span></div>
+
+
+
+    
+<div class="viewcode-block" id="set_plotstyle">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.set_plotstyle">[docs]</a>
+<span class="k">def</span> <span class="nf">set_plotstyle</span><span class="p">(</span><span class="n">filepath</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    set plotstyle path, if not given, will be set to default.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filepath : str, optional</span>
+<span class="sd">        filepath to plotstyle yaml file, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">_default_plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">):</span>
+        <span class="n">_make_new_plotstyle_file</span><span class="p">()</span>
+
+    <span class="c1"># read in _plotstyle file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;filepath: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+
+
+
+
 
 
 

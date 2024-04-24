@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="ilex.pyfit" href="ilex.pyfit.html" /> 
+    <link rel="prev" title="ilex.script_core.plot_stokes_dynspec" href="ilex.script_core.plot_stokes_dynspec.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_checktype"><code class="docutils literal notranslate"><span class="pre">dict_checktype()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_get"><code class="docutils literal notranslate"><span class="pre">dict_get()</span></code></a></li>
@@ -66,9 +67,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.get_stk_from_datalist"><code class="docutils literal notranslate"><span class="pre">get_stk_from_datalist()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_param_file"><code class="docutils literal notranslate"><span class="pre">load_param_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_plotstyle"><code class="docutils literal notranslate"><span class="pre">load_plotstyle()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.merge_dicts"><code class="docutils literal notranslate"><span class="pre">merge_dicts()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.plotnum2grid"><code class="docutils literal notranslate"><span class="pre">plotnum2grid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.save_data"><code class="docutils literal notranslate"><span class="pre">save_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.set_plotstyle"><code class="docutils literal notranslate"><span class="pre">set_plotstyle()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.struct_"><code class="docutils literal notranslate"><span class="pre">struct_</span></code></a></li>
 </ul>
 </li>
@@ -250,6 +253,12 @@ products to make, i.e. “dsI”, “fQ” etc.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.load_plotstyle">
+<span class="sig-name descname"><span class="pre">load_plotstyle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_plotstyle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_plotstyle" title="Link to this definition"></a></dt>
+<dd><p>Load in plotstyle file and compare with default plotstyle file</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.merge_dicts">
 <span class="sig-name descname"><span class="pre">merge_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dicts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#merge_dicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.merge_dicts" title="Link to this definition"></a></dt>
 <dd><p>Combine multiple Dictionaries into 1 dictionary</p>
@@ -302,6 +311,17 @@ sqaure grid to fit.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.set_plotstyle">
+<span class="sig-name descname"><span class="pre">set_plotstyle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#set_plotstyle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.set_plotstyle" title="Link to this definition"></a></dt>
+<dd><p>set plotstyle path, if not given, will be set to default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em>, </em><em>optional</em>) – filepath to plotstyle yaml file, by default None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ilex.utils.struct_">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">struct_</span></span><a class="reference internal" href="../_modules/ilex/utils.html#struct_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.struct_" title="Link to this definition"></a></dt>
@@ -313,7 +333,7 @@ sqaure grid to fit.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.pyfit.html" class="btn btn-neutral float-left" title="ilex.pyfit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.script_core.plot_stokes_dynspec.html" class="btn btn-neutral float-left" title="ilex.script_core.plot_stokes_dynspec" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

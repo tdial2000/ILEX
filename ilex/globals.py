@@ -52,7 +52,7 @@ _G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'scatt
 
 
 _G.scatter_args = ['s','c','marker','alpha', 'cmap', 'vmin','vmax','linewidths','edgecolors', 'label']
-_G.plot_args = list(inspect.signature(Line2D.set).parameters.keys())[1:]
+_G.plot_args = []#list(inspect.signature(Line2D.set).parameters.keys())[1:]
 _G.errorbar_args = ['fmt', 'ecolor', 'elinewidth', 'capsize', 'capthick', 'barsabove'] 
 _G.errorbar_args += _G.plot_args
 

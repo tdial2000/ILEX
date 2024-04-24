@@ -72,7 +72,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ilex.globals</h1><div class="highlight"><pre>
-<span></span>
+<span></span><span class="c1"># imports</span>
+<span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="n">Line2D</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+
 <div class="viewcode-block" id="globals_">
 <a class="viewcode-back" href="../../_autosummary/ilex.globals.html#ilex.globals.globals_">[docs]</a>
 <span class="k">class</span> <span class="nc">globals_</span><span class="p">:</span>
@@ -121,8 +124,14 @@
          <span class="s2">&quot;tN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;fN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
 
 <span class="c1"># dict of hyper parameters``</span>
-<span class="n">_G</span><span class="o">.</span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;savefig&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;plot_err_type&#39;</span><span class="p">:</span> <span class="s1">&#39;regions&#39;</span><span class="p">,</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;force&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;savefig&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;plot_type&#39;</span><span class="p">:</span> <span class="s1">&#39;scatter&#39;</span><span class="p">,</span>
          <span class="s1">&#39;residuals&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_tW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_fW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+
+<span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">,</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;cmap&#39;</span><span class="p">,</span> <span class="s1">&#39;vmin&#39;</span><span class="p">,</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span><span class="s1">&#39;linewidths&#39;</span><span class="p">,</span><span class="s1">&#39;edgecolors&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span> <span class="o">=</span> <span class="p">[]</span><span class="c1">#list(inspect.signature(Line2D.set).parameters.keys())[1:]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fmt&#39;</span><span class="p">,</span> <span class="s1">&#39;ecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;elinewidth&#39;</span><span class="p">,</span> <span class="s1">&#39;capsize&#39;</span><span class="p">,</span> <span class="s1">&#39;capthick&#39;</span><span class="p">,</span> <span class="s1">&#39;barsabove&#39;</span><span class="p">]</span> 
+<span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">+=</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span>
 
 
 

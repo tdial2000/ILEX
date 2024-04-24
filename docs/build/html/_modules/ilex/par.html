@@ -540,11 +540,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">empty_par</span><span class="p">()</span>
 
 
-
-
-    
-
-    <span class="c1"># function to update from new crop</span>
 <div class="viewcode-block" id="FRB_params.update_from_crop">
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
     <span class="k">def</span> <span class="nf">update_from_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
@@ -597,63 +592,78 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">))</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span></div>
 
 
+    
 
-
-    <span class="c1"># # function to load paramters from parameter file</span>
-    <span class="c1"># def load_params(self, filename: str = None):</span>
+    <span class="c1"># function to update from new crop</span>
+    <span class="c1"># def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],</span>
+    <span class="c1">#                     tN: int = 1, fN: int = 1):</span>
     <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Load params from file - To implement??</span>
+    <span class="c1">#     Update Parameters based on time and frequency crops + averaging</span>
 
     <span class="c1">#     Parameters</span>
     <span class="c1">#     ----------</span>
-    <span class="c1">#     filename : str, optional</span>
-    <span class="c1">#         param file name, by default None</span>
-    <span class="c1">#     &quot;&quot;&quot;        </span>
+    <span class="c1">#     t_crop : list, optional</span>
+    <span class="c1">#         time crop, by default [0.0, 1.0]</span>
+    <span class="c1">#     f_crop : list, optional</span>
+    <span class="c1">#         frequency crop, by default [0.0, 1.0]</span>
+    <span class="c1">#     tN : int, optional</span>
+    <span class="c1">#         Factor for time averaging, by default 1</span>
+    <span class="c1">#     fN : int, optional</span>
+    <span class="c1">#         Factor for frequency averaging, by default 1</span>
+    <span class="c1">#     &quot;&quot;&quot;    </span>
+    <span class="c1">#     # TODO: Maybe find a smarter way to do this</span>
+    <span class="c1">#     # reverse f_crop if Upper sideband</span>
+    <span class="c1">#     f_crop_copy = f_crop.copy()</span>
+    <span class="c1">#     if self.UP:</span>
+    <span class="c1">#         f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]</span>
 
-    <span class="c1">#     if filename is None:</span>
-    <span class="c1">#         log(&quot;Parameter file must be valid&quot;, lpf_col = self.pcol)</span>
-    <span class="c1">#         return</span>
+    <span class="c1">#     # update params given new crop and averaging</span>
+    <span class="c1">#     # update resolutions</span>
+    <span class="c1">#     self.dt *= tN</span>
+    <span class="c1">#     self.df *= fN</span>
 
-    <span class="c1">#     # load into object</span>
-    <span class="c1">#     with open(filename, &#39;r&#39;) as file:</span>
-    <span class="c1">#         params = yaml.safe_load(file)</span>
+    <span class="c1">#     # update t_lim</span>
+    <span class="c1">#     # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping</span>
+    <span class="c1">#     t0_base = self.t_lim[0]</span>
+    <span class="c1">#     dt = (self.t_lim[1] - self.t_lim[0])/self.nsamp</span>
 
-    <span class="c1">#     for _,key in enumerate(params.keys()):</span>
-    <span class="c1">#         setattr(self,key,params[key])</span>
+    <span class="c1">#     # crop base resolution samples</span>
+    <span class="c1">#     t0 = int(t_crop[0] * self.nsamp)</span>
+    <span class="c1">#     t1 = int(t_crop[1] * self.nsamp)</span>
+    <span class="c1">#     t_w = ((t1 - t0) // tN) * tN</span>
 
-    <span class="c1">#     log(f&quot;Parameters loaded from [{filename}]&quot;, lpf_col = self.pcol)</span>
+    <span class="c1">#     # correct max limit in time based on cropping due to averaging, then</span>
+    <span class="c1">#     # calculate new t limits in base time resolution, should align with the averaging</span>
+    <span class="c1">#     # that will be done</span>
+    <span class="c1">#     self.t_lim[0] = t0 * dt + 0.5 * dt * tN + t0_base</span>
+    <span class="c1">#     self.t_lim[1] = (t0 + t_w) * dt - 0.5 * dt * tN + t0_base</span>
 
-    <span class="c1">#     return </span>
+    <span class="c1">#     # same thing with frequency</span>
+
+    <span class="c1">#     # update f_lim </span>
+    <span class="c1">#     f0_base = self.f_lim[0]</span>
+    <span class="c1">#     df = (self.f_lim[1] - self.f_lim[0])/self.nchan</span>
+
+    <span class="c1">#     # crop base resolution</span>
+    <span class="c1">#     f0 = int(f_crop_copy[0] * self.nchan)</span>
+    <span class="c1">#     f1 = int(f_crop_copy[1] * self.nchan)</span>
+    <span class="c1">#     f_w = ((f1 - f0) // fN) * fN</span>
+
+    <span class="c1">#     # correct for cropping due to averaging</span>
+    <span class="c1">#     self.f_lim[0] = f0 * df + 0.5 * df * fN + f0_base</span>
+    <span class="c1">#     self.f_lim[1] = (f0 + f_w) * dt - 0.5 * df * fN + f0_base</span>
+
+    <span class="c1">#     # update bw and cfreq</span>
+    <span class="c1">#     self.bw = self.f_lim[1] - self.f_lim[0]</span>
+    <span class="c1">#     self.cfreq = self.f_lim[0] + 0.5*self.bw</span>
+
+    <span class="c1">#     # update nchan and nsamp</span>
+    <span class="c1">#     self.nchan = f_w</span>
+    <span class="c1">#     self.nsamp = t_w</span>
+
 
 
     
-    <span class="c1"># # function to get limits from crop</span>
-    <span class="c1"># def save_params(self, filename: str = None):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Save current parameters to file</span>
-
-    <span class="c1">#     Parameters</span>
-    <span class="c1">#     ----------</span>
-    <span class="c1">#     filename : str, optional</span>
-    <span class="c1">#         filename to save params to, by default None</span>
-    <span class="c1">#     &quot;&quot;&quot;        </span>
-        
-    <span class="c1">#     if filename is None:</span>
-    <span class="c1">#         log(&quot;parameter file must be valid&quot;, lpf_col = self.pcol)</span>
-    <span class="c1">#         return</span>
-
-    <span class="c1">#     # build yaml .object</span>
-    <span class="c1">#     params = {}</span>
-    <span class="c1">#     for _,key in enumerate(_G.p.keys()):</span>
-    <span class="c1">#         params[key] = getattr(self, key)</span>
-        
-    <span class="c1">#     # save object to .yaml file</span>
-    <span class="c1">#     with open(filename, &#39;w&#39;) as file:</span>
-    <span class="c1">#         yaml.safe_dump(params, file)</span>
-
-    <span class="c1">#     log(f&quot;Parameters saved to [{filename}]&quot;, lpf_col = self.pcol)</span>
-
-    <span class="c1">#     return</span>
         
     
     <span class="c1"># function to save parameters to parameter file</span>

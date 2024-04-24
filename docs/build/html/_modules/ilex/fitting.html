@@ -96,6 +96,7 @@
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">inspect</span>
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">floor</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1"># rm synthesis</span>
 <span class="kn">from</span> <span class="nn">RMtools_1D.do_RMsynth_1D</span> <span class="kn">import</span> <span class="n">run_rmsynth</span>
@@ -246,7 +247,6 @@
     <span class="c1"># only fill one side, since this is a one sided</span>
     <span class="c1"># exponential</span>
     <span class="n">yscat</span><span class="p">[</span><span class="n">hw</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">hw</span><span class="p">:]</span><span class="o">/</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
-
     <span class="k">return</span> <span class="n">yscat</span></div>
 
 
@@ -373,6 +373,97 @@
 
     <span class="k">return</span> <span class="n">y</span></div>
 
+<span class="c1"># def scatt_pulse_profile(x, p):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Scattering time series profile with n pulses. Numerical convolution if done incorrectly</span>
+<span class="c1">#     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window</span>
+<span class="c1">#     around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.</span>
+<span class="c1">#     This of course isn&#39;t realistic when taking a crop of data whose bounds cut through potential signal. </span>
+
+<span class="c1">#     To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until </span>
+<span class="c1">#     symmetrical, this avoids any potential shifting due to improper convolution. </span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     x: np.ndarray</span>
+<span class="c1">#         X data array</span>
+<span class="c1">#     p: Dict(float)</span>
+<span class="c1">#         dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n</span>
+<span class="c1">#         [a[n]] - Pulse amplitude \n</span>
+<span class="c1">#         [mu[n]] - Pulse position \n</span>
+<span class="c1">#         [sig[n]] - Pulse width \n</span>
+<span class="c1">#         [tau] - scattering timescale</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     y: np.ndarray</span>
+<span class="c1">#         Y data array</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     # create empty output array</span>
+<span class="c1">#     y = np.zeros(x.size)</span>
+<span class="c1">#     print(x)</span>
+    
+<span class="c1">#     # create scattering tail </span>
+<span class="c1">#     dt = x[1] - x[0]</span>
+<span class="c1">#     npulses = (len(p) - 1)//3</span>
+<span class="c1">#     stail = scat(dt,p[&#39;tau&#39;], sig = 3)</span>
+<span class="c1">#     print(stail.size)</span>
+<span class="c1">#     # plt.plot(np.linspace(0.0, 1.0, stail.size), stail)</span>
+
+<span class="c1">#     # Each gaussian will be isolated and convolved seperatley with enough padding for a complete</span>
+<span class="c1">#     # uniform convolution with zero shifting due to numerical error.</span>
+<span class="c1">#     for i in range(npulses):</span>
+
+<span class="c1">#         # make gaussian with sigma 5</span>
+<span class="c1">#         xe = int(floor((p[f&quot;mu{i+1}&quot;] + p[f&quot;sig{i+1}&quot;]*5)/dt))  #assuming starts at zero, at increments of </span>
+<span class="c1">#         xs = int(floor((p[f&quot;mu{i+1}&quot;] - p[f&quot;sig{i+1}&quot;]*5)/dt))</span>
+    
+<span class="c1">#         # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve</span>
+<span class="c1">#         # if x.size &lt; stail.size:</span>
+<span class="c1">#         #     # expand to same size as stail</span>
+<span class="c1">#         #     lendif = (stail.size - (x.size))</span>
+<span class="c1">#         #     xe += lendif</span>
+<span class="c1">#         #     xs -= lendif</span>
+            
+            
+<span class="c1">#         x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)</span>
+<span class="c1">#         print(x_i)</span>
+
+<span class="c1">#         # crop bounded signal</span>
+<span class="c1">#         ps = int(floor(x[0]/dt))</span>
+<span class="c1">#         xs -= ps</span>
+<span class="c1">#         xe -= ps</span>
+
+<span class="c1">#         # handle edge cases</span>
+<span class="c1">#         if xs &gt;= x.size:</span>
+<span class="c1">#             continue</span>
+
+<span class="c1">#         if xe &lt;= 0:</span>
+<span class="c1">#             continue</span>
+
+<span class="c1">#         # make pulse</span>
+<span class="c1">#         pulse_i = gaussian(x, 1, p[f&quot;mu{i+1}&quot;], p[f&quot;sig{i+1}&quot;])</span>
+<span class="c1">#         print(pulse_i.size)</span>
+<span class="c1">#         print(x.size)</span>
+<span class="c1">#         print(stail.size)</span>
+<span class="c1">#         # print(pulse_i.size)</span>
+<span class="c1">#         # plt.plot(x_i, pulse_i)</span>
+
+<span class="c1">#         # convolve</span>
+<span class="c1">#         conv = np.convolve(pulse_i, stail, mode = &quot;same&quot;)</span>
+<span class="c1">#         # plt.plot(np.linspace(0,1.0, stail.size),stail)</span>
+<span class="c1">#         plt.plot(x, conv/np.max(conv)*p[f&quot;a{i+1}&quot;], label = f&quot;{1/dt}&quot;)</span>
+<span class="c1">#         pulse_ind = [0, conv.size]</span>
+        
+<span class="c1">#         if xs &lt; 0:</span>
+<span class="c1">#             pulse_ind[0] = 0 - xs</span>
+<span class="c1">#             xs = 0</span>
+<span class="c1">#         if xe + 1 &gt; x.size:</span>
+<span class="c1">#             pulse_ind[1] -= (xe+1 - x.size)</span>
+<span class="c1">#             xe = x.size</span>
+
+<span class="c1">#         # y[xs:xe+1] += p[f&quot;a{i+1}&quot;] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)</span>
+<span class="c1">#     return y</span>
 
 
 

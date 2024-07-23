@@ -3,6 +3,7 @@ from .data import *
 from .logging import log
 from .utils import get_stk_from_datalist
 from .globals import _G
+from time import time
 
 ##==========================##
 ## MAIN PROCESSING FUNCTION ##
@@ -68,6 +69,10 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     if par['terr_crop'] is not None:
         err_flag = True
 
+    zap_flag = False
+    if par['zapchan'] is not None:
+        zap_flag = True
+
     fday_flag = False
     if "Q" in stk_list and "U" in stk_list:
         fday_flag = True 
@@ -98,16 +103,21 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
 
 
+    ## Channel Zap ##
+    if zap_flag:
+        log(f"Applying channel zapping", lpf = False)
+        stk_ds, zap_flag = _zap_chan(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
+                                freq = freq, par = par, err = err_flag)
+        
+        if not zap_flag:
+            log("All channel zapping lies outside the known bandwidth, will skip channel zapping", lpf = False, stype = "warn")
+
+
     ## normalise ##
     log(f"Applying normalisation = {par['norm']}", lpf = False)
     stk_ds = _normalise(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
-                        par = par, err = err_flag)
+                        par = par, err = err_flag, zap = zap_flag)
 
-
-
-    ## Channel Zap ## TODO - To be Implemented
-
-    
 
     ## faraday rotate ##
     if fday_flag:
@@ -120,12 +130,12 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     log(f"Applying Time Averaging = {par['tN']}", lpf = False)
     log(f"Applying Freq Averaging = {par['fN']}", lpf = False)
     stk_ds = _average(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
-                    par = par, err = err_flag)
+                    par = par, err = err_flag, zap = zap_flag)
 
 
 
     # also average freq array
-    freq = average(freq, N = par['fN'])
+    freq = average(freq, N = par['fN'], nan = zap_flag)
 
 
     ## ========================= ##
@@ -147,14 +157,15 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
         #------- time series -------#
         if S in t_list:
-            _t[S] = _scrunch(stk_ds[S], xtype = "t", W = _average_weight(par['fW'], par['fN']))
+            _t[S] = _scrunch(stk_ds[S], xtype = "t", W = _average_weight(par['fW'], par['fN']), nan = zap_flag)
             if err_flag:
 
                 # for time series error, can average both t and f
-                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'])
-                err_ds = average(err_ds, axis = 1, N = par['tN'])
+                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 1, N = par['tN'])
+                err_ds = average(err_ds, axis = 0, N = par['fN'], nan = zap_flag)
+                
                 # err_ds = f_weight(err_ds, _average_weight(par['fW'], par['fW']))
-                _t[f"{S}err"] = _time_err(err_ds)
+                _t[f"{S}err"] = _time_err(err_ds, nan = zap_flag)
 
 
 
@@ -169,7 +180,7 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
             _f[S] = _scrunch(stk_ds[S], xtype = "f", W = _average_weight(par['tW'], par['tN']))
             if err_flag:
                 # for freq error, best to not avearge in time
-                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'])
+                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'], nan = zap_flag)
                 # err_ds = t_weight(err_ds, par['tW'])
                 _f[f"{S}err"] = _freq_err(err_ds, par['t_crop'], par['terr_crop'])
         
@@ -177,10 +188,14 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
         del stk_ds[S]
         if err_flag:
             del stk_ds[f"{S}err"]
+    
+
+    # compile all flags for future use
+    _flags = {'zap_flag':zap_flag, 'err_flag':err_flag}
 
         
     # return data containers
-    return _ds, _t, _f, freq
+    return _ds, _t, _f, freq, _flags
 
 
 
@@ -294,9 +309,11 @@ def _crop(stk, stk_ds, stk_list, par, err = False):
 
     for S in stk_list:
         print(f"PROCESSING {S}")
+        t1 = time()
         # crop on-burst
         stk_ds[S] = pslice(stk[S], *par['t_crop'], axis = 1)        # Time 
         stk_ds[S] = pslice(stk_ds[S], *par['f_crop'], axis = 0)     # Freq
+        print(f"Time: {(time() - t1)} s")
         
         # off-burst
         if err:
@@ -307,18 +324,24 @@ def _crop(stk, stk_ds, stk_list, par, err = False):
 
 
 
-def _scrunch(x, xtype = "t", W = None):
+def _scrunch(x, xtype = "t", W = None, nan = False):
     """
     scrunch data with either a box car or weights
 
     
     """
 
+    if nan:
+        func = np.nanmean
+    else:
+        func = np.mean
+
+
     if xtype == "t":    # if i'm making a time array, weight freqs
-        return np.mean(f_weight(x, W), axis = 0) 
+        return func(f_weight(x, W), axis = 0) 
     
     elif xtype == "f":  # if i'm making a freq array, weight times
-        return np.mean(t_weight(x, W), axis = 1)
+        return func(t_weight(x, W), axis = 1)
     
 
 
@@ -354,7 +377,7 @@ def _weight(stk, stk_ds, stk_list, par, err = False):
 
 
 
-def _normalise(stk, stk_ds, stk_list, par, err = False):
+def _normalise(stk, stk_ds, stk_list, par, err = False, zap = False):
     """
     Info:
         Do normalisation
@@ -374,13 +397,19 @@ def _normalise(stk, stk_ds, stk_list, par, err = False):
     for S in stk_list:
         # normalise by max of stokes S
         if norm == "max":
-            nconst = np.max(stk[S])
+            if zap:
+                nconst = np.nanmax(stk[S])
+            else:
+                nconst = np.max(stk[S])
             stk_ds[S] /= nconst
             stk_ds[f"{S}err"] /= nconst
 
         # normalise by abs max of stokes S
         elif norm == "absmax":
-            nconst= np.max(np.abs(stk[S]))
+            if zap:
+                nconst = np.nanmax(np.abs(stk[S]))
+            else:
+                nconst = np.max(np.abs(stk[S]))
             stk_ds[S] /= nconst
             stk_ds[f"{S}err"] /= nconst
 
@@ -420,7 +449,7 @@ def _faraday_rotate(stk, stk_ds, stk_list, freq, par, err = False):
 
 
 
-def _average(stk, stk_ds, stk_list, par, err = False):
+def _average(stk, stk_ds, stk_list, par, err = False, zap = False):
     """
     Info:
         Apply averaging in Time and Freq
@@ -438,7 +467,7 @@ def _average(stk, stk_ds, stk_list, par, err = False):
             #     stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 1, N = par['tN'])
 
         if par['fN'] > 1:
-            stk_ds[S] = average(stk_ds[S], axis = 0, N = par['fN'])
+            stk_ds[S] = average(stk_ds[S], axis = 0, N = par['fN'], nan = zap)
             # if err:
             #     stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 0, N = par['fN'])
 
@@ -447,7 +476,7 @@ def _average(stk, stk_ds, stk_list, par, err = False):
 
 
 
-def _time_err(ds):
+def _time_err(ds, nan = False):
     """
     Info:
         Calculate error in Time
@@ -458,11 +487,19 @@ def _time_err(ds):
     Returns:
         rms (float): average rms over time
     """
+
+    if nan:
+        func_mean = np.nanmean
+        func_std = np.nanstd
+    else:
+        func_mean = np.mean
+        func_std = np.std
+
     # scrunch in frequency
-    t = np.mean(ds, axis = 0)
+    t = func_mean(ds, axis = 0)
 
     # calculate rms
-    rms = np.std(t)
+    rms = func_std(t)
 
     return rms
 
@@ -493,10 +530,89 @@ def _freq_err(ds, t_crop, terr_crop):
 
 
 
-def _zap_chan():
+def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
     """
-    Info:
-        Zap channels
-        TODO - To be Implemented
+    Zap channels, assumes contiguous frequency array
+    
     """
-    pass
+
+    # vals
+    df = freq[1] - freq[0]
+    f_min = np.min(freq)
+    f_max = np.max(freq)
+
+    if df < 0:
+        # upperside band
+        fi = f_max
+        df_step = -1
+
+    else:
+        # lowerside band
+        fi = f_min
+        df_step = 1
+
+    df = abs(df)
+    
+    # split segments
+    zap_segments = par['zapchan'].split(',')
+    seg_idx = []
+
+    # for each segment, check for delimiter :, else float cast
+    for _, zap_seg in enumerate(zap_segments):
+
+        # if segment is a range of frequencies
+        if ":" in zap_seg:
+            zap_range = zap_seg.strip().split(':')
+            zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)
+            zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
+
+
+            # check if completely outside bounds
+            if (zap_0 < 0 and zap_1 < 0) or (zap_0 > freq.size -1 and zap_1 > freq.size -1):
+                log(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
+                continue            
+            
+            # check bounds
+            crop_zap = False
+
+            if zap_0 < 0:
+                crop_zap = True
+                zap_0 = 0
+            elif zap_0 > freq.size - 1:
+                crop_zap = True
+                zap_0 = freq.size - 1
+
+            if zap_1 < 0:
+                crop_zap = True
+                zap_1 = 0
+            elif zap_1 > freq.size - 1:
+                crop_zap = True
+                zap_1 = freq.size - 1
+
+            if crop_zap:
+                log(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{freq[zap_0]}, {freq[zap_1]}] MHz", lpf = False, stype = "warn")
+
+            seg_idx += list(range(zap_0,zap_1+df_step,df_step))[::df_step]
+        
+        # if segment is just a single frequency
+        else:
+            _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
+            if (_idx < 0) or (_idx > freq.size - 1):
+                log(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
+            else:
+                seg_idx += [_idx]
+
+
+    # check if seg_idx is empty, i.e. if there is no channel zapping.
+    if len(seg_idx) == 0:
+        return stk_ds, False
+
+
+    # mask out zapped channels
+    for S in stk_list:
+        stk_ds[S][seg_idx] = np.nan
+
+        if err:
+            stk_ds[f"{S}err"][seg_idx] = np.nan
+
+    return stk_ds, True

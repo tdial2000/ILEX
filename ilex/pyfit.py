@@ -564,16 +564,31 @@ class fit:
             return []
         
 
-    def get_model(self):
+    def get_model(self, x = None):
         """
         Get model fit
+
+        Parameters
+        ----------
+        x : array-like
+            datapoints to evaluate model, if None will use x values already given to current instance
+
+        Returns
+        -------
+        x : array-like
+            x data
+        y : array-like
+            y data - evaluated model values
         """
 
         model_vals = self.get_post_val()
         if model_vals is None:
             return None
 
-        return self.x, self.func(self.x, **model_vals)
+        if x is None:
+            x = self.x
+
+        return x, self.func(x, **model_vals)
 
 
     
@@ -951,6 +966,9 @@ class fit:
 
 
             keys = inspect.getargspec(func_wrap)[0][1:]
+            # if yerr not specified, include sigma for sampling
+            if self.yerr is None:
+                keys += ['sigma']
             bil_priors = _dict_get(priors, keys)
 
                 
@@ -1143,7 +1161,7 @@ class fit:
         _, y_fit = self.get_model()
         if y_fit is None:
             return
-        AX[0].plot(self.x, y_fit, color = 'orchid', linewidth = 3)
+        AX[0].plot(self.x, y_fit, color = [0.9098, 0.364, 0.3961], linewidth = 2.5)
 
         # plot errorbars if specified
         if self.yerr is not None:

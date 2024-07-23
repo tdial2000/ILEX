@@ -235,6 +235,8 @@ def make_ds(xpol, ypol, S = "I", nFFT = 336):
     print("[MAKING DYNSPEC]:    [Progress] = 100.00%:    " + prog_str + "        \n")
     print(f"Made Dynamic spectra with shape [{ds.shape[0]}, {ds.shape[1]}]")
 
+    
+
     return ds
 
 
@@ -288,8 +290,8 @@ def pulse_fold(ds, DM, cfreq, bw, MJD0, MJD1, F0, F1, sphase = None):
 
     # get dispersion sweep, calculate number of "broken" pulse periods
     # due to dipsersion.
-    top_band = args.cfreq + bw/2
-    bot_band = args.cfreq - bw/2
+    top_band = cfreq + bw/2
+    bot_band = cfreq - bw/2
     DM_sweep = 4.14938e3 * DM * (1/bot_band**2 - 1/top_band**2) # DM sweep in seconds
     P_sweep = int(DM_sweep/T) + 1
     print(f"DM sweep: {DM_sweep} [ms]")

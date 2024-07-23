@@ -11,7 +11,7 @@
 ## imports
 from ..frb import FRB
 from ..data import *
-from ..utils import load_param_file, dict_get
+from ..utils import load_param_file, dict_get, fix_ds_freq_lims
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
@@ -77,6 +77,9 @@ def _plot_mosaic(args):
     phasew = pmax*args.nsamp/frb.ds['I'].shape[1]                               # width of immediate burst in phase units
     t_crop_full = [Imax - 1.2*phasew, Imax + 1.2*phasew]                        # crop to use in frb instance
 
+    # parameters for global plotting
+    ds_freq_lims = fix_ds_freq_lims(frb.prev_par.f_lim, frb.prev_par.df)
+
 
     # enumerate through each given time resolution
     for i, t in enumerate(args.t):
@@ -103,7 +106,7 @@ def _plot_mosaic(args):
 
             # plot dynspec
             AX[f"{S}{t}"].imshow(data[f"ds{S}"], aspect = 'auto', 
-                            extent = [*t_offset, *frb.prev_par.f_lim])
+                            extent = [*t_offset, *ds_freq_lims])
 
             # set labels
             if S == "V":
@@ -137,9 +140,9 @@ def _plot_mosaic(args):
 
             
         # plot stokes time series profiles
-        frb.plot_stokes(ax = AX[f"t{t}"], stk_type = "t", plot_L = pars['plots']['plot_L'], t_crop = tcrop, tN = t,
-                Ldebais = pars['plots']['Ldebias'], sigma = pars['plots']['sigma'], stk_ratio = pars['plots']['stk_ratio'],
-                stk2plot = pars['plots']['stk2plot'])
+        frb.plot_stokes(ax = AX[f"t{t}"], stk_type = "t", t_crop = tcrop, tN = t, Ldebais = pars['plots']['Ldebias'],
+                        sigma = pars['plots']['sigma'], stk_ratio = pars['plots']['stk_ratio'],
+                        stk2plot = pars['plots']['stk2plot'])
         AX[f"t{t}"].set_title(f"{t*frb.par.dt*1e3:.0f} $\\mu$s")
         AX[f"t{t}"].set_xlim(frb.prev_par.t_lim)
         

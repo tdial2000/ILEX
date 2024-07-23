@@ -27,7 +27,7 @@ import yaml
 from .utils import (load_data, save_data, dict_get,
                     dict_init, dict_isall,
                     merge_dicts, dict_null, get_stk_from_datalist, load_param_file,
-                    set_plotstyle)
+                    set_plotstyle, fix_ds_freq_lims)
 
 from .data import *
 
@@ -76,6 +76,8 @@ class FRB:
         Right acension position
     DEC: str 
         Declination position
+    MJD: float
+        Modified Julian date in days
     DM: float 
         Dispersion Measure
     bw: float 
@@ -100,6 +102,10 @@ class FRB:
         Reference Frequency
     pa0: float 
         Position angle at reference frequency f0
+    zapchan: str
+        string used for zapping channels, in format -> "850, 860, 870:900" \n
+        each element seperated by a ',' is a seperate channel. If ':' is used, user can specify a range of values \n
+        i.e. 870:900 -> from channel 870 to 900 inclusive of both.
     verbose: bool 
         Enable verbose logging
     norm: str
@@ -169,17 +175,18 @@ class FRB:
 
     ## [ INITIALISE FRB ] ##
     def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
-                       DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
+                       MJD: float = _G.p['MJD'], DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_crop = None,               f_crop = None,           tN: int = 1,
                        fN: int = 1,                 t_lim = _G.p['t_lim'],   f_lim = _G.p['f_lim'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
-                       df: float = _G.p['df'],      terr_crop = None,        yaml_file = None):
+                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None,        
+                       yaml_file = None):
         """
         Create FRB instance
         """
         
-        self.par = FRB_params(name = name, RA = RA, DEC = DEC, 
+        self.par = FRB_params(name = name, RA = RA, DEC = DEC, MJD = MJD, 
                               DM = DM, bw = bw, cfreq = cfreq,
                               t_lim = t_lim, f_lim = f_lim, 
                               RM = RM, f0 = f0, pa0 = pa0, dt = dt, df = df)
@@ -241,6 +248,7 @@ class FRB:
         self.plot_type = "scatter"    # type of errorbar plot
         self.residuals = False          # plot residuals when plotting fits
         self.plotPosterior = True      # plot posterior corner plot when plotting fits
+        self.zap = False                # if True, will treat arrays as zapped
 
         # weightings
         self.apply_tW = True                  # apply time weights
@@ -261,25 +269,21 @@ class FRB:
 
     
     ## [ LOAD IN DATA ] ##
-    def load_data(self, ds_I: str = None, ds_Q: str = None, ds_U: str = None, ds_V: str = None,
-                  pol_X: str = None, pol_Y: str = None, yaml_file: str = None, mmap = True, _init = False):
+    def load_data(self, dsI: str = None, dsQ: str = None, dsU: str = None, dsV: str = None,
+                    yaml_file: str = None, mmap = True, _init = False):
         """
         Load Stokes HTR data
 
         Parameters
         ----------
-        ds_I: str 
+        dsI: str 
             Filename of stokes I dynamic spectra
-        ds_Q: str 
+        dsQ: str 
             Filename of stokes Q dynamic spectra
-        ds_U: str 
+        dsU: str 
             Filename of stokes U dynamic spectra
-        ds_V: str 
+        dsV: str 
             Filename of stokes V dynamic spectra
-        pol_X: str 
-            Filename of X polarisation time series
-        pol_Y: str 
-            Filename of Y polarisation time series
         yaml_file: str 
             parameter yaml file for FRB, default is None
         mmap: bool 
@@ -304,8 +308,8 @@ class FRB:
             self.par.set_weights(xtype = "f", **yaml_pars['weights']['freq'])
 
             # set loaded files
-            ds_I, ds_Q = yaml_pars['data']['dsI'], yaml_pars['data']['dsQ']
-            ds_U, ds_V = yaml_pars['data']['dsU'], yaml_pars['data']['dsV']
+            dsI, dsQ = yaml_pars['data']['dsI'], yaml_pars['data']['dsQ']
+            dsU, dsV = yaml_pars['data']['dsU'], yaml_pars['data']['dsV']
 
             # check if plotstyle file is given
             set_plotstyle(yaml_pars['plots']['plotstyle_file'])
@@ -332,8 +336,7 @@ class FRB:
 
 
         ## dict. of files that will be loaded in
-        data_files = {"ds_I": ds_I, "ds_Q": ds_Q, "ds_U": ds_U, "ds_V": ds_V,
-                      "pol_X": pol_X, "pol_Y": pol_Y}
+        data_files = {"dsI": dsI, "dsQ": dsQ, "dsU": dsU, "dsV": dsV}
 
 
         # loop through files
@@ -361,7 +364,7 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, name = None, **kwargs):
+    def save_data(self, data_list = None, name = None, yaml_file = None, **kwargs):
         """
         Save current instance data
 
@@ -373,6 +376,17 @@ class FRB:
             Common Pre-fix for saved data, by default None, if None the name parameter of the
             FRB class will be used.
         """
+
+        if yaml_file is not None:
+            # save parmaters to yaml file
+            pass
+
+
+
+        if data_list is None:
+            log("No data specified for saving...", stype = "warn")
+            return
+
 
         log("Saving the following data products:", lpf_col = self.pcol)
         for data in data_list:
@@ -440,7 +454,7 @@ class FRB:
         
     # implement FRB_params struct  
     ## [ GET DATA ] ##
-    def get_data(self, data_list = "dsI", get = False, **kwargs):
+    def get_data(self, data_list = "dsI", get = False, ignore_nans = False, **kwargs):
         """
         Make new instance of loaded data. This will take a crop of the 
         loaded mmap-ed stokes data, pass it through the back-end processing
@@ -454,6 +468,8 @@ class FRB:
         get : bool, optional
             Return new crops of data, by default False and will only save data
             instances to class container attributes
+        ignore_nans : bool, optional
+            If true, if nans exist in data, they will be removed before saving the data instance
 
         Returns
         -------
@@ -461,14 +477,16 @@ class FRB:
             Dictionary of processed data crops, by default None if get = False
         """
         # update par and metapar if nessesary
+        print(self.par.t_lim)
         self._load_new_params(**kwargs)
+        print(self.this_par.t_lim)
 
         
 
         # process data_list as str
         if type(data_list) == str:
             if data_list == "all":
-                data_list = _G.hkeys[:-2]
+                data_list = _G.hkeys
             else:
                 data_list = [data_list]
                 
@@ -491,7 +509,7 @@ class FRB:
 
 
             ## make new instances
-            self._make_instance(data_list)
+            self._make_instance(data_list, ignore_nans)
 
 
             ## set new instance param 
@@ -505,7 +523,7 @@ class FRB:
         # check if get is true
         if get:
             # return instance
-            return self._get_instance(data_list)
+            return self._get_instance(data_list, ignore_nans)
 
 
         #return data
@@ -655,7 +673,7 @@ class FRB:
 
 
 
-    def _get_instance(self, data_list = None):
+    def _get_instance(self, data_list = None, ignore_nans = False):
         """
         Grap current instance of crops
 
@@ -672,6 +690,26 @@ class FRB:
         # initialise new data list
         new_data = {}
 
+        # ingore nans? -> make mask for this process
+        f_mask = np.ones(self._freq.size, dtype = bool)
+        if ignore_nans:
+            # find first data that isn't None
+            while True:
+                for key in self._ds.keys():
+                    if self._ds[key] is not None:
+                        f_mask[np.isnan(self._ds[key][:,0])] = False
+                        break
+
+                for key in self._f.keys():
+                    if self._f[key] is not None:
+                        f_mask[np.isnan(self._f[key])] = False
+                        break
+
+                # if no freq data, just pass through 
+                break
+
+
+
         # flags
         err_flag = self._iserr()
 
@@ -679,7 +717,7 @@ class FRB:
             stk = data[-1]
             # dynamic spectra
             if "ds" in data:
-                new_data[data] = self._ds[stk].copy()
+                new_data[data] = self._ds[stk][f_mask,:].copy()
 
             # time series
             elif "t" in data:
@@ -689,13 +727,13 @@ class FRB:
 
             # frequency spectra
             elif "f" in data:
-                new_data[data] = self._f[stk].copy()
+                new_data[data] = self._f[stk][f_mask].copy()
                 if err_flag:
                     new_data[f"{data}err"] = self._f[f"{stk}err"]
 
         # also add freqs
         if self._freq is not None:
-            new_data['freq'] = self._freq.copy()
+            new_data['freq'] = self._freq[f_mask].copy()
         else:
             log("Couldn't get freq array, something went wrong", stype = "warn")
 
@@ -710,7 +748,7 @@ class FRB:
 
 
 
-    def _make_instance(self, data_list = None):
+    def _make_instance(self, data_list = None, ignore_nans = False):
         """
         Make New data crops for current instance
 
@@ -760,27 +798,52 @@ class FRB:
 
 
         # pass through to backend processing script
-        _ds, _t, _f, self._freq = master_proc_data(self.ds, freqs, 
+        _ds, _t, _f, self._freq, _flags = master_proc_data(self.ds, freqs, 
                                                             data_list, full_par)
 
-        
+        # process flags
+        self.zap = _flags['zap_flag']
+
+        # ingore nans? -> make mask for this process
+        f_mask = np.ones(self._freq.size, dtype = bool)
+        if ignore_nans and self.zap:
+            # find first data that isn't None
+            while True:
+                for key in _ds.keys():
+                    if _ds[key] is not None:
+                        f_mask[np.isnan(_ds[key][:,0])] = False
+                        break
+
+                for key in _f.keys():
+                    if _f[key] is not None:
+                        f_mask[np.isnan(_f[key])] = False
+                        break
+
+                # if no freq data, just pass through 
+                break
+         
 
         log("Saving new data products to latest instance", lpf_col = self.pcol)
 
+        aval_key_for_time = None
+        _timesize = 0
         # dynspecs
         ds_list = _ds.keys()
         for key in ds_list:
             if _ds[key] is not None:
-                self._ds[key] = _ds[key].copy()
+                if "err" not in key:
+                    aval_key_for_time = key
+                    _timesize = _ds[key].size
+                self._ds[key] = _ds[key][f_mask,:].copy()
                 _ds[key] = None
         
         # time series
         t_list = _t.keys()
-        aval_key_for_time = None
         for key in t_list:
             if _t[key] is not None: 
                 if "err" not in key:
                     aval_key_for_time = key
+                    _timesize = _t[key].size
                 self._t[key] = _t[key].copy()
                 _t[key] = None
         
@@ -788,12 +851,16 @@ class FRB:
         f_list = _f.keys()
         for key in f_list:
             if _f[key] is not None:
-                self._f[key] = _f[key].copy()
+                self._f[key] = _f[key][f_mask].copy()
                 _f[key] = None
+        
+        # proc freq array, nan 
+        self._freq = self._freq[f_mask]
 
         if aval_key_for_time is not None:
             # set new time (self._time)
-            self._time = np.linspace(*self.this_par.t_lim, self._t[aval_key_for_time].size, endpoint = False)
+            self._time = self.this_par.get_times()
+            # self._time = np.linspace(*self.this_par.t_lim, _timesize, endpoint = False)
 
         return
 
@@ -1103,12 +1170,14 @@ class FRB:
 
         # check if t_crop has been given in units of ms
         if "t_crop" in keys:
+            print(kwargs['t_crop'])
             
             kwargs['t_crop'][0], kwargs['t_crop'][1] = check_crop_for_str(kwargs['t_crop'], "t")
 
             if kwargs['t_crop'][0] > 1.0 or kwargs['t_crop'][1] > 1.0:
                 prev_t = kwargs['t_crop'].copy()
-                new_t,_ = self.par.lim2phase(t_lim = prev_t)
+                new_t,_ = self.par.lim2phase(t_lim = prev_t, snap = True)
+                print(new_t)
                 kwargs['t_crop'][0], kwargs['t_crop'][1] = new_t[0], new_t[1]
 
                 if kwargs['t_crop'][0] < 0.0: kwargs['t_crop'][0] = 0.0
@@ -1123,7 +1192,7 @@ class FRB:
 
             if kwargs['f_crop'][0] > 1.0 or kwargs['f_crop'][1] > 1.0:
                 prev_f = kwargs['f_crop'].copy()
-                _, new_f = self.par.lim2phase(f_lim = prev_f)
+                _, new_f = self.par.lim2phase(f_lim = prev_f, snap = True)
                 kwargs['f_crop'][0], kwargs['f_crop'][1] = new_f[0], new_f[1]
 
                 if kwargs['f_crop'][0] < 0.0: kwargs['f_crop'][0] = 0.0
@@ -1138,7 +1207,7 @@ class FRB:
                 kwargs["terr_crop"][0], kwargs["terr_crop"][1] = check_crop_for_str(kwargs["terr_crop"], "t")
                 if kwargs['terr_crop'][0] > 1.0 or kwargs['terr_crop'][1] > 1.0:
                     prev_t = kwargs['terr_crop'].copy()
-                    new_t,_ = self.par.lim2phase(t_lim = prev_t)
+                    new_t,_ = self.par.lim2phase(t_lim = prev_t, snap = True)
                     kwargs['terr_crop'][0], kwargs['terr_crop'][1] = new_t[0], new_t[1]
 
                     if kwargs['terr_crop'][0] < 0.0: kwargs['terr_crop'][0] = 0.0
@@ -1507,13 +1576,6 @@ class FRB:
         if not self._isdata():
             return None
 
-        stk = data[-1]
-
-        if data[0] == "t":
-            pdat['time'] = np.linspace(*self.this_par.t_lim, self._t[stk].size)
-        else:
-            pdat['time'] = np.array(self.this_par.t_lim)
-
         # plot 
         fig = plot_data(pdat, data, ax = ax, filename = filename, plot_type = self.plot_type)
 
@@ -1532,7 +1594,7 @@ class FRB:
 
 
 
-    def plot_stokes(self, ax = None, plot_L = False, Ldebias = False, sigma = 2.0, 
+    def plot_stokes(self, ax = None, Ldebias = False, sigma = 2.0, 
             stk_type = "f", stk2plot = "IQUV", stk_ratio = False, filename: str = None, **kwargs):
         """
         Plot Stokes data, by default stokes I, Q, U and V data is plotted
@@ -1541,8 +1603,6 @@ class FRB:
         ----------
         ax: _axes_
             matplotlib.pyplot.axes object to plot to, default is None
-        plot_L : bool, optional
-            Plot stokes L instead of Q and U, by default False
         Ldebias : bool, optional
             Plot stokes L debias, by default False
         sigma : float, optional
@@ -1589,7 +1649,7 @@ class FRB:
             log("stk_type can only be t or f", lpf_col = self.pcol, stype = "err")
 
         # plot
-        fig = plot_stokes(data, plot_L = plot_L, Ldebias = Ldebias, stk_type = stk_type,
+        fig = plot_stokes(data, Ldebias = Ldebias, stk_type = stk_type,
                     sigma = sigma, stk2plot = stk2plot, stk_ratio = stk_ratio,
                     filename = filename, plot_type = self.plot_type, ax = ax) 
     
@@ -1748,9 +1808,19 @@ class FRB:
         self.get_data("fI", **kwargs)
         if not self._isdata():
             return None
+
         
-        # caculate acf of residuals
-        y = acf(residuals(self._f['I']))
+        # in the case channel zapping has been performed, first calc residuals of non.nan values
+        # then convert nans to zeros for acf.
+        if self.zap:
+            y = self._f['I'].copy()
+            y[~np.isnan(y)] = residuals(y[~np.isnan(y)])
+            y[np.isnan(y)] = 0.0
+            y = acf(y)
+        else:
+            # caculate acf of residuals
+            y = acf(residuals(self._f['I']))
+
         # lags
         x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
                          y.size)
@@ -1907,7 +1977,7 @@ class FRB:
 
 
     def plot_poincare(self, filename = None, stk_type = "f", sigma = 2.0, plot_data = True,
-                        plot_model = False, n = 5, normalise = True, **kwargs):
+                        plot_model = False, n = 5, normalise = True, plot_1D_stokes = False, **kwargs):
         """
         Plot Stokes data on a Poincare Sphere.
 
@@ -1930,6 +2000,8 @@ class FRB:
             Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True
         n : int, optional
             Maximum order of Polynomial fit, by default 5
+        plot_1D_stokes: bool, optional
+            if True, plot 1D stokes line plots seperately in another figure
         **kwargs : Dict
             FRB parameter keywords
 
@@ -1954,7 +2026,7 @@ class FRB:
         for S in "IQUV":
             data_list += [f"{stk_type}{S}"]
 
-        data = self.get_data(data_list = data_list, get = True, **kwargs)
+        self.get_data(data_list = data_list, **kwargs)
         if not self._isdata():
             return None
 
@@ -1971,9 +2043,26 @@ class FRB:
         # plot poincare sphere
         fig, ax = create_poincare_sphere(cbar_lims = cbar_lims, cbar_label = cbar_label)
 
-        plot_poincare_track(pdat, ax, sigma = sigma, filename = filename,
+        stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = sigma, filename = filename,
                     plot_data = plot_data, plot_model = plot_model, normalise = normalise,
                     n = n)
+        
+        # also plot stokes params
+        if plot_1D_stokes:
+            if stk_type == "t":
+                x = self._time
+            else:
+                x = self._freq
+            x_m = np.linspace(*cbar_lims, stk_m['Q'].size)
+            fig2, ax = plt.subplots(1, 1, figsize = (10,10))
+            for S in "QUV":
+                ax.plot(x, stk_i[S], label = S)
+                ax.plot(x_m, stk_m[S], '--r')
+
+            ax.set(xlabel = cbar_label, ylabel = "arb. ")
+            ax.set_title("1D stokes plot")
+            ax.legend()
+
 
         plt.show()
 
@@ -2040,7 +2129,7 @@ class FRB:
             return (None, ) * 5
         
         ## get data ##
-        self.get_data(data_list, **kwargs)
+        self.get_data(data_list, ignore_nans = True, **kwargs)
         if not self._isdata():
             return None
 
@@ -2082,6 +2171,7 @@ class FRB:
         # set values to par class
         self.par.set_par(RM = rm, pa0 = pa0, f0 = f0)
         p._is_fit = True
+        p._get_stats()
 
         # plot
         if plot:
@@ -2107,8 +2197,8 @@ class FRB:
 
 
 
-    def plot_PA(self, Ldebias_threshold = 2.0, plot_L = False, flipPA = False,
-                fit_params: dict = None, filename: str = None, **kwargs):
+    def plot_PA(self, Ldebias_threshold = 2.0, stk2plot = "ILV", flipPA = False, stk_ratio = False,
+                fit_params: dict = None, filename: str = None, save_files = False, **kwargs):
         """
         Plot Figure with PA profile, Stokes Time series data, and Stokes I dyspec. If RM is not 
         specified, will be fitted first.
@@ -2117,16 +2207,21 @@ class FRB:
         ----------
         Ldebias_threshold : float, optional
             Sigma threshold for PA masking, by default 2.0
-        plot_L : bool, optional
-            Plot Linear polarisation L stokes time series instead of U and Q, by default False
+        stk2plot : str, optional
+            string of stokes to plot, for example if "QV", only stokes Q and V are plotted, \n
+            by default "IQUV", choice between "IQUVLP"
         flipPA : bool, optional
             Plot PA between [0, 180] degrees instead of [-90, 90], by default False
+        stk_ratio: bool, optional
+            Plot Stokes ratios in time series ax, by default False
         fit_params : dict, optional
             keyword parameters for fitting method, by default None \n
             [RMquad] - Scipy.optimise.curve_fit keyword params \n
             [RMsynth] - RMtools_1D.run_synth keyword params
         filename : str, optional
             filename of figure to save to, by default None
+        save_files : Bool, optional
+            if true, will save 1D .npy file with PA and .npy file with PAerrs, by default False
 
         Returns
         -------
@@ -2179,12 +2274,13 @@ class FRB:
             pdat[f"t{S}"] = self._t[S]
             pdat[f"t{S}err"] = self._t[f"{S}err"]
 
-        plot_stokes(pdat, ax = AX['S'], stk_type = "t", plot_L = plot_L, Ldebias = True, 
-                    plot_type = self.plot_type)
+        plot_stokes(pdat, ax = AX['S'], stk_type = "t", stk2plot = stk2plot, Ldebias = True, 
+                    plot_type = self.plot_type, stk_ratio = stk_ratio)
 
         ## plot dynamic spectra
+        ds_freq_lims = fix_ds_freq_lims(self.this_par.f_lim, self.this_par.df)
         AX['D'].imshow(self._ds['I'], aspect = 'auto', 
-                       extent = [*self.this_par.t_lim,*self.this_par.f_lim])
+                       extent = [*self.this_par.t_lim,*ds_freq_lims])
         AX['D'].set_ylabel("Frequency [MHz]", fontsize = 12)
         AX['D'].set_xlabel("Time [ms]", fontsize = 12)
 
@@ -2204,6 +2300,13 @@ class FRB:
 
         if filename is not None:
             plt.savefig(filename)
+
+        if save_files:
+            print(f"Saving PA data to {self.par.name}_PA.npy...")
+            np.save(f"{self.par.name}_PA.npy", PA)
+
+            print(f"Saving PA err data to {self.par.name}_PAerr.npy...")
+            np.save(f"{self.par.name}_PAerr.npy", PA_err)
 
 
         self._save_new_params()

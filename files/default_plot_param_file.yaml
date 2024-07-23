@@ -1,7 +1,7 @@
 scatter:
 
   # marker info
-  s:  6
+  s:  12
   marker: 's'
   edgecolors: 'k'
 

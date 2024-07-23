@@ -11,12 +11,13 @@
 ## imports
 from ..frb import FRB
 from ..data import *
-from ..utils import load_param_file, dict_get
+from ..utils import load_param_file, dict_get, fix_ds_freq_lims
 from ..plot import _PLOT, plot_PA, plot_stokes
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 from math import ceil, floor
+import sys
 
 
 class _empty:
@@ -24,12 +25,16 @@ class _empty:
 
 
 def plot_PA_multi(parfile, RMplots = False, RMburst = False, showbounds = False, 
+                    tcrops_start = None, tcrops_width = None, ncomp = None, 
                     filename = None):
     
     args = _empty
     args.parfile = parfile
     args.RMplots = RMplots
     args.RMburst = RMburst
+    args.tcrops_start = tcrops_start
+    args.tcrops_width = tcrops_width
+    args.ncomp = ncomp
     args.showbounds = showbounds
     args.filename = filename
 
@@ -63,21 +68,39 @@ def _PA_multi(args):
     PLOT_TYPE = pars['plots']['plot_type']
 
 
+    if (args.tcrops_start is not None) and (args.tcrops_width is not None) and (args.ncomp is not None):
+        print("Creating components with tcrops using:")
+        print(f"Start time [ms]: {args.tcrops_start}")
+        print(f"Width in time [ms]: {args.tcrops_width}")
+        print(f"# comps: {args.ncomp}")
 
-    # get tcrops 
-    tcrops = pars['multi']['tcrops']
-    fcrops = pars['multi']['fcrops']
-    
-    if tcrops is None and fcrops is None:
-        print("Must specify tcrops and fcrops in par.yaml file!")
-        sys.exit()     
+        # get t_crops
+        ncomps = args.ncomp
+        tcrops = []
+        fcrops = []
+
+        for i in range(args.ncomp):
+            tcrops += [[args.tcrops_start + i*args.tcrops_width, args.tcrops_start + (i+1)*args.tcrops_width]]
+            fcrops += [frb.metapar.f_crop]
 
 
-    ncomps = len(tcrops)
-    if tcrops is None:
-        tcrops = [frb.metapar.t_crop] * len(fcrops)
-    if fcrops is None:
-        fcrops = [frb.metapar.f_crop] * len(tcrops)
+    else:
+        print("Creatig components with tcrops using yaml file [multi]")
+       
+        # get tcrops 
+        tcrops = pars['multi']['tcrops']
+        fcrops = pars['multi']['fcrops']
+        
+        if tcrops is None and fcrops is None:
+            print("Must specify tcrops and fcrops in par.yaml file!")
+            sys.exit()     
+
+
+        ncomps = len(tcrops)
+        if tcrops is None:
+            tcrops = [frb.metapar.t_crop] * len(fcrops)
+        if fcrops is None:
+            fcrops = [frb.metapar.f_crop] * len(tcrops)
 
     
 
@@ -88,7 +111,7 @@ def _PA_multi(args):
     for i, tcrop in enumerate(tcrops):
         # fit for RM
         p = frb.fit_RM(t_crop = tcrop, f_crop = fcrops[i], method = pars['fits']['fitRM']['method'], 
-            fit_params = pars['fits']['fitRM']['fit_params'], plot = False)
+            fit_params = pars['fits']['fitRM']['fit_params'], plot = False, RM = 0.0)
         RMcomp_fits += [p]
 
         # reset tcrops and fcrops
@@ -149,9 +172,8 @@ def _PA_multi(args):
 
     # plot stokes
     plot_stokes(data_full, stk_type = "t", ax = AX_PA['S'], Ldebias = pars['plots']['Ldebias'],
-            sigma = pars['plots']['sigma'], plot_type = PLOT_TYPE,
-            plot_L = pars['plots']['plot_L'], stk_ratio = pars['plots']['stk_ratio'],
-            stk2plot = pars['plots']['stk2plot'])
+            sigma = pars['plots']['sigma'], plot_type = PLOT_TYPE, 
+            stk_ratio = pars['plots']['stk_ratio'], stk2plot = pars['plots']['stk2plot'])
 
     # plot bounds
     if args.showbounds:
@@ -164,8 +186,10 @@ def _PA_multi(args):
 
 
     # plot stokes Dynamic spectrum I
+    df = abs(data_full['freq'][1] - data_full['freq'][0])
+    ds_freq_lims = fix_ds_freq_lims([np.min(data_full['freq']), np.max(data_full['freq'])], df)
     AX_PA['D'].imshow(data_full['dsI'], aspect = 'auto', extent = [*data_full['time'][[0,-1]], 
-            np.min(data_full['freq']), np.max(data_full['freq'])])
+            *ds_freq_lims])
     AX_PA['D'].set(xlabel = "Time offset [ms]", ylabel = "Freq [MHz]")
 
 
@@ -224,12 +248,14 @@ def _PA_multi(args):
         _PLOT(ax = ax_B, x = data_full['time'], y = data_full['tI'], 
             yerr = data_full['tIerr'], plot_type = frb.plot_type, color = 'k')
 
-        ax_B.set(ylabel = "Flux Density (arb.)")
+        ax_B.set(ylabel = "Flux Density (arb.)", xlabel = "Time offset [ms]")
 
         # plot RM points
         _rm = np.zeros(ncomps)
         _rmerr = _rm.copy()
         _rmx = _rm.copy()
+
+        print("Scaling RM error bars by sqrt(rchi2)")
         for i, rmcomp in enumerate(RMcomp_fits):
             _rm[i] = rmcomp.posterior['rm'].val
             _rmerr[i] = rmcomp.get_mean_err()['rm']
@@ -244,6 +270,7 @@ def _PA_multi(args):
 
         ax_B2.set_ylabel("RM $[rad/m^{{2}}]$", color = 'tab:blue')
         ax_B2.tick_params(axis='y', labelcolor='tab:blue')
+
 
         # save figure to file
         if args.filename is not None:

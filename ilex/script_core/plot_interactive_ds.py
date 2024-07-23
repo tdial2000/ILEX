@@ -12,6 +12,7 @@ from ..frb import FRB
 import matplotlib.pyplot as plt 
 import numpy as np
 from ..data import pslice
+from ..utils import fix_ds_freq_lims
 
 
 # empty class
@@ -23,7 +24,7 @@ def plot_interactive_ds(parfile, S = "I"):
 
     args = _empty()
     args.parfile = parfile
-    args.S = s
+    args.S = S
 
     fig, result_ = _plot_ds_int(args)
 
@@ -86,14 +87,14 @@ def _plot_ds_int(args):
             dat = pslice(dat, *f_crop, axis = 0)                                # time and freq profiles
             
             AX[1].clear()       # clear time profile axis and plot new crop
-            AX[1].plot(np.linspace(new_X[0],new_X[1],dat.shape[1]),np.mean(dat,axis = 0),
+            AX[1].plot(np.linspace(new_X[0],new_X[1],dat.shape[1]),np.nanmean(dat,axis = 0),
                     color = 'k')
             AX[1].set_xlim(new_X)
             AX[1].set_ylabel("Flux Density (arb.)")
             AX[1].set_title(f"Stoke {args.S}")
 
             AX[2].clear()
-            AX[2].plot(np.mean(dat,axis = 1),np.linspace(new_Y[1],new_Y[0],dat.shape[0]),
+            AX[2].plot(np.nanmean(dat,axis = 1),np.linspace(new_Y[1],new_Y[0],dat.shape[0]),
                     color = 'k')
             AX[2].plot([0.0, 0.0], new_Y[::-1])
             AX[2].set_ylim(new_Y)
@@ -126,7 +127,8 @@ def _plot_ds_int(args):
     data = frb.get_data([f"ds{args.S}", f"t{args.S}", f"f{args.S}"], get = True)
 
     # plot dynamic spectrum
-    AX[0].imshow(data[f"ds{args.S}"], aspect = 'auto', extent = [*frb.this_par.t_lim, *frb.this_par.f_lim])
+    ds_freq_lims = fix_ds_freq_lims(frb.this_par.f_lim, frb.this_par.df)
+    AX[0].imshow(data[f"ds{args.S}"], aspect = 'auto', extent = [*frb.this_par.t_lim, *ds_freq_lims])
 
 
     # return struct to keep data in memory

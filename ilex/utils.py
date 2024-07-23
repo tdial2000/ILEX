@@ -15,7 +15,9 @@ import numpy as np
 from .globals import _G
 from copy import deepcopy
 from .logging import log
-import yaml, os
+import os
+from ruamel.yaml import YAML    # wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. 
+import yaml as base_yaml        # default yaml class
 
 
 # empty structure
@@ -343,53 +345,101 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
 
 
 
+def _init_pars(p, d):
+    """
+    p : pars
+    d : default pars
+    """
 
-def load_param_file(param_file):
+    for key in d.keys():
+        if key not in p.keys():
+            if hasattr(d[key], '__len__'):
+                p[key] = deepcopy(d[key])
+            else:
+                p[key] = d[key]
+        
+        else:
+            # check if dict instance
+            if isinstance(d[key], dict):
+                _init_pars(p[key], d[key])
+
+
+    return p
+
+
+def load_param_file(param_file = None, return_yaml_obj = False):
     """
     Load in param file and compare with default params file
 
     Parameters
     ----------
     param_file : str
-        parameter file to load in
+        parameter file to load in, if None, will return default yaml file values
     
     Returns
     -------
     params : Dict
         parameters, compared with defaults
+
     """
 
-    # open param file
-    with open(param_file) as file:
-        pars = yaml.safe_load(file)
+    yaml = YAML()
+
+    if param_file is not None:
+        # open param file
+        with open(param_file) as file:
+            pars = yaml.load(file)
+    else:
+        pars = {}
 
     # open default param file
     with open(os.path.join(os.environ['ILEX_PATH'], "files/default.yaml")) as deffile:
-        def_pars = yaml.safe_load(deffile)
+        def_pars = yaml.load(deffile)
     
-    # initialise defaults in pars
-    def _init_pars(p, d):
-        """
-        p : pars
-        d : default pars
-        """
+    if return_yaml_obj:
+        return _init_pars(pars, def_pars), yaml
+    else:
+        return _init_pars(pars, def_pars)
 
-        for key in d.keys():
-            if key not in p.keys():
-                if hasattr(d[key], '__len__'):
-                    p[key] = deepcopy(d[key])
-                else:
-                    p[key] = d[key]
-            
-            else:
-                # check if dict instance
-                if isinstance(d[key], dict):
-                    _init_pars(p[key], d[key])
 
+
+
+def save_param_file(pars, filename, yaml_obj = None):
+    """
+    save to new parameter file
+
+    Parameters
+    ----------
+    pars : dict
+        dictionary of parameters in ilex.yaml format
+    filename : str
+        filename of saved yaml file
     
-        return p
-    
-    return _init_pars(pars, def_pars)
+    """
+
+    # class MyDumper(yaml.SafeDumper):
+    # # HACK: insert blank lines between top-level objects
+    # # inspired by https://stackoverflow.com/a/44284819/3786245
+    #     def write_line_break(self, data=None):
+    #         super().write_line_break(data)
+
+    #         if len(self.indents) == 1:
+    #             super().write_line_break()
+
+    if yaml_obj is None:
+        yaml_obj = YAML() 
+
+
+    # save pars in pars
+    with open(filename, 'w') as file:
+        yaml_obj.dump(pars, file)
+
+
+
+
+
+
+
 
 
 
@@ -425,7 +475,7 @@ def load_plotstyle():
     
 
     with open(plotstyle_file) as plf:
-        plot_pars = yaml.safe_load(plf)
+        plot_pars = base_yaml.safe_load(plf)
 
     # check if they match avalaible
     # scatter
@@ -476,7 +526,24 @@ def set_plotstyle(filepath = None):
 
 
 
+def fix_ds_freq_lims(lims, df):
+    """ fix ds frequency limits so they extend over the full dynamic spectrum. By default each frequency channel 
+    represents the midpoint of a frequency bin, but when plotting the dynamic spectra using plt.imshow, we need the
+    entire bandwidth, so we add half a sample to each end.
 
+    Parameters
+    ----------
+    lims : list[float]
+        frequency limits, [min, max]
+    df : float
+        frequency resolution
+    """
+
+    fixed_lims = lims.copy()
+    fixed_lims[0] -= 0.5 * df
+    fixed_lims[1] == 0.5 * df
+
+    return fixed_lims
 
 
 

@@ -1,0 +1,118 @@
+yaml_file_type: ILEX
+data:
+  dsI: 240525td_calib_I_dynspec_491.0.npy
+  dsQ: 240525td_calib_Q_dynspec_491.0.npy
+  dsU: 240525td_calib_U_dynspec_491.0.npy
+  dsV: 240525td_calib_V_dynspec_491.0.npy
+
+# parameters unique to FRB
+par:
+  name: 240525td
+  RA: 00:27:07.88910011
+  DEC: -06:53:22.6512341
+  DM: 491.0
+  bw: 336.0
+  MJD: 60455.99425430373
+  cfreq: 919.5
+  t_lim: [0.0, 3100.0]
+  f_lim: [0.0, 336.0]
+  nchan: 336
+  nsamp: 0
+  dt: 0.001
+  df: 1.0
+  RM:
+  f0:
+  pa0: 0.0
+
+# parameters for data processing
+metapar:
+  t_crop: [0.0, 1.0]
+  f_crop: [0.0, 1.0]
+  terr_crop:
+  tN: 1
+  fN: 1
+  zapchan:
+  norm: None
+
+# parameters to control general use of ILEX
+hyperpar:
+  verbose: false
+  force: false
+  savefig: false
+  plot_type: scatter
+  residuals: true
+  plotPosterior: true
+
+
+
+#---------------------------#
+# Additional Script options #
+
+plots:
+  plot_type: scatter
+  plotstyle_file:
+
+  # plotting stokes data
+  stk2plot: IQUV
+  stk_ratio: false
+  Ldebias: false
+  Ldebias_threshold: 2.0
+  sigma: 2.0
+
+  # plotting poincare sphere data
+  plot_data: true
+  plot_model: true
+  n: true
+  normalise: true
+
+  # plotting PA
+  flipPA: false
+
+
+fits:
+  # for all fitting methods
+  fitmethod: bayesian
+  redo: false
+
+  # for Time scattering fitting
+  tscatt:
+    npulse: 1
+    priors: {}
+    statics: {}
+    fit_params: {}
+
+  # scintillation
+  scint:
+    priors: {}
+    statics: {}
+    fit_params: {}
+    n: 5
+
+  # RM fitting
+  fitRM:
+    method: RMsynth
+    fit_params: {}
+multi:
+  tcrops:
+  fcrops:
+
+
+weights:
+  # time weights
+  time:
+    method: None
+    W:
+    x:
+    norm: true
+    func:
+    args:
+
+  # freq weights
+  freq:
+    method: None
+    W:
+    x:
+    norm: true
+    func:
+    args:
+

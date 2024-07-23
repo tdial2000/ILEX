@@ -11,7 +11,7 @@
 ## imports
 from ..frb import FRB
 from ..data import *
-from ..utils import load_param_file, dict_get
+from ..utils import load_param_file, dict_get, fix_ds_freq_lims
 from ..plot import _PLOT, plot_PA
 from ..pyfit import fit
 from ..fitting import make_scatt_pulse_profile_func
@@ -60,7 +60,7 @@ def _init_figure(args):
         axids = pID[1:-1].split(';')
         panelw = []
         h = 0
-        for i, axid in enumerate(axids):
+        for _, axid in enumerate(axids):
             if axid == "D":
                 panelw += [2]
                 flags['D'] = True
@@ -137,10 +137,10 @@ def _plot(args, figpar, flags):
             y = single_pulse(x, a1 = posterior[f"a{i}"], tau = posterior['tau'],
                     mu1 = posterior[f"mu{i}"], sig1 = posterior[f"sig{i}"])
 
-            # cut pulse at 3 sigma
-            mask = y > 0.003*np.max(y)
+            # cut pulse at 3 sigma (roughly...)
+            # mask = y > 0.003*np.max(y)
 
-            ax.plot(x[mask], y[mask], '--r', linewidth = 0.5)
+            ax.plot(x, y, '--', linewidth = 0.5)
         
 
 
@@ -195,16 +195,17 @@ def _plot(args, figpar, flags):
 
     # plot dynamic spectra
     if flags['D']:
+        ds_freq_lims = fix_ds_freq_lims(frb.this_par.f_lim, frb.this_par.df)
         AX['D'].imshow(data['dsI'], aspect = 'auto', extent = [*frb.this_par.t_lim, 
-                                              *frb.this_par.f_lim])
+                                              *ds_freq_lims])
         AX['D'].set(ylabel = "Freq [MHz]")
     
 
     # plot Stokes spectra
     if flags['S']:
-        frb.plot_stokes(ax = AX['S'], stk_type = "t", plot_L = pars['plots']['plot_L'],
-            Ldebias = pars['plots']['Ldebias'], sigma = pars['plots']['sigma'], stk_ratio = pars['plots']['stk_ratio'],
-            stk2plot = pars['plots']['stk2plot'])
+        frb.plot_stokes(ax = AX['S'], stk_type = "t", Ldebias = pars['plots']['Ldebias'],
+                        sigma = pars['plots']['sigma'], stk_ratio = pars['plots']['stk_ratio'],
+                        stk2plot = pars['plots']['stk2plot'])
         AX['S'].set(ylabel = "Flux Density (arb.)")
 
         # check for model 
@@ -217,9 +218,11 @@ def _plot(args, figpar, flags):
 
     # plot model
     if flags['M']:
-        AX['M'].plot(*p.get_model(), color = 'orchid', linewidth = 2)
+        
         _PLOT(ax = AX['M'], x = p.x, y = p.y, yerr = p.yerr, 
                 plot_type = pars['plots']['plot_type'], color = 'k')
+                
+        AX['M'].plot(*p.get_model(), color = [0.9098, 0.364, 0.3961], linewidth = 1.5)
         
         if args.modelpulses:
             plot_all_pulses(AX['M'], p.x, NPULSES, p.get_post_val())

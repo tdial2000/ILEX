@@ -28,7 +28,7 @@ from .globals import c, _G
 
 from .data import *
 
-from .utils import load_plotstyle
+from .utils import load_plotstyle, fix_ds_freq_lims
 
 # constants
 default_col = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -127,7 +127,7 @@ def _data_from_dict(dic, keys):
 
 
 
-def _PLOT(x, y, yerr = None, ax = None, plot_type = "lines", color = 'k', alpha = 0.5,
+def _PLOT(x, y, yerr = None, ax = None, plot_type = "regions", color = None, alpha = 0.5,
             **kwargs):
     """
     General plotting function
@@ -144,7 +144,7 @@ def _PLOT(x, y, yerr = None, ax = None, plot_type = "lines", color = 'k', alpha 
     
     return
 
-def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = 'k', alpha = 0.5, **kwargs):
+def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
     """
     Plot lines
     """
@@ -172,24 +172,28 @@ def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = 'k', alpha = 0.5, **kwar
 
     # plot scatter
     if ax is not None:
-        ax.scatter(x, y, c = color, facecolors = color, **plot_pars['scatter'])
+        sc = ax.scatter(x, y, c = color, facecolors = color, **plot_pars['scatter'])
 
         if yerr is not None:
+            if color is None:
+                color = sc.get_facecolors()[0]
             ax.errorbar(x = x, y = y, yerr = yerr, ecolor = color, 
                     alpha = alpha, markerfacecolor = color,
                          **plot_pars['errorbar'])
 
     else:
-        plt.scatter(x = x, y = y, c = color, facecolors = color, **plot_pars['scatter'])
+        sc = plt.scatter(x = x, y = y, c = color, facecolors = color, **plot_pars['scatter'])
 
         if yerr is not None:
+            if color is None:
+                color = sc.get_facecolors()[0]
             plt.errorbar(x, y, yerr = yerr, ecolor = color,
                     alpha = alpha, markerfacecolor = color, **plot_pars['errorbar'])
 
     return
 
 
-def _PLOT_REGIONS(x, y, yerr = None, ax = None, color = 'k', alpha = 0.5, **kwargs):
+def _PLOT_REGIONS(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
     """
     Plot regions
     """
@@ -205,17 +209,17 @@ def _PLOT_REGIONS(x, y, yerr = None, ax = None, color = 'k', alpha = 0.5, **kwar
 
     # plot region
     if ax is not None:
-        ax.plot(x, y, color = color, **plot_pars['plot'])
+        ln, = ax.plot(x, y, color = color, **plot_pars['plot'])
 
         if yerr is not None:
-            ax.fill_between(x, y-yerr, y+yerr, color = color, alpha = alpha,
+            ax.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
                         edgecolor = None)
 
     else:
-        plt.plot(x, y, color = color, **plot_pars['plot'])
+        ln, = plt.plot(x, y, color = color, **plot_pars['plot'])
 
         if yerr is not None:
-            plt.fill_between(x, y-yerr, y+yerr, color = color, alpha = alpha,
+            plt.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
                         edgecolor = None)
     
     return
@@ -278,7 +282,9 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
         flim = [0.0, 1.0]
     else:
         fname = "Freq [MHz]"
-        flim = [pdat['freq'][0], pdat['freq'][-1]]
+        df = abs(pdat['freq'][1] - pdat['freq'][0])
+        flim = [np.min(pdat['freq']), np.max(pdat['freq'])] # for ds plotting
+        flim = fix_ds_freq_lims(flim, df)
     
     # check if time array was given, else make phase array
     if "time" not in pdat.keys():
@@ -298,7 +304,7 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
     # check type 
     if typ[0:2] == "ds":
         # plot dynspec
-        ax.imshow(pdat[typ], aspect = 'auto', extent = [*tlim, *flim[::-1]])
+        ax.imshow(pdat[typ], aspect = 'auto', extent = [*tlim, *flim])
         ax.set(xlabel = tname, ylabel = fname)
     
     elif typ[0] == "t":
@@ -312,7 +318,7 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
         # scrunch in time
         fx = np.linspace(*flim, pdat[typ].size)
         ax.set(xlabel = fname, ylabel = "Flux Density (arb.)")
-        _PLOT(tx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
+        _PLOT(fx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)
 
     else:
@@ -520,18 +526,8 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
 
 
 
-
-def plot_stokes_ratios(dat, plot_L = False):
-    pass
-
-
-
-
-
-
-def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0, 
-            stk_type = "f", stk2plot = "IQUV", stk_ratio = False, ax = None, filename: str = None,
-            plot_type = "scatter"):
+def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "IQUV", 
+                stk_ratio = False, ax = None, filename: str = None, plot_type = "scatter"):
     """
     Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
@@ -545,8 +541,6 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0,
         [<x>V] - Stokes V data \n
         [<x>Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True \n
         where <x> is either 't' for time and 'f' for freq
-    plot_L : bool, optional
-        Plot stokes L instead of Q and U, by default False
     Ldebias : bool, optional
         Plot stokes L debias, by default False
     sigma : float, optional
@@ -555,7 +549,7 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0,
     stk_type : str, optional
         Type of stokes data to plot, "f" for Stokes Frequency data or "t" for time data, by default "f"
     stk2plot : str, optional
-        string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV"
+        string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV", choice between "IQUVLP"
     stk_ratio : bool, optional
         if true, plot stokes ratios S/I
     filename : str, optional
@@ -605,9 +599,10 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0,
 
     # stokes to plot
     col = default_col[0:4]
-    col = {"I":col[0], "Q":col[1], "U":col[2], "V":col[3]}
-    if plot_L:
-        col = {"I":'k', "L":'r', "V":'b'}
+    col = {"I":'k', "Q":col[1], "U":col[2], "V":'b', "L": 'r', "P": 'darkviolet'}
+
+    # check if L was given in plotting
+    if "L" in stk2plot:
 
         if Ldebias:
             pdat[f"{st}L"], pdat[f"{st}Lerr"] = calc_Ldebiased(pdat[f"{st}Q"], pdat[f"{st}U"],
@@ -616,15 +611,15 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0,
             pdat[f"{st}L"], pdat[f"{st}Lerr"] = calc_L(pdat[f'{st}Q'], pdat[f'{st}U'], pdat[f'{st}Qerr'],
                                         pdat[f'{st}Uerr'])
 
+    # check if P was given in plotting
+    if "P" in stk2plot:
 
-        # update stk2plot
-        stk = ""
-        if "I" in stk2plot:
-            stk += "I"
-        stk += "L"
-        if "V" in stk2plot:
-            stk += "V"
-        stk2plot = stk
+        if Ldebias:
+            pdat[f"{st}P"], pdat[f"{st}Perr"] = calc_Pdebiased(pdat[f"{st}Q"], pdat[f"{st}U"], pdat[f"{st}V"],
+                                        pdat[f'{st}Ierr'], pdat[f'{st}Qerr'], pdat[f'{st}Uerr'], pdat[f'{st}Verr'])
+        else:
+            pdat[f"{st}P"], pdat[f"{st}Perr"] = calc_P(pdat[f'{st}Q'], pdat[f'{st}U'], pdat[f'{st}V'],
+                                                       pdat[f'{st}Qerr'], pdat[f'{st}Uerr'], pdat[f'{st}Verr'])
 
     
     # plot stokes ratios
@@ -642,6 +637,7 @@ def plot_stokes(dat, plot_L = False, Ldebias = False, sigma = 2.0,
             # mask values with too large errors
             pdat[f"{st}{S}"][sigma_mask] = np.nan
             pdat[f"{st}{S}err"][sigma_mask] = np.nan
+
 
 
 
@@ -797,8 +793,8 @@ def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = Fal
 
     Returns
     -------
-    fig : figure
-        Return figure instance
+    stk_i: Stokes 1D arrays
+    stk_m: Stokes model 1D arrays
     """    
 
     data_list = ["I", "Q", "U", "V", "Ierr"]
@@ -821,7 +817,9 @@ def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = Fal
     stk_i = {}
     
     for S in "QUV":
-        stk_i[S] = pdat[S][stk_mask]/P[stk_mask]
+        stk_i[S] = pdat[S].copy()
+        stk_i[S][stk_mask] = pdat[S][stk_mask]/P[stk_mask]
+        stk_i[S][~stk_mask] = np.nan
     stk_o = deepcopy(stk_i)
 
     # model stokes data
@@ -846,4 +844,7 @@ def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = Fal
             cols = cm.viridis(np.linspace(0, 1, stk_m['Q'].size - 1))
             for i in range(stk_m['Q'].size - 1):
                 ax.plot(stk_m['Q'][i:i+2], stk_m['U'][i:i+2], stk_m['V'][i:i+2], color = cols[i], linewidth = 3)
+
+    
+    return stk_i, stk_m
     

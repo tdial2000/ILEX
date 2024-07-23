@@ -1,15 +1,18 @@
+yaml_file_type: "ILEX"
 data:
   dsI: null
   dsQ: null
   dsU: null
   dsV: null
 
+# parameters unique to FRB
 par:
   name:   "FRBXXXXXX"
   RA:     "00:00:00.0000"
   DEC:    "00:00:00.0000"
   DM:     0.0
   bw:     336
+  MJD:    0.0
   cfreq:  1271.5
   t_lim:  [0.0, 3100.0]
   f_lim:  [0.0, 336.0]
@@ -20,16 +23,18 @@ par:
   RM:     null
   f0:     null
   pa0:    0.0
-  czap:   ""  # to be implemented
 
+# parameters for data processing
 metapar:
   t_crop:     [0.0, 1.0]
   f_crop:     [0.0, 1.0]
   terr_crop:  null
   tN:         1
   fN:         1
+  zapchan:    null
   norm:       "None"
 
+# parameters to control general use of ILEX
 hyperpar:
   verbose:        False
   force:          False
@@ -48,7 +53,6 @@ plots:
   plotstyle_file:      null
 
   # plotting stokes data
-  plot_L:               False
   stk2plot:             "IQUV"
   stk_ratio:            False
   Ldebias:              False

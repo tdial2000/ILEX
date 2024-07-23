@@ -13,12 +13,15 @@
 ## Imports 
 import numpy as np
 from copy import deepcopy
+import matplotlib.pyplot as plt
+from math import ceil
 
 ## import basic libraries
 import argparse, sys
 from os import path, mkdir
 import shutil
 from ilex.htr import make_ds, pulse_fold, baseline_correction
+from ilex.data import average
 
 
 
@@ -103,6 +106,73 @@ def load_data(xfile, yfile):
 
 
 
+def plot_bline_diagnostic(ds, rbounds, args):
+    """
+    Generate plot of baseline correction performed
+
+    """
+
+    # create figure and axes
+    fig, AX = plt.subplots(2, 1, figsize = (8, 12))
+    AX = AX.flatten()
+    
+    ## calculate time resolution
+    dt = 1e-3 * (ds.shape[0]/336) 
+
+    ## ms/ or 1000 x dt -> ds time bin converter
+    get_units = lambda t : int(ceil(t/dt))
+
+    # get full rbounds and baseline crop as well as a bit of leg room
+    crop_start = rbounds[0] - get_units(args.guard + 1.2*args.baseline)
+    crop_end = rbounds[1] + get_units(args.guard + 1.2*args.baseline)
+
+    # crop
+    ds_crop = average(ds[:,crop_start:crop_end], axis = 1, N = args.tN)
+
+    # get time series
+    t_crop = np.mean(ds_crop, axis = 0)
+
+    # get time axis in ms/ or 1000 x dt
+    x_crop = np.linspace(0, t_crop.size/1000*args.tN, t_crop.size)
+
+
+    ## plot
+    AX[0].plot(x_crop, t_crop, color = 'k')
+    ylim = AX[0].get_ylim()
+    AX[0].plot([0.2*args.baseline, 0.2*args.baseline], ylim, 'r--')
+    AX[0].plot([1.2*args.baseline, 1.2*args.baseline], ylim, 'r--')
+    AX[0].plot([x_crop[-1] - 0.2*args.baseline, x_crop[-1] - 0.2*args.baseline], ylim, 'r--')
+    AX[0].plot([x_crop[-1] - 1.2*args.baseline, x_crop[-1] - 1.2*args.baseline], ylim, 'r--')
+    AX[0].get_xaxis().set_visible(False)
+    AX[0].get_yaxis().set_visible(False)
+    AX[0].set_xlim([x_crop[0], x_crop[-1]])
+    AX[0].set_ylim(ylim)
+
+    # dynspec plot
+    AX[1].imshow(ds_crop, aspect = 'auto', extent = [0, x_crop[-1], 0, 336])
+    AX[1].plot([0.2*args.baseline, 0.2*args.baseline], [0,  336], 'r--')
+    AX[1].plot([1.2*args.baseline, 1.2*args.baseline], [0, 336], 'r--')
+    AX[1].plot([x_crop[-1] - 0.2*args.baseline, x_crop[-1] - 0.2*args.baseline], [0, 336], 'r--')
+    AX[1].plot([x_crop[-1] - 1.2*args.baseline, x_crop[-1] - 1.2*args.baseline], [0, 336], 'r--')
+    AX[1].set_xlabel("Time [ms]")
+    AX[1].set_ylabel("Bandwidth [MHz]")
+
+    fig.tight_layout()
+    fig.subplots_adjust(hspace = 0)
+    
+
+    # save plot
+    plt.savefig(f"{args.ofile}_bline_plot.png")
+
+
+
+    
+
+
+
+
+
+
 
 def _proc(args, pol):
     """
@@ -142,6 +212,10 @@ def _proc(args, pol):
             ## Apply baseline corrections
             ds[1:] -= bs_mean[1:, None]
             ds[1:] /= bs_std[1:, None]
+
+            # plot baseline diagnostic
+            if S == "I":
+                plot_bline_diagnostic(ds, rbounds, args)
 
         ## save data
         print(f"Saving stokes {S} dynamic spectra...")

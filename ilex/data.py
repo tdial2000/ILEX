@@ -23,7 +23,7 @@ from .globals import *
 ##===============================================##
 
 ##  function to average data    ##
-def average(x: np.ndarray, axis: int = 0, N: int = 10):
+def average(x: np.ndarray, axis: int = 0, N: int = 10, nan = False):
 
     """
     average in either frequency or time
@@ -36,6 +36,8 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
         axis to average over
     N: int
         Averaging/donwsampling factor
+    nan : bool, optional
+        If True, using nanmean to ignore NaN values in array 'x', by default False
 
     Returns
     -------
@@ -43,6 +45,13 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
        Averaged data
     
     """
+
+    # if nan if true, will use numpy function that ignores nans in array x
+    if nan:
+        func = np.nanmean
+    else:
+        func = np.mean
+
 
     if N == 1:
         return x
@@ -52,18 +61,18 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
     ndims = x.ndim
     if ndims == 1:
         N_new = (x.size // N) * N
-        return np.mean(x[:N_new].reshape(N_new // N, N),axis = 1).flatten()
+        return func(x[:N_new].reshape(N_new // N, N),axis = 1).flatten()
     
     elif ndims == 2:
         if axis == 0:
             #frequency scrunching
             N_new = (x.shape[0] // N) * N
-            return np.mean(x[:N_new].T.reshape(x.shape[1],N_new // N, N),axis = 2).T
+            return func(x[:N_new].T.reshape(x.shape[1],N_new // N, N),axis = 2).T
         
         elif axis == 1 or axis == -1:
             #time scrunching
             N_new = (x.shape[1] // N) * N
-            return np.mean(x[:,:N_new].reshape(x.shape[0],N_new // N, N),axis = 2)
+            return func(x[:,:N_new].reshape(x.shape[0],N_new // N, N),axis = 2)
         
         else:
             print("axis must be 1[-1] or 0")
@@ -72,12 +81,13 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10):
     else:
         print("ndims must equal 1 or 2..")
         return x
-    
 
 
 
 
-def scrunch(x: np.ndarray, axis: int = 0, weights = None):
+
+
+def scrunch(x: np.ndarray, axis: int = 0, weights = None, nan = False):
     """
     Scrunch data along a given axis, weights may also be applied.
 
@@ -89,12 +99,20 @@ def scrunch(x: np.ndarray, axis: int = 0, weights = None):
         axes to scrunch over, by default 0
     weights: array-like or float, optional
         weights to apply during scrunching, by default None
+    nan : bool, optional
+        If True, using nanmean to ignore NaN values in array 'x', by default False
 
     Returns
     -------
     y: np.ndarray
         Weighted and scrunched data
     """    
+
+    # if nan if true, will use numpy function that ignores nans in array x
+    if nan:
+        func = np.nanmean
+    else:
+        func = np.mean
 
 
     # check weights
@@ -119,7 +137,7 @@ def scrunch(x: np.ndarray, axis: int = 0, weights = None):
 
 
     # scrunch
-    y = np.mean(x * weights, axis = axis)
+    y = func(x * weights, axis = axis)
 
     return y
 
@@ -275,7 +293,7 @@ def t_weight(x, tW):
 
 
 
-def norm(x, method = "abs_max"):
+def norm(x, method = "abs_max", nan = False):
     """
     Normalise data
 
@@ -288,6 +306,8 @@ def norm(x, method = "abs_max"):
         [abs_max] - Normalise using absolute maximum abs(max) \n
         [max] - Normalise using maximum \n
         [unit] - normalise data between -1 and 1 - not implemented 
+    nan : bool, optional
+        If True, using nanmax to ignore NaN values in array 'x', by default False
 
     Returns
     -------
@@ -295,13 +315,19 @@ def norm(x, method = "abs_max"):
         normalised data
     """
 
+    # if nan if true, will use numpy function that ignores nans in array x
+    if nan:
+        func = np.nanmax
+    else:
+        func = np.max
+
     # normalise using the maximum value
     if method == "max":
-        x /= np.max(x)
+        x /= func(x)
 
     # normalise using the absolute maximum value
     elif method == "abs_max":
-        x /= np.abs(np.max(x))
+        x /= np.abs(func(x))
 
     # normalise data to between -1 and 1 [-1, 1]
     elif method == "unit":
@@ -388,8 +414,95 @@ def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
 
 
 
-# def zap_chan():
-#     pass
+# create a function to zap channels
+def zap_chan(f, zap_str):
+    """
+    Zap channels, assumes contiguous frequency array
+
+    Parameters
+    ----------
+    f : np.ndarray
+        frequency array used for zapping
+    zap_str : str
+        string used for zapping channels, in format -> "850, 860, 870:900" \n
+        each element seperated by a ',' is a seperate channel. If ':' is used, user can specify a range of values \n
+        i.e. 870:900 -> from channel 870 to 900 inclusive of both.
+
+    Returns
+    -------
+    y : np.ndarray
+        zapped indicies in frequency
+    
+    """
+
+    # vals
+    df = f[1] - f[0]
+    f_min = np.min(f)
+    f_max = np.max(f)
+
+    if df < 0:
+        # upperside band
+        fi = f_max
+        df_step = -1
+
+    else:
+        # lowerside band
+        fi = f_min
+        df_step = 1
+
+    df = abs(df)
+    
+
+    # split segments
+    zap_segments = zap_str.split(',')
+    seg_idx = []
+
+    # for each segment, check for delimiter :, else float cast
+    for i, zap_seg in enumerate(zap_segments):
+
+        # if segment is a range of frequencies
+        if ":" in zap_seg:
+            zap_range = zap_seg.strip().split(':')
+            zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)
+            zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
+
+            # check if completely outside bounds
+            if (zap_0 < 0 and zap_1 < 0) or (zap_0 > f.size -1 and zap_1 > f.size -1):
+                print(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz")
+                continue            
+            
+            # check bounds
+            crop_zap = False
+
+            if zap_0 < 0:
+                crop_zap = True
+                zap_0 = 0
+            elif zap_0 > f.size - 1:
+                crop_zap = True
+                zap_0 = f.size - 1
+
+            if zap_1 < 0:
+                crop_zap = True
+                zap_1 = 0
+            elif zap_1 > f.size - 1:
+                crop_zap = True
+                zap_1 = f.size - 1
+
+            if crop_zap:
+                print(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{f[zap_0]}, {f[zap_1]}] MHz")
+
+            seg_idx += list(range(zap_0,zap_1+1,df_step))[::df_step]
+
+        
+        # if segment is just a single frequency
+        else:
+            _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
+            if (_idx < 0) or (_idx > f.size - 1):
+                print(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz")
+            else:
+                seg_idx += [_idx]
+
+    return seg_idx
 
 
 
@@ -403,7 +516,7 @@ def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
 ##===============================================##
 
 
-def calc_PA(Q, U, Qerr, Uerr):
+def calc_PA(Q, U, Qerr, Uerr, rad2deg = False):
     """
     Calculate Position Angle (PA) and PA angle
 
@@ -417,6 +530,8 @@ def calc_PA(Q, U, Qerr, Uerr):
         Stokes Q err data
     Uerr : np.ndarray
         Stokes U err data
+    rad2deg: bool, optional
+        If true, converts output to degrees, by default is False
 
     Returns
     -------
@@ -430,6 +545,12 @@ def calc_PA(Q, U, Qerr, Uerr):
     PA = 0.5 * np.arctan2(U, Q)
     PAerr = 0.5 * np.sqrt((Q**2*Uerr**2 + Q**2*Qerr**2)/
                            (Q**2 + Q**2)**2)
+    
+    # convert to degrees if requested
+    if rad2deg:
+        PA *= 180/np.pi
+        PAerr *= 180/np.pi
+
 
     return PA, PAerr
 
@@ -440,7 +561,7 @@ def calc_PA(Q, U, Qerr, Uerr):
 
 
 
-def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
+def calc_PAdebiased(stk, Ldebias_threshold = 2.0, rad2deg = False):
     """
     Calculate time-dependant Position Angle masked using
     stokes L debiased
@@ -456,6 +577,8 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
         [tIerr] - Stokes I average rms over time 
     Ldebias_threshold : float, optional
         sigma threshold for masking PA, by default 2.0
+    rad2deg: bool, optional
+        If true, converts output to degrees, by default is False
 
     Returns
     -------
@@ -476,6 +599,10 @@ def calc_PAdebiased(stk, Ldebias_threshold = 2.0):
     # mask PA
     PA[PA_mask] = np.nan
     PAerr[PA_mask] = np.nan
+
+    if rad2deg:
+        PA *= 180/np.pi
+        PAerr *= 180/np.pi
 
     return PA, PAerr
 

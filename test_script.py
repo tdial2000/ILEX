@@ -6,20 +6,27 @@ import numpy as np
 import sys
 
 
-x = np.linspace(2150, 2250, 250)
+frb = FRB(yaml_file = "/fred/oz002/tdial/HTR_paper_data/230708/230708_updated.yaml")
 
-y = np.cos(x)
+# data1 = frb.get_data(['tI'], get = True, apply_tW = False, t_crop = [1731.29, 1757.73])
+data2 = frb.get_data(['tI'], get = True, t_crop = [1731.292, 1734.014], apply_tW = False)
+# data3 = frb.get_data(['tI'], get = True, t_crop = [1731.292, 1734.014], apply_tW = False, tN = 30)
+# data2 = frb.get_data(['tI'], t_crop = [1737.291, 1744.345], get = True, apply_tW = False)
+# data3 = frb.get_data(['tI'], t_crop = [1741.432452151, 1746.5642356235], get = True, apply_tW = False)
 
-yerr = 0.05 * np.ones(250)
+# print(data2['time'])
+# print(data3['time'])
 
-_PLOT(x = x, y = y, yerr = yerr, color = 'r', plot_type = "scatter")
+# print(frb)
 
+# plt.figure(figsize = (10,10))
 
-plt.show()
-# frb = FRB(yaml_file = "examples/220610.yaml")
+# plt.plot(data1['time'], data1['tI'], alpha = 0.3)
+# plt.plot(data2['time'], data2['tI'], alpha = 0.3)
+# plt.plot(data3['time'], data3['tI'], alpha = 0.3)
 
-# frb.plot_data("tI")
-# frb.plot_stokes(stk_type = "t", stk_ratio = True, plot_type = "scatter", sigma = 10.0)
+# print(data1['time'])
+print(data2['time'])
+# print(data3['time'])
 
-
-
+# plt.show()

@@ -276,9 +276,6 @@ class fit:
 
 
     def set(self, **kwargs):
-        """
-        Set a number of attributes given **kwargs
-        """
 
         # get class kwargs
         fit_kwargs = {}

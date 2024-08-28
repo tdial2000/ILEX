@@ -4,7 +4,7 @@ import os, sys
 sys.path.insert(0, os.path.abspath("../.."))
 #'numpy', 'matplotlib', 'yaml', 'scipy', 'mpl_toolkits', 'bilby', 'RMtools_1D',
 autodoc_mock_imports = [ 'data', 'fitting', 'plot', 'logging',
-                        'master_proc', 'utils', 'globals', 'par', 'frb', 'htr', 'numpy', 'matplotlib', 'yaml', 'scipy', 'mpl_toolkits', 'bilby', 'RMtools_1D', 'script_core', 'inspect', 'ruamel.yaml']
+                        'master_proc', 'utils', 'globals', 'par', 'frb', 'htr', 'numpy', 'matplotlib', 'yaml', 'scipy', 'mpl_toolkits', 'bilby', 'RMtools_1D', 'script_core', 'inspect', 'ruamel']
 
 #
 # For the full list of built-in configuration values, see the documentation:

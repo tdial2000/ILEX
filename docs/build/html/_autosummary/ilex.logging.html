@@ -16,7 +16,7 @@
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -54,10 +54,12 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.logging.break_str"><code class="docutils literal notranslate"><span class="pre">break_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.check_verbosefile"><code class="docutils literal notranslate"><span class="pre">check_verbosefile()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.get_filepath"><code class="docutils literal notranslate"><span class="pre">get_filepath()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.get_verbose"><code class="docutils literal notranslate"><span class="pre">get_verbose()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.logging.log_title"><code class="docutils literal notranslate"><span class="pre">log_title()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.set_verbose"><code class="docutils literal notranslate"><span class="pre">set_verbose()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.show_terminal_cols"><code class="docutils literal notranslate"><span class="pre">show_terminal_cols()</span></code></a></li>
 </ul>
@@ -100,6 +102,20 @@
   <section id="module-ilex.logging">
 <span id="ilex-logging"></span><h1>ilex.logging<a class="headerlink" href="#module-ilex.logging" title="Link to this heading"></a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.logging.break_str">
+<span class="sig-name descname"><span class="pre">break_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#break_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.break_str" title="Link to this definition"></a></dt>
+<dd><p>Break up string into segments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pstr</strong> (<em>str</em>) – string to break up</p></li>
+<li><p><strong>bw</strong> (<em>int</em>) – width of line before break</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.logging.check_verbosefile">
 <span class="sig-name descname"><span class="pre">check_verbosefile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#check_verbosefile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.check_verbosefile" title="Link to this definition"></a></dt>
 <dd><p>Check if verbose file exists, else create new one</p>
@@ -119,7 +135,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.logging.log">
-<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.log" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'\n'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.log" title="Link to this definition"></a></dt>
 <dd><p>Logging function, used to replace the python ‘print’ function
 with extra functionality for ILEX</p>
 <dl class="field-list simple">
@@ -133,6 +149,20 @@ with extra functionality for ILEX</p>
 </p></li>
 <li><p><strong>lpf</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, the message will also label the parent function of the log function call, by default True</p></li>
 <li><p><strong>lpf_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Color to label parent function, by default ‘None’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.logging.log_title">
+<span class="sig-name descname"><span class="pre">log_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'None'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#log_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.log_title" title="Link to this definition"></a></dt>
+<dd><p>Logging function for showing title of executed function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pstr</strong> (<em>str</em>) – string to print</p></li>
+<li><p><strong>col</strong> (<em>str</em>) – color to print</p></li>
 </ul>
 </dd>
 </dl>

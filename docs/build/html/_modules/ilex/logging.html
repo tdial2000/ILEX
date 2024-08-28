@@ -15,7 +15,7 @@
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -108,6 +108,65 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="n">TERMINAL_COLORS</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="break_str">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.break_str">[docs]</a>
+<span class="k">def</span> <span class="nf">break_str</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">return_list</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Break up string into segments</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr: str</span>
+<span class="sd">        string to break up</span>
+<span class="sd">    bw: int</span>
+<span class="sd">        width of line before break</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">bw</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pstr</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">bw</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">return_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pstr</span>
+
+    <span class="n">back_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">str_pointer</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">str_pointer</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">):</span>
+        <span class="n">str_pointer</span> <span class="o">+=</span> <span class="n">bw</span>
+
+        <span class="k">if</span> <span class="n">str_pointer</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">):</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span><span class="o">-</span><span class="n">back_bound</span><span class="p">:</span><span class="n">str_pointer</span><span class="p">]:</span>
+            <span class="n">temp_pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span> <span class="o">-</span> <span class="n">back_bound</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="n">str_pointer</span><span class="p">]</span>
+            <span class="n">h_ind</span> <span class="o">=</span> <span class="p">(</span><span class="n">str_pointer</span> <span class="o">-</span> <span class="n">back_bound</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_pstr</span><span class="p">)</span> <span class="o">-</span> <span class="n">temp_pstr</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>  
+            <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[:</span><span class="n">h_ind</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">h_ind</span><span class="p">:]</span>
+            <span class="n">str_pointer</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[:</span><span class="n">str_pointer</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;-</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span><span class="p">:]</span>
+            <span class="n">str_pointer</span> <span class="o">+=</span> <span class="mi">3</span>
+
+
+    <span class="k">if</span> <span class="n">return_list</span><span class="p">:</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pstr</span></div>
+
+
+    
+
+
+
+
 
 
 
@@ -206,7 +265,7 @@
 
 <div class="viewcode-block" id="log">
 <a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.log">[docs]</a>
-<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="p">):</span>
+<span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Logging function, used to replace the python &#39;print&#39; function</span>
 <span class="sd">    with extra functionality for ILEX</span>
@@ -247,11 +306,57 @@
     <span class="c1"># build string</span>
     <span class="n">pstr</span> <span class="o">=</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="n">lpf_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">fname</span> <span class="o">+</span> <span class="n">log_type</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span> <span class="o">+</span> <span class="n">pstr</span> <span class="o">+</span> <span class="n">log_type</span><span class="p">[</span><span class="s2">&quot;log&quot;</span><span class="p">]</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">end</span><span class="p">)</span>
     <span class="k">return</span></div>
 
 
  
+
+<div class="viewcode-block" id="log_title">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.log_title">[docs]</a>
+<span class="k">def</span> <span class="nf">log_title</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logging function for showing title of executed function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr: str</span>
+<span class="sd">        string to print</span>
+<span class="sd">    col: str</span>
+<span class="sd">        color to print</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_verbose</span><span class="p">():</span>
+        <span class="k">return</span> 
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># convert to sting if possible</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span>
+
+    <span class="c1"># construct string</span>
+
+    <span class="n">outstr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">70</span> <span class="o">+</span> <span class="s2">&quot;#</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># break down title</span>
+    <span class="n">pstr</span> <span class="o">=</span> <span class="n">break_str</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">return_list</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># add white space to all split lines</span>
+    <span class="n">total_str</span> <span class="o">=</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">)):</span>
+        <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="mi">5</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="mi">5</span>
+        <span class="n">total_str</span> <span class="o">+=</span> <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">outstr</span> <span class="o">+=</span> <span class="n">total_str</span> <span class="o">+</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s1">&#39;None&#39;</span><span class="p">]</span>
+    
+    <span class="n">outstr</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">70</span> <span class="o">+</span> <span class="s2">&quot;#</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+
+
+
 </pre></div>
 
            </div>

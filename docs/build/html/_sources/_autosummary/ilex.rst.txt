@@ -14,16 +14,16 @@
    :recursive:
    :template: custom-module-template.rst
 
-   ilex.data
-   ilex.fitting
-   ilex.frb
-   ilex.globals
-   ilex.htr
-   ilex.logging
-   ilex.master_proc
-   ilex.par
-   ilex.plot
-   ilex.pyfit
-   ilex.script_core
-   ilex.utils
+   data
+   fitting
+   frb
+   globals
+   htr
+   logging
+   master_proc
+   par
+   plot
+   pyfit
+   script_core
+   utils
 

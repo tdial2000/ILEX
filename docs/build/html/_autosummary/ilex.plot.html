@@ -16,7 +16,7 @@
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -63,7 +63,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_data"><code class="docutils literal notranslate"><span class="pre">plot_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_poincare_track"><code class="docutils literal notranslate"><span class="pre">plot_poincare_track()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_stokes"><code class="docutils literal notranslate"><span class="pre">plot_stokes()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_stokes_ratios"><code class="docutils literal notranslate"><span class="pre">plot_stokes_ratios()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
@@ -122,7 +121,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.plot.plot_PA">
-<span class="sig-name descname"><span class="pre">plot_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA_err</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flipPA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_PA" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA_err</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flipPA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_PA" title="Link to this definition"></a></dt>
 <dd><p>Plot PA profile</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -132,7 +131,6 @@
 <li><p><strong>PA_err</strong> (<em>np.ndarray</em>) – PA error</p></li>
 <li><p><strong>ax</strong> (<em>Axes</em><em>, </em><em>optional</em>) – Axes handle, by default None</p></li>
 <li><p><strong>flipPA</strong> (<em>bool</em><em>, </em><em>optional</em>) – plot PA over [0, 180] degrees instead of [-90, 90], by default False</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to save figure to, by default None</p></li>
 <li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – type of error to plot, by default “scatter”</p></li>
 </ul>
 </dd>
@@ -176,7 +174,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.plot.plot_data">
-<span class="sig-name descname"><span class="pre">plot_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dsI'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_data" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dsI'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_data" title="Link to this definition"></a></dt>
 <dd><p>Plot data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -188,7 +186,6 @@
 <p>[f] - frequency spectra</p>
 </p></li>
 <li><p><strong>ax</strong> (<em>Axes</em><em>, </em><em>optional</em>) – axes handle, by default None</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to save figure to, by default None</p></li>
 <li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – type of plotting, by default “scatter”</p></li>
 </ul>
 </dd>
@@ -203,7 +200,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.plot.plot_poincare_track">
-<span class="sig-name descname"><span class="pre">plot_poincare_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_poincare_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_poincare_track" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_poincare_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_poincare_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_poincare_track" title="Link to this definition"></a></dt>
 <dd><p>Plot Stokes data on a Poincare Sphere.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -215,7 +212,6 @@
 <p>[V] - Stokes V data</p>
 <p>[Ierr] - Stokes I error data</p>
 </p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to save figure to, by default None</p></li>
 <li><p><strong>stk_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>types of stokes data to plot, by default “f”</p>
 <p>[f] - Plot as a function of frequency</p>
 <p>[t] - Plot as a function of time</p>
@@ -230,17 +226,18 @@
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>fig</strong> – Return figure instance</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>figure</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>stk_i</strong> (<em>Stokes 1D arrays</em>)</p></li>
+<li><p><strong>stk_m</strong> (<em>Stokes model 1D arrays</em>)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.plot.plot_stokes">
-<span class="sig-name descname"><span class="pre">plot_stokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ldebias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk2plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IQUV'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_stokes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_stokes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_stokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ldebias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk2plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IQUV'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_stokes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_stokes" title="Link to this definition"></a></dt>
 <dd><p>Plot Stokes data, by default stokes I, Q, U and V data is plotted</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -253,16 +250,14 @@
 <p>[&lt;x&gt;Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True</p>
 <p>where &lt;x&gt; is either ‘t’ for time and ‘f’ for freq</p>
 </p></li>
-<li><p><strong>plot_L</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L instead of Q and U, by default False</p></li>
 <li><p><strong>Ldebias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L debias, by default False</p></li>
 <li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – sigma threshold for error masking, I &lt; sigma * Ierr, mask it out or
 else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</p></li>
 <li><p><strong>stk_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of stokes data to plot, “f” for Stokes Frequency data or “t” for time data, by default “f”</p></li>
-<li><p><strong>stk2plot</strong> (<em>str</em><em>, </em><em>optional</em>) – string of stokes to plot, for example if “QV”, only stokes Q and V are plotted, by default “IQUV”</p></li>
+<li><p><strong>stk2plot</strong> (<em>str</em><em>, </em><em>optional</em>) – string of stokes to plot, for example if “QV”, only stokes Q and V are plotted, by default “IQUV”, choice between “IQUVLP”</p></li>
 <li><p><strong>stk_ratio</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, plot stokes ratios S/I</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – name of file to save figure image, by default None</p></li>
 <li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Choose between two methods of plotting the error in the data, by default “scatter”</p>
-<p>[regions] - Show error in data as shaded regions
+<p>[lines] - plot lines with error patches
 [scatter] - Show error in data as tics in markers</p>
 </p></li>
 </ul>
@@ -275,11 +270,6 @@ else weird overflow behavior might be present when calculating stokes ratios, by
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.plot.plot_stokes_ratios">
-<span class="sig-name descname"><span class="pre">plot_stokes_ratios</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_L</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_stokes_ratios"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_stokes_ratios" title="Link to this definition"></a></dt>
-<dd></dd></dl>
 
 </section>
 

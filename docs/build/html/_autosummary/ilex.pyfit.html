@@ -16,7 +16,7 @@
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -397,8 +397,20 @@ including model plotting and statistics such as chi2.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.get_model">
-<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.get_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.get_model" title="Link to this definition"></a></dt>
 <dd><p>Get model fit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>array-like</em>) – datapoints to evaluate model, if None will use x values already given to current instance</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>x</strong> (<em>array-like</em>) – x data</p></li>
+<li><p><strong>y</strong> (<em>array-like</em>) – y data - evaluated model values</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

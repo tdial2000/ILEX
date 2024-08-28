@@ -15,7 +15,7 @@
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -85,7 +85,7 @@
 <span class="c1">## imports</span>
 <span class="kn">from</span> <span class="nn">..frb</span> <span class="kn">import</span> <span class="n">FRB</span>
 <span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">load_param_file</span><span class="p">,</span> <span class="n">dict_get</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">load_param_file</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">,</span> <span class="n">fix_ds_freq_lims</span>
 <span class="kn">from</span> <span class="nn">..plot</span> <span class="kn">import</span> <span class="n">_PLOT</span><span class="p">,</span> <span class="n">plot_PA</span>
 <span class="kn">from</span> <span class="nn">..pyfit</span> <span class="kn">import</span> <span class="n">fit</span>
 <span class="kn">from</span> <span class="nn">..fitting</span> <span class="kn">import</span> <span class="n">make_scatt_pulse_profile_func</span>
@@ -142,7 +142,7 @@
         <span class="n">axids</span> <span class="o">=</span> <span class="n">pID</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)</span>
         <span class="n">panelw</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">h</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">axid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axids</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">axid</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axids</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">axid</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span>
                 <span class="n">panelw</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">flags</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -225,10 +225,10 @@
             <span class="n">y</span> <span class="o">=</span> <span class="n">single_pulse</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a1</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;a</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">tau</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">],</span>
                     <span class="n">mu1</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mu</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">sig1</span> <span class="o">=</span> <span class="n">posterior</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sig</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
 
-            <span class="c1"># cut pulse at 3 sigma</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mf">0.003</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="c1"># cut pulse at 3 sigma (roughly...)</span>
+            <span class="c1"># mask = y &gt; 0.003*np.max(y)</span>
 
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="s1">&#39;--r&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span>
         
 
 
@@ -283,16 +283,17 @@
 
     <span class="c1"># plot dynamic spectra</span>
     <span class="k">if</span> <span class="n">flags</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]:</span>
+        <span class="n">ds_freq_lims</span> <span class="o">=</span> <span class="n">fix_ds_freq_lims</span><span class="p">(</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">f_lim</span><span class="p">,</span> <span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> 
-                                              <span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">f_lim</span><span class="p">])</span>
+                                              <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">)</span>
     
 
     <span class="c1"># plot Stokes spectra</span>
     <span class="k">if</span> <span class="n">flags</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]:</span>
-        <span class="n">frb</span><span class="o">.</span><span class="n">plot_stokes</span><span class="p">(</span><span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">plot_L</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plot_L&#39;</span><span class="p">],</span>
-            <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;Ldebias&#39;</span><span class="p">],</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk_ratio&#39;</span><span class="p">],</span>
-            <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk2plot&#39;</span><span class="p">])</span>
+        <span class="n">frb</span><span class="o">.</span><span class="n">plot_stokes</span><span class="p">(</span><span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;Ldebias&#39;</span><span class="p">],</span>
+                        <span class="n">sigma</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> <span class="n">stk_ratio</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk_ratio&#39;</span><span class="p">],</span>
+                        <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk2plot&#39;</span><span class="p">])</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density (arb.)&quot;</span><span class="p">)</span>
 
         <span class="c1"># check for model </span>
@@ -305,9 +306,11 @@
 
     <span class="c1"># plot model</span>
     <span class="k">if</span> <span class="n">flags</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]:</span>
-        <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">get_model</span><span class="p">(),</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;orchid&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+        
         <span class="n">_PLOT</span><span class="p">(</span><span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">],</span> <span class="n">x</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> 
                 <span class="n">plot_type</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plot_type&#39;</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+                
+        <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">get_model</span><span class="p">(),</span> <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.9098</span><span class="p">,</span> <span class="mf">0.364</span><span class="p">,</span> <span class="mf">0.3961</span><span class="p">],</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">modelpulses</span><span class="p">:</span>
             <span class="n">plot_all_pulses</span><span class="p">(</span><span class="n">AX</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">],</span> <span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">NPULSES</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">get_post_val</span><span class="p">())</span>

@@ -15,7 +15,7 @@
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -96,6 +96,7 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
 
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
 
@@ -105,7 +106,7 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights">[docs]</a>
 <span class="k">class</span> <span class="nc">weights</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Weights structure, using for storing weights or weight functions that can be</span>
+<span class="sd">    Weights structure, used for storing weights or weight functions that can be</span>
 <span class="sd">    evaluated.</span>
 
 
@@ -132,8 +133,10 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 
+        <span class="c1"># initialise arguments dictionary</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
+        <span class="c1"># set parameters to defaults first, then use the set method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
@@ -141,6 +144,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># set attributes whilst running some checks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">func</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">)</span>
 
 
@@ -148,10 +152,11 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.set">[docs]</a>
     <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set parameters</span>
+<span class="sd">        Set attributes for weights class</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>         
 
+        <span class="c1"># this block of code makes sure only the correct attributes are taken from the original inputs</span>
         <span class="n">weights_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -169,22 +174,24 @@
 
         <span class="c1"># set attributes</span>
         <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>       <span class="c1"># if weights given is a vector</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>   
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>      <span class="c1"># if weight given is a single float scalar</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>        <span class="c1"># if weight given is a single int scalar</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[W] weights instance attribute must be a float or array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
         
 
+        <span class="c1">#must be an array if used to evaluate functions</span>
         <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[x] weights instance attribute must be array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
 
+        <span class="c1"># check if string, then eval it </span>
         <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># if func is string</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -197,13 +204,15 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;function must either be a string to evaluate, or a callable function.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
 
-
+        <span class="c1"># must choose a method that is supported</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;interp&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;None&quot;</span><span class="p">]:</span>
                 <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid Method for Weighting, using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>    
 
+        <span class="c1"># set arguments of callable function as attributes. NOTE: if not all arguments are </span>
+        <span class="c1"># specified, then warn the user</span>
         <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;args must be in dict format&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
@@ -225,7 +234,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;func not given, can&#39;t determine args&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;weight func not given, can&#39;t determine args&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
 
         <span class="k">return</span>
 
@@ -235,7 +244,7 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.get_weights">[docs]</a>
     <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get weights</span>
+<span class="sd">        Get weights, this is a universal function </span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -279,8 +288,15 @@
 
 
 
-
     <span class="k">def</span> <span class="nf">_get_weights_from_W</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get stored weights</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        W : float or array-like</span>
+<span class="sd">            Weights</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
@@ -292,7 +308,18 @@
             <span class="k">return</span> <span class="kc">None</span>
         
 
+
     <span class="k">def</span> <span class="nf">_get_weights_from_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use a reference array [self.x] and compare it to an input array [x] to interpolate </span>
+<span class="sd">        The stored weights.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like, optional</span>
+<span class="sd">            x values that will be compared to self.x, by default None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No weights specified, returning None object&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
@@ -318,6 +345,15 @@
 
 
     <span class="k">def</span> <span class="nf">_get_weights_from_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate function to retrieve weights</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : x values to evaluate function with, optional</span>
+<span class="sd">            _description_, by default None, if None, will use what is stored i.e. self.x</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_func_and_args</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -335,7 +371,12 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 
 
+
     <span class="k">def</span> <span class="nf">_check_func_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if function is callable and args are sufficient</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify a function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
@@ -346,7 +387,7 @@
             <span class="k">return</span> <span class="mi">0</span>
         
         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;func must be callable and args a dictionary of args to evaluate the function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;func must be callable and args a dictionary of args to evaluate the function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="mi">0</span>
         
         <span class="c1"># check if all args are there</span>
@@ -357,7 +398,6 @@
 
         <span class="c1"># if all pass return 1</span>
         <span class="k">return</span> <span class="mi">1</span>
-
 
 
 
@@ -393,6 +433,26 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="viewcode-block" id="FRB_params">
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params">[docs]</a>
 <span class="k">class</span> <span class="nc">FRB_params</span><span class="p">:</span>
@@ -407,6 +467,8 @@
 <span class="sd">        Right ascension</span>
 <span class="sd">    DEC: str            </span>
 <span class="sd">        Declination</span>
+<span class="sd">    MJD: float</span>
+<span class="sd">        Modified julian date [days]</span>
 <span class="sd">    DM: float             </span>
 <span class="sd">        Dispersion Measure [pc/cm^3]</span>
 <span class="sd">    bw: float            </span>
@@ -437,11 +499,6 @@
 <span class="sd">        time weights</span>
 <span class="sd">    fW: np.ndarray</span>
 <span class="sd">        frequency weights</span>
-<span class="sd">    norm: str</span>
-<span class="sd">        Type of normalisation \n</span>
-<span class="sd">        [max] - normalise using maximum \n</span>
-<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
-<span class="sd">        [None] - Skip normalisation</span>
 
 
 
@@ -455,6 +512,8 @@
 <span class="sd">        Declination</span>
 <span class="sd">    DM: float             </span>
 <span class="sd">        Dispersion Measure [pc/cm^3]</span>
+<span class="sd">    MJD: float</span>
+<span class="sd">        Modified julian date [days]</span>
 <span class="sd">    bw: float            </span>
 <span class="sd">        Bandwidth [MHz]</span>
 <span class="sd">    cfreq: float          </span>
@@ -471,8 +530,6 @@
 <span class="sd">        Number of channels</span>
 <span class="sd">    nsamp: int          </span>
 <span class="sd">        Number of samples</span>
-<span class="sd">    UP: bool</span>
-<span class="sd">        Upper bandwidth</span>
 <span class="sd">    RM: float</span>
 <span class="sd">        Rotation Measure [Rad/m^2]</span>
 <span class="sd">    f0: float</span>
@@ -483,11 +540,6 @@
 <span class="sd">        time weights</span>
 <span class="sd">    fW: np.ndarray</span>
 <span class="sd">        frequency weights</span>
-<span class="sd">    norm: str</span>
-<span class="sd">        Type of normalisation \n</span>
-<span class="sd">        [max] - normalise using maximum \n</span>
-<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
-<span class="sd">        [None] - Skip normalisation</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
 
@@ -498,16 +550,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>    <span class="n">RA</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span>    <span class="n">DEC</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> 
-                       <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DM&#39;</span><span class="p">],</span>      <span class="n">bw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;bw&#39;</span><span class="p">],</span>    <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;cfreq&#39;</span><span class="p">],</span> 
+                       <span class="n">MJD</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;MJD&#39;</span><span class="p">],</span>    <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DM&#39;</span><span class="p">],</span>      <span class="n">bw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;bw&#39;</span><span class="p">],</span>    
+                       <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;cfreq&#39;</span><span class="p">],</span> 
                        <span class="n">t_lim</span>  <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_lim&#39;</span><span class="p">],</span>      <span class="n">f_lim</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f_lim&#39;</span><span class="p">],</span>   <span class="n">RM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">],</span>
-                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span><span class="n">norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span>
-                       <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">],</span>      <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;df&#39;</span><span class="p">],</span>  <span class="n">czap</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span>
+                       <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">],</span>      <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;df&#39;</span><span class="p">],</span>
                        <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 
         <span class="c1"># parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span>   <span class="o">=</span> <span class="n">name</span>              <span class="c1"># name of FRB</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">RA</span>     <span class="o">=</span> <span class="n">RA</span>                <span class="c1"># Right Acension </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">DEC</span>    <span class="o">=</span> <span class="n">DEC</span>               <span class="c1"># Declination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MJD</span>    <span class="o">=</span> <span class="n">MJD</span>               <span class="c1"># MJD date </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">DM</span>     <span class="o">=</span> <span class="n">DM</span>                <span class="c1"># dispersion measure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bw</span>     <span class="o">=</span> <span class="n">bw</span>                <span class="c1"># bandwidth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span>  <span class="o">=</span> <span class="n">cfreq</span>             <span class="c1"># central frequency</span>
@@ -516,7 +570,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pa0</span>    <span class="o">=</span> <span class="n">pa0</span>               <span class="c1"># reference PA</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># frequency weightings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># time weightings</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">czap</span>   <span class="o">=</span> <span class="n">czap</span>              <span class="c1"># frequencies to zap in string form</span>
 
         <span class="c1"># define base parameters, these will be used when changing the crop parameters, </span>
         <span class="c1"># all other parameters will be updated from these </span>
@@ -533,17 +586,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of channels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of time samples</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">UP</span>    <span class="o">=</span> <span class="kc">True</span>               <span class="c1"># flag, True if data is Upper sideband</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;lgreen&#39;</span>
 
         <span class="k">if</span> <span class="n">EMPTY</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">empty_par</span><span class="p">()</span>
 
 
+
+
 <div class="viewcode-block" id="FRB_params.update_from_crop">
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
     <span class="k">def</span> <span class="nf">update_from_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-                        <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+                            <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update Parameters based on time and frequency crops + averaging</span>
 
@@ -557,109 +611,30 @@
 <span class="sd">            Factor for time averaging, by default 1</span>
 <span class="sd">        fN : int, optional</span>
 <span class="sd">            Factor for frequency averaging, by default 1</span>
-<span class="sd">        &quot;&quot;&quot;</span>    
-        <span class="c1"># TODO: Maybe find a smarter way to do this</span>
-        <span class="c1"># reverse f_crop if Upper sideband</span>
-        <span class="n">f_crop_copy</span> <span class="o">=</span> <span class="n">f_crop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
-            <span class="n">f_crop_copy</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>  
 
-        <span class="c1"># update params given new crop and averaging</span>
-        <span class="c1"># update resolutions</span>
+        <span class="c1"># get starting sample, and number of samples</span>
+        <span class="n">t_sampoff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">*</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">t_nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">*</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">t_sampoff</span>
+        <span class="n">t_nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_nsamp</span> <span class="o">/</span> <span class="n">tN</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_sampoff</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_nsamp</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">tN</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*=</span> <span class="n">tN</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*=</span> <span class="n">fN</span>
-
-        <span class="c1"># update t_lim</span>
-        <span class="c1"># NOTE: Must correct for int casting that is used for phase slicing and averaging chopping</span>
-        <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">tlim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span><span class="o">*</span><span class="n">tN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span><span class="o">*</span><span class="n">tN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">+</span> <span class="n">tlim0</span>
-
-        <span class="c1"># update f_lim </span>
-        <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">flim0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span><span class="o">*</span><span class="n">fN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span><span class="o">*</span><span class="n">fN</span> <span class="o">*</span> <span class="n">lim_width</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">+</span> <span class="n">flim0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="n">t_nsamp</span>
         
 
-        <span class="c1"># update bw and cfreq</span>
+        <span class="c1"># get starting chan and number of chans</span>
+        <span class="n">f_sampoff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">*</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">f_nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">*</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">f_sampoff</span>
+        <span class="n">f_nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_nchan</span> <span class="o">/</span> <span class="n">fN</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f_sampoff</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f_nchan</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*</span> <span class="n">fN</span>      
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*=</span> <span class="n">fN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="n">f_nchan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span>
-
-        <span class="c1"># update nchan and nsamp</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f_crop_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">))</span><span class="o">/</span><span class="n">fN</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">))</span><span class="o">/</span><span class="n">tN</span><span class="p">)</span></div>
-
-
-    
-
-    <span class="c1"># function to update from new crop</span>
-    <span class="c1"># def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],</span>
-    <span class="c1">#                     tN: int = 1, fN: int = 1):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Update Parameters based on time and frequency crops + averaging</span>
-
-    <span class="c1">#     Parameters</span>
-    <span class="c1">#     ----------</span>
-    <span class="c1">#     t_crop : list, optional</span>
-    <span class="c1">#         time crop, by default [0.0, 1.0]</span>
-    <span class="c1">#     f_crop : list, optional</span>
-    <span class="c1">#         frequency crop, by default [0.0, 1.0]</span>
-    <span class="c1">#     tN : int, optional</span>
-    <span class="c1">#         Factor for time averaging, by default 1</span>
-    <span class="c1">#     fN : int, optional</span>
-    <span class="c1">#         Factor for frequency averaging, by default 1</span>
-    <span class="c1">#     &quot;&quot;&quot;    </span>
-    <span class="c1">#     # TODO: Maybe find a smarter way to do this</span>
-    <span class="c1">#     # reverse f_crop if Upper sideband</span>
-    <span class="c1">#     f_crop_copy = f_crop.copy()</span>
-    <span class="c1">#     if self.UP:</span>
-    <span class="c1">#         f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]</span>
-
-    <span class="c1">#     # update params given new crop and averaging</span>
-    <span class="c1">#     # update resolutions</span>
-    <span class="c1">#     self.dt *= tN</span>
-    <span class="c1">#     self.df *= fN</span>
-
-    <span class="c1">#     # update t_lim</span>
-    <span class="c1">#     # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping</span>
-    <span class="c1">#     t0_base = self.t_lim[0]</span>
-    <span class="c1">#     dt = (self.t_lim[1] - self.t_lim[0])/self.nsamp</span>
-
-    <span class="c1">#     # crop base resolution samples</span>
-    <span class="c1">#     t0 = int(t_crop[0] * self.nsamp)</span>
-    <span class="c1">#     t1 = int(t_crop[1] * self.nsamp)</span>
-    <span class="c1">#     t_w = ((t1 - t0) // tN) * tN</span>
-
-    <span class="c1">#     # correct max limit in time based on cropping due to averaging, then</span>
-    <span class="c1">#     # calculate new t limits in base time resolution, should align with the averaging</span>
-    <span class="c1">#     # that will be done</span>
-    <span class="c1">#     self.t_lim[0] = t0 * dt + 0.5 * dt * tN + t0_base</span>
-    <span class="c1">#     self.t_lim[1] = (t0 + t_w) * dt - 0.5 * dt * tN + t0_base</span>
-
-    <span class="c1">#     # same thing with frequency</span>
-
-    <span class="c1">#     # update f_lim </span>
-    <span class="c1">#     f0_base = self.f_lim[0]</span>
-    <span class="c1">#     df = (self.f_lim[1] - self.f_lim[0])/self.nchan</span>
-
-    <span class="c1">#     # crop base resolution</span>
-    <span class="c1">#     f0 = int(f_crop_copy[0] * self.nchan)</span>
-    <span class="c1">#     f1 = int(f_crop_copy[1] * self.nchan)</span>
-    <span class="c1">#     f_w = ((f1 - f0) // fN) * fN</span>
-
-    <span class="c1">#     # correct for cropping due to averaging</span>
-    <span class="c1">#     self.f_lim[0] = f0 * df + 0.5 * df * fN + f0_base</span>
-    <span class="c1">#     self.f_lim[1] = (f0 + f_w) * dt - 0.5 * df * fN + f0_base</span>
-
-    <span class="c1">#     # update bw and cfreq</span>
-    <span class="c1">#     self.bw = self.f_lim[1] - self.f_lim[0]</span>
-    <span class="c1">#     self.cfreq = self.f_lim[0] + 0.5*self.bw</span>
-
-    <span class="c1">#     # update nchan and nsamp</span>
-    <span class="c1">#     self.nchan = f_w</span>
-    <span class="c1">#     self.nsamp = t_w</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">/</span> <span class="mi">2</span></div>
 
 
 
@@ -669,7 +644,7 @@
     <span class="c1"># function to save parameters to parameter file</span>
 <div class="viewcode-block" id="FRB_params.phase2lim">
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.phase2lim">[docs]</a>
-    <span class="k">def</span> <span class="nf">phase2lim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">phase2lim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">snap</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Provide time and frequency phases, based on parameters convert</span>
 <span class="sd">        to ms and MHz crops</span>
@@ -680,6 +655,8 @@
 <span class="sd">            Time crop, in phase, by default None</span>
 <span class="sd">        f_crop : list, optional</span>
 <span class="sd">            Freq crop, in phase, by default None</span>
+<span class="sd">        snap : bool, optional</span>
+<span class="sd">            if true, snap to nearest multiple of sample resolution, false by default</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -697,15 +674,28 @@
             <span class="c1"># time</span>
             <span class="n">t_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
             <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+                <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">f_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># f_lim in ascending freq, convert upperside band crop</span>
+            <span class="n">f_crop_flip</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
             <span class="c1"># frequency</span>
             <span class="n">f_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
             <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop_flip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop_flip</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+                <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span></div>
 
@@ -716,7 +706,7 @@
     <span class="c1"># function to get crop from limits</span>
 <div class="viewcode-block" id="FRB_params.lim2phase">
 <a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.lim2phase">[docs]</a>
-    <span class="k">def</span> <span class="nf">lim2phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">lim2phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">snap</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Provide time [ms] and Freq [MHz] limits and using params, convert </span>
 <span class="sd">        to time and freq phase.</span>
@@ -727,6 +717,8 @@
 <span class="sd">            Time limits in [ms]</span>
 <span class="sd">        f_lim: List</span>
 <span class="sd">            Freq limits in [MHz]</span>
+<span class="sd">        snap : bool, optional</span>
+<span class="sd">            if true, snap to nearest multiple of sample resolution, false by default</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -744,18 +736,27 @@
             <span class="c1"># time</span>
             <span class="n">t_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
             <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
-            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+                <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
 
         <span class="k">if</span> <span class="n">f_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># frequency</span>
             <span class="n">f_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
             <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
-            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lim_width</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+                <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
-                <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
         <span class="k">return</span> <span class="n">t_phase</span><span class="p">,</span> <span class="n">f_phase</span></div>
 
@@ -896,11 +897,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get frequencies</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">UP</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span></div>
 
 
@@ -910,7 +907,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get time bins</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">,</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span></div>
 
 
 
@@ -974,7 +971,15 @@
 <span class="sd">        Factor for time averaging</span>
 <span class="sd">    fN : int</span>
 <span class="sd">        Factor for frequency averaging</span>
-<span class="sd">    norm : str</span>
+<span class="sd">    zapchan: str</span>
+<span class="sd">        string used for zapping channels, in format -&gt; &quot;850, 860, 870:900&quot; \n</span>
+<span class="sd">        each element seperated by a &#39;,&#39; is a seperate channel. If &#39;:&#39; is used, user can specify a range of values \n</span>
+<span class="sd">        i.e. 870:900 -&gt; from channel 870 to 900 inclusive of both.</span>
+<span class="sd">    norm: str</span>
+<span class="sd">        Type of normalisation \n</span>
+<span class="sd">        [max] - normalise using maximum \n</span>
+<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
+<span class="sd">        [None] - Skip normalisation</span>
 
 
 
@@ -988,18 +993,23 @@
 <span class="sd">        Factor for time averaging</span>
 <span class="sd">    fN : int</span>
 <span class="sd">        Factor for frequency averaging</span>
-<span class="sd">    norm : str</span>
+<span class="sd">    norm: str</span>
+<span class="sd">        Type of normalisation \n</span>
+<span class="sd">        [max] - normalise using maximum \n</span>
+<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
+<span class="sd">        [None] - Skip normalisation</span>
 <span class="sd">    &quot;&quot;&quot;</span>    
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">tN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">],</span> <span class="n">fN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">],</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">],</span>
-                 <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+                 <span class="n">zapchan</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;zapchan&#39;</span><span class="p">],</span> <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 
 
         <span class="c1"># set crop parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="n">f_crop</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">terr_crop</span> <span class="o">=</span> <span class="n">terr_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span>

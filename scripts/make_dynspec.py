@@ -50,6 +50,7 @@ def get_args():
 
 
     ## data reduction arguments
+    parser.add_argument("--rough_bline", help = "Apply rough baseline by averaging over entire buffer", action = "store_true")
     parser.add_argument("--sigma", help = "S/N threshold for baseline correction", type = float, default = 5.0)
     parser.add_argument("--baseline", help = "Width of rms crops in [ms]", type = float, default = 50.0)
     parser.add_argument("--tN", help = "Time averaging factor, helps with S/N calculation", type = int, default = 50)
@@ -117,7 +118,7 @@ def plot_bline_diagnostic(ds, rbounds, args):
     AX = AX.flatten()
     
     ## calculate time resolution
-    dt = 1e-3 * (ds.shape[0]/336) 
+    dt = 1e-3 * (ds.shape[0]/336)
 
     ## ms/ or 1000 x dt -> ds time bin converter
     get_units = lambda t : int(ceil(t/dt))
@@ -133,7 +134,7 @@ def plot_bline_diagnostic(ds, rbounds, args):
     t_crop = np.mean(ds_crop, axis = 0)
 
     # get time axis in ms/ or 1000 x dt
-    x_crop = np.linspace(0, t_crop.size/1000*args.tN, t_crop.size)
+    x_crop = np.linspace(0, dt*args.tN * t_crop.size, t_crop.size)
 
 
     ## plot
@@ -203,10 +204,10 @@ def _proc(args, pol):
             ds, sphase = pulse_fold(ds, args.DM, args.cfreq, args.bw, args.MJD0, args.MJD1, 
                                       args.F0, args.F1, sphase)
 
-        if args.bline:
+        if args.bline or args.rough_bline:
             ## get baseline corrections
             bs_mean, bs_std, rbounds = baseline_correction(ds, args.sigma, args.guard,
-                                            args.baseline, args.tN, rbounds)
+                                            args.baseline, args.tN, args.rough_bline, rbounds)
 
 
             ## Apply baseline corrections
@@ -214,7 +215,7 @@ def _proc(args, pol):
             ds[1:] /= bs_std[1:, None]
 
             # plot baseline diagnostic
-            if S == "I":
+            if (S == "I") and (not args.rough_bline):
                 plot_bline_diagnostic(ds, rbounds, args)
 
         ## save data

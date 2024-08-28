@@ -1,0 +1,9 @@
+metapar:
+  t_crop:
+  - 0.5
+  - 10.0
+par:
+  RM: -6
+  f0: 1400
+  name: FRBtest
+yaml_file_type: ILEX

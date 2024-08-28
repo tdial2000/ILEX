@@ -22,6 +22,7 @@ import numpy as np
 import math
 import inspect
 from .fitting import *
+from math import ceil
 
 from .logging import log
 
@@ -29,7 +30,7 @@ from .logging import log
 
 class weights:
     """
-    Weights structure, using for storing weights or weight functions that can be
+    Weights structure, used for storing weights or weight functions that can be
     evaluated.
 
 
@@ -56,8 +57,10 @@ class weights:
 
     def __init__(self, W = None, x = None, func = None, method = None, args = None, norm = True):
 
+        # initialise arguments dictionary
         args = dict_init(args)
 
+        # set parameters to defaults first, then use the set method
         self.W = None
         self.x = None
         self.func = None
@@ -65,15 +68,17 @@ class weights:
         self.args = {}
         self.norm = None
 
+        # set attributes whilst running some checks
         self._set(W = W, x = x, func = func, method = method, args = args, norm = norm)
 
 
     def set(self, **kwargs):
         """
-        Set parameters
+        Set attributes for weights class
 
         """         
 
+        # this block of code makes sure only the correct attributes are taken from the original inputs
         weights_kwargs = {}
 
         for key in kwargs.keys():
@@ -90,22 +95,24 @@ class weights:
 
         # set attributes
         if W is not None:
-            if hasattr(W, "__len__"):
-                self.W = W.copy()
-            elif isinstance(W, float):
+            if hasattr(W, "__len__"):       # if weights given is a vector
+                self.W = W.copy()   
+            elif isinstance(W, float):      # if weight given is a single float scalar
                 self.W = W
-            elif isinstance(W, int):
+            elif isinstance(W, int):        # if weight given is a single int scalar
                 self.W = float(W)
             else:
                 log("[W] weights instance attribute must be a float or array-like", stype = "warn")
         
 
+        #must be an array if used to evaluate functions
         if x is not None:
             if hasattr(x, "__len__"):
                 self.x = x.copy()
             else:
                 log("[x] weights instance attribute must be array-like", stype = "warn")
 
+        # check if string, then eval it 
         if func is not None:
             # if func is string
             if isinstance(func, str):
@@ -118,13 +125,15 @@ class weights:
             else:
                 log("function must either be a string to evaluate, or a callable function.", stype = "err")
 
-
+        # must choose a method that is supported
         if method is not None:
             if method not in ["interp", "func", "None"]:
                 log(f"Invalid Method for Weighting, using {self.method}", stype = "warn")
             else:
                 self.method = method    
 
+        # set arguments of callable function as attributes. NOTE: if not all arguments are 
+        # specified, then warn the user
         if args is not None:
             if not isinstance(args, dict):
                 log("args must be in dict format", stype = "err")
@@ -146,7 +155,7 @@ class weights:
                 self.args = deepcopy(args)
 
             else:
-                log("func not given, can't determine args", stype = "warn")
+                log("weight func not given, can't determine args", stype = "warn")
 
         return
 
@@ -154,7 +163,7 @@ class weights:
 
     def get_weights(self, x = None, method = None):
         """
-        Get weights
+        Get weights, this is a universal function 
 
         Parameters
         ----------
@@ -197,8 +206,15 @@ class weights:
 
 
 
-
     def _get_weights_from_W(self):
+        """
+        Get stored weights
+
+        Returns
+        -------
+        W : float or array-like
+            Weights
+        """
 
         if self.W is not None:
             if isinstance(self.W, float):
@@ -210,7 +226,18 @@ class weights:
             return None
         
 
+
     def _get_weights_from_interp(self, x = None):
+        """
+        Use a reference array [self.x] and compare it to an input array [x] to interpolate 
+        The stored weights.
+
+        Parameters
+        ----------
+        x : array-like, optional
+            x values that will be compared to self.x, by default None
+
+        """
 
         if self.W is None:
             log("No weights specified, returning None object", stype = "err")
@@ -236,6 +263,15 @@ class weights:
 
 
     def _get_weights_from_func(self, x = None):
+        """
+        Evaluate function to retrieve weights
+
+        Parameters
+        ----------
+        x : x values to evaluate function with, optional
+            _description_, by default None, if None, will use what is stored i.e. self.x
+
+        """
         
         if not self._check_func_and_args():
             return None
@@ -253,7 +289,12 @@ class weights:
             return self.func(x, **self.args)
 
 
+
     def _check_func_and_args(self):
+        """
+        Check if function is callable and args are sufficient
+
+        """
 
         if self.func is None:
             log("Must specify a function", stype = "err")
@@ -264,7 +305,7 @@ class weights:
             return 0
         
         if (not callable(self.func)) or (not isinstance(self.args, dict)):
-            print("func must be callable and args a dictionary of args to evaluate the function", stype = "err")
+            log("func must be callable and args a dictionary of args to evaluate the function", stype = "err")
             return 0
         
         # check if all args are there
@@ -275,7 +316,6 @@ class weights:
 
         # if all pass return 1
         return 1
-
 
 
 
@@ -307,6 +347,26 @@ class weights:
             pstr += "[args]".ljust(10) + "= None\n"
 
         return pstr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -354,11 +414,6 @@ class FRB_params:
         time weights
     fW: np.ndarray
         frequency weights
-    norm: str
-        Type of normalisation \n
-        [max] - normalise using maximum \n
-        [absmax] - normalise using absolute maximum \n
-        [None] - Skip normalisation
 
 
 
@@ -390,8 +445,6 @@ class FRB_params:
         Number of channels
     nsamp: int          
         Number of samples
-    UP: bool
-        Upper bandwidth
     RM: float
         Rotation Measure [Rad/m^2]
     f0: float
@@ -402,11 +455,6 @@ class FRB_params:
         time weights
     fW: np.ndarray
         frequency weights
-    norm: str
-        Type of normalisation \n
-        [max] - normalise using maximum \n
-        [absmax] - normalise using absolute maximum \n
-        [None] - Skip normalisation
     
     
 
@@ -420,8 +468,8 @@ class FRB_params:
                        MJD: float = _G.p['MJD'],    DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    
                        cfreq: float = _G.p['cfreq'], 
                        t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
-                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],norm: str = "max",
-                       dt: float = _G.p['dt'],      df: float = _G.p['df'],  czap = None,
+                       f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],
+                       dt: float = _G.p['dt'],      df: float = _G.p['df'],
                        EMPTY = False):
 
         # parameters
@@ -437,7 +485,6 @@ class FRB_params:
         self.pa0    = pa0               # reference PA
         self.fW     = weights()         # frequency weightings
         self.tW     = weights()         # time weightings
-        self.czap   = czap              # frequencies to zap in string form
 
         # define base parameters, these will be used when changing the crop parameters, 
         # all other parameters will be updated from these 
@@ -454,61 +501,11 @@ class FRB_params:
         self.nchan = None               # number of channels
         self.nsamp = None               # number of time samples
 
-        self.UP    = True               # flag, True if data is Upper sideband
         self.pcol = 'lgreen'
 
         if EMPTY:
             self.empty_par()
 
-
-    # def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],
-    #                     tN: int = 1, fN: int = 1):
-    #     """
-    #     Update Parameters based on time and frequency crops + averaging
-
-    #     Parameters
-    #     ----------
-    #     t_crop : list, optional
-    #         time crop, by default [0.0, 1.0]
-    #     f_crop : list, optional
-    #         frequency crop, by default [0.0, 1.0]
-    #     tN : int, optional
-    #         Factor for time averaging, by default 1
-    #     fN : int, optional
-    #         Factor for frequency averaging, by default 1
-    #     """    
-    #     # TODO: Maybe find a smarter way to do this
-    #     # reverse f_crop if Upper sideband
-    #     f_crop_copy = f_crop.copy()
-    #     if self.UP:
-    #         f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]
-
-    #     # update params given new crop and averaging
-    #     # update resolutions
-    #     self.dt *= tN
-    #     self.df *= fN
-
-    #     # update t_lim
-    #     # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping
-    #     lim_width = self.t_lim[1] - self.t_lim[0]
-    #     tlim0 = self.t_lim[0]
-    #     self.t_lim[0] = int(t_crop[0]*self.nsamp/tN)*tN * lim_width/self.nsamp + tlim0
-    #     self.t_lim[1] = int(t_crop[1]*self.nsamp/tN)*tN * lim_width/self.nsamp + tlim0
-
-    #     # update f_lim 
-    #     lim_width = self.f_lim[1] - self.f_lim[0]
-    #     flim0 = self.f_lim[0]
-    #     self.f_lim[0] = int(f_crop_copy[0]*self.nchan/fN)*fN * lim_width/self.nchan + flim0
-    #     self.f_lim[1] = int(f_crop_copy[1]*self.nchan/fN)*fN * lim_width/self.nchan + flim0
-        
-
-    #     # update bw and cfreq
-    #     self.bw = self.f_lim[1] - self.f_lim[0]
-    #     self.cfreq = self.f_lim[0] + 0.5*self.bw
-
-    #     # update nchan and nsamp
-    #     self.nchan = int((math.floor(f_crop_copy[1] * self.nchan) - math.floor(f_crop_copy[0] * self.nchan))/fN)
-    #     self.nsamp = int((math.floor(t_crop[1] * self.nsamp) - math.floor(t_crop[0] * self.nsamp))/tN)
 
 
 
@@ -529,107 +526,28 @@ class FRB_params:
             Factor for frequency averaging, by default 1
         """  
 
-        # update time limits
-        tlim_width = self.t_lim[1] - self.t_lim[0]
-        tlim0 = self.t_lim[0]
+        # get starting sample, and number of samples
+        t_sampoff = int(self.nsamp * t_crop[0])
+        t_nsamp = int(self.nsamp * t_crop[1]) - t_sampoff
+        t_nsamp = int(t_nsamp / tN)
+
+        self.t_lim[0] = self.t_lim[0] + t_sampoff * self.dt
+        self.t_lim[1] = self.t_lim[0] + t_nsamp * self.dt * tN
         self.dt *= tN
-        self.nsamp = int((t_crop[1] - t_crop[0]) * tlim_width / self.dt)
-        print(self.nsamp)
+        self.nsamp = t_nsamp
         
 
-        self.t_lim[0] = tlim0 + tlim_width * t_crop[0]
-        self.t_lim[1] = self.t_lim[0] + self.dt * self.nsamp
+        # get starting chan and number of chans
+        f_sampoff = int(self.nchan * f_crop[0])
+        f_nchan = int(self.nchan * f_crop[1]) - f_sampoff
+        f_nchan = int(f_nchan / fN)
 
-
-        #TODO: Maybe find a smarter way to do this
-        # reverse f_crop if Upper sideband
-        f_crop_copy = f_crop.copy()
-        if self.UP:
-            f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]
-
-        # update freq limits
-        flim_width = self.f_lim[1] - self.f_lim[0]
-        flim0 = self.f_lim[0]
+        self.f_lim[1] = self.f_lim[1] - f_sampoff * self.df
+        self.f_lim[0] = self.f_lim[1] - f_nchan * self.df * fN      
         self.df *= fN
-        self.nchan = int((f_crop_copy[1] - f_crop_copy[0]) * flim_width / self.df)
-        
-
-        self.f_lim[0] = flim0 + flim_width * f_crop_copy[0]
-        self.f_lim[1] = self.f_lim[0] + self.df * self.nchan
-
+        self.nchan = f_nchan
         self.bw = self.f_lim[1] - self.f_lim[0]
         self.cfreq = self.f_lim[0] + self.bw / 2
-
-
-    
-
-    # function to update from new crop
-    # def update_from_crop(self, t_crop: list = [0.0, 1.0], f_crop: list = [0.0, 1.0],
-    #                     tN: int = 1, fN: int = 1):
-    #     """
-    #     Update Parameters based on time and frequency crops + averaging
-
-    #     Parameters
-    #     ----------
-    #     t_crop : list, optional
-    #         time crop, by default [0.0, 1.0]
-    #     f_crop : list, optional
-    #         frequency crop, by default [0.0, 1.0]
-    #     tN : int, optional
-    #         Factor for time averaging, by default 1
-    #     fN : int, optional
-    #         Factor for frequency averaging, by default 1
-    #     """    
-    #     # TODO: Maybe find a smarter way to do this
-    #     # reverse f_crop if Upper sideband
-    #     f_crop_copy = f_crop.copy()
-    #     if self.UP:
-    #         f_crop_copy = [1.0 - f_crop_copy[1], 1.0 - f_crop_copy[0]]
-
-    #     # update params given new crop and averaging
-    #     # update resolutions
-    #     self.dt *= tN
-    #     self.df *= fN
-
-    #     # update t_lim
-    #     # NOTE: Must correct for int casting that is used for phase slicing and averaging chopping
-    #     t0_base = self.t_lim[0]
-    #     dt = (self.t_lim[1] - self.t_lim[0])/self.nsamp
-
-    #     # crop base resolution samples
-    #     t0 = int(t_crop[0] * self.nsamp)
-    #     t1 = int(t_crop[1] * self.nsamp)
-    #     t_w = ((t1 - t0) // tN) * tN
-
-    #     # correct max limit in time based on cropping due to averaging, then
-    #     # calculate new t limits in base time resolution, should align with the averaging
-    #     # that will be done
-    #     self.t_lim[0] = t0 * dt + 0.5 * dt * tN + t0_base
-    #     self.t_lim[1] = (t0 + t_w) * dt - 0.5 * dt * tN + t0_base
-
-    #     # same thing with frequency
-
-    #     # update f_lim 
-    #     f0_base = self.f_lim[0]
-    #     df = (self.f_lim[1] - self.f_lim[0])/self.nchan
-
-    #     # crop base resolution
-    #     f0 = int(f_crop_copy[0] * self.nchan)
-    #     f1 = int(f_crop_copy[1] * self.nchan)
-    #     f_w = ((f1 - f0) // fN) * fN
-
-    #     # correct for cropping due to averaging
-    #     self.f_lim[0] = f0 * df + 0.5 * df * fN + f0_base
-    #     self.f_lim[1] = (f0 + f_w) * dt - 0.5 * df * fN + f0_base
-
-    #     # update bw and cfreq
-    #     self.bw = self.f_lim[1] - self.f_lim[0]
-    #     self.cfreq = self.f_lim[0] + 0.5*self.bw
-
-    #     # update nchan and nsamp
-    #     self.nchan = f_w
-    #     self.nsamp = t_w
-
 
 
     
@@ -669,20 +587,23 @@ class FRB_params:
             t_lim[0] = t_crop[0]*(lim_width)
             t_lim[1] = t_crop[1]*(lim_width)
             if snap:
-                t_lim[0] = int(t_lim[0] / self.dt) * self.dt
-                t_lim[1] = int(t_lim[1] / self.dt) * self.dt
+                t_lim[0] = round(t_lim[0] / self.dt) * self.dt
+                t_lim[1] = round(t_lim[1] / self.dt) * self.dt
             t_lim[0] += self.t_lim[0]
             t_lim[1] += self.t_lim[0]
 
         if f_crop is not None:
+            # f_lim in ascending freq, convert upperside band crop
+            f_crop_flip = [1.0 - f_crop[1], 1.0 - f_crop[0]]
+
             # frequency
             f_lim = [0.0, 0.0]
             lim_width = self.f_lim[1] - self.f_lim[0]
-            f_lim[0] = f_crop[0]*(lim_width)
-            f_lim[1] = f_crop[1]*(lim_width)
+            f_lim[0] = f_crop_flip[0]*(lim_width)
+            f_lim[1] = f_crop_flip[1]*(lim_width)
             if snap:
-                f_lim[0] = int(f_lim[0] / self.df) * self.df
-                f_lim[1] = int(f_lim[1] / self.df) * self.df
+                f_lim[0] = round(f_lim[0] / self.df) * self.df
+                f_lim[1] = round(f_lim[1] / self.df) * self.df
             f_lim[0] += self.f_lim[0]
             f_lim[1] += self.f_lim[0]
 
@@ -724,13 +645,9 @@ class FRB_params:
             lim_width = self.t_lim[1] - self.t_lim[0]
             t_phase[0] = (t_lim[0] - self.t_lim[0])
             t_phase[1] = (t_lim[1] - self.t_lim[0])
-            print(t_phase[0])
-            print(t_phase[0] / self.dt)
             if snap:
-                t_phase[0] = int(t_phase[0] / self.dt) * self.dt
-                
-                t_phase[1] = int(t_phase[1] / self.dt) * self.dt
-            print(t_phase[0])
+                t_phase[0] = round(t_phase[0] / self.dt) * self.dt
+                t_phase[1] = round(t_phase[1] / self.dt) * self.dt
             t_phase[0] /= lim_width
             t_phase[1] /= lim_width
 
@@ -741,16 +658,12 @@ class FRB_params:
             f_phase[0] = (f_lim[0] - self.f_lim[0])
             f_phase[1] = (f_lim[1] - self.f_lim[0])
             if snap:
-                if self.UP:
-                    f_phase[0] += self.df
-                    f_phase[1] += self.df
-                f_phase[0] = int(f_phase[0] / self.df) * self.df
-                f_phase[1] = int(f_phase[1] / self.df) * self.df
+                f_phase[0] = round(f_phase[0] / self.df) * self.df
+                f_phase[1] = round(f_phase[1] / self.df) * self.df
             f_phase[0] /= lim_width
             f_phase[1] /= lim_width
 
-            if self.UP:
-                f_phase[0], f_phase[1] = 1.0 - f_phase[1], 1.0 - f_phase[0]
+            f_phase = [1.0 - f_phase[1], 1.0 - f_phase[0]]
 
         return t_phase, f_phase
 
@@ -873,11 +786,7 @@ class FRB_params:
         """
         Get frequencies
         """
-        if self.UP:
-            return np.linspace(self.cfreq + self.bw/2 - self.df/2, self.cfreq - self.bw/2 + self.df/2,
-                            self.nchan)
-        else:
-            return np.linspace(self.cfreq - self.bw/2 + self.df/2, self.cfreq + self.bw/2 - self.df/2,
+        return np.linspace(self.cfreq + self.bw/2 - self.df/2, self.cfreq - self.bw/2 + self.df/2,
                             self.nchan)
 
     def get_times(self):
@@ -942,7 +851,11 @@ class FRB_metaparams:
         string used for zapping channels, in format -> "850, 860, 870:900" \n
         each element seperated by a ',' is a seperate channel. If ':' is used, user can specify a range of values \n
         i.e. 870:900 -> from channel 870 to 900 inclusive of both.
-    norm : str
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
 
 
 
@@ -956,7 +869,11 @@ class FRB_metaparams:
         Factor for time averaging
     fN : int
         Factor for frequency averaging
-    norm : str
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
     """    
 
     def __init__(self, t_crop = None, f_crop = None, terr_crop = None,

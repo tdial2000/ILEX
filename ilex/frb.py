@@ -20,7 +20,7 @@ import math
 import os, sys
 from copy import deepcopy
 import inspect
-from .pyfit import fit
+from .pyfit import fit, _posterior
 import yaml
 
 ## import utils ##
@@ -51,7 +51,7 @@ from .plot import (plot_RM, plot_PA, plot_stokes,
 ## import processing functions ##
 # from .FRBproc import proc_data
 
-from .logging import log, get_verbose, set_verbose
+from .logging import log, get_verbose, set_verbose, log_title
 
 
 from .master_proc import master_proc_data
@@ -156,10 +156,14 @@ class FRB:
         Color of text for logging
     empty: bool 
         Variable used to initialise FRB instance and data loading
-    plot_err_type: str
-        type of error to plot \n
-        [lines] - scatter plot with error bars \n
-        [regions] - patch regions surrounding line plot
+    plot_type: str
+        type of plot \n
+        [scatter] - scatter plot with error bars \n
+        [lines] - line plot with error patches
+    show_plots: bool
+        If true, shows plots
+    save_plots: bool
+        If true, saves plots to file
     residuals: bool
         if true, a residual panel will appear when plotting a fit using pyfit, default is True
     plotPosterior: bool
@@ -168,6 +172,8 @@ class FRB:
         if true, apply time dependant weights when scrunching in time, i.e making spectra, default is True
     apply_fw: bool
         if true, apply freq dependant weights when scrunching in freq, i.e. making time profiles, default is True
+    fitted_params: dict
+        dictionary of fitted values, i.e. RM
     """
 
 
@@ -248,6 +254,8 @@ class FRB:
         self.plot_type = "scatter"    # type of errorbar plot
         self.residuals = False          # plot residuals when plotting fits
         self.plotPosterior = True      # plot posterior corner plot when plotting fits
+        self.save_plots = False
+        self.show_plots = True
         self.zap = False                # if True, will treat arrays as zapped
 
         # weightings
@@ -255,6 +263,7 @@ class FRB:
         self.apply_fW = True                  # apply freq weights
 
         self._isinstance = False        # if data instance is valid
+        self.fitted_params = {}
 
 
         # quick load yaml file
@@ -291,6 +300,10 @@ class FRB:
         _init: bool 
             For initial Data loading
         """
+
+        log_title("Loading in Stokes dynamic spectra. Assuming the data being loaded are .npy files", col = "lblue")
+
+
         if yaml_file is not None:
             log("Loading from yaml file", lpf_col = self.pcol)
 
@@ -299,8 +312,6 @@ class FRB:
 
             # extract pars
             pars = merge_dicts(yaml_pars['par'], yaml_pars['metapar'], yaml_pars['hyperpar'])
-            # print(pars)
-            # set pars
             self.set(**pars)
 
             # set weights if given
@@ -318,9 +329,6 @@ class FRB:
             else:
                 log(f"setting plotting style: {yaml_pars['plots']['plotstyle_file']}")
 
-            _init = True
-
-
 
         def init_par_from_load(x):
             """
@@ -328,16 +336,16 @@ class FRB:
             """
 
             self.par.nchan = x.shape[0]                     # assumed that dyn spec is [freq,time]
-            self.par.nsamp = x.shape[1]        
+            self.par.nsamp = x.shape[1]       
             self.par.t_lim  = [0.0, self.par.dt * self.par.nsamp]
 
-            self.empty = False
-
+            # check if any channels are nan's i.e. flagged
+            if np.any(np.isnan(x[:,0])):
+                self.zap = True
 
 
         ## dict. of files that will be loaded in
         data_files = {"dsI": dsI, "dsQ": dsQ, "dsU": dsU, "dsV": dsV}
-
 
         # loop through files
         for key in data_files.keys():
@@ -345,22 +353,20 @@ class FRB:
             file = data_files[key]
             if file is not None:
 
+                init_key = key
+
                 # load all dynamic spectra
-                if "ds" in key:
-                    self.ds[key[-1]] = load_data(file, mmap)
-                    log(f"Loading stokes {key[-1]} Dynspec from: {file} with shape {self.ds[key[-1]].shape}",
-                         lpf_col=self.pcol)
-
-                    if self.empty or _init:
-                        init_par_from_load(self.ds[key[-1]])
-
-                # load all polarisation time series data
-                elif "pol" in key:
-                    self.pol[key[-1]] = load_data(file, mmap)
-                    log(f"Loading Pol {key[-1]} from: {file} with shape {self.pol[key[-1]].shape}", 
+                self.ds[key[-1]] = load_data(file, mmap)
+                log(f"Loading stokes {key[-1]} Dynspec from: {file} with shape {self.ds[key[-1]].shape}",
                         lpf_col=self.pcol)
 
+        init_par_from_load(self.ds[init_key[-1]])
 
+
+
+
+
+        
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
@@ -376,6 +382,8 @@ class FRB:
             Common Pre-fix for saved data, by default None, if None the name parameter of the
             FRB class will be used.
         """
+
+        log_title("Saving Stokes data, the data is saved as .npy files. ", col = "lblue")
 
         if yaml_file is not None:
             # save parmaters to yaml file
@@ -429,9 +437,6 @@ class FRB:
         # update hyperpars
         self._update_hyperpar(**kwargs)        
 
-        # log(self.metapar.metapar2dict, lpf_col = self.pcol)
-        # log(self.par, lpf_col = self.pcol)
-
 
 
 
@@ -458,7 +463,7 @@ class FRB:
         """
         Make new instance of loaded data. This will take a crop of the 
         loaded mmap-ed stokes data, pass it through the back-end processing
-        function and save the data in memory in the ._ds, _t, _f and _freq
+        function and save the data in memory in the ._ds, _t, _f, _time and _freq
         class instance attributes.
 
         Parameters
@@ -476,13 +481,13 @@ class FRB:
         data: Dict, optional
             Dictionary of processed data crops, by default None if get = False
         """
+
+        log_title("Retrieving Processed Data products. Any currently loaded crops of data will be overwritten. ", col = "lblue")
+
         # update par and metapar if nessesary
-        print(self.par.t_lim)
         self._load_new_params(**kwargs)
-        print(self.this_par.t_lim)
 
         
-
         # process data_list as str
         if type(data_list) == str:
             if data_list == "all":
@@ -492,31 +497,24 @@ class FRB:
                 
         log(f"Retrieving the following data: {data_list}", lpf_col = self.pcol)
 
-
-        ## check if instance of data already exists
-        if not self._check_instance(data_list):
-            ## if check fails, will need to make new data
-            # get the data_products needed to make new instance
-            data_products = self._init_proc(data_list)
+        # get all data products needed
+        data_products = self._init_proc(data_list)
 
 
-            ## first check if there is data to use
-            if not self._isvalid(data_products):
-                log("Loaded data not avaliable or incorrect DS shapes", stype = "err",
-                    lpf_col = self.pcol)
-                self._isinstance = False
-                return 
+        ## first check if there is data to use
+        if not self._isvalid(data_products):
+            log("Loaded data not avaliable or incorrect DS shapes", stype = "err",
+                lpf_col = self.pcol)
+            self._isinstance = False
+            return 
+
+        ## make new instances
+        self._make_instance(data_list, ignore_nans)
 
 
-            ## make new instances
-            self._make_instance(data_list, ignore_nans)
-
-
-            ## set new instance param 
-            self._save_new_params()
+        ## set new instance param 
+        self._save_new_params()
         
-        else:
-            log("Loading previous crop", lpf_col = self.pcol)
 
         self._isinstance = True
 
@@ -531,151 +529,151 @@ class FRB:
 
 
 
-    def _check_instance(self, data_list = None):
-        """
-        Run through unit checks of current instance of crops, do all crops match in shape,
-        have any parameters changed since last call to get_data().
+    # def _check_instance(self, data_list = None):
+    #     """
+    #     Run through unit checks of current instance of crops, do all crops match in shape,
+    #     have any parameters changed since last call to get_data().
 
-        Parameters
-        ----------
-        data_list : List(str), optional
-            data to check, by default None
+    #     Parameters
+    #     ----------
+    #     data_list : List(str), optional
+    #         data to check, by default None
 
-        Returns
-        -------
-        bool
-            0 if failed, 1 if passed
-        """
+    #     Returns
+    #     -------
+    #     bool
+    #         0 if failed, 1 if passed
+    #     """
 
-        if self.force_reload:
-            log("forcing reload of data", stype = "warn")
-            return 0
+    #     if self.force_reload:
+    #         log("forcing reload of data", stype = "warn")
+    #         return 0
 
-        if not dict_isall(self.prev_par.par2dict(), 
-                          self.this_par.par2dict()):
-            log("params do not match", stype = "warn")
-            return 0
+    #     if not dict_isall(self.prev_par.par2dict(), 
+    #                       self.this_par.par2dict()):
+    #         log("params do not match", stype = "warn")
+    #         return 0
         
-        if not dict_isall(self.prev_metapar.metapar2dict(),
-                          self.this_metapar.metapar2dict()):
-            log("metaparams do not match", stype = "warn")
-            return 0
+    #     if not dict_isall(self.prev_metapar.metapar2dict(),
+    #                       self.this_metapar.metapar2dict()):
+    #         log("metaparams do not match", stype = "warn")
+    #         return 0
 
-        # flags
-        err_flag = self._iserr()
+    #     # flags
+    #     err_flag = self._iserr()
 
         
-        ## check for data in instance
-        _shape = {"ds":[], "t":[], "f":[]}
-        freq_shape = 0
-        time_shape = 0
-        for data in data_list:
-            stk = data[-1]
+    #     ## check for data in instance
+    #     _shape = {"ds":[], "t":[], "f":[]}
+    #     freq_shape = 0
+    #     time_shape = 0
+    #     for data in data_list:
+    #         stk = data[-1]
             
-            # dynamic spectra
-            if data[:2] == "ds":
-                dat = self._ds[stk]
-                typ = "ds"
+    #         # dynamic spectra
+    #         if data[:2] == "ds":
+    #             dat = self._ds[stk]
+    #             typ = "ds"
             
-            # time series
-            if data[0] == "t":
-                dat = self._t[stk]
-                daterr = self._t[f"{stk}err"]
-                typ = "t"
+    #         # time series
+    #         if data[0] == "t":
+    #             dat = self._t[stk]
+    #             daterr = self._t[f"{stk}err"]
+    #             typ = "t"
 
-            # frequency spectra
-            if data[0] == "f":
-                dat = self._f[stk]
-                daterr = self._f[f"{stk}err"]
-                typ = "f"
+    #         # frequency spectra
+    #         if data[0] == "f":
+    #             dat = self._f[stk]
+    #             daterr = self._f[f"{stk}err"]
+    #             typ = "f"
 
             
-            # check data
-            if dat is None:
-                log(f"{data} is missing, will be made", stype = "warn")
-                return 0
-            _shape[typ].append(dat.shape)
-            if err_flag and typ != "ds":
-                if daterr is None:
-                    log(f"{data}err is missing, will be made", stype = "warn")
-                    return 0
-                if typ == "f":
-                    _shape[typ].append(daterr.shape)
+    #         # check data
+    #         if dat is None:
+    #             log(f"{data} is missing, will be made", stype = "warn")
+    #             return 0
+    #         _shape[typ].append(dat.shape)
+    #         if err_flag and typ != "ds":
+    #             if daterr is None:
+    #                 log(f"{data}err is missing, will be made", stype = "warn")
+    #                 return 0
+    #             if typ == "f":
+    #                 _shape[typ].append(daterr.shape)
 
 
-            # frequency band array
-            elif data == "freq":
-                if self._freq is None:
-                    log("freq data is missing, will be made", stype = "warn")
-                    return 0
-                freq_shape = self._freq.shape
+    #         # frequency band array
+    #         elif data == "freq":
+    #             if self._freq is None:
+    #                 log("freq data is missing, will be made", stype = "warn")
+    #                 return 0
+    #             freq_shape = self._freq.shape
             
-            elif data == "time":
-                if self._time is None:
-                    log("time data is missing, will be made", stype = "warn")
-                    return 0
-                time_shape = self._time.shape
+    #         elif data == "time":
+    #             if self._time is None:
+    #                 log("time data is missing, will be made", stype = "warn")
+    #                 return 0
+    #             time_shape = self._time.shape
 
 
-        ## check if all shapes match up
-        if not all(x==_shape['ds'][0] for x in _shape['ds']):
-            log("cropped ds shapes do not match, will be remade", stype = "warn")
-            return 0
+    #     ## check if all shapes match up
+    #     if not all(x==_shape['ds'][0] for x in _shape['ds']):
+    #         log("cropped ds shapes do not match, will be remade", stype = "warn")
+    #         return 0
         
-        if not all(x==_shape['t'][0] for x in _shape['t']):
-            log("cropped t shapes do not match, will be remade", stype = "warn")
-            return 0
+    #     if not all(x==_shape['t'][0] for x in _shape['t']):
+    #         log("cropped t shapes do not match, will be remade", stype = "warn")
+    #         return 0
 
-        if not all(x==_shape['f'][0] for x in _shape['f']):
-            log("cropped f shapes do not match, will be remade", stype = "warn")
-            return 0
+    #     if not all(x==_shape['f'][0] for x in _shape['f']):
+    #         log("cropped f shapes do not match, will be remade", stype = "warn")
+    #         return 0
 
-        ## check if cross products i.e. ds and t match up
-        if len(_shape['ds']) > 0 and len(_shape['t']) > 0:
-            if _shape['ds'][0][1] != _shape['t'][0][0]:
-                log(f"# samples for ds and t do not match, data will be remade\n{_shape['ds'][0][1]} != {_shape['t'][0][0]}",
-                    stype = "warn")
-                return 0
+    #     ## check if cross products i.e. ds and t match up
+    #     if len(_shape['ds']) > 0 and len(_shape['t']) > 0:
+    #         if _shape['ds'][0][1] != _shape['t'][0][0]:
+    #             log(f"# samples for ds and t do not match, data will be remade\n{_shape['ds'][0][1]} != {_shape['t'][0][0]}",
+    #                 stype = "warn")
+    #             return 0
         
-        if len(_shape['ds']) > 0 and len(_shape['f']) > 0:
-            if _shape['ds'][0][0] != _shape['f'][0][0]:
-                log(f"# channels for ds and f do not match, data will be remade\n{_shape['ds'][0][0]} != {_shape['t'][0][0]}",
-                    stype = "warn")
-                return 0
+    #     if len(_shape['ds']) > 0 and len(_shape['f']) > 0:
+    #         if _shape['ds'][0][0] != _shape['f'][0][0]:
+    #             log(f"# channels for ds and f do not match, data will be remade\n{_shape['ds'][0][0]} != {_shape['t'][0][0]}",
+    #                 stype = "warn")
+    #             return 0
         
-        if len(_shape['ds']) > 0 and freq_shape > 0:
-            if _shape['ds'][0][0] != freq_shape:
-                log(f"# channels for ds and freq do not match, data will be remade\n{_shape['ds'][0][0]} != {freq_shape}",
-                    stype = "warn")
-                return 0
+    #     if len(_shape['ds']) > 0 and freq_shape > 0:
+    #         if _shape['ds'][0][0] != freq_shape:
+    #             log(f"# channels for ds and freq do not match, data will be remade\n{_shape['ds'][0][0]} != {freq_shape}",
+    #                 stype = "warn")
+    #             return 0
 
-        if len(_shape['ds']) > 0 and time_shape > 0:
-            if _shape['ds'][0][1] != time_shape:
-                log(f"# samples for ds and time do not match, data will be remade\n{_shape['ds'][0][1]} != {time_shape}",
-                    stype = "warn")
-                return 0
+    #     if len(_shape['ds']) > 0 and time_shape > 0:
+    #         if _shape['ds'][0][1] != time_shape:
+    #             log(f"# samples for ds and time do not match, data will be remade\n{_shape['ds'][0][1]} != {time_shape}",
+    #                 stype = "warn")
+    #             return 0
             
-        if len(_shape['f']) > 0 and freq_shape > 0:
-            if _shape['f'][0][0] != freq_shape:
-                log(f"# channels for f and freq do not match, data will be remade\n{_shape['f'][0][0]} != {freq_shape}",
-                    stype = "warn")
-                return 0
+    #     if len(_shape['f']) > 0 and freq_shape > 0:
+    #         if _shape['f'][0][0] != freq_shape:
+    #             log(f"# channels for f and freq do not match, data will be remade\n{_shape['f'][0][0]} != {freq_shape}",
+    #                 stype = "warn")
+    #             return 0
         
-        if len(_shape['t']) > 0 and time_shape > 0:
-            if _shape['t'][0][0] != time_shape:
-                log(f"# samples for t and time do not match, data will be remade\n{_shape['t'][0][0]} != {time_shape}",
-                    stype = "warn") 
-                return 0               
+    #     if len(_shape['t']) > 0 and time_shape > 0:
+    #         if _shape['t'][0][0] != time_shape:
+    #             log(f"# samples for t and time do not match, data will be remade\n{_shape['t'][0][0]} != {time_shape}",
+    #                 stype = "warn") 
+    #             return 0               
 
         
-        ## all checks passed, return true
-        return 1
+    #     ## all checks passed, return true
+    #     return 1
 
 
 
     def _get_instance(self, data_list = None, ignore_nans = False):
         """
-        Grap current instance of crops
+        retrieve data products
 
         Parameters
         ----------
@@ -772,7 +770,7 @@ class FRB:
             self._time = None
 
 
-        # loop through data products
+        # get frequencies
         freqs = self.par.get_freqs()
         
 
@@ -858,9 +856,7 @@ class FRB:
         self._freq = self._freq[f_mask]
 
         if aval_key_for_time is not None:
-            # set new time (self._time)
             self._time = self.this_par.get_times()
-            # self._time = np.linspace(*self.this_par.t_lim, _timesize, endpoint = False)
 
         return
 
@@ -933,7 +929,7 @@ class FRB:
 
         # check if Q or U is there, and if RM is non-zero, if so
         # load both Q and U
-        if (("Q" in stk) != ("U" in stk)) and self.this_par.RM != 0.0:
+        if (("Q" in stk) != ("U" in stk)) and (self.this_par.RM is not None):
             # add missing stokes to stk list
             if "Q" in stk:
                 log("Added Stokes U to process for RM correction", lpf = False)
@@ -1170,14 +1166,12 @@ class FRB:
 
         # check if t_crop has been given in units of ms
         if "t_crop" in keys:
-            print(kwargs['t_crop'])
             
             kwargs['t_crop'][0], kwargs['t_crop'][1] = check_crop_for_str(kwargs['t_crop'], "t")
 
             if kwargs['t_crop'][0] > 1.0 or kwargs['t_crop'][1] > 1.0:
                 prev_t = kwargs['t_crop'].copy()
                 new_t,_ = self.par.lim2phase(t_lim = prev_t, snap = True)
-                print(new_t)
                 kwargs['t_crop'][0], kwargs['t_crop'][1] = new_t[0], new_t[1]
 
                 if kwargs['t_crop'][0] < 0.0: kwargs['t_crop'][0] = 0.0
@@ -1220,13 +1214,6 @@ class FRB:
 
 
     
-
-
-
-
-    
-
-
 
 
 
@@ -1298,80 +1285,115 @@ class FRB:
         #create string outlining parameters
 
         outstr = ""
-        outstr += "==============================\n"
-        outstr += "==== FRB META Parameters =====\n"
-        outstr += "==============================\n"
-        outstr += "PARAM:       PROD:       INST:\n"
-        outstr += "==============================\n"
+        outstr += "="*80 + "\n"
+        outstr += " "*32 + " Crop Parameters " + ""*32 + "\n"
+        outstr += "="*80 + "\n\n"
+        outstr += "PARAMETERS:".ljust(25) + "SAVED:".ljust(25) + "INST:".ljust(25) + "\n"
+        outstr += "="*80 + "\n\n"
 
         for _,key in enumerate(_G.mp.keys()):
             val = getattr(self.metapar, key)
             val2 = getattr(self.prev_metapar, key)
             
-            outstr += f"{key}:  {val}   {val2}\n"
+            outstr += f"{key}:".ljust(25) + f"{val}".ljust(25) + f"{val2}".ljust(25) + "\n"
 
 
         outstr += "\n"
-        outstr += "==============================\n"
-        outstr += "==== FRB DATA Parameters =====\n"
-        outstr += "==============================\n"
-        outstr += "PARAM:       PROD:       INST:\n"
-        outstr += "==============================\n"
+        outstr += "="*80 + "\n"
+        outstr += " "*32 + " Data Parameters " + " "*32 + "\n"
+        outstr += "="*80 + "\n\n"
+        outstr += "PARAMETERS:".ljust(25) + "SAVED:".ljust(25) + "INST:".ljust(25) + "\n"
+        outstr += "="*80 + "\n\n"
 
         for _,key in enumerate(_G.p.keys()):
             val = getattr(self.par, key)
             val2 = getattr(self.prev_par, key)
-            outstr += f"{key}:  {val}   {val2}\n"
+
+            outstr += f"{key}:".ljust(25) + f"{val}".ljust(25) + f"{val2}".ljust(25) + "\n"
 
         
         # outline loaded data
         outstr += "\n"
-        outstr += "=========================\n"
-        outstr += "==    DATA products    ==\n"
-        outstr += "=========================\n"
-        outstr += "TYPE:    SHAPE\n"
-        outstr += "==============\n"
-        for P in "XY":
-            if self.pol[P] is not None:
-                outstr += f"{P}:  {list(self.pol[P].shape)}\n"
-        
+        outstr += "="*80 + "\n"
+        outstr += " "*30 + "    DATA products   " + " "*30 + "\n"
+        outstr += "="*80 + "\n\n"
+        outstr += "TYPE:".ljust(25) + "SHAPE:".ljust(25) + "\n"
+        outstr += "="*80 + "\n\n"
         
         for S in "IQUV":
             if self.ds[S] is not None:
-                outstr += f"{S}:   {list(self.ds[S].shape)}\n"
+                outstr += f"{S}:".ljust(25) + f"{list(self.ds[S].shape)}".ljust(25) + "\n"
         
         #now print data instance
         outstr += "\n"
-        outstr += "=========================\n"
-        outstr += "==    DATA instance    ==\n"
-        outstr += "=========================\n"
-        outstr += "TYPE:    SHAPE\n"
-        outstr += "==============\n"
+        outstr += "="*80 + "\n"
+        outstr += " "*30 + "    DATA instance   " + " "*30 + "\n"
+        outstr += "="*80 + "\n\n"
+        outstr += "TYPE:".ljust(25) + "SHAPE/VAL:".ljust(25) + "\n"
+        outstr += "="*80 + "\n\n"
         ds_str = ""
         t_str = "\n"
         f_str = "\n"
         for S in "IQUV":
             if self._ds[S] is not None:
-                ds_str += f"ds{S}:   {list(self._ds[S].shape)}\n"
+                ds_str += f"ds{S}:".ljust(25) + f"{list(self._ds[S].shape)}".ljust(25) + "\n"
             
             if self._t[S] is not None:
-                t_str += f"t{S}:    {list(self._t[S].shape)}\n"
+                t_str += f"t{S}:".ljust(25) + f"{list(self._t[S].shape)}".ljust(25) + "\n"
             if self._t[f"{S}err"] is not None:
                 Serr = f"{S}err"
-                t_str += f"t{S}err: {self._t[Serr]}\n"
+                t_str += f"t{S}err:".ljust(25) + f"{self._t[Serr]}".ljust(25) + "\n"
             
             if self._f[S] is not None:
-                f_str += f"f{S}:    {list(self._f[S].shape)}\n"
+                f_str += f"f{S}:".ljust(25) + f"{list(self._f[S].shape)}".ljust(25) + "\n"
             if self._f[f"{S}err"] is not None:
                 Serr = f"{S}err"
-                f_str += f"f{S}err: {list(self._f[Serr].shape)}\n"
+                f_str += f"f{S}err:".ljust(25) + f"{list(self._f[Serr].shape)}".ljust(25) + "\n"
         
         outstr += ds_str + t_str + f_str
 
         if self._freq is not None and len(self._freq) > 0:
-            outstr += f"freqs: top:{self._freq[0]}, bottom:{self._freq[-1]}\n"
+            outstr += f"freqs:".ljust(25) + f"top:{self._freq[0]}, bottom:{self._freq[-1]}" + "\n\n"
 
+        
+        def _print_fitted_params(pstr, pars):
+
+            for i, key in enumerate(pars.keys()):
+                pstr += f"{key}:".ljust(25) + f"{pars[key].val}".ljust(25) + f"+{pars[key].p}".ljust(20) + f"-{pars[key].m}".ljust(20) + "\n"
+
+            return pstr
+
+
+        # print fitted params 
+        if len(self.fitted_params) > 0:
             
+            outstr += "\n"
+            outstr += "="*80 + "\n"
+            outstr += " "*31 + " Fitted Parameters " + " "*31 + "\n"
+            outstr += "="*80 + "\n\n"
+            outstr += "PARAMETERS:".ljust(25) + "VALUES:".ljust(25) + "+ ERR:".ljust(20) + "- ERR:".ljust(20) + "\n"
+            outstr += "="*80 + "\n\n"
+
+            keys = self.fitted_params.keys()
+
+            if "RM" in keys:
+                outstr += "#"*20 + "\n"
+                outstr += "      Fitted RM      \n"
+                outstr += "#"*20 + "\n"
+                outstr = _print_fitted_params(outstr, self.fitted_params['RM'])
+
+            if "tscatt" in keys:
+                outstr += "#"*20 + "\n"
+                outstr += "    Fitted tscatt    \n"
+                outstr += "#"*20 + "\n"
+                outstr = _print_fitted_params(outstr, self.fitted_params['tscatt']) 
+
+            if "scintband" in keys:
+                outstr += "#"*20 + "\n"
+                outstr += "   Fitted scintband  \n"
+                outstr += "#"*20 + "\n"
+                outstr = _print_fitted_params(outstr, self.fitted_params['scintband']) 
+
 
 
         return outstr
@@ -1437,7 +1459,7 @@ class FRB:
             New Phase start and end limits for found frb burst
 
         """
-        log("Looking for FRB burst", lpf_col = self.pcol)
+        log_title(f"Looking for FRB burst, Finding approximate bounds of burst up to a S/N of [{sigma}].", col = "lblue")
 
         ##====================##
         ## check if data valid##
@@ -1558,10 +1580,6 @@ class FRB:
             type of data to plot, by default "dsI"
         filename : str, optional
             filename to save figure to, by default None
-        plot_type : str, optional
-            type of error plotting, by default "scatter"\n
-            [regions] - Show error in data as shaded regions
-            [scatter] - Show error in data as tics in markers
 
         Returns
         -------
@@ -1569,7 +1587,7 @@ class FRB:
             Return Figure Instance
         """        
 
-        log(f"plotting {data}", lpf_col = self.pcol)
+        log_title(f"plotting [{data}] product.", col = "lblue")
 
         # get data
         pdat = self.get_data(data_list = data, get = True, **kwargs)
@@ -1577,7 +1595,15 @@ class FRB:
             return None
 
         # plot 
-        fig = plot_data(pdat, data, ax = ax, filename = filename, plot_type = self.plot_type)
+        fig = plot_data(pdat, data, ax = ax, plot_type = self.plot_type)
+
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_{data}.png"
+            plt.savefig(filename)
+
+        if self.show_plots:
+            plt.show()
 
         self._save_new_params()
 
@@ -1587,6 +1613,50 @@ class FRB:
 
 
 
+
+    # def zap_rfi(self, sigma = 3, **kwargs):
+    #     """
+    #     Zap channels based on if RFI is present, this assumes RFI will have an off-pulse RMS > sigma * RMS_median where 
+    #     RMS_median is the median RMS of each channel. 
+
+    #     Parameters
+    #     ----------
+    #     sigma : float, optional
+    #         threshold for RFI zapping
+        
+    #     Returns
+    #     -------
+    #     zapchan : np.ndarray
+    #         string of frequency channels to zap
+        
+    #     """
+        
+    #     log(f"zapping RFI", lpf_col = self.pcol)
+
+    #     # get data
+    #     data = self.get_data(["dsI", "fI"], get = True, **kwargs)
+
+    #     if not self._iserr():
+    #         log("Off-pulse crop required for RFI zappinh", lpf_col = self.pcol,
+    #             stype = "err")
+    #         return None
+        
+    #     # flag channels with RMS > then RMS threshold
+    #     print(data['fIerr'])
+    #     print(np.median(data['fIerr']))
+
+    #     data['fIerr'] = np.nanstd(data['dsI'], axis = 1)
+    #     med_rms = np.nanmedian(data['fIerr'])
+    #     mad_rms = 1.48 * np.nanmedian(np.abs(data['fIerr'] - med_rms))
+    #     data['dsI'][data['fIerr'] > (med_rms + sigma*mad_rms)] = np.nan
+
+
+
+    #     # plot bad channels
+    #     plt.figure(figsize = (10,10))
+    #     plt.imshow(data['dsI'], aspect = 'auto', extent = [*self.this_par.t_lim, *self.this_par.f_lim])
+
+    #     plt.show()
 
 
 
@@ -1626,7 +1696,7 @@ class FRB:
 
         """
 
-        log(f"plotting stokes data", lpf_col = self.pcol)
+        log_title(f"plotting stokes [{stk_type}] data", col = "lblue")
 
         # get data
         data_list = [f"{stk_type}I", f"{stk_type}Q", f"{stk_type}U", f"{stk_type}V"]
@@ -1651,7 +1721,16 @@ class FRB:
         # plot
         fig = plot_stokes(data, Ldebias = Ldebias, stk_type = stk_type,
                     sigma = sigma, stk2plot = stk2plot, stk_ratio = stk_ratio,
-                    filename = filename, plot_type = self.plot_type, ax = ax) 
+                    plot_type = self.plot_type, ax = ax) 
+
+        
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_stk_{stk_type}.png"
+            plt.savefig(filename)
+
+        if self.show_plots:
+            plt.show()
     
 
         self._save_new_params()
@@ -1662,7 +1741,7 @@ class FRB:
 
 
 
-    def plot_crop(self, stk = "I", **kwargs):
+    def plot_crop(self, stk = "I", filename = None,  **kwargs):
         """
         Plot current crop of of data along with off-pulse crop if given
 
@@ -1670,7 +1749,11 @@ class FRB:
         ----------
         stk : str, optional
             Stokes data to plot, by default "I"
+        filename : str, optional
+            name of file to save figure image, by default None
         """
+
+        log_title("Plotting current crop parameters for visual inspection.", col = "lblue")
 
         # initialise
         self._load_new_params(**kwargs)
@@ -1686,7 +1769,6 @@ class FRB:
         # combine crops, these will be crops of the full dynamic spectrum  with bound markers
         fcrop_ds = [0.0, 1.0]       # by default take full bandwidth
         tpad = 50 / (self.par.t_lim[-1] - self.par.t_lim[0])   # by default we will pad time by 100ms
-        print(tpad)
 
         # check of off-pulse region has been given
         err_flag = True
@@ -1707,7 +1789,6 @@ class FRB:
         # get data
         kwargs['t_crop'] = [*tcrop_ds]
         kwargs['f_crop'] = [*fcrop_ds]
-        print(kwargs)
         self.get_data([f"ds{stk}"], **kwargs)
 
 
@@ -1749,8 +1830,13 @@ class FRB:
 
         plt.title(titstr)
 
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_crop.png"
+            plt.savefig(filename)
 
-        plt.show()
+        if self.show_plots:
+            plt.show()
 
 
 
@@ -1758,7 +1844,7 @@ class FRB:
 
     ## [ PLOT LORENTZ OF CROP ] ##
     def fit_scintband(self, method = "bayesian",priors: dict = None, statics: dict = None, 
-                     fit_params: dict = None, plot = False, redo = False, filename: str = None, **kwargs):
+                     fit_params: dict = None, redo = False, filename: str = None, n = 5, **kwargs):
         """
         Fit for, Find and plot Scintillation bandwidth in FRB
 
@@ -1776,8 +1862,6 @@ class FRB:
             extra arguments for Bilby.run_sampler function, by default None
         redo : bool, optional
             if True, will redo fitting in the case that results are cached, this is mainly for BILBY fitting, default is False
-        plot : bool, optional
-            plot data, by default False
         filename : str, optional
             Save figure to file, by default None
 
@@ -1787,7 +1871,7 @@ class FRB:
             pyfit class structure
         """
         
-        log("Fitting for Scintillation bandwidth", lpf_col = self.pcol)
+        log_title(f"Fitting for Scintillation bandwidth using [{method}] method.", col = "lblue")
         ##====================##
         ##       get par      ##
         ##====================##
@@ -1813,13 +1897,14 @@ class FRB:
         # in the case channel zapping has been performed, first calc residuals of non.nan values
         # then convert nans to zeros for acf.
         if self.zap:
-            y = self._f['I'].copy()
-            y[~np.isnan(y)] = residuals(y[~np.isnan(y)])
-            y[np.isnan(y)] = 0.0
-            y = acf(y)
+            print("SCintillation fitting with zapped channels not supported yet... I am looking into this with astropy convolution algorithms that properly treat nan values. ")
+            return None
         else:
             # caculate acf of residuals
-            y = acf(residuals(self._f['I']))
+            y, yfit = residuals(self._f['I'], n = n)
+            yrms = np.sum(y**2)
+            y = acf(y)
+
 
         # lags
         x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
@@ -1844,19 +1929,54 @@ class FRB:
         err = 0.5*temp_err/p.posterior['a'].val
 
         p.set_posterior('m', m, err, err)
+
+        # set to fitted params
+        self.fitted_params['scintband'] = p.get_posteriors()
         
         if self.verbose:
             p.stats()
             print(p)
 
+            print(f"RMS in poly-n = {n} fitting (sum in square of residuals):")
+            print(yrms)
+
+
+
         ##===================##
         ##   do plotting     ##
-        ##===================##
+        ##===================##  
+        if self.save_plots or self.show_plots:     
+            plt.figure(figsize = (10,10))
+            plt.plot(self._freq, self._f['I'], 'k', label = "STOKES I spectra")
+            plt.plot(self._freq, yfit(np.arange(self._f['I'].size)), 'r--', label = "STOKES I fit")
+            plt.xlabel("Freq [MHz]")
+            plt.ylabel("Flux (arb.)")
+            plt.title(f"polyfit, n = {n}")
+            plt.legend()
 
-        
-        
-        if plot:
-            p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", filename = filename)
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_fit_scintband_broad_poly_model.png"
+                else:
+                    filename += "_broad_poly_model.png"
+                
+                plt.savefig(filename)
+                
+
+            fig = p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", show = False)
+
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_fit_scintband_residuals.png"
+                else:
+                    filename += "_residuals.png"
+                
+                plt.savefig(filename)
+
+
+            if self.show_plots:
+                plt.show()
+
 
         # update instance par
         self._save_new_params()
@@ -1869,14 +1989,9 @@ class FRB:
 
 
 
-
-
-
-
-
     ## [ FIT SCATTERING TIMESCALE ] ##
     def fit_tscatt(self, method = "bayesian", npulse = 1, priors: dict = None, statics: dict = None, 
-                   fit_params: dict = None, plot = False, redo = False, filename: str = None, **kwargs):
+                   fit_params: dict = None, redo = False, filename: str = None, **kwargs):
         """
         Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
 
@@ -1894,8 +2009,6 @@ class FRB:
             Priors to keep constant during fitting, by default None
         fit_params : dict, optional
             Keyword parameters for Bilby.run_sampler, by default None
-        plot : bool, optional
-            plot data after modelling is complete, by default False
         redo : bool, optional
             if True, will redo fitting in the case that results are cached, this is mainly for BILBY fitting, default is False
         filename : str, optional
@@ -1906,7 +2019,7 @@ class FRB:
         p: pyfit.fit
             pyfit class structure
         """        
-        log("Fitting for Scattering Time", lpf_col = self.pcol)
+        log_title(f"Fitting for Scattering Time and overall burst profile using [{method}] method.", col = "lblue")
         ##====================##
         ## check if data valid##
         ##====================##
@@ -1945,9 +2058,12 @@ class FRB:
         p = fit(x = x, y = y, yerr = err, func = make_scatt_pulse_profile_func(npulse),
                 prior = priors, static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior) 
-
+        
         # fit 
         p.fit(redo = redo)
+
+        # set to fitted params
+        self.fitted_params['tscatt'] = p.get_posteriors()
         
         # print best fit parameters
         if self.verbose:
@@ -1955,8 +2071,17 @@ class FRB:
             print(p)
 
         # plot
-        if plot:
-            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)", filename = filename)
+        if self.show_plots or self.save_plots:
+            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)", show = False)
+
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_fit_tscatt.png"
+                
+                plt.savefig(filename)
+            
+            if self.show_plots:
+                plt.show()
 
         # save instance parameters
         self._save_new_params()
@@ -1976,8 +2101,8 @@ class FRB:
 
 
 
-    def plot_poincare(self, filename = None, stk_type = "f", sigma = 2.0, plot_data = True,
-                        plot_model = False, n = 5, normalise = True, plot_1D_stokes = False, **kwargs):
+    def plot_poincare(self, stk_type = "f", sigma = 2.0, plot_data = True,
+                        plot_model = False, n = 5, normalise = True, plot_1D_stokes = False, filename = None, **kwargs):
         """
         Plot Stokes data on a Poincare Sphere.
 
@@ -2010,7 +2135,7 @@ class FRB:
         fig : figure
             Return figure instance
         """    
-        log("Plotting stokes data to poincare sphere", lpf_col = self.pcol)
+        log_title(f"Plotting stokes [{stk_type}] data onto poincare sphere.", col = "lblue")
 
         self._load_new_params(**kwargs)
 
@@ -2043,9 +2168,17 @@ class FRB:
         # plot poincare sphere
         fig, ax = create_poincare_sphere(cbar_lims = cbar_lims, cbar_label = cbar_label)
 
-        stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = sigma, filename = filename,
+        stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = sigma,
                     plot_data = plot_data, plot_model = plot_model, normalise = normalise,
                     n = n)
+                    
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_poincare.png"
+            else:
+                filename += "_poincare.png"
+            
+            plt.savefig(filename)
         
         # also plot stokes params
         if plot_1D_stokes:
@@ -2063,12 +2196,21 @@ class FRB:
             ax.set_title("1D stokes plot")
             ax.legend()
 
-
-        plt.show()
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_poincare_spectra_fit.png"
+                else:
+                    filename += "_poincare_spectra_fit.png"
+                
+                plt.savefig(filename)
+            
+        
+        if self.show_plots:
+            plt.show()
 
         self._save_new_params()
 
-        return fig
+        return fig, fig2
 
 
 
@@ -2107,7 +2249,7 @@ class FRB:
         p : pyfit.fit
             pyfit class fitting structure
         """
-        log(f"Retrieving RM", lpf_col = self.pcol)
+        log_title(f"Fitting for RM using [{method}] method.", col = "lblue")
 
         fit_params = dict_init(fit_params)
         self._load_new_params(**kwargs)
@@ -2168,16 +2310,25 @@ class FRB:
         p.set_posterior('pa0', pa0, pa0_err, pa0_err)
         p.set_posterior('f0', f0, 0.0, 0.0)
 
-        # set values to par class
-        self.par.set_par(RM = rm, pa0 = pa0, f0 = f0)
+        # set values to fitted_params 
+        self.fitted_params['RM'] = p.get_posteriors()
+        self.fitted_params['RM']['f0'] = _posterior(f0, 0, 0)
         p._is_fit = True
         p._get_stats()
 
         # plot
-        if plot:
+        if self.save_plots or self.show_plots:
             
-            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90],
-            filename = filename)
+            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90], show = False)
+
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_RM_fit.png"
+                
+                plt.savefig(filename)
+
+            if self.show_plots:
+                plt.show()
 
 
         self._save_new_params()
@@ -2230,7 +2381,7 @@ class FRB:
         fig : figure
             Return figure instance
         """
-        log("Plotting PA", lpf_col = self.pcol)
+        log_title("Plotting PA mosaic image with PA profile, Stokes profile and Dynamic spectra.", col = "lblue")
 
         # initialise parameters
         fit_params = dict_init(fit_params)
@@ -2284,21 +2435,16 @@ class FRB:
         AX['D'].set_ylabel("Frequency [MHz]", fontsize = 12)
         AX['D'].set_xlabel("Time [ms]", fontsize = 12)
 
-        # plot peak in time
-        peak = np.argmax(self._t['I'])
-        x = np.linspace(*self.this_par.t_lim, self._t['I'].size)[peak]
-        for A in "PDS":
-            axylim = AX[A].get_ylim()
-            AX[A].plot([x, x], axylim, 'r--')
-            AX[A].set_ylim(axylim)
-
         # adjust figure
         fig.tight_layout()
         fig.subplots_adjust(hspace = 0)
         AX['P'].get_xaxis().set_visible(False)
         AX['S'].get_xaxis().set_visible(False)
 
-        if filename is not None:
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_PA_mosaic.png"
+            
             plt.savefig(filename)
 
         if save_files:
@@ -2308,10 +2454,13 @@ class FRB:
             print(f"Saving PA err data to {self.par.name}_PAerr.npy...")
             np.save(f"{self.par.name}_PAerr.npy", PA_err)
 
+        
+        if self.show_plots:
+            plt.show()
+
 
         self._save_new_params()
 
-        plt.show()
 
         return fig
                                                 

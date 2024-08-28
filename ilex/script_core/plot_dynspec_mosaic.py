@@ -145,6 +145,9 @@ def _plot_mosaic(args):
                         stk2plot = pars['plots']['stk2plot'])
         AX[f"t{t}"].set_title(f"{t*frb.par.dt*1e3:.0f} $\\mu$s")
         AX[f"t{t}"].set_xlim(frb.prev_par.t_lim)
+
+
+
         
 
         # logic for labeling mosaic
@@ -165,6 +168,12 @@ def _plot_mosaic(args):
     AX[f"tf"].set_axis_off()
         
 
+    # recalibrate y axis for time series
+    ylim = AX[f"t{t}"].get_ylim()
+    for t in args.t:
+        AX[f"t{t}"].set_ylim(ylim)
+
+        
     # final figure adjustments
     fig.tight_layout()
     fig.subplots_adjust(hspace = 0, wspace = 0)  

@@ -1,9 +1,11 @@
 ## imports
 from .data import *
-from .logging import log
+from .logging import log, get_verbose
 from .utils import get_stk_from_datalist
 from .globals import _G
 from time import time
+import matplotlib.pyplot as plt
+
 
 ##==========================##
 ## MAIN PROCESSING FUNCTION ##
@@ -80,14 +82,24 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     fw_flag = par['fW'] is not None
     tw_flag = par['tW'] is not None
 
+    # get verbose
+    verbose = get_verbose()
+
     # container to store temporary data in
     stk_ds = {}
 
+    # additional diagnostics container, holds flags to log processing steps
+    # [Timecrop, freqcrop, chanzap, normalising, Faraday derotating, Time averaging, Freq averaging, making products]
+    tick = " "
+    if err_flag:
+        tick = "X"
+    log(f"PROCESSING: Data [X], Error [{tick}]\n", lpf_col = "lgreen")
+    _log_progress([True, True, zap_flag, True, fday_flag, True, True, tw_flag, fw_flag], par)
 
     ## ============================== ##
     ##         RUN PROCESSING         ##
     ## ============================== ##
-    log("Processing ON-PULSE data", lpf = False)
+    # log("Processing data", lpf = False)
 
 
     ## crop ##    
@@ -98,7 +110,6 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
                     par = par, err = err_flag)
 
     # also crop freq array
-    log(f"Cropping Freq array")
     freq = pslice(freq, *par['f_crop'])
 
 
@@ -126,7 +137,7 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
                                 freq = freq, par = par, err = err_flag)
 
     
-    ## average ##
+    # ## average ##
     log(f"Applying Time Averaging = {par['tN']}", lpf = False)
     log(f"Applying Freq Averaging = {par['fN']}", lpf = False)
     stk_ds = _average(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
@@ -141,6 +152,17 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     ## ========================= ##
     ## SAVING DATA TO CONTAINERS ##
     ## ========================= ## 
+
+    # diagnostic plotting
+    if verbose:
+
+        # plot frequency weights
+        _diag_plot_weights(stk_ds['I'], par)
+
+
+        # can add more later
+
+
     for S in stk_list:
 
 
@@ -159,13 +181,7 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
         if S in t_list:
             _t[S] = _scrunch(stk_ds[S], xtype = "t", W = _average_weight(par['fW'], par['fN']), nan = zap_flag)
             if err_flag:
-
-                # for time series error, can average both t and f
-                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 1, N = par['tN'])
-                err_ds = average(err_ds, axis = 0, N = par['fN'], nan = zap_flag)
-                
-                # err_ds = f_weight(err_ds, _average_weight(par['fW'], par['fW']))
-                _t[f"{S}err"] = _time_err(err_ds, nan = zap_flag)
+                _t[f"{S}err"] = _time_err(stk_ds[f"{S}err"], nan = zap_flag)
 
 
 
@@ -177,12 +193,10 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
         #freq spectra
         if S in f_list:
-            _f[S] = _scrunch(stk_ds[S], xtype = "f", W = _average_weight(par['tW'], par['tN']))
             if err_flag:
-                # for freq error, best to not avearge in time
-                err_ds = average(stk_ds[f"{S}err"].copy(), axis = 0, N = par['fN'], nan = zap_flag)
-                # err_ds = t_weight(err_ds, par['tW'])
-                _f[f"{S}err"] = _freq_err(err_ds, par['t_crop'], par['terr_crop'])
+                _f[f"{S}err"] = _freq_err(stk_ds[f"{S}err"], par['t_crop'], par['terr_crop'])
+                
+            _f[S] = _scrunch(stk_ds[S], xtype = "f", W = _average_weight(par['tW'], par['tN']))
         
         # del temp data
         del stk_ds[S]
@@ -227,6 +241,8 @@ def _proc_par(par):
     Further process parameters
     """
 
+    log("Checking Parameters for data processing", lpf_col="lgreen")
+
     # defaults
     def_m = deepcopy(_G.p)
     for key in ["tW", "fW"]:    # add extra params
@@ -248,7 +264,7 @@ def _proc_par(par):
 
     # if f0 not specified, set to cfreq
     if par['f0'] is None:
-        log(f"[f0] unspecified, setting f0 = cfreq = {par['cfreq']}", lpf = False)
+        log(f"[f0] unspecified, setting f0 = cfreq = {par['cfreq']}\n", lpf = False)
         par['f0'] = par['cfreq']
     
     return par
@@ -308,12 +324,10 @@ def _crop(stk, stk_ds, stk_list, par, err = False):
     """
 
     for S in stk_list:
-        print(f"PROCESSING {S}")
         t1 = time()
         # crop on-burst
         stk_ds[S] = pslice(stk[S], *par['t_crop'], axis = 1)        # Time 
         stk_ds[S] = pslice(stk_ds[S], *par['f_crop'], axis = 0)     # Freq
-        print(f"Time: {(time() - t1)} s")
         
         # off-burst
         if err:
@@ -459,17 +473,20 @@ def _average(stk, stk_ds, stk_list, par, err = False, zap = False):
     """
 
     for S in stk_list:
+        ferr_flag = False
+        if S in ["fIerr", "fQerr", "fUerr", "fVerr"]:   # freq errors need to be handled with care
+            ferr_flag = True
         # average in time, don't want to average in time so as to
         # enable better std calculation
-        if par['tN'] > 1:
+        if (par['tN'] > 1):
             stk_ds[S] = average(stk_ds[S], axis = 1, N = par['tN'])
-            # if err:
-            #     stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 1, N = par['tN'])
+            if err:
+                stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 1, N = par['tN'])
 
         if par['fN'] > 1:
             stk_ds[S] = average(stk_ds[S], axis = 0, N = par['fN'], nan = zap)
-            # if err:
-            #     stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 0, N = par['fN'])
+            if err:
+                stk_ds[f"{S}err"] = average(stk_ds[f"{S}err"], axis = 0, N = par['fN'], nan = zap)
 
     return stk_ds
 
@@ -526,6 +543,13 @@ def _freq_err(ds, t_crop, terr_crop):
     rms = crop_scale * np.std(ds, axis = 1) / ds.shape[1]**0.5
 
     return rms
+
+
+# def _freq_err(ds):
+
+#     rms = np.std(ds, axis = 1)
+#     return rms
+
 
 
 
@@ -616,3 +640,80 @@ def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
             stk_ds[f"{S}err"][seg_idx] = np.nan
 
     return stk_ds, True
+
+
+
+
+
+
+
+
+
+
+
+
+# diagnostics functions
+def _log_progress(flags, par):
+    """
+    Batch log progress
+    
+    """
+
+    logs = [f"Time cropping [{par['t_crop'][0]}, {par['t_crop'][1]}]", f"Freq cropping [{par['f_crop'][0]}, {par['f_crop'][1]}]", 
+            f"Channel zapping [{par['zapchan']}]", f"Normalising [{par['norm']}]", f"Faraday De-rotating [RM = {par['RM']}]", 
+            f"Time averaging [N = {par['tN']}]", f"Freq averaging [N = {par['fN']}]", f"Time weighting", f"Freq weighting", f"Making products"]
+
+    pstr = ""
+
+    for i, flag in enumerate(flags):
+        tick = " "
+        if flag:
+            tick = "X"
+        pstr += f"[{tick}]   " + logs[i] + "\n"
+
+    
+    log(pstr, lpf = False)
+
+
+
+
+def _diag_plot_weights(ds, par):
+    """
+    Plot weights Against time array or freq array
+    """
+
+    # diagnostic plot for time weights
+    if par['tW'] is not None:
+        plt.figure()
+        t = np.nanmean(ds, axis = 0)
+        weights = _average_weight(par['tW'], par['tN'])
+        
+        plt.plot(t, "--")
+        plt.plot(weights/np.max(weights) * np.max(t))
+        plt.xlabel("Time samples")
+        plt.ylabel("arb.")
+        
+        # save fig
+        filename = f"{par['name']}_applying_time_weights.png"
+        log(f"Saving diagnostic plot of applying time weights: [{filename}]", lpf = False)
+        plt.savefig(filename)
+
+        plt.close()
+    
+    # diagnostic plot for freq weights
+    if par['fW'] is not None:
+        plt.figure()
+        f = np.mean(ds, axis = 1)
+        weights = _average_weights(par['fW'], par['fN'])
+
+        plt.plot(f, "--")
+        plt.plot(weights/np.max(weights) * np.max(f))
+        plt.xlabel("Freq channels")
+        plt.ylabel("arb.")
+
+        # save fig
+        filename = f"{par['name']}_applying_freq_weights.png"
+        log(f"Saving diagnostic plot of applying freq weights: [{filename}]", lpf = False)
+        plt.savefig(filename)
+
+        plt.close()

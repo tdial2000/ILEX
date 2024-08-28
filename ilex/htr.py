@@ -215,6 +215,7 @@ def make_ds(xpol, ypol, S = "I", nFFT = 336):
     ds = np.zeros((nFFT, nwind), dtype = np.float32)
 
     b_arr = np.empty((0,2), dtype = int)
+    i = -1
     for i in range(nblock):
         b_arr = np.append(b_arr, [[i*nwinb,(i+1)*nwinb]], axis = 0)
     # append extra block at end
@@ -337,7 +338,8 @@ def pulse_fold(ds, DM, cfreq, bw, MJD0, MJD1, F0, F1, sphase = None):
 
 
 def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0, 
-                        baseline: float = 50.0, tN: int = 50, rbounds = None):
+                        baseline: float = 50.0, tN: int = 50, rough_bline = False,
+                        rbounds = None):
     """
     Get baseline corrections to the Dynamic spectra data
 
@@ -353,6 +355,8 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
         Width of buffer in [ms] to estimate baseline correction
     tN : int 
         Time Averaging factor for Dynamic spectrum, helps with S/N calculation.
+    rough_bline : bool, optional
+        if True, will estimate baseline by averaging over entire buffer, not ideal in many cases
     rbounds : list 
         Bounds of FRB burst, if Unspecified, the code will do a rough S/N calculation 
         to determine a bursts bounds
@@ -367,6 +371,12 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
         Bounds of FRB burst in Phase units
 
     """      
+    if rough_bline:
+        print("Applying rough baseline correction...")
+        bs_mean = np.mean(ds, axis = 1)
+        bs_std = np.std(ds, axis = 1)
+
+        return bs_mean, bs_std, None
 
     print("Applying baseline correction...")
     # rough normalisation needed to find burst

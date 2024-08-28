@@ -35,6 +35,62 @@ def show_terminal_cols():
 
 
 
+def break_str(pstr, bw = 70, return_list = False):
+    """
+    Break up string into segments
+
+    Parameters
+    ----------
+    pstr: str
+        string to break up
+    bw: int
+        width of line before break
+
+    
+    """
+
+    if bw <= 1:
+        return pstr
+
+    if len(pstr) <= bw:
+        if return_list:
+            return pstr.split("\n")
+        else:
+            return pstr
+
+    back_bound = int(bw/2)
+
+    str_pointer = 0
+    while str_pointer <= len(pstr):
+        str_pointer += bw
+
+        if str_pointer > len(pstr):
+            break
+
+        if " " in pstr[str_pointer-back_bound:str_pointer]:
+            temp_pstr = pstr[str_pointer - back_bound - 1:str_pointer]
+            h_ind = (str_pointer - back_bound - 1) + len(temp_pstr) - temp_pstr[::-1].find(" ")  
+            pstr = pstr[:h_ind] + "\n" + pstr[h_ind:]
+            str_pointer += 2
+        else:
+            pstr = pstr[:str_pointer] + "-\n" + pstr[str_pointer:]
+            str_pointer += 3
+
+
+    if return_list:
+        pstr = pstr.split("\n")
+
+    return pstr
+
+    
+
+
+
+
+
+
+
+
 
 ## functions ##
 
@@ -115,7 +171,7 @@ def set_verbose(verbose):
 ##    LOGGING FUNCTIONS     ##
 ##==========================##
 
-def log(pstr, stype = "log", lpf = True, lpf_col = 'None', ):
+def log(pstr, stype = "log", lpf = True, lpf_col = 'None', end = "\n"):
     """
     Logging function, used to replace the python 'print' function
     with extra functionality for ILEX
@@ -156,7 +212,50 @@ def log(pstr, stype = "log", lpf = True, lpf_col = 'None', ):
     # build string
     pstr = TERMINAL_COLORS[lpf_col] + fname + log_type[stype] + pstr + log_type["log"]
 
-    print(pstr)
+    print(pstr, end = end)
     return
 
  
+
+def log_title(pstr, col = 'None'):
+    """
+    Logging function for showing title of executed function
+
+    Parameters
+    ----------
+    pstr: str
+        string to print
+    col: str
+        color to print
+    """
+
+    if not get_verbose():
+        return 
+
+    if type(pstr) != str:
+        # convert to sting if possible
+        pstr = str(pstr)
+
+    # construct string
+
+    outstr = "\n#" + "="*70 + "#\n\n"
+
+    # break down title
+    pstr = break_str(pstr, bw = 60, return_list = True)
+    
+    # add white space to all split lines
+    total_str = TERMINAL_COLORS[col]
+    for i in range(len(pstr)):
+        pstr[i] = " "*5 + pstr[i] + " "*5
+        total_str += pstr[i] + "\n"
+    outstr += total_str + TERMINAL_COLORS['None']
+    
+    outstr += "\n#" + "="*70 + "#\n\n"
+
+    print(outstr)
+    return
+
+
+
+
+

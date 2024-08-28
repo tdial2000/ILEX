@@ -13,11 +13,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from .globals import _G
-from copy import deepcopy
+from copy import deepcopy, copy
 from .logging import log
 import os
 from ruamel.yaml import YAML    # wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. 
 import yaml as base_yaml        # default yaml class
+from ruamel.yaml import comments as ruamel_comments
 
 
 # empty structure
@@ -360,6 +361,9 @@ def _init_pars(p, d):
         
         else:
             # check if dict instance
+            # check if ruamel yaml input 
+            p[key] = check_ruamel_input(p[key])
+
             if isinstance(d[key], dict):
                 _init_pars(p[key], d[key])
 
@@ -551,56 +555,21 @@ def fix_ds_freq_lims(lims, df):
 # # extra data utility functions                  #
 # #-----------------------------------------------#
 
-# def stitch_components_together(x_list, y_list = None):
-#     """
-#     Info:
-#         Stitch data together, in the case that the x data segments
-#         are not contiguous, the difference between samples, assuming
-#         contigous within each segment, will be used to pad segments 
-#         together with zeros
-#     Args:
-#         x_list (list): List of data segments to patch together
-#         y_list (list): Optional, Also patch y list together, will 
-#                        follow x patching and stitch data along last axis
+
+def check_ruamel_input(inp):
+    """
+    Ruamel yaml is used in some cases, this will be used to process these inputs and make sure
+
+    Parameters
+    ----------
+    inp : _class_
+        Change ruamel class to python class
+    """
+
+    if type(inp) == ruamel_comments.CommentedMap:
+        return dict(inp)
     
-#     Returns:
-#         x_patch (ndarray): patched x data array
-#         y_patch (ndarray): Optional, patched y data array
-
-#     """
-
-#     dx = x_list[0][1] - x_list[0][0]
-
-#     x_patch = x_list[0]
-#     y_patch = None
-#     if y_list is not None:
-#         y_patch = y_list[0]
-
-#     for i in range(1, len(x_list)):
-#         # check bounds of x_patch and new segment
-#         seg_diff = x_patch[-1] - x_list[i][0]
-
-#         # just patch together
-#         if seg_diff <= dx and seg_diff > 0:
-#             x_patch = np.append(x_patch, x_list[i])
-#             if y_list is not None:
-#                 y_patch = np.append(y_patch, y_list[i], axis = -1)
-            
-#         elif seg_diff == 0:
-#             x_patch = np.append(x_patch, x_list[i][1:])
-#             if y_list is not None:
-#                 y_patch = np.append(y_patch, y_list[i][...,1:], axis = -1)
-
-#         else:
-#             x_interpatch = np.linspace(x_patch[-1] + dx, x_list[i][0] - dx,
-#                              int((seg_diff - 2*dx)/dx))
-#             x_patch = np.append(x_patch, x_interpatch)
-#             x_patch = np.append(x_patch, x_list[i])
-#             if y_list is not None:
-#                 y_patch = np.append(y_patch, np.zeros((*y_patch.shape[:-1],x_interpatch.size)), axis = -1)
-#                 y_patch = np.append(y_patch, y_list[i], axis = -1)
-        
-#     return x_patch, y_patch
-
-
-
+    if type(inp) == ruamel_comments.CommentedSeq:
+        return list(inp)
+    
+    return inp

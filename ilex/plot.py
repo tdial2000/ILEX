@@ -37,7 +37,7 @@ default_col = plt.rcParams['axes.prop_cycle'].by_key()['color']
 # to set up as global set func
 #--------------------#
 ILEX_PLOT_FONTSIZE = 16
-ILEX_PLOT_ERRTYPE = "regions"
+ILEX_PLOT_ERRTYPE = "lines"
 
 
 
@@ -89,32 +89,6 @@ def _data_from_dict(dic, keys):
 
 
 
-# def _plot_err_as_lines(x, y, err, ax, col = 'k', linestyle = '', **kwargs):
-#     ax.scatter(x, y, c = col, s = 6, **kwargs)
-#     ax.errorbar(x, y, yerr = err, linestyle = linestyle, ecolor = col, 
-#                 alpha = 0.5)
-
-#     return 
-
-
-
-# def _plot_err_as_regions(x, y, err, ax, col = 'k', **kwargs):
-#     ax.plot(x, y, color = col, **kwargs)
-#     ax.fill_between(x, y-err, y+err, color = col, alpha = 0.5,
-#                     edgecolor = None)
-
-#     return
-
-
-# def _plot_err(x, y, err, ax, col = 'k', linestyle = '', plot_type = "lines", **kwargs):
-
-#     if plot_type == "lines":
-#         _plot_err_as_lines(x, y, err, ax, col = col, linestyle = linestyle, **kwargs)
-    
-#     elif plot_type == "regions":
-#         _plot_err_as_regions(x, y, err, ax, col = col, **kwargs)
-    
-#     return
 
 
 
@@ -124,10 +98,7 @@ def _data_from_dict(dic, keys):
 
 
 
-
-
-
-def _PLOT(x, y, yerr = None, ax = None, plot_type = "regions", color = None, alpha = 0.5,
+def _PLOT(x, y, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5,
             **kwargs):
     """
     General plotting function
@@ -136,8 +107,8 @@ def _PLOT(x, y, yerr = None, ax = None, plot_type = "regions", color = None, alp
     if plot_type == "scatter":
         _PLOT_SCATTER(x = x, y = y, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
 
-    elif plot_type == "regions":
-        _PLOT_REGIONS(x = x, y = y, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
+    elif plot_type == "lines":
+        _PLOT_LINES(x = x, y = y, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
 
     else:
         print("Plot err style undefined/unsupported. ")
@@ -193,9 +164,9 @@ def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwa
     return
 
 
-def _PLOT_REGIONS(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
+def _PLOT_LINES(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
     """
-    Plot regions
+    Plot lines
     """
 
     plot_pars = load_plotstyle()
@@ -234,7 +205,7 @@ def _PLOT_REGIONS(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwa
 
 
 
-def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "scatter"):
+def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     """
     Plot data
 
@@ -249,8 +220,6 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
         [f] - frequency spectra
     ax : Axes, optional
         axes handle, by default None
-    filename : str, optional
-        filename to save figure to, by default None
     plot_type : str, optional
         type of plotting, by default "scatter"
 
@@ -268,6 +237,8 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
         fig_flag = False
         fig = plt.figure(figsize = (10, 6))
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    else:
+        fig = None
 
 
     err_flag = False
@@ -316,7 +287,7 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
 
     elif typ[0] == "f":
         # scrunch in time
-        fx = np.linspace(*flim, pdat[typ].size)
+        fx = np.linspace(*flim, pdat[typ].size)[::-1]
         ax.set(xlabel = fname, ylabel = "Flux Density (arb.)")
         _PLOT(fx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)
@@ -325,16 +296,7 @@ def plot_data(dat, typ = "dsI", ax = None, filename: str = None, plot_type = "sc
         print("Invalid data type to plot")
 
 
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None
+    return fig
 
 
 
@@ -448,7 +410,7 @@ def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
 
 
 
-def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
+def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
             plot_type = "scatter"):
     """
     Plot PA profile
@@ -465,8 +427,6 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
         Axes handle, by default None
     flipPA : bool, optional
         plot PA over [0, 180] degrees instead of [-90, 90], by default False
-    filename : str, optional
-        filename to save figure to, by default None
     plot_type : str, optional
         type of error to plot, by default "scatter"
 
@@ -484,6 +444,8 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
         fig_flag = False
         fig = plt.figure(figsize = (10, 6))
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    else:
+        fig = None
 
 
 
@@ -509,25 +471,14 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False, filename: str = None,
         ax.set_ylim([-90, 90])
 
 
-
-
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None
+    return fig
 
 
 
 
 
 def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "IQUV", 
-                stk_ratio = False, ax = None, filename: str = None, plot_type = "scatter"):
+                stk_ratio = False, ax = None, plot_type = "scatter"):
     """
     Plot Stokes data, by default stokes I, Q, U and V data is plotted
 
@@ -552,11 +503,9 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
         string of stokes to plot, for example if "QV", only stokes Q and V are plotted, by default "IQUV", choice between "IQUVLP"
     stk_ratio : bool, optional
         if true, plot stokes ratios S/I
-    filename : str, optional
-        name of file to save figure image, by default None
     plot_type : str, optional
         Choose between two methods of plotting the error in the data, by default "scatter" \n
-        [regions] - Show error in data as shaded regions
+        [lines] - plot lines with error patches
         [scatter] - Show error in data as tics in markers
 
     Returns
@@ -574,6 +523,8 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
         fig_flag = False
         fig = plt.figure(figsize = (10, 6))
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    else:
+        fig = None
 
 
     ## check if frequency or time data
@@ -650,16 +601,7 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
 
 
 
-    ##================##
-    ## PLOT END GUARD ##
-    ##================##
-    if not fig_flag:
-        if filename is not None:
-            plt.savefig(filename)
-        plt.show()
-        return fig
-    
-    return None
+    return fig
 
 
 
@@ -760,7 +702,7 @@ def create_poincare_sphere(cbar_lims, cbar_label):
 
 # split into two functions, one to plot sphere, other to plot track in 3D
 def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = False,
-                    normalise = True, n = 5, filename: str = None):
+                    normalise = True, n = 5):
     """
     Plot Stokes data on a Poincare Sphere.
 
@@ -773,8 +715,6 @@ def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = Fal
         [U] - Stokes U data \n
         [V] - Stokes V data \n
         [Ierr] - Stokes I error data
-    filename : str, optional
-        filename to save figure to, by default None
     stk_type : str, optional
         types of stokes data to plot, by default "f" \n
         [f] - Plot as a function of frequency \n

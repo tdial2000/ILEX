@@ -60,19 +60,19 @@ def average(x: np.ndarray, axis: int = 0, N: int = 10, nan = False):
     # either dynamic spectra or time series
     ndims = x.ndim
     if ndims == 1:
-        N_new = (x.size // N) * N
-        return func(x[:N_new].reshape(N_new // N, N),axis = 1).flatten()
+        N_new = int(x.size / N) * N
+        return func(x[:N_new].reshape(int(N_new / N), N),axis = 1).flatten()
     
     elif ndims == 2:
         if axis == 0:
             #frequency scrunching
-            N_new = (x.shape[0] // N) * N
-            return func(x[:N_new].T.reshape(x.shape[1],N_new // N, N),axis = 2).T
+            N_new = int(x.shape[0] / N) * N
+            return func(x[:N_new].T.reshape(x.shape[1],int(N_new / N), N),axis = 2).T
         
         elif axis == 1 or axis == -1:
             #time scrunching
-            N_new = (x.shape[1] // N) * N
-            return func(x[:,:N_new].reshape(x.shape[0],N_new // N, N),axis = 2)
+            N_new = int(x.shape[1] / N) * N
+            return func(x[:,:N_new].reshape(x.shape[0],int(N_new / N), N),axis = 2)
         
         else:
             print("axis must be 1[-1] or 0")
@@ -918,9 +918,14 @@ def residuals(y,n=5):
     """
 
     x = np.arange(y.size)
-    y_fit = np.poly1d(np.polyfit(x,y,n))
+
+    # set x vals to nans for corrosponding y values
+    mask = np.isnan(y)
+    x[mask] = np.nan
+
+    y_fit = np.poly1d(np.polyfit(x[~mask],y[~mask],n))
     
-    return (y - y_fit(x))
+    return (y - y_fit(x)), y_fit
 
 
 ## [ AUTO-CORRELATION FUNCTION ] ##

@@ -46,8 +46,8 @@ _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None", "zapchan": None}
 
 # dict of hyper parameters``
-_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'scatter',
-         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False}
+_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'lines',
+         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False}
 
 # dict of keywords in yaml config file
 _G.yaml_config = ['data', 'par', 'metapar', 'hyperpar', 'plots', 'fits', 'weights', 'multi']

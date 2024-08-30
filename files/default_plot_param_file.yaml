@@ -1,9 +1,9 @@
 scatter:
 
   # marker info
-  s:  4
-  marker: 's'
-  edgecolors: 'k'
+  s:  8
+  marker: 'o'
+  #edgecolors: 'k'
 
 errorbar:
 

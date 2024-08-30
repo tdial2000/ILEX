@@ -556,7 +556,7 @@ class fit:
         get fitting function arguments
         """
         if callable(self.func):
-            return inspect.getargspec(self.func)[0][1:]
+            return inspect.getfullargspec(self.func)[0][1:]
         else:
             return []
         
@@ -937,7 +937,7 @@ class fit:
             # convert prior dict to list in order! convert bounds to curve_fit bounds
             priors_list = []
             b_min, b_max = [], []
-            for key in inspect.getargspec(func_wrap)[0][1:]:
+            for key in inspect.getfullargspec(func_wrap)[0][1:]:
                 priors_list += [priors_wrap[key]]                
                 b_min += [self.bounds[key][0]]
                 b_max += [self.bounds[key][1]]
@@ -945,7 +945,7 @@ class fit:
             _val, _err = curve_fit(func_wrap, self.x, self.y, p0 = priors_list, 
                                     sigma = self.yerr, bounds = (b_min, b_max), **self.fit_keywords)
 
-            self._curve_fit2posterior(_val, _err, inspect.getargspec(func_wrap)[0][1:])
+            self._curve_fit2posterior(_val, _err, inspect.getfullargspec(func_wrap)[0][1:])
 
 
         # fit using bilby bayesian inference
@@ -962,7 +962,7 @@ class fit:
                 _clean_bilby_run(outdir, label)
 
 
-            keys = inspect.getargspec(func_wrap)[0][1:]
+            keys = inspect.getfullargspec(func_wrap)[0][1:]
             # if yerr not specified, include sigma for sampling
             if self.yerr is None:
                 keys += ['sigma']

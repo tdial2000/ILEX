@@ -8,7 +8,7 @@ setup(
     author = 'Tyson Dial',
     author_email = 'tdial@swin.edu.au',
     license = 'BSD',
-    packages = ['ilex'],
+    packages = ['ilex', 'ilex.script_core'],
     install_requires = ['numpy', 'matplotlib', 'PyYAML', 'scipy', 'bilby', 'RM-Tools', 'pyparsing', 'ipython'],
 
     classifiers = [

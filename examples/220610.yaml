@@ -34,7 +34,7 @@ hyperpar:   # hyperparameters
   verbose:        True
   force:          False
   savefig:        False
-  plot_type:  "regions"
+  plot_type:  "lines"
   residuals:      True
   plotPosterior:  True
 
@@ -44,7 +44,7 @@ hyperpar:   # hyperparameters
 # Additional Script options #
 
 plots:
-  plot_type:    "regions"
+  plot_type:    "lines"
 
   # plotting stokes data
   plot_L:           False

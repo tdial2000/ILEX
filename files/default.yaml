@@ -16,6 +16,7 @@ par:
   cfreq:  1271.5
   t_lim:  [0.0, 3100.0]
   f_lim:  [0.0, 336.0]
+  t_ref:  0.0
   nchan:  336
   nsamp:  0
   dt:     0.001
@@ -38,8 +39,9 @@ metapar:
 hyperpar:
   verbose:        False
   force:          False
-  savefig:        False
-  plot_type:  "scatter"
+  show_plots:     False
+  save_plots:     True
+  plot_type:  "lines"
   residuals:      True
   plotPosterior:  True
 
@@ -49,7 +51,7 @@ hyperpar:
 # Additional Script options #
 
 plots:
-  plot_type:           "scatter"
+  plot_type:           "lines"
   plotstyle_file:      null
 
   # plotting stokes data

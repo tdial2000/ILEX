@@ -394,6 +394,8 @@ class FRB_params:
         Time bounds [ms]
     f_lim: List          
         Frequency bounds [MHz]
+    t_ref: float
+        Reference point of time-series (0-point)
     dt: float             
         delta time [ms]
     df: float            
@@ -437,6 +439,8 @@ class FRB_params:
         Time bounds [ms]
     f_lim: List          
         Frequency bounds [MHz]
+    t_ref: float
+        Reference point of time-series (0-point)
     dt: float             
         delta time [ms]
     df: float            
@@ -469,7 +473,7 @@ class FRB_params:
                        cfreq: float = _G.p['cfreq'], 
                        t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
                        f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],
-                       dt: float = _G.p['dt'],      df: float = _G.p['df'],
+                       dt: float = _G.p['dt'],      df: float = _G.p['df'], t_ref: float = _G.p['t_ref'],
                        EMPTY = False):
 
         # parameters
@@ -492,6 +496,7 @@ class FRB_params:
         # crop parameters
         self.t_lim  = t_lim                                         # time range
         self.f_lim  = [cfreq - 0.5*bw, cfreq + 0.5*bw]             # frequency range
+        self.t_ref  = t_ref
 
         # calculate resolutions
         self.dt     = dt                # delta time in ms
@@ -793,7 +798,7 @@ class FRB_params:
         """
         Get time bins
         """
-        return np.linspace(self.t_lim[0] + 0.5 * self.dt, self.t_lim[1] - 0.5 * self.dt, self.nsamp)
+        return np.linspace(self.t_lim[0] + 0.5 * self.dt, self.t_lim[1] - 0.5 * self.dt, self.nsamp) - self.t_ref
 
 
     def empty_par(self):

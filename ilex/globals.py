@@ -39,7 +39,7 @@ _G.DATA = "IQUVXY"
 _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000", "MJD": 0.0,
                       "DM": 0.0, "bw": 336, "cfreq": 1271.5, "t_lim": [0.0, 3100.0],
                         "f_lim": [0.0,336.0], "nchan": 336, "nsamp": 0, "dt": 1e-3,
-                          "df": 1.0, "RM":None, "f0":None, "pa0":0.0}
+                          "df": 1.0, "RM":None, "f0":None, "pa0":0.0, "t_ref": 0.0}
 
 # dict of frb meta params
 _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,

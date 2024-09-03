@@ -186,7 +186,7 @@ class FRB:
                        fN: int = 1,                 t_lim = _G.p['t_lim'],   f_lim = _G.p['f_lim'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
-                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None,        
+                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref'],       
                        yaml_file = None):
         """
         Create FRB instance
@@ -195,7 +195,7 @@ class FRB:
         self.par = FRB_params(name = name, RA = RA, DEC = DEC, MJD = MJD, 
                               DM = DM, bw = bw, cfreq = cfreq,
                               t_lim = t_lim, f_lim = f_lim, 
-                              RM = RM, f0 = f0, pa0 = pa0, dt = dt, df = df)
+                              RM = RM, f0 = f0, pa0 = pa0, dt = dt, df = df, t_ref = t_ref)
 
         self.this_par = self.par.copy()
         self.prev_par = FRB_params(EMPTY = True)
@@ -1489,6 +1489,9 @@ class FRB:
         tpro = np.mean(self._ds['I'],axis = 0)
         peak = np.where(tpro == np.max(tpro))[0][0]                                          # peak sample
         peak /= self._ds['I'].shape[1]                                                       # peak phase
+        
+        # get t_ref
+        t_ref = self.par.t_lim[0] + peak * (self.par.t_lim[1] - self.par.t_lim[0])
 
 
         # take 2 equal length regions away from the peak on either side
@@ -1547,14 +1550,16 @@ class FRB:
         t_crop[1] += 0.1*width
 
         self.metapar.set_metapar(t_crop = t_crop)
+        self.par.set_par(t_ref = t_ref)
 
         log("New t_crop: [{:.5f}, {:.5f}]".format(t_crop[0],t_crop[1]), lpf_col = self.pcol)
+        log(f"New time series 0-point at Maxima of time series: [{t_ref:.2f}]", lpf = self.pcol)
 
 
         # clear dsI
         self._clear_instance(data_list = ["dsI"])
 
-        return t_crop
+        return t_crop, t_ref
     
 
 

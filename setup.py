@@ -9,7 +9,7 @@ setup(
     author_email = 'tdial@swin.edu.au',
     license = 'BSD',
     packages = ['ilex', 'ilex.script_core'],
-    install_requires = ['numpy', 'matplotlib', 'PyYAML', 'scipy', 'bilby', 'RM-Tools', 'pyparsing', 'ipython'],
+    install_requires = ['numpy', 'matplotlib', 'PyYAML', 'scipy', 'bilby', 'RM-Tools', 'pyparsing', 'ipython', 'ruamel.yaml<0.18.0'],
 
     classifiers = [
         'Development Status :: 1 - Alpha Testing',

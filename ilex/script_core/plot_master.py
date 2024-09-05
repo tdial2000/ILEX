@@ -140,7 +140,7 @@ def _plot(args, figpar, flags):
             # cut pulse at 3 sigma (roughly...)
             # mask = y > 0.003*np.max(y)
 
-            ax.plot(x, y, '--', linewidth = 0.5)
+            ax.plot(x, y, '--', linewidth = 1.0)
         
 
 

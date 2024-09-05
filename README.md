@@ -15,7 +15,7 @@ If you haven't got a python Virtual enviroment, you can make one simply using th
 
 `python -m venv --system-site-packages <venv_filepath>/<venv_name>`
 
-Once the git repo is cloned, cd into `ilex\` and run the following command in the case you are using a venv:
+Once the git repo is cloned, cd into the folder and run the following command in the case you are using a venv:
 
 `source install_ilex.sh`
 

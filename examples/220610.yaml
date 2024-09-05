@@ -11,8 +11,8 @@ par:   # parameters
   DM:     0.0
   bw:     336
   cfreq:  1271.5
-  t_lim:  [0.0, 3100.0]
-  f_lim:  [0.0, 336.0]
+  t_lim_base:  [0.0, 3100.0]
+  f_lim_base:  [0.0, 336.0]
   nchan:  336
   nsamp:  0
   dt:     0.05

@@ -18,4 +18,5 @@ plot:
 
   # plotting
   markersize: null
+  linewidth: 0.8
 

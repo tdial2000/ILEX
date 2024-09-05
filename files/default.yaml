@@ -14,8 +14,8 @@ par:
   bw:     336
   MJD:    0.0
   cfreq:  1271.5
-  t_lim:  [0.0, 3100.0]
-  f_lim:  [0.0, 336.0]
+  t_lim_base:  [0.0, 3100.0]
+  f_lim_base:  [0.0, 336.0]
   t_ref:  0.0
   nchan:  336
   nsamp:  0
@@ -38,7 +38,6 @@ metapar:
 # parameters to control general use of ILEX
 hyperpar:
   verbose:        False
-  force:          False
   show_plots:     False
   save_plots:     True
   plot_type:  "lines"

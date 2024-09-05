@@ -15,7 +15,8 @@ Currently, ILEX only supports 2D numpy files ``.npy``.
 
 
 
-# The ``FRB`` class
+The ``FRB`` class
+=================
 
 The main class that you will be using is the ``FRB`` class. This class can be imported by running
 
@@ -34,7 +35,8 @@ the ``FRB`` class supports:
 - Plotting data: including time series, frequency spectra, dynamic spectra, PA, poincare sphere
 
 
-# Initialising the ``FRB`` class
+Initialising the ``FRB`` class
+==============================
 
 
 Create a new instance of the ``FRB`` class. Here we can specify a number of parameters, I recommend 
@@ -51,7 +53,7 @@ We can also initialise the class using a config file,
 
    frb = FRB(yaml_file = "config.yaml")
 
-see the tutorial on FRB config files for more details.
+see the tutorial on FRB config files for more details :doc:`ilex_config`.
 
 To start using the ``FRB`` class, we need to load in data, there are 4 data products that can be loaded in,
 ``dsI, dsQ, dsU`` and ``dsV``, these represent the Stokes I, Q, U and V dynamic spectum. 
@@ -63,7 +65,8 @@ To start using the ``FRB`` class, we need to load in data, there are 4 data prod
 
 
 
-# The ``FRB`` parameters
+The ``FRB`` parameters
+======================
 
 The parameters in the ``FRB`` class are split into 3 groups (for the most part...)
 
@@ -73,68 +76,73 @@ The parameters in the ``FRB`` class are split into 3 groups (for the most part..
 
 ``frb.par`` is where you can find all the parameters of the FRB. 
 ``frb.metapar`` is where you can find all the meta parameters of the FRB.
+
 Each hyper parameter is their own attribute in the FRB class, such as verbose, i.e. ``frb.verbose`` or show_plots, ``frb.show_plots``  
 
 
-## ``par``
+``par``
+_______
 
 There are a number of parameters that can be set that for the most part are only descriptive of the FRB, these include
 
-``name``        - The name of the FRB, this is used when saving plots as .png files
-``RA``          - Right Ascension of FRB position (Metadata)
-``DEC``         - Declination of FRB position (Metadata)
-``DM``          - Dispersion Measure (Metadata)
-``bw``          - Bandwidth of FRB observation
-``MJD``         - Modified Julian Date [``days``] of burst (Metadata)
-``cfreq``       - Central frequency [``MHz``] of bandwidth
-``t_lim_base``  - Base limits of loaded FRB data in time [``ms``]
-``f_lim_base``  - Base limits of loaded FRB data in freq [``MHz``] 
-``t_ref``       - Zero-point of data in time [``ms``], i.e. reference point 
-``nchan``       - Number of channels in Dynamic spectra
-``nsamp``       - Number of time samples in Dynamic spectra
-``dt``          - Intrinsic resolution of time samples in loaded Dynamic spectra
-``df``          - Intrinsic resolution of freq channels in loaded Dynamic spectra
-``RM``          - Rotation Measure
-``f0``          - Reference frequency [``MHz``]
-``pa0``         - Reference Polarisation Position Angle (PA)
-``tW``          - Weights applied in time when averaging to make spectra
-``fW``          - Weights applied in frequency when averaging to make time series
+| ``name``        - The name of the FRB, this is used when saving plots as .png files 
+| ``RA``          - Right Ascension of FRB position (Metadata)
+| ``DEC``         - Declination of FRB position (Metadata)
+| ``DM``          - Dispersion Measure (Metadata)
+| ``bw``          - Bandwidth of FRB observation
+| ``MJD``         - Modified Julian Date [``days``] of burst (Metadata)
+| ``cfreq``       - Central frequency [``MHz``] of bandwidth
+| ``t_lim_base``  - Base limits of loaded FRB data in time [``ms``]
+| ``f_lim_base``  - Base limits of loaded FRB data in freq [``MHz``] 
+| ``t_ref``       - Zero-point of data in time [``ms``], i.e. reference point 
+| ``nchan``       - Number of channels in Dynamic spectra
+| ``nsamp``       - Number of time samples in Dynamic spectra
+| ``dt``          - Intrinsic resolution of time samples in loaded Dynamic spectra
+| ``df``          - Intrinsic resolution of freq channels in loaded Dynamic spectra
+| ``RM``          - Rotation Measure
+| ``f0``          - Reference frequency [``MHz``]
+| ``pa0``         - Reference Polarisation Position Angle (PA)
+| ``tW``          - Weights applied in time when averaging to make spectra
+| ``fW``          - Weights applied in frequency when averaging to make time series
 
 Note: Parameters labelled with (Metadata) are purely descriptive labels that are not used any where in ILEX (yet...).
 
-## ``metapar``
+``metapar``
+___________
 
 These meta parameter control the processing of the FRB data, this includes
 
-``t_crop``      - Crop of on-pulse data in time [``ms``] or in phase units
-``f_crop``      - Crop of on-pulse/off-pulse data in frequency [``MHz``] or in phase units
-``terr_crop``   - Crop of off-pulse data in time [``ms``] or in phase units. Used to estimate time and freq noise/errors
-``tN``          - Averaging factor in time
-``fN``          - Averaging factor in frequency
-``norm``        - Normalisation
-``zapchan``     - Channel zapping 
+| ``t_crop``      - Crop of on-pulse data in time [``ms``] or in phase units
+| ``f_crop``      - Crop of on-pulse/off-pulse data in frequency [``MHz``] or in phase units
+| ``terr_crop``   - Crop of off-pulse data in time [``ms``] or in phase units. Used to estimate time and freq noise/errors
+| ``tN``          - Averaging factor in time
+| ``fN``          - Averaging factor in frequency
+| ``norm``        - Normalisation
+| ``zapchan``     - Channel zapping 
 
 
 
-## ``hyperpar``
+``hyperpar``
+____________
 
 These hyper parameters control many of the class utilities. This includes
 
-``verbose``     - Enable verbose printing, this will enable the logging features of ILEX
-``plot_type``   - Type of plot when plotting 1D data, [``lines``] for line plots and [``scatter``] for scatter plots
-``residuals``   - If true, plots of fitting results will also show residuals
-``apply_tW``    - If true, will apply time weights [``tW``]
-``apply_fW``    - If true, will apply freq weights [``fW``]
-``zap``         - If true, the FRB data will be treated as if channels are zapped and will use numpy ``.nan`` functions when processing
-``show_plots``  - If true, show any plot in an interactive window
-``save_plots``  - If true, save any plot as a .png file
-``crop_units``  - Control what units are used when cropping data, [``physical``] for ``ms/MHz`` or [``phase``] for phase units ``[0.0 - 1.0]``
+| ``verbose``     - Enable verbose printing, this will enable the logging features of ILEX
+| ``plot_type``   - Type of plot when plotting 1D data, [``lines``] for line plots and [``scatter``] for scatter plots
+| ``residuals``   - If true, plots of fitting results will also show residuals
+| ``apply_tW``    - If true, will apply time weights [``tW``]
+| ``apply_fW``    - If true, will apply freq weights [``fW``]
+| ``zap``         - If true, the FRB data will be treated as if channels are zapped and will use numpy ``.nan`` functions when processing
+| ``show_plots``  - If true, show any plot in an interactive window
+| ``save_plots``  - If true, save any plot as a .png file
+| ``crop_units``  - Control what units are used when cropping data, [``physical``] for ``ms/MHz`` or [``phase``] for phase units ``[0.0 - 1.0]``
 
 
 All the above ``par``, ``metapar`` and ``hyperpar`` parameters can be set in a config file for ease of use and reproducibility. 
 
 
-# How data is processed in the ``FRB`` class
+How data is processed in the ``FRB`` class
+==========================================
 
 
 ILEX by default will not load in the Stokes dynamic spectra files into memory all at once, they will be loaded in as
@@ -154,12 +162,14 @@ off-pulse crop uses the same ``f_crop`` parameter to crop in frequency and to sp
 
 Once the crop boundaries are defined, ILEX will process the data. Currently ILEX supports the following processing techniques:
 
-## Averaging
+Averaging
+_________
 
 We can average the data in both time in frequency, i.e. downsample by some factor. For example, if we want to downsample ``1us``
 data to ``10us`` data, we can do this by specifying ``tN = 10``, same with frequency but using ``fN``.
 
-## Channel zapping
+Channel zapping
+_______________
 
 We can zap any channels if there is bad RFI etc. We can do this by specifying ``zapchan``. For example, if we set 
 ``zapchan = "1100:1150"``, all the channels between 1100 MHz and 1150 MHz (inclusive) will be zapped and ignored during processing.
@@ -169,12 +179,14 @@ between 1180 MHz and 1220 MHz. We can also specify singular channels, ``zapchan 
 
 NOTE: depending on ``df * fN`` this may not be perfectly precise. 
 
-## Faraday de-rotating
+Faraday de-rotating
+___________________
 
 We can de-faraday rotate the Stokes Q and U data by specifying ``RM`` and ``f0``. If ``f0`` is not set, then it will take the default
 value of ``f0 = cfreq``, i.e. the central frequency.
 
-## Weighting 
+Weighting 
+_________
 
 We can weight in time and frequency. When we specify time and frequency weights ``tW`` and ``fW``, these will only be applied when we 
 are averaging the entire crop. For example, if we are making frequency spectra, we average over all the time bins, in this case the 
@@ -191,7 +203,8 @@ where ``xtype = "t" or "f"`` denotes if we are setting the time or frequency wei
 
 The following is a list of the types of weights we can apply.
 
-### Define a list of weights to apply 
+Define a list of weights to apply 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We can set a list of weights
 
@@ -206,7 +219,8 @@ You can also just define a single scalar value, although this is less useful.
 
    frb.set_weights(xtype = "t", W = 2)
 
-### interpolation
+interpolation
+^^^^^^^^^^^^^
 
 We can define a set of weights along with ``x`` values that can be used to interpolate
 between these weights, for example
@@ -231,7 +245,8 @@ between these weights, for example
 This is useful to define a set of weights for the full extent of an FRB or the dataset, this 
 interpolation will then work with your crop.
 
-### Define a weight function
+Define a weight function
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 We can also define a function that will when evaluated will produce weights that will be applied
 directly to the data. This allows us to be creative. See the advanced ILEX Tutorial for an example 
@@ -241,17 +256,19 @@ directly to the data. This allows us to be creative. See the advanced ILEX Tutor
 NOTE: Weights are applied after averaging in time or frequency using ``tN`` or ``fN``.
 
 
-## normalising
+normalising
+___________
 
 We can also normalise the data if desired, although this hasn't been tested, so use at your own 
-descretion. (This may be removed in a later version of ILEX, so probably don't rely on it too much)
+discretion. (This may be removed in a later version of ILEX, so probably don't rely on it too much)
 
 ``norm = max`` - normalise using maximum ``max()``
 ``norm = absmax`` - normalise using absolute maximum ``abs(max())``
 ``norm = None`` - Skip normalisation (default)
 
 
-## Order of process operations
+Order of process operations
+___________________________
 
 The order in which data is processed goes like this:
 
@@ -267,7 +284,8 @@ The order in which data is processed goes like this:
 10. Produce data products, including noise/error products
 
 
-# The Data products
+The Data products
+=================
 
 When you load in any/all of the Stokes I, Q, U and V dynamic spectra you can also for a number
 of data products. Lets look at an example using the ``.get_data()`` method.
@@ -277,7 +295,7 @@ of data products. Lets look at an example using the ``.get_data()`` method.
    data = frb.get_data(["dsI", "dsQ"], get = True)
 
 This call to ``.get_data()`` is requesting a crop of the stokes I and Q dynamic spectra. This
-will run through all the processing steps outlined aboved and spit out cropped and processing stokes 
+will run through all the processing steps outlined above and spit out cropped and processing stokes 
 I and Q dynamic spectra, denoted by the ``ds``. We also return these data products as a dict by specifying
 ``get = True``.
 
@@ -290,7 +308,7 @@ We can also ask for 1D time series data and/or spectra data
 here we have also asked for the Stokes I 1D times series (denoted by the ``t``) and frequency spectra
 (denoted by the ``f``).
 When we ask for any 1D data products, if we have also defined the off-pulse crop using ``terr_crop``, the
-``.get_data()`` method will also return the corrosponding noise/error products with the suffix ``err``, in 
+``.get_data()`` method will also return the corresponding noise/error products with the suffix ``err``, in 
 this case ``tIerr`` and ``fIerr``. Additionally, the x-axis for the times series ``time`` and frequency spectra 
 ``freq`` will also be saved.
 
@@ -306,8 +324,8 @@ series noise (Same thing for frequency spectra). For the time series/freq spectr
 
 
 
-# data instances
-
+data instances
+==============
 
 Every time ``.get_data()`` is run, an instance of the ``frb.par`` and ``frb.metapar`` attributes are created
 and labelled ``frb.this_par`` and ``frb.this_metapar`` respectivley. These parameters describe the processed

@@ -21,7 +21,7 @@ We can fit the time series burst as a sum of Gaussian pulses convolved with a co
    I(t) = \sum_{i = 1}^{N}\bigg[A_{i}e^{-(t-\mu_{i})^{2}/2\sigma_{i}^{2}}\bigg] * e^{-t/\tau},
 
 where :math:`A_{i}, \mu_{i}` and :math:`\sigma_{i}` are the amplitude, position in time and pulse width 
-in time of each :math:`i^{\mathrm{th}}$` Gaussian and :math:`'*'` denotes the convolution operation.
+in time of each :math:`i^{\mathrm{th}}` Gaussian and :math:`'*'` denotes the convolution operation.
 
 This is implemented in the ``.fit_tscatt()`` method of the ``FRB`` class. The simplest way to call this 
 function is to use a ``least squares`` fitting method. 

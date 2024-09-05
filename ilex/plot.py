@@ -583,7 +583,7 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
         # calc ratios
         for S in stk2plot:
             pdat[f"{st}{S}"], pdat[f"{st}{S}err"] = calc_ratio(pdat[f"{st}I"], pdat[f"{st}{S}"],
-                                                        pdat[f"{st}Ierr"], pdat[f"{st}{S}err"], keep_size = False)
+                                                        pdat[f"{st}Ierr"], pdat[f"{st}{S}err"])
 
             # mask values with too large errors
             pdat[f"{st}{S}"][sigma_mask] = np.nan

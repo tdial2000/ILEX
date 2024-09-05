@@ -471,7 +471,7 @@ class FRB_params:
     def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
                        MJD: float = _G.p['MJD'],    DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    
                        cfreq: float = _G.p['cfreq'], 
-                       t_lim  = _G.p['t_lim'],      f_lim = _G.p['f_lim'],   RM: float = _G.p['RM'],
+                       t_lim_base  = _G.p['t_lim_base'],      f_lim_base = _G.p['f_lim_base'],   RM: float = _G.p['RM'],
                        f0: float = _G.p['f0'],      pa0: float = _G.p['pa0'],
                        dt: float = _G.p['dt'],      df: float = _G.p['df'], t_ref: float = _G.p['t_ref'],
                        EMPTY = False):
@@ -494,8 +494,8 @@ class FRB_params:
         # all other parameters will be updated from these 
 
         # crop parameters
-        self.t_lim  = t_lim                                         # time range
-        self.f_lim  = [cfreq - 0.5*bw, cfreq + 0.5*bw]             # frequency range
+        self.t_lim_base  = t_lim_base                                       # time range
+        self.f_lim_base  = [cfreq - 0.5*bw, cfreq + 0.5*bw]             # frequency range
         self.t_ref  = t_ref
 
         # calculate resolutions
@@ -510,6 +510,18 @@ class FRB_params:
 
         if EMPTY:
             self.empty_par()
+
+
+    @property
+    def t_lim(self):
+        """
+        t_lim_ref: t_lim translated by t_ref to the zero point.
+        """
+        return [self.t_lim_base[0] - self.t_ref, self.t_lim_base[1] - self.t_ref]
+
+    @property
+    def f_lim(self):
+        return self.f_lim_base.copy()
 
 
 
@@ -536,8 +548,8 @@ class FRB_params:
         t_nsamp = int(self.nsamp * t_crop[1]) - t_sampoff
         t_nsamp = int(t_nsamp / tN)
 
-        self.t_lim[0] = self.t_lim[0] + t_sampoff * self.dt
-        self.t_lim[1] = self.t_lim[0] + t_nsamp * self.dt * tN
+        self.t_lim_base[0] = self.t_lim_base[0] + t_sampoff * self.dt
+        self.t_lim_base[1] = self.t_lim_base[0] + t_nsamp * self.dt * tN
         self.dt *= tN
         self.nsamp = t_nsamp
         
@@ -547,12 +559,12 @@ class FRB_params:
         f_nchan = int(self.nchan * f_crop[1]) - f_sampoff
         f_nchan = int(f_nchan / fN)
 
-        self.f_lim[1] = self.f_lim[1] - f_sampoff * self.df
-        self.f_lim[0] = self.f_lim[1] - f_nchan * self.df * fN      
+        self.f_lim_base[1] = self.f_lim_base[1] - f_sampoff * self.df
+        self.f_lim_base[0] = self.f_lim_base[1] - f_nchan * self.df * fN      
         self.df *= fN
         self.nchan = f_nchan
-        self.bw = self.f_lim[1] - self.f_lim[0]
-        self.cfreq = self.f_lim[0] + self.bw / 2
+        self.bw = self.f_lim_base[1] - self.f_lim[0]
+        self.cfreq = self.f_lim_base[0] + self.bw / 2
 
 
     
@@ -588,7 +600,7 @@ class FRB_params:
         if t_crop is not None:
             # time
             t_lim = [0.0, 0.0]
-            lim_width = self.t_lim[1] - self.t_lim[0]
+            lim_width = self.t_lim_base[1] - self.t_lim_base[0]
             t_lim[0] = t_crop[0]*(lim_width)
             t_lim[1] = t_crop[1]*(lim_width)
             if snap:
@@ -603,7 +615,7 @@ class FRB_params:
 
             # frequency
             f_lim = [0.0, 0.0]
-            lim_width = self.f_lim[1] - self.f_lim[0]
+            lim_width = self.f_lim_base[1] - self.f_lim_base[0]
             f_lim[0] = f_crop_flip[0]*(lim_width)
             f_lim[1] = f_crop_flip[1]*(lim_width)
             if snap:
@@ -714,6 +726,8 @@ class FRB_params:
         new_params = {}
         for key in _G.p.keys():
             new_params[key] = getattr(self, key)
+        new_params["t_lim"] = self.t_lim.copy()
+        new_params["f_lim"] = self.f_lim.copy()
 
         return deepcopy(new_params)
 
@@ -726,6 +740,9 @@ class FRB_params:
 
         for _,key in enumerate(_G.p.keys()):
             param_str += f"{key}:       {getattr(self,key)}\n"
+        
+        param_str += f"t_lim:           {self.t_lim}\n"
+        param_str += f"f_lim:           {self.f_lim}\n"
 
         return param_str
     
@@ -757,7 +774,7 @@ class FRB_params:
                 setattr(self, key, kwargs[key])
         
 
-        self.f_lim  = [self.cfreq - 0.5*self.bw, self.cfreq + 0.5*self.bw] # frequency range
+        self.f_lim_base  = [self.cfreq - 0.5*self.bw, self.cfreq + 0.5*self.bw] # frequency range
 
 
     def set_weights(self, xtype = "t", **kwargs):
@@ -798,7 +815,7 @@ class FRB_params:
         """
         Get time bins
         """
-        return np.linspace(self.t_lim[0] + 0.5 * self.dt, self.t_lim[1] - 0.5 * self.dt, self.nsamp) - self.t_ref
+        return np.linspace(self.t_lim[0] + 0.5 * self.dt, self.t_lim[1] - 0.5 * self.dt, self.nsamp)
 
 
     def empty_par(self):

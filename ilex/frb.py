@@ -96,6 +96,12 @@ class FRB:
         Limits for FRB in Time
     f_lim: list 
         Limits for FRB in Frequency
+    t_lim_base: list
+        Base limits of FRB in time (not including t_ref)
+    f_lim_base: list
+        Base limits of FRB in freq 
+    t_ref: float
+        Reference zero-point in time
     RM: float 
         Rotation Measure
     f0: float 
@@ -148,8 +154,6 @@ class FRB:
         Cropped time array [ms]
     verbose: bool 
         Enable logging
-    force_reload: bool 
-        force reloading of data, if set to False and no parameters have been changed, the data will be reused, by default is True
     savefig: bool 
         Save all created figures to files
     pcol: str 
@@ -183,7 +187,7 @@ class FRB:
     def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
                        MJD: float = _G.p['MJD'], DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_crop = None,               f_crop = None,           tN: int = 1,
-                       fN: int = 1,                 t_lim = _G.p['t_lim'],   f_lim = _G.p['f_lim'],
+                       fN: int = 1,                 t_lim_base = _G.p['t_lim_base'],   f_lim_base = _G.p['f_lim_base'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
                        df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref'],       
@@ -194,7 +198,7 @@ class FRB:
         
         self.par = FRB_params(name = name, RA = RA, DEC = DEC, MJD = MJD, 
                               DM = DM, bw = bw, cfreq = cfreq,
-                              t_lim = t_lim, f_lim = f_lim, 
+                              t_lim_base = t_lim_base, f_lim_base = f_lim_base, 
                               RM = RM, f0 = f0, pa0 = pa0, dt = dt, df = df, t_ref = t_ref)
 
         self.this_par = self.par.copy()
@@ -247,15 +251,13 @@ class FRB:
         # set verbose
         set_verbose(self.verbose)
 
-        self.force_reload = True        # Force use of Parameters
-        self.savefig = False            # save figures instead of plotting them
-
         self.pcol = 'cyan'              # color for verbose printing
         self.plot_type = "scatter"    # type of errorbar plot
         self.residuals = False          # plot residuals when plotting fits
         self.plotPosterior = True      # plot posterior corner plot when plotting fits
         self.save_plots = False
         self.show_plots = True
+        self.crop_units = "physical"
         self.zap = False                # if True, will treat arrays as zapped
 
         # weightings
@@ -337,7 +339,7 @@ class FRB:
 
             self.par.nchan = x.shape[0]                     # assumed that dyn spec is [freq,time]
             self.par.nsamp = x.shape[1]       
-            self.par.t_lim  = [0.0, self.par.dt * self.par.nsamp]
+            self.par.t_lim_base  = [0.0, self.par.dt * self.par.nsamp]
 
             # check if any channels are nan's i.e. flagged
             if np.any(np.isnan(x[:,0])):
@@ -1034,6 +1036,27 @@ class FRB:
         Update parameters with keywords for current instance
 
         """  
+        # make copy of kwargs that change, that way changes that are made do 
+        # not propagate 
+        kwargs_keys = kwargs.keys()
+
+        # check if any are already made static
+        static_keys = []
+        for key, item in _G.sp.items():
+            if key in kwargs_keys:
+                if item not in kwargs_keys:
+                    static_keys += [key]
+                else:
+                    kwargs[key] = deepcopy(kwargs[item])
+
+        kwargs = {_G.sp[k] if k in static_keys else k: v for k, v in kwargs.items()}
+
+        # add copies of items back in, these will be processed through without touching the
+        # original ones
+        for static_key in static_keys:
+            kwargs[static_key] = deepcopy(kwargs[_G.sp[static_key]])
+
+
         # copy over current hyperparams to kwargs
         metapar = self.metapar.metapar2dict()
         kw = kwargs.keys()
@@ -1129,6 +1152,10 @@ class FRB:
         """
         keys = kwargs.keys()
 
+        if self.crop_units not in ["physical", "phase"]:
+            log("Units for cropping must be one of: ['physical', 'phase'] ", stype = "err")
+            return
+
         def check_crop_for_str(crop, domain):
             """ Check for crop "min" and "max" specifiers"""
             if domain == "t":
@@ -1169,7 +1196,8 @@ class FRB:
             
             kwargs['t_crop'][0], kwargs['t_crop'][1] = check_crop_for_str(kwargs['t_crop'], "t")
 
-            if kwargs['t_crop'][0] > 1.0 or kwargs['t_crop'][1] > 1.0:
+            if self.crop_units == "physical":
+
                 prev_t = kwargs['t_crop'].copy()
                 new_t,_ = self.par.lim2phase(t_lim = prev_t, snap = True)
                 kwargs['t_crop'][0], kwargs['t_crop'][1] = new_t[0], new_t[1]
@@ -1178,6 +1206,21 @@ class FRB:
                 if kwargs['t_crop'][1] > 1.0: kwargs['t_crop'][1] = 1.0
 
                 log(f"Converting Time crop {prev_t} ms -> {kwargs['t_crop']} phase units", lpf = False)
+            
+            elif self.crop_units == "phase":
+                # check if within phase units
+                bad_crop_flag = False
+                prev_t = kwargs['t_crop'].copy()
+                if (kwargs['t_crop'][0] < 0.0) or (kwargs['t_crop'][0] > 1.0):
+                    bad_crop_flag = True
+                    kwargs['t_crop'][0] = 0.0
+                if (kwargs['t_crop'][1] < 0.0) or (kwargs['t_crop'][1] > 1.0):
+                    bad_crop_flag = True
+                    kwargs['t_crop'][1] = 1.0
+
+                if bad_crop_flag:
+                    log(f"Phase crop in time was out-of-bounds of [0.0, 1.0], setting: [{prev_t[0]}, {prev_t[1]}] -> [{kwargs['t_crop'][0]},{kwargs['t_crop'][1]}]")
+
 
         # check if t_crop has been given in units of ms
         if "f_crop" in keys:
@@ -1199,7 +1242,8 @@ class FRB:
             if kwargs['terr_crop'] is not None:
                 
                 kwargs["terr_crop"][0], kwargs["terr_crop"][1] = check_crop_for_str(kwargs["terr_crop"], "t")
-                if kwargs['terr_crop'][0] > 1.0 or kwargs['terr_crop'][1] > 1.0:
+
+                if self.crop_units == "physical":
                     prev_t = kwargs['terr_crop'].copy()
                     new_t,_ = self.par.lim2phase(t_lim = prev_t, snap = True)
                     kwargs['terr_crop'][0], kwargs['terr_crop'][1] = new_t[0], new_t[1]
@@ -1208,6 +1252,20 @@ class FRB:
                     if kwargs['terr_crop'][1] > 1.0: kwargs['terr_crop'][1] = 1.0
 
                     log(f"Converting err Time crop {prev_t} ms -> {kwargs['terr_crop']} phase units", lpf = False)
+                
+                elif self.crop_units == "phase":
+                    # check if within phase units
+                    bad_crop_flag = False
+                    prev_t = kwargs['terr_crop'].copy()
+                    if (kwargs['terr_crop'][0] < 0.0) or (kwargs['terr_crop'][0] > 1.0):
+                        bad_crop_flag = True
+                        kwargs['terr_crop'][0] = 0.0
+                    if (kwargs['terr_crop'][1] < 0.0) or (kwargs['terr_crop'][1] > 1.0):
+                        bad_crop_flag = True
+                        kwargs['terr_crop'][1] = 1.0
+
+                    if bad_crop_flag:
+                        log(f"Phase error crop in time was out-of-bounds of [0.0, 1.0], setting: [{prev_t[0]}, {prev_t[1]}] -> [{kwargs['terr_crop'][0]},{kwargs['terr_crop'][1]}]")
         
             
 
@@ -1465,8 +1523,9 @@ class FRB:
         ## check if data valid##
         ##====================## 
 
-        kwargs['t_crop'] = [0.0, 1.0]
-        kwargs['f_crop'] = [0.0, 1.0]  
+        kwargs['t_crop'] = ["min", "max"]
+        kwargs['f_crop'] = ["min", "max"]  
+        kwargs['terr_crop'] = None
 
         # get dynI spectra (first scrunch)
         

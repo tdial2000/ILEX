@@ -34,11 +34,17 @@ _G.hkeys = ["dsI","tI","fI",
 
 _G.DATA = "IQUVXY"
 
+# parameters that are changed during any instance call (i.e. **kwargs) that otherwise shouldn't be changed but may due to chaching
+sp = ["t_crop", "terr_crop", "f_crop"]
+
+_G.sp = {}
+for item in sp:
+  _G.sp[item] = f"{item}_static"
 
 #dict of FRB parameters
 _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000", "MJD": 0.0,
-                      "DM": 0.0, "bw": 336, "cfreq": 1271.5, "t_lim": [0.0, 3100.0],
-                        "f_lim": [0.0,336.0], "nchan": 336, "nsamp": 0, "dt": 1e-3,
+                      "DM": 0.0, "bw": 336, "cfreq": 1271.5, "t_lim_base": [0.0, 3100.0],
+                        "f_lim_base": [0.0,336.0], "nchan": 336, "nsamp": 0, "dt": 1e-3,
                           "df": 1.0, "RM":None, "f0":None, "pa0":0.0, "t_ref": 0.0}
 
 # dict of frb meta params
@@ -46,8 +52,8 @@ _G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None", "zapchan": None}
 
 # dict of hyper parameters``
-_G.hp = {'verbose': False, 'force': False, 'savefig': False, 'plot_type': 'lines',
-         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False}
+_G.hp = {'verbose': False, 'plot_type': 'lines',
+         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical"}
 
 # dict of keywords in yaml config file
 _G.yaml_config = ['data', 'par', 'metapar', 'hyperpar', 'plots', 'fits', 'weights', 'multi']

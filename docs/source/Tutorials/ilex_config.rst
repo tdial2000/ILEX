@@ -23,9 +23,11 @@ additional ILEX scripts provided. A config file can be made by either using the 
       DEC:    "00:00:00.0000"
       DM:     0.0
       bw:     336
+      MJD:    0
       cfreq:  1271.5
-      t_lim:  [0.0, 3100.0]
-      f_lim:  [0.0, 336.0]
+      t_lim_base:  [0.0, 3100.0]
+      f_lim_base:  [0.0, 336.0]
+      t_ref:  0
       nchan:  336
       nsamp:  0
       dt:     0.05
@@ -33,7 +35,6 @@ additional ILEX scripts provided. A config file can be made by either using the 
       RM:     null
       f0:     null
       pa0:    0.0
-      czap:   ""  # to be implemented
 
     metapar:   # metaparameters
       t_crop:     [20.9, 23.8]
@@ -41,13 +42,15 @@ additional ILEX scripts provided. A config file can be made by either using the 
       terr_crop:  null
       tN:         1
       fN:         1
+      zapchan:    null
       norm:       "None"
 
     hyperpar:   # hyperparameters
       verbose:        False
       force:          False
-      savefig:        False
-      plot_err_type:  "regions"
+      show_plots:     False
+      save_plots:     True
+      plot_type:  "regions"
       residuals:      True
       plotPosterior:  True
 

@@ -927,7 +927,7 @@
 
 <div class="viewcode-block" id="calc_ratio">
 <a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_ratio">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_ratio</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Xerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_size</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">calc_ratio</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Xerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate Stokes Ratio X/I </span>
 
@@ -942,8 +942,6 @@
 <span class="sd">        Stokes X/I err will also be calculated and returned</span>
 <span class="sd">    Xerr : np.ndarray, optional</span>
 <span class="sd">        Stokes [X] err data, by default None</span>
-<span class="sd">    keep_size : bool, optional</span>
-<span class="sd">        If true, the output of XIerr will be same as error in the case of single element input, default is True</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -958,14 +956,14 @@
     <span class="n">XI</span> <span class="o">=</span> <span class="n">X</span><span class="o">/</span><span class="n">I</span>
 
     <span class="c1"># calc error?</span>
-    <span class="k">if</span> <span class="n">Ierr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">Xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Ierr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">XIerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Xerr</span><span class="o">/</span><span class="n">I</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Ierr</span><span class="o">*</span><span class="n">X</span><span class="o">/</span><span class="n">I</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="c1"># check if array or scalar</span>
-        <span class="k">if</span> <span class="n">keep_size</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Ierr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Xerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
-                <span class="c1"># take standard deviation</span>
-                <span class="n">XIerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">XIerr</span><span class="p">)</span>
+        <span class="c1"># # check if array or scalar</span>
+        <span class="c1"># if keep_size:</span>
+        <span class="c1">#     if not hasattr(Ierr, &quot;__len__&quot;) or not hasattr(Xerr, &quot;__len__&quot;):</span>
+        <span class="c1">#         # take standard deviation</span>
+        <span class="c1">#         XIerr = np.nanmean(XIerr)</span>
 
     <span class="k">return</span> <span class="n">XI</span><span class="p">,</span> <span class="n">XIerr</span></div>
 

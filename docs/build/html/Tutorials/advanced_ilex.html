@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced functions &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using the FRB.yaml config file" href="ilex_config.html" />
+    <link rel="prev" title="Using ILEX" href="using_ilex.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_ilex_works.html">How ILEX works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Using ILEX</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Advanced ILEX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#time-series-and-time-scatter-fitting">Time series and time scatter Fitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fitting-rm-and-plotting-position-angle-pa-profile">Fitting RM and plotting Position Angle (PA) Profile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weighting-data">Weighting data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">ILEX config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_scripts.html">ILEX scripts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
+      <li class="breadcrumb-item active">Advanced functions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/advanced_ilex.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="advanced-functions">
+<h1>Advanced functions<a class="headerlink" href="#advanced-functions" title="Link to this heading"></a></h1>
+<section id="time-series-and-time-scatter-fitting">
+<h2>Time series and time scatter Fitting<a class="headerlink" href="#time-series-and-time-scatter-fitting" title="Link to this heading"></a></h2>
+<p>Following the last tutorial, load in the Power dynamic spectra data of 220610 and define a crop region.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ilex.frb</span> <span class="kn">import</span> <span class="n">FRB</span>
+
+<span class="c1"># initialise FRB instance and load data</span>
+<span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRB220610&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span>
+            <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1103.5</span><span class="p">,</span> <span class="mi">1200</span><span class="p">])</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_I</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can fit the time series burst as a sum of Gaussian pulses convolved with a common one-sided exponential</p>
+<div class="math notranslate nohighlight">
+\[I(t) = \sum_{i = 1}^{N}\bigg[A_{i}e^{-(t-\mu_{i})^{2}/2\sigma_{i}^{2}}\bigg] * e^{-t/\tau},\]</div>
+<p>where <span class="math notranslate nohighlight">\(A_{i}, \mu_{i}\)</span> and <span class="math notranslate nohighlight">\(\sigma_{i}\)</span> are the amplitude, position in time and pulse width
+in time of each <span class="math notranslate nohighlight">\(i^{\mathrm{th}}$\)</span> Gaussian and <span class="math notranslate nohighlight">\('*'\)</span> denotes the convolution operation.</p>
+<p>This is implemented in the <code class="docutils literal notranslate"><span class="pre">.fit_tscatt()</span></code> method of the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class. The simplest way to call this
+function is to use a <code class="docutils literal notranslate"><span class="pre">least</span> <span class="pre">squares</span></code> fitting method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># fit</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">fit_tscatt</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;least squares&quot;</span><span class="p">,</span> <span class="n">show_plots</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/220610_tI_fit1.png"><img alt="../_images/220610_tI_fit1.png" src="../_images/220610_tI_fit1.png" style="width: 720pt;" /></a>
+<p>In most cases, an FRB burst will be more complicated. In which case a more robust method using the <code class="docutils literal notranslate"><span class="pre">bayesian</span></code>
+toggle is nessesary. To do so, priors need to be given. We also need to give our best estimate for the number
+of pulses in the burst, which we can do with <code class="docutils literal notranslate"><span class="pre">npulse</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># priors</span>
+<span class="n">priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span> <span class="s1">&#39;mu1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">21.0</span><span class="p">,</span> <span class="mf">22.0</span><span class="p">],</span> <span class="s1">&#39;sig1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]}</span>
+
+<span class="c1"># fit</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">fit_tscatt</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">show_plots</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/220610_tI_fit2.png"><img alt="../_images/220610_tI_fit2.png" src="../_images/220610_tI_fit2.png" style="width: 720pt;" /></a>
+<p>In the above code, we set the priors of the single pulse with suffixes <code class="docutils literal notranslate"><span class="pre">1</span></code>, i.e. <code class="docutils literal notranslate"><span class="pre">a1</span></code> for the amplitude of the
+first pulse, <code class="docutils literal notranslate"><span class="pre">mu1</span></code> for the position of the first pulse etc. If we had two pulses, we would also give priors for the amplitude
+<code class="docutils literal notranslate"><span class="pre">a2</span></code>, position <code class="docutils literal notranslate"><span class="pre">mu2</span></code> etc. In general for each pulse <code class="docutils literal notranslate"><span class="pre">N</span></code>, we specify its parameters <code class="docutils literal notranslate"><span class="pre">aN,</span> <span class="pre">muN,</span> <span class="pre">sigN</span></code>.
+We can also return the <code class="docutils literal notranslate"><span class="pre">p</span></code> object, which is a fitting utility class which has a number of useful features. Most notable is showing
+the stats of the modelling.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Model Statistics:</span>
+<span class="go">---------------------------</span>
+<span class="go">chi2:                         52.2002   +/- 10.2956</span>
+<span class="go">rchi2:                        0.9849    +/- 0.1943</span>
+<span class="go">p-value:                      0.5053</span>
+<span class="go">v (degrees of freedom):       53</span>
+<span class="go">free parameters:            5</span>
+
+<span class="go">Bayesian Statistics:</span>
+<span class="go">---------------------------</span>
+<span class="go">Max Log Likelihood:           127.7476  +/- 2.2624</span>
+<span class="go">Bayes Info Criterion (BIC):   -235.1929 +/- 4.5248</span>
+<span class="go">Bayes Factor (log10):         nan</span>
+<span class="go">Evidence (log10):             48.0135   +/- 0.0980</span>
+<span class="go">Noise Evidence (log10):       nan</span>
+</pre></div>
+</div>
+</section>
+<section id="fitting-rm-and-plotting-position-angle-pa-profile">
+<h2>Fitting RM and plotting Position Angle (PA) Profile<a class="headerlink" href="#fitting-rm-and-plotting-position-angle-pa-profile" title="Link to this heading"></a></h2>
+<p>We can fit for the rotation measure (RM). There are two common methods for doing this.
+1. Q/U fitting using the quadratic form of the polarisation position angle (PA)</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{PA(\nu) = RMc^{2}}\bigg(\frac{1}{\nu^{2}} - \frac{1}{\nu_{0}^{2}}\bigg),\]</div>
+<p>where <span class="math notranslate nohighlight">\(\nu_{0}\)</span> is the reference frequency. If this is not set, the central frequency <code class="docutils literal notranslate"><span class="pre">cfreq</span></code>
+will be used instead.</p>
+<ol class="arabic simple" start="2">
+<li><p>Faraday Depth fitting through RM synthesis using the <code class="docutils literal notranslate"><span class="pre">RMtools</span></code> package</p></li>
+</ol>
+<p><a class="reference external" href="https://github.com/CIRADA-Tools/RM-Tools">https://github.com/CIRADA-Tools/RM-Tools</a></p>
+<p>First we load in the stokes <code class="docutils literal notranslate"><span class="pre">Q</span></code> and <code class="docutils literal notranslate"><span class="pre">U</span></code> dynamic spectrum.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load in data</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_Q</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsQ.npy&quot;</span><span class="p">,</span> <span class="n">ds_U</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsU.npy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can then fit for the RM using <code class="docutils literal notranslate"><span class="pre">.fit_RM()</span></code>. We can specify the method to do so
+<code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">&quot;RMquad&quot;</span></code> for Q/U fitting with a quadratic function.
+<code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">&quot;RMsynth&quot;</span></code> for RM synthesis.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># fit RM</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">fit_RM</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMsynth&quot;</span><span class="p">,</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">21.4</span><span class="p">,</span> <span class="mf">21.6</span><span class="p">],</span> <span class="n">show_plots</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Fitting RM using RM synthesis</span>
+<span class="go">RM: 217.9462  +/-  4.2765     (rad/m2)</span>
+<span class="go">f0: 1137.0805274869874    (MHz)</span>
+<span class="go">pa0:  1.0076283903583936     (rad)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/220610_RM.png"><img alt="../_images/220610_RM.png" src="../_images/220610_RM.png" style="width: 720pt;" /></a>
+<p>The <code class="docutils literal notranslate"><span class="pre">RM</span></code>, <code class="docutils literal notranslate"><span class="pre">f0</span></code> and <code class="docutils literal notranslate"><span class="pre">pa0</span></code> parameters will be saved to the <code class="docutils literal notranslate"><span class="pre">.fitted_params</span></code> attribute of the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class.
+Once RM is calculated, we can plot a bunch of polarisation properties using the master method <code class="docutils literal notranslate"><span class="pre">.plot_PA()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">RM</span> <span class="o">=</span> <span class="mf">217.9462</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="mf">1137.0805274869874</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">plot_PA</span><span class="p">(</span><span class="n">terr_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="s2">&quot;ILV&quot;</span><span class="p">,</span> <span class="n">show_plots</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/220610_PA.png"><img alt="../_images/220610_PA.png" src="../_images/220610_PA.png" style="width: 720pt;" /></a>
+</section>
+<section id="weighting-data">
+<h2>Weighting data<a class="headerlink" href="#weighting-data" title="Link to this heading"></a></h2>
+<p>One Useful feature of ILEX is weighting. The <code class="docutils literal notranslate"><span class="pre">frb.par.tW</span></code> and <code class="docutils literal notranslate"><span class="pre">frb.par.fW</span></code> attributes are <code class="docutils literal notranslate"><span class="pre">weights</span></code> class instances that
+can be used to respectivley weight data in time when making spectra, or weight data in frequency when making time profiles. The
+<code class="docutils literal notranslate"><span class="pre">weights</span></code> class found in <code class="docutils literal notranslate"><span class="pre">ilex.par</span></code> has many methods for making weights, we will use <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">func</span></code> which will allow us
+to define a weighting function. The plots below show the before and after of applying a set of time weights before scrunching in
+time to form a spectra of stokes I.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># lets make a simple scalar weight that multiplies the samples in time</span>
+<span class="c1"># by -1 so we can see it works</span>
+<span class="c1"># lets plot the before and after</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;fI&quot;</span><span class="p">)</span>     <span class="c1"># before</span>
+
+<span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;fI&quot;</span><span class="p">)</span>     <span class="c1"># after</span>
+<span class="c1"># NOTE: the None method is used to specify we want to take the values weights.W as</span>
+<span class="c1"># the weights</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/spec_before_W.png"><img alt="../_images/spec_before_W.png" src="../_images/spec_before_W.png" style="width: 720pt;" /></a>
+<a class="reference internal image-reference" href="../_images/spec_after_W.png"><img alt="../_images/spec_after_W.png" src="../_images/spec_after_W.png" style="width: 720pt;" /></a>
+<p>We can be a little more creative with how we define our weights. Lets define a function based on the posterior of our time
+series profile we fitted before.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import function to make scattering pulse function</span>
+<span class="kn">from</span> <span class="nn">ilex.fitting</span> <span class="kn">import</span> <span class="n">make_scatt_pulse_profile_func</span>
+
+<span class="c1"># make scatt function based on number of pulses, in this case 1</span>
+<span class="n">profile</span> <span class="o">=</span> <span class="n">make_scatt_pulse_profile_func</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># define a dictionary of the posteriors of the fiting</span>
+<span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a1&#39;</span><span class="p">:</span> <span class="mf">0.706</span><span class="p">,</span> <span class="s1">&#39;mu1&#39;</span><span class="p">:</span> <span class="mf">21.546</span><span class="p">,</span> <span class="s1">&#39;sig1&#39;</span><span class="p">:</span> <span class="mf">0.173</span><span class="p">,</span> <span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="mf">0.540</span><span class="p">}</span>
+
+<span class="c1"># another method of setting the weights in either time or frequency (xtype)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">profile</span><span class="p">)</span>
+
+<span class="c1"># now weight, The rest is left to you, why not plot it?</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="using_ilex.html" class="btn btn-neutral float-left" title="Using ILEX" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex_config.html" class="btn btn-neutral float-right" title="Using the FRB.yaml config file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

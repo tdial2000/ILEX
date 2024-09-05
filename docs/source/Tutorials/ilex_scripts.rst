@@ -2,6 +2,21 @@ ILEX scripts
 ------------
 
 The following is a list of scripts that can be used to either create new FRB dynamic spectra or create different plots. 
+There are two ways to envoke these scripts. If you use the absolute filepath of these scripts, you can run them in the
+bash console using
+
+.. code-block:: console
+   
+   python3 <path>/scripts/plot_dynspec.py --options
+
+where ``<path>`` is the installation directory of ILEX.
+Or if you add the script directory to your PATH enviromental variable ``PATH=PATH:<path>/scripts/``
+
+.. code-block:: console
+
+   python3 -m plot_dynspec --options
+
+In the following we will use the latter.
 
 
 Quickly plot Dynamic spectra
@@ -11,7 +26,7 @@ Quickly plot dynamic spectrum
 
 .. code-block:: console
 
-    python3 plot_dynspec.py filepath
+    python3 -m plot_dynspec filepath
 
     # options
     --tN 1       # averaging factor in time
@@ -58,7 +73,7 @@ Coherently Dedisperse X and Y polarisation time series data
 
 .. code-block:: console
 
-    python3 coherent_desperse.py
+    python3 -m coherent_desperse
 
     # options
     -x filepath         # X polarisation filepath
@@ -76,7 +91,10 @@ Make new FRB config file
 
 .. code-block:: console
 
-    python3 make_FRBconfig.py filepath
+    python3 -m make_config filepath 
+
+    # options
+    --celebi            # Make config file based on CELEBI output
 
 
 Make FRB panel plot
@@ -86,7 +104,7 @@ Make plot of various panels of FRB data
 
 .. code-block:: console
 
-    python3 plot_master.py
+    python3 -m plot_master
 
     # options
     --parfile filepath    # filepath of FRB config file
@@ -101,7 +119,7 @@ Make plot of various panels of FRB data
 Here is an example of plotting the stokes time series and dynamic spectrum: 
 .. code-block:: console
 
-    python3 plot_master.py --parfile examples/220610.yaml --plot_panels "[S;D]"
+    python3 -m plot_master --parfile examples/220610.yaml --plot_panels "[S;D]"
 
 .. image:: plot_panel_example.png
    :width: 720pt
@@ -120,7 +138,7 @@ Plot full panel of stokes dynamic spectrum with time series profilem, example us
 
 .. code-block:: console
 
-    python3 plot_stokes_dynspec.py 
+    python3 -m plot_stokes_dynspec 
 
     # options
     --parfile filepath  # filepath of FRB config file
@@ -137,7 +155,7 @@ Plot full mosaic of stokes dynamic spectrum with a variety of time resolutions.
 
 .. code-block:: console
 
-    python3 plot_dynspec_mosaic.py
+    python3 -m plot_dynspec_mosaic
 
     # options
     --parfile filepath                        # filepath of FRB config file
@@ -152,7 +170,7 @@ time will be ``t * dt`` where ``dt`` is specified in the config file.
 
 .. code-block:: console
 
-    python3 plot_dynspec_mosaic.py --parfile examples/220610.yaml -t 1 10 50 --nsamp 20 --tN 1 
+    python3 -m plot_dynspec_mosaic --parfile examples/220610.yaml -t 1 10 50 --nsamp 20 --tN 1 
 
 .. image:: plot_mosaic_example.png
    :width: 720pt
@@ -167,7 +185,7 @@ example uses the ``examples/220610.yaml`` config file:
 
 .. code-block:: console
 
-    python3 plot_interactive_ds.py
+    python3 -m plot_interactive_ds
 
     # options 
     --parfile filepath      # filepath of FRB config file
@@ -186,7 +204,7 @@ example uses the ``examples/220610.yaml`` config file:
 
 .. code-block:: console
 
-    python3 plot_PA_multi.py
+    python3 -m plot_PA_multi
 
     # options
     --parfile filepath      # filepath of FRB config file
@@ -200,7 +218,7 @@ this is only for demonstrative purposes.
 
 .. code-block:: console
 
-    python3 plot_PA_multi.py --parfile examples/220610.yaml --showbounds
+    python3 -m plot_PA_multi --parfile examples/220610.yaml --showbounds
 
 .. image:: plot_examplePA_plot.png
    :width: 720pt

@@ -635,7 +635,7 @@
 <span class="sd">        get fitting function arguments</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">return</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[]</span>
         
@@ -1039,7 +1039,7 @@
             <span class="c1"># convert prior dict to list in order! convert bounds to curve_fit bounds</span>
             <span class="n">priors_list</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
                 <span class="n">priors_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>                
                 <span class="n">b_min</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
                 <span class="n">b_max</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
@@ -1047,7 +1047,7 @@
             <span class="n">_val</span><span class="p">,</span> <span class="n">_err</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">priors_list</span><span class="p">,</span> 
                                     <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_curve_fit2posterior</span><span class="p">(</span><span class="n">_val</span><span class="p">,</span> <span class="n">_err</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_curve_fit2posterior</span><span class="p">(</span><span class="n">_val</span><span class="p">,</span> <span class="n">_err</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:])</span>
 
 
         <span class="c1"># fit using bilby bayesian inference</span>
@@ -1064,7 +1064,7 @@
                 <span class="n">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
 
-            <span class="n">keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
             <span class="c1"># if yerr not specified, include sigma for sampling</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>

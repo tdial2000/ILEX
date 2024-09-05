@@ -15,18 +15,28 @@ Following the last tutorial, load in the Power dynamic spectra data of 220610 an
                 f_crop = [1103.5, 1200])
     frb.load_data(ds_I = "examples/220610_dsI.npy")  
 
-A quick and dirty method for fitting the time series profile is using the ``least squares`` method. 
+We can fit the time series burst as a sum of Gaussian pulses convolved with a common one-sided exponential
+
+.. math::
+   I(t) = \sum_{i = 1}^{N}\bigg[A_{i}e^{-(t-\mu_{i})^{2}/2\sigma_{i}^{2}}\bigg] * e^{-t/\tau},
+
+where :math:`A_{i}, \mu_{i}` and :math:`\sigma_{i}` are the amplitude, position in time and pulse width 
+in time of each :math:`i^{\mathrm{th}}$` Gaussian and :math:`'*'` denotes the convolution operation.
+
+This is implemented in the ``.fit_tscatt()`` method of the ``FRB`` class. The simplest way to call this 
+function is to use a ``least squares`` fitting method. 
 
 .. code-block:: python
 
     # fit
-    frb.fit_tscatt(method = "least squares", plot = True)
+    frb.fit_tscatt(method = "least squares", show_plots = True)
 
 .. image:: 220610_tI_fit1.png
    :width: 720pt
 
 In most cases, an FRB burst will be more complicated. In which case a more robust method using the ``bayesian``
-toggle is nessesary. To do so, priors need to be given.
+toggle is nessesary. To do so, priors need to be given. We also need to give our best estimate for the number
+of pulses in the burst, which we can do with ``npulse``
 
 .. code-block:: python
 
@@ -34,12 +44,15 @@ toggle is nessesary. To do so, priors need to be given.
     priors = {'a1': [0.5, 0.8], 'mu1': [21.0, 22.0], 'sig1': [0.1, 1.0], 'tau': [0.01, 2.0]}
 
     # fit
-    p = frb.fit_tscatt(method = "bayesian", priors = priors, plot = True)
+    p = frb.fit_tscatt(method = "bayesian", priors = priors, npulse = 1, show_plots = True)
 
 .. image:: 220610_tI_fit2.png
    :width: 720pt
 
-We can also return the ``p``, the fitting utility class which has a number of useful features. Most notable is showing
+In the above code, we set the priors of the single pulse with suffixes ``1``, i.e. ``a1`` for the amplitude of the 
+first pulse, ``mu1`` for the position of the first pulse etc. If we had two pulses, we would also give priors for the amplitude
+``a2``, position ``mu2`` etc. In general for each pulse ``N``, we specify its parameters ``aN, muN, sigN``. 
+We can also return the ``p`` object, which is a fitting utility class which has a number of useful features. Most notable is showing
 the stats of the modelling.
 
 .. code-block:: python
@@ -67,20 +80,36 @@ the stats of the modelling.
 Fitting RM and plotting Position Angle (PA) Profile
 ===================================================
 
-We can fit for rotation measure (RM) and then plot polarisation properties. First we load in full stokes data.
+We can fit for the rotation measure (RM). There are two common methods for doing this.
+1. Q/U fitting using the quadratic form of the polarisation position angle (PA)
+
+.. math::
+   \mathrm{PA(\nu) = RMc^{2}}\bigg(\frac{1}{\nu^{2}} - \frac{1}{\nu_{0}^{2}}\bigg),
+
+where :math:`\nu_{0}` is the reference frequency. If this is not set, the central frequency ``cfreq``
+will be used instead. 
+
+2. Faraday Depth fitting through RM synthesis using the ``RMtools`` package 
+
+https://github.com/CIRADA-Tools/RM-Tools
+
+
+First we load in the stokes ``Q`` and ``U`` dynamic spectrum.
 
 .. code-block:: python
 
     # load in data
-    frb.load_data(ds_I = "examples/220610_dsI.npy", ds_Q = "examples/220610_dsQ.npy",
-                  ds_U = "examples/220610_dsU.npy", ds_V = "examples/220610_dsV.npy")
+    frb.load_data(ds_Q = "examples/220610_dsQ.npy", ds_U = "examples/220610_dsU.npy")
 
-We will fit for the RM first. Once this method runs the fitted RM will be saved to the FRB instance class.
+
+We can then fit for the RM using ``.fit_RM()``. We can specify the method to do so
+``method = "RMquad"`` for Q/U fitting with a quadratic function.
+``method = "RMsynth"`` for RM synthesis.
 
 .. code-block:: python
 
     # fit RM
-    frb.fit_RM(method = "RMsynth", terr_crop = [0, 15], t_crop = [21.4, 21.6], plot = True)
+    frb.fit_RM(method = "RMsynth", terr_crop = [0, 15], t_crop = [21.4, 21.6], show_plots = True)
 
 .. code-block:: console
 
@@ -92,11 +121,13 @@ We will fit for the RM first. Once this method runs the fitted RM will be saved 
 .. image:: 220610_RM.png
    :width: 720pt
 
+The ``RM``, ``f0`` and ``pa0`` parameters will be saved to the ``.fitted_params`` attribute of the ``FRB`` class.
 Once RM is calculated, we can plot a bunch of polarisation properties using the master method ``.plot_PA()``.
 
 .. code-block:: python
 
-    frb.plot_PA(terr_crop = [0, 15], plot_L = True, plot = True)
+    frb.set(RM = 217.9462, f0 = 1137.0805274869874)
+    frb.plot_PA(terr_crop = [0, 15], stk2plot = "ILV", show_plots = True)
 
 .. image:: 220610_PA.png
    :width: 720pt

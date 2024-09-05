@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How does ILEX work? &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Using ILEX" href="using_ilex.html" />
+    <link rel="prev" title="ILEX Tutorials" href="../Tutorials.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How ILEX works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Using ILEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Advanced ILEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">ILEX config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_scripts.html">ILEX scripts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
+      <li class="breadcrumb-item active">How does ILEX work?</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/how_ilex_works.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="how-does-ilex-work">
+<h1>How does ILEX work?<a class="headerlink" href="#how-does-ilex-work" title="Link to this heading"></a></h1>
+<p>ILEX is primarily a toolkit for analysing High time resolution (HTR) Fast Radio Burst (FRB) data
+produced by the CRAFT Effortless and Localisation and Enhanced Burst Inspection (CELEBI) pipeline.</p>
+<p>CELEBI paper - <a class="reference external" href="https://www.sciencedirect.com/science/article/abs/pii/S2213133723000392">https://www.sciencedirect.com/science/article/abs/pii/S2213133723000392</a>
+CELEBI github - <a class="reference external" href="https://github.com/askap-craco/CELEBI">https://github.com/askap-craco/CELEBI</a></p>
+<p>However, fundamentally, ILEX will work with Stokes I, Q, U and V frequency and time dynamic spectra
+regardless of context.</p>
+<p>Currently, ILEX only supports 2D numpy files <code class="docutils literal notranslate"><span class="pre">.npy</span></code>.</p>
+<p># The <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class</p>
+<p>The main class that you will be using is the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class. This class can be imported by running</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ilex.frb</span> <span class="kn">import</span> <span class="n">FRB</span>
+</pre></div>
+</div>
+<p>This class has a variety of functions that can be used to plot, fit and manipulate Stokes data. Currently
+the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class supports:</p>
+<ul class="simple">
+<li><p>manipulating data: including cropping, channel zapping</p></li>
+<li><p>processing data: including averaging, weighting, Faraday de-rotating, normalising</p></li>
+<li><p>Fitting the time series to a sum of Gaussian pulses convolved with a one-sided exponential tail</p></li>
+<li><p>Deriving a decorrelation bandwidth</p></li>
+<li><p>Fitting the Rotation Measure (RM) using either Q/U fitting or RM synthesis</p></li>
+<li><p>Plotting data: including time series, frequency spectra, dynamic spectra, PA, poincare sphere</p></li>
+</ul>
+<p># Initialising the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class</p>
+<p>Create a new instance of the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class. Here we can specify a number of parameters, I recommend
+at the very least setting <code class="docutils literal notranslate"><span class="pre">cfreq</span></code> and <code class="docutils literal notranslate"><span class="pre">name</span></code>. Here we set <code class="docutils literal notranslate"><span class="pre">cfreq</span></code>, the central frequency, to
+919.5 MHz</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRBtest&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">919.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can also initialise the class using a config file,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">yaml_file</span> <span class="o">=</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>see the tutorial on FRB config files for more details.</p>
+<p>To start using the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class, we need to load in data, there are 4 data products that can be loaded in,
+<code class="docutils literal notranslate"><span class="pre">dsI,</span> <span class="pre">dsQ,</span> <span class="pre">dsU</span></code> and <code class="docutils literal notranslate"><span class="pre">dsV</span></code>, these represent the Stokes I, Q, U and V dynamic spectum.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># loading in Stokes I dynamic spectrum</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">dsI</span> <span class="o">=</span> <span class="s2">&quot;dsI.npy&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p># The <code class="docutils literal notranslate"><span class="pre">FRB</span></code> parameters</p>
+<p>The parameters in the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class are split into 3 groups (for the most part…)</p>
+<p><code class="docutils literal notranslate"><span class="pre">par</span></code>      - parameters that are descriptive to the FRB data, such as name, intrinsic data resolution etc.
+<code class="docutils literal notranslate"><span class="pre">metapar</span></code>  - meta parameters that describe the processing being done on the FRB data, such as time,freq crops, averaging etc.
+<code class="docutils literal notranslate"><span class="pre">hyperpar</span></code> - hyper parameters that describe the functionality of the class itself, such as if verbose printing, showing plots etc.</p>
+<p><code class="docutils literal notranslate"><span class="pre">frb.par</span></code> is where you can find all the parameters of the FRB.
+<code class="docutils literal notranslate"><span class="pre">frb.metapar</span></code> is where you can find all the meta parameters of the FRB.
+Each hyper parameter is their own attribute in the FRB class, such as verbose, i.e. <code class="docutils literal notranslate"><span class="pre">frb.verbose</span></code> or show_plots, <code class="docutils literal notranslate"><span class="pre">frb.show_plots</span></code></p>
+<p>## <code class="docutils literal notranslate"><span class="pre">par</span></code></p>
+<p>There are a number of parameters that can be set that for the most part are only descriptive of the FRB, these include</p>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code>        - The name of the FRB, this is used when saving plots as .png files
+<code class="docutils literal notranslate"><span class="pre">RA</span></code>          - Right Ascension of FRB position (Metadata)
+<code class="docutils literal notranslate"><span class="pre">DEC</span></code>         - Declination of FRB position (Metadata)
+<code class="docutils literal notranslate"><span class="pre">DM</span></code>          - Dispersion Measure (Metadata)
+<code class="docutils literal notranslate"><span class="pre">bw</span></code>          - Bandwidth of FRB observation
+<code class="docutils literal notranslate"><span class="pre">MJD</span></code>         - Modified Julian Date [<code class="docutils literal notranslate"><span class="pre">days</span></code>] of burst (Metadata)
+<code class="docutils literal notranslate"><span class="pre">cfreq</span></code>       - Central frequency [<code class="docutils literal notranslate"><span class="pre">MHz</span></code>] of bandwidth
+<code class="docutils literal notranslate"><span class="pre">t_lim_base</span></code>  - Base limits of loaded FRB data in time [<code class="docutils literal notranslate"><span class="pre">ms</span></code>]
+<code class="docutils literal notranslate"><span class="pre">f_lim_base</span></code>  - Base limits of loaded FRB data in freq [<code class="docutils literal notranslate"><span class="pre">MHz</span></code>]
+<code class="docutils literal notranslate"><span class="pre">t_ref</span></code>       - Zero-point of data in time [<code class="docutils literal notranslate"><span class="pre">ms</span></code>], i.e. reference point
+<code class="docutils literal notranslate"><span class="pre">nchan</span></code>       - Number of channels in Dynamic spectra
+<code class="docutils literal notranslate"><span class="pre">nsamp</span></code>       - Number of time samples in Dynamic spectra
+<code class="docutils literal notranslate"><span class="pre">dt</span></code>          - Intrinsic resolution of time samples in loaded Dynamic spectra
+<code class="docutils literal notranslate"><span class="pre">df</span></code>          - Intrinsic resolution of freq channels in loaded Dynamic spectra
+<code class="docutils literal notranslate"><span class="pre">RM</span></code>          - Rotation Measure
+<code class="docutils literal notranslate"><span class="pre">f0</span></code>          - Reference frequency [<code class="docutils literal notranslate"><span class="pre">MHz</span></code>]
+<code class="docutils literal notranslate"><span class="pre">pa0</span></code>         - Reference Polarisation Position Angle (PA)
+<code class="docutils literal notranslate"><span class="pre">tW</span></code>          - Weights applied in time when averaging to make spectra
+<code class="docutils literal notranslate"><span class="pre">fW</span></code>          - Weights applied in frequency when averaging to make time series</p>
+<p>Note: Parameters labelled with (Metadata) are purely descriptive labels that are not used any where in ILEX (yet…).</p>
+<p>## <code class="docutils literal notranslate"><span class="pre">metapar</span></code></p>
+<p>These meta parameter control the processing of the FRB data, this includes</p>
+<p><code class="docutils literal notranslate"><span class="pre">t_crop</span></code>      - Crop of on-pulse data in time [<code class="docutils literal notranslate"><span class="pre">ms</span></code>] or in phase units
+<code class="docutils literal notranslate"><span class="pre">f_crop</span></code>      - Crop of on-pulse/off-pulse data in frequency [<code class="docutils literal notranslate"><span class="pre">MHz</span></code>] or in phase units
+<code class="docutils literal notranslate"><span class="pre">terr_crop</span></code>   - Crop of off-pulse data in time [<code class="docutils literal notranslate"><span class="pre">ms</span></code>] or in phase units. Used to estimate time and freq noise/errors
+<code class="docutils literal notranslate"><span class="pre">tN</span></code>          - Averaging factor in time
+<code class="docutils literal notranslate"><span class="pre">fN</span></code>          - Averaging factor in frequency
+<code class="docutils literal notranslate"><span class="pre">norm</span></code>        - Normalisation
+<code class="docutils literal notranslate"><span class="pre">zapchan</span></code>     - Channel zapping</p>
+<p>## <code class="docutils literal notranslate"><span class="pre">hyperpar</span></code></p>
+<p>These hyper parameters control many of the class utilities. This includes</p>
+<p><code class="docutils literal notranslate"><span class="pre">verbose</span></code>     - Enable verbose printing, this will enable the logging features of ILEX
+<code class="docutils literal notranslate"><span class="pre">plot_type</span></code>   - Type of plot when plotting 1D data, [<code class="docutils literal notranslate"><span class="pre">lines</span></code>] for line plots and [<code class="docutils literal notranslate"><span class="pre">scatter</span></code>] for scatter plots
+<code class="docutils literal notranslate"><span class="pre">residuals</span></code>   - If true, plots of fitting results will also show residuals
+<code class="docutils literal notranslate"><span class="pre">apply_tW</span></code>    - If true, will apply time weights [<code class="docutils literal notranslate"><span class="pre">tW</span></code>]
+<code class="docutils literal notranslate"><span class="pre">apply_fW</span></code>    - If true, will apply freq weights [<code class="docutils literal notranslate"><span class="pre">fW</span></code>]
+<code class="docutils literal notranslate"><span class="pre">zap</span></code>         - If true, the FRB data will be treated as if channels are zapped and will use numpy <code class="docutils literal notranslate"><span class="pre">.nan</span></code> functions when processing
+<code class="docutils literal notranslate"><span class="pre">show_plots</span></code>  - If true, show any plot in an interactive window
+<code class="docutils literal notranslate"><span class="pre">save_plots</span></code>  - If true, save any plot as a .png file
+<code class="docutils literal notranslate"><span class="pre">crop_units</span></code>  - Control what units are used when cropping data, [<code class="docutils literal notranslate"><span class="pre">physical</span></code>] for <code class="docutils literal notranslate"><span class="pre">ms/MHz</span></code> or [<code class="docutils literal notranslate"><span class="pre">phase</span></code>] for phase units <code class="docutils literal notranslate"><span class="pre">[0.0</span> <span class="pre">-</span> <span class="pre">1.0]</span></code></p>
+<p>All the above <code class="docutils literal notranslate"><span class="pre">par</span></code>, <code class="docutils literal notranslate"><span class="pre">metapar</span></code> and <code class="docutils literal notranslate"><span class="pre">hyperpar</span></code> parameters can be set in a config file for ease of use and reproducibility.</p>
+<p># How data is processed in the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class</p>
+<p>ILEX by default will not load in the Stokes dynamic spectra files into memory all at once, they will be loaded in as
+memory maps to the files on disk (see <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.memmap.html">https://numpy.org/doc/stable/reference/generated/numpy.memmap.html</a>). Every time
+the user requests some data, whether for plotting, fitting etc., ILEX will first define a “crop”. This crop has two main
+parameters, <code class="docutils literal notranslate"><span class="pre">t_crop</span></code> and <code class="docutils literal notranslate"><span class="pre">f_crop</span></code>, these define the crop boundary in time [<code class="docutils literal notranslate"><span class="pre">ms</span></code>] and frequency [<code class="docutils literal notranslate"><span class="pre">MHz</span></code>] by default.
+ILEX will then take this crop, and load in the data within this crop into memory. This makes ILEX extremely memory efficient
+and in most cases quick as well, since that data will be cached when being used again. The image below illustrates this.</p>
+<a class="reference internal image-reference" href="../_images/how_data_works.png"><img alt="../_images/how_data_works.png" src="../_images/how_data_works.png" style="width: 720pt;" /></a>
+<p>This crop is also refered to as the on-pulse crop, as such we try to capture the FRB within this crop. In addition to this crop,
+we can also specify an off-pulse crop that will use off-pulse data to estimate the noise per time sample per frequency bin. This
+off-pulse crop uses the same <code class="docutils literal notranslate"><span class="pre">f_crop</span></code> parameter to crop in frequency and to specify the off-pulse crop in time we can use
+<code class="docutils literal notranslate"><span class="pre">terr_crop</span></code>.</p>
+<p>Once the crop boundaries are defined, ILEX will process the data. Currently ILEX supports the following processing techniques:</p>
+<p>## Averaging</p>
+<p>We can average the data in both time in frequency, i.e. downsample by some factor. For example, if we want to downsample <code class="docutils literal notranslate"><span class="pre">1us</span></code>
+data to <code class="docutils literal notranslate"><span class="pre">10us</span></code> data, we can do this by specifying <code class="docutils literal notranslate"><span class="pre">tN</span> <span class="pre">=</span> <span class="pre">10</span></code>, same with frequency but using <code class="docutils literal notranslate"><span class="pre">fN</span></code>.</p>
+<p>## Channel zapping</p>
+<p>We can zap any channels if there is bad RFI etc. We can do this by specifying <code class="docutils literal notranslate"><span class="pre">zapchan</span></code>. For example, if we set
+<code class="docutils literal notranslate"><span class="pre">zapchan</span> <span class="pre">=</span> <span class="pre">&quot;1100:1150&quot;</span></code>, all the channels between 1100 MHz and 1150 MHz (inclusive) will be zapped and ignored during processing.
+We can specify as many regions of frequency as we want, for example <code class="docutils literal notranslate"><span class="pre">zapchan</span> <span class="pre">=</span> <span class="pre">1100:1150,</span> <span class="pre">1180:1220</span></code> will now also zap the channels
+between 1180 MHz and 1220 MHz. We can also specify singular channels, <code class="docutils literal notranslate"><span class="pre">zapchan</span> <span class="pre">=</span> <span class="pre">1100:1150,</span> <span class="pre">1160</span></code>, this will also zap the channel at
+1160 MHz.</p>
+<p>NOTE: depending on <code class="docutils literal notranslate"><span class="pre">df</span> <span class="pre">*</span> <span class="pre">fN</span></code> this may not be perfectly precise.</p>
+<p>## Faraday de-rotating</p>
+<p>We can de-faraday rotate the Stokes Q and U data by specifying <code class="docutils literal notranslate"><span class="pre">RM</span></code> and <code class="docutils literal notranslate"><span class="pre">f0</span></code>. If <code class="docutils literal notranslate"><span class="pre">f0</span></code> is not set, then it will take the default
+value of <code class="docutils literal notranslate"><span class="pre">f0</span> <span class="pre">=</span> <span class="pre">cfreq</span></code>, i.e. the central frequency.</p>
+<p>## Weighting</p>
+<p>We can weight in time and frequency. When we specify time and frequency weights <code class="docutils literal notranslate"><span class="pre">tW</span></code> and <code class="docutils literal notranslate"><span class="pre">fW</span></code>, these will only be applied when we
+are averaging the entire crop. For example, if we are making frequency spectra, we average over all the time bins, in this case the
+time weights <code class="docutils literal notranslate"><span class="pre">tW</span></code> will be applied. Same case for the frequency weights <code class="docutils literal notranslate"><span class="pre">fW</span></code>.</p>
+<p>We can set the weights using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># setting frequency weights</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">xtype</span> <span class="pre">=</span> <span class="pre">&quot;t&quot;</span> <span class="pre">or</span> <span class="pre">&quot;f&quot;</span></code> denotes if we are setting the time or frequency weights.</p>
+<p>The following is a list of the types of weights we can apply.</p>
+<p>### Define a list of weights to apply</p>
+<p>We can set a list of weights</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span><span class="o">...</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>just make sure the number of weights matches the number of time samples in your crop.
+You can also just define a single scalar value, although this is less useful.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>### interpolation</p>
+<p>We can define a set of weights along with <code class="docutils literal notranslate"><span class="pre">x</span></code> values that can be used to interpolate
+between these weights, for example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1000 weights from 0 to 1</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># x coordinate for weights</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+<span class="c1"># set weights, make sure to use interp method</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;interp&quot;</span><span class="p">)</span>
+
+<span class="c1"># define a new set of x coordinate somewhere inbetween 1 and 1000</span>
+<span class="n">x_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># interpolate weights</span>
+<span class="n">W_int</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x_int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is useful to define a set of weights for the full extent of an FRB or the dataset, this
+interpolation will then work with your crop.</p>
+<p>### Define a weight function</p>
+<p>We can also define a function that will when evaluated will produce weights that will be applied
+directly to the data. This allows us to be creative. See the advanced ILEX Tutorial for an example
+<a class="reference internal" href="advanced_ilex.html"><span class="doc">Advanced functions</span></a>.</p>
+<p>NOTE: Weights are applied after averaging in time or frequency using <code class="docutils literal notranslate"><span class="pre">tN</span></code> or <code class="docutils literal notranslate"><span class="pre">fN</span></code>.</p>
+<p>## normalising</p>
+<p>We can also normalise the data if desired, although this hasn’t been tested, so use at your own
+descretion. (This may be removed in a later version of ILEX, so probably don’t rely on it too much)</p>
+<p><code class="docutils literal notranslate"><span class="pre">norm</span> <span class="pre">=</span> <span class="pre">max</span></code> - normalise using maximum <code class="docutils literal notranslate"><span class="pre">max()</span></code>
+<code class="docutils literal notranslate"><span class="pre">norm</span> <span class="pre">=</span> <span class="pre">absmax</span></code> - normalise using absolute maximum <code class="docutils literal notranslate"><span class="pre">abs(max())</span></code>
+<code class="docutils literal notranslate"><span class="pre">norm</span> <span class="pre">=</span> <span class="pre">None</span></code> - Skip normalisation (default)</p>
+<p>## Order of process operations</p>
+<p>The order in which data is processed goes like this:</p>
+<ol class="arabic simple">
+<li><p>Crop in Time</p></li>
+<li><p>Crop in freq</p></li>
+<li><p>Channel zapping</p></li>
+<li><p>normalise (may be removed)</p></li>
+<li><p>Faraday de-rotate</p></li>
+<li><p>Time average</p></li>
+<li><p>Freq average</p></li>
+<li><p>Time weights</p></li>
+<li><p>Freq weights</p></li>
+<li><p>Produce data products, including noise/error products</p></li>
+</ol>
+<p># The Data products</p>
+<p>When you load in any/all of the Stokes I, Q, U and V dynamic spectra you can also for a number
+of data products. Lets look at an example using the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This call to <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> is requesting a crop of the stokes I and Q dynamic spectra. This
+will run through all the processing steps outlined aboved and spit out cropped and processing stokes
+I and Q dynamic spectra, denoted by the <code class="docutils literal notranslate"><span class="pre">ds</span></code>. We also return these data products as a dict by specifying
+<code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+<p>We can also ask for 1D time series data and/or spectra data</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span> <span class="s2">&quot;tI&quot;</span><span class="p">,</span> <span class="s2">&quot;fI&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>here we have also asked for the Stokes I 1D times series (denoted by the <code class="docutils literal notranslate"><span class="pre">t</span></code>) and frequency spectra
+(denoted by the <code class="docutils literal notranslate"><span class="pre">f</span></code>).
+When we ask for any 1D data products, if we have also defined the off-pulse crop using <code class="docutils literal notranslate"><span class="pre">terr_crop</span></code>, the
+<code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method will also return the corrosponding noise/error products with the suffix <code class="docutils literal notranslate"><span class="pre">err</span></code>, in
+this case <code class="docutils literal notranslate"><span class="pre">tIerr</span></code> and <code class="docutils literal notranslate"><span class="pre">fIerr</span></code>. Additionally, the x-axis for the times series <code class="docutils literal notranslate"><span class="pre">time</span></code> and frequency spectra
+<code class="docutils literal notranslate"><span class="pre">freq</span></code> will also be saved.</p>
+<p>Any data product that is created will always be saved to the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class, for example</p>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;dsI&quot;,</span> <span class="pre">&quot;dsQ&quot;</span></code> will be saved to <code class="docutils literal notranslate"><span class="pre">FRB._ds</span></code>, if you want to retrieve <code class="docutils literal notranslate"><span class="pre">&quot;dsI&quot;</span></code>, you specify
+<code class="docutils literal notranslate"><span class="pre">FRB._ds[&quot;I&quot;]</span></code>.</p>
+<p>Similarly with time series, <code class="docutils literal notranslate"><span class="pre">FRB._t</span></code> and frequency spectra <code class="docutils literal notranslate"><span class="pre">FRB._f</span></code>. In the case that you also want
+the noise/error data as well, specify <code class="docutils literal notranslate"><span class="pre">FRB._t[&quot;{S}err&quot;]</span></code> for any Stokes parameter <code class="docutils literal notranslate"><span class="pre">S</span></code> in the case for time
+series noise (Same thing for frequency spectra). For the time series/freq spectra x-axis, specify <code class="docutils literal notranslate"><span class="pre">FRB._time/FRB._freq</span></code>.</p>
+<p># data instances</p>
+<p>Every time <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> is run, an instance of the <code class="docutils literal notranslate"><span class="pre">frb.par</span></code> and <code class="docutils literal notranslate"><span class="pre">frb.metapar</span></code> attributes are created
+and labelled <code class="docutils literal notranslate"><span class="pre">frb.this_par</span></code> and <code class="docutils literal notranslate"><span class="pre">frb.this_metapar</span></code> respectivley. These parameters describe the processed
+data at that very instance. These parameters may differ from the base parameters set in the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class depending
+on if any of the <code class="docutils literal notranslate"><span class="pre">par</span></code> or <code class="docutils literal notranslate"><span class="pre">metapar</span></code> parameters were overwritten when calling an <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class method, for example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">],</span> <span class="n">tN</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in this example we have overwritten the <code class="docutils literal notranslate"><span class="pre">tN</span></code> parameter to 20. Thus if <code class="docutils literal notranslate"><span class="pre">frb.this_metapar.tN</span></code> will be 20
+whilst the base value <code class="docutils literal notranslate"><span class="pre">frb.metapar.tN</span></code> will remain the same. This allows the user to quickly change any FRB/crop
+parameters to explore the data without having to update a config file or the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class itself every time.</p>
+<p>You can also change the <code class="docutils literal notranslate"><span class="pre">hyperpar</span></code> parameters (such as verbose), but these will be permanently changed.</p>
+<p>NOTE: you can also change any of these parameters permanently using <code class="docutils literal notranslate"><span class="pre">FRB.set()</span></code>.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Tutorials.html" class="btn btn-neutral float-left" title="ILEX Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="using_ilex.html" class="btn btn-neutral float-right" title="Using ILEX" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

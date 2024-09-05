@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.plot &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ilex.pyfit" href="ilex.pyfit.html" />
+    <link rel="prev" title="ilex.par" href="ilex.par.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.plot</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.create_poincare_sphere"><code class="docutils literal notranslate"><span class="pre">create_poincare_sphere()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_PA"><code class="docutils literal notranslate"><span class="pre">plot_PA()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_RM"><code class="docutils literal notranslate"><span class="pre">plot_RM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_data"><code class="docutils literal notranslate"><span class="pre">plot_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_poincare_track"><code class="docutils literal notranslate"><span class="pre">plot_poincare_track()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.plot.plot_stokes"><code class="docutils literal notranslate"><span class="pre">plot_stokes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ilex.html">ilex</a></li>
+      <li class="breadcrumb-item active">ilex.plot</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/ilex.plot.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ilex.plot">
+<span id="ilex-plot"></span><h1>ilex.plot<a class="headerlink" href="#module-ilex.plot" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.create_poincare_sphere">
+<span class="sig-name descname"><span class="pre">create_poincare_sphere</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cbar_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar_label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#create_poincare_sphere"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.create_poincare_sphere" title="Link to this definition"></a></dt>
+<dd><p>Create poincare sphere plot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbar_lims</strong> (<em>list</em><em>(</em><em>float</em><em>)</em>) – colorbar limits</p></li>
+<li><p><strong>cbar_label</strong> (<em>str</em>) – colorbar label</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.plot_PA">
+<span class="sig-name descname"><span class="pre">plot_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">PA_err</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flipPA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_PA" title="Link to this definition"></a></dt>
+<dd><p>Plot PA profile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – X data</p></li>
+<li><p><strong>PA</strong> (<em>np.ndarray</em>) – Position angle</p></li>
+<li><p><strong>PA_err</strong> (<em>np.ndarray</em>) – PA error</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em><em>, </em><em>optional</em>) – Axes handle, by default None</p></li>
+<li><p><strong>flipPA</strong> (<em>bool</em><em>, </em><em>optional</em>) – plot PA over [0, 180] degrees instead of [-90, 90], by default False</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – type of error to plot, by default “scatter”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – Return figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.plot_RM">
+<span class="sig-name descname"><span class="pre">plot_RM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_RM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_RM" title="Link to this definition"></a></dt>
+<dd><p>Plot RM fit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>np.ndarray</em>) – Frequency array</p></li>
+<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q spectrum</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U spectrum</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Stokes Q error spectrum, by default None</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Stokes U error spectrum, by default None</p></li>
+<li><p><strong>rm</strong> (<em>float</em><em>, </em><em>optional</em>) – Rotation Measure [rad/m^2], by default 0.0</p></li>
+<li><p><strong>pa0</strong> (<em>float</em><em>, </em><em>optional</em>) – position angle at f0, by default 0.0</p></li>
+<li><p><strong>f0</strong> (<em>float</em><em>, </em><em>optional</em>) – reference frequency [MHz], by default 0.0</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em><em>, </em><em>optional</em>) – Axes handle, by default None</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to save figure to, by default None</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – type of error to plot, by default “scatter”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – Return figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.plot_data">
+<span class="sig-name descname"><span class="pre">plot_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'dsI'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_data" title="Link to this definition"></a></dt>
+<dd><p>Plot data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> (<em>Dict</em><em>(</em><em>np.ndarray</em><em>)</em>) – Dictionary of stokes data, can include any data products</p></li>
+<li><p><strong>typ</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Type of data to plot, by default “dsI”</p>
+<p>[ds] - dynamic spectra</p>
+<p>[t] - time series</p>
+<p>[f] - frequency spectra</p>
+</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em><em>, </em><em>optional</em>) – axes handle, by default None</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – type of plotting, by default “scatter”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – Return Figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.plot_poincare_track">
+<span class="sig-name descname"><span class="pre">plot_poincare_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_poincare_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_poincare_track" title="Link to this definition"></a></dt>
+<dd><p>Plot Stokes data on a Poincare Sphere.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> (<em>Dict</em><em>(</em><em>np.ndarray</em><em>)</em>) – <p>Dictionary of stokes data, can include any data products but must include the following:</p>
+<p>[I] - Stokes I data</p>
+<p>[Q] - Stokes Q data</p>
+<p>[U] - Stokes U data</p>
+<p>[V] - Stokes V data</p>
+<p>[Ierr] - Stokes I error data</p>
+</p></li>
+<li><p><strong>stk_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>types of stokes data to plot, by default “f”</p>
+<p>[f] - Plot as a function of frequency</p>
+<p>[t] - Plot as a function of time</p>
+</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – <p>Error threshold used for masking stokes data in the case that stokes/I is being calculated</p>
+<p>this avoids deviding by potentially small numbers and getting weird results,by default 2.0</p>
+</p></li>
+<li><p><strong>plot_data</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot Data on Poincare sphere, by default True</p></li>
+<li><p><strong>plot_model</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot Polynomial fitted data on Poincare sphere, by default False</p></li>
+<li><p><strong>normalise</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot data on surface of Poincare sphere (this will require normalising stokes data), by default True</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum order of Polynomial fit, by default 5</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>stk_i</strong> (<em>Stokes 1D arrays</em>)</p></li>
+<li><p><strong>stk_m</strong> (<em>Stokes model 1D arrays</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.plot.plot_stokes">
+<span class="sig-name descname"><span class="pre">plot_stokes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ldebias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk2plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'IQUV'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stk_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/plot.html#plot_stokes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.plot.plot_stokes" title="Link to this definition"></a></dt>
+<dd><p>Plot Stokes data, by default stokes I, Q, U and V data is plotted</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dat</strong> (<em>Dict</em><em>(</em><em>np.ndarray</em><em>)</em>) – <p>Dictionary of stokes data, can include any data products but must include the following:</p>
+<p>[&lt;x&gt;I] - Stokes I data</p>
+<p>[&lt;x&gt;Q] - Stokes Q data</p>
+<p>[&lt;x&gt;U] - Stokes U data</p>
+<p>[&lt;x&gt;V] - Stokes V data</p>
+<p>[&lt;x&gt;Ierr] - Stokes I error data, only if Ldebias = True or stk_ratio = True</p>
+<p>where &lt;x&gt; is either ‘t’ for time and ‘f’ for freq</p>
+</p></li>
+<li><p><strong>Ldebias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Plot stokes L debias, by default False</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – sigma threshold for error masking, I &lt; sigma * Ierr, mask it out or
+else weird overflow behavior might be present when calculating stokes ratios, by default 2.0</p></li>
+<li><p><strong>stk_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of stokes data to plot, “f” for Stokes Frequency data or “t” for time data, by default “f”</p></li>
+<li><p><strong>stk2plot</strong> (<em>str</em><em>, </em><em>optional</em>) – string of stokes to plot, for example if “QV”, only stokes Q and V are plotted, by default “IQUV”, choice between “IQUVLP”</p></li>
+<li><p><strong>stk_ratio</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true, plot stokes ratios S/I</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Choose between two methods of plotting the error in the data, by default “scatter”</p>
+<p>[lines] - plot lines with error patches
+[scatter] - Show error in data as tics in markers</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – Return figure instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex.par.html" class="btn btn-neutral float-left" title="ilex.par" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.pyfit.html" class="btn btn-neutral float-right" title="ilex.pyfit" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

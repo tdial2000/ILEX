@@ -11,8 +11,10 @@ par:   # parameters
   DM:     0.0
   bw:     336
   cfreq:  1271.5
+  MJD:    0.0
   t_lim_base:  [0.0, 3100.0]
   f_lim_base:  [0.0, 336.0]
+  t_ref:  0.0
   nchan:  336
   nsamp:  0
   dt:     0.05
@@ -20,7 +22,6 @@ par:   # parameters
   RM:     null
   f0:     null
   pa0:    0.0
-  czap:   ""  # to be implemented
 
 metapar:   # metaparameters
   t_crop:     [20.9, 23.8]
@@ -29,11 +30,12 @@ metapar:   # metaparameters
   tN:         1
   fN:         1
   norm:       "None"
+  zapchan:    null
 
 hyperpar:   # hyperparameters
   verbose:        True
-  force:          False
-  savefig:        False
+  show_plots:     True
+  save_plots:     False
   plot_type:  "lines"
   residuals:      True
   plotPosterior:  True
@@ -47,9 +49,11 @@ plots:
   plot_type:    "lines"
 
   # plotting stokes data
-  plot_L:           False
+  stk2plot:         "IQUV"
+  stk_ratio:        False
+  sigma:            2.0
   Ldebias:          False
-  debias_threshold: 2.0
+  Ldebias_threshold: 2.0
 
   # plotting poincare sphere data
   plot_data:        True

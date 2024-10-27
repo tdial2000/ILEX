@@ -14,6 +14,8 @@ def get_args():
 
     parser.add_argument("--celebi", help = "Construct yaml config file based on a CELEBI FRB summary txt file", default = None)
 
+    parser.add_argument("-d", help = "output directory of celebi FRB run", type = str, default = "")
+
     return parser.parse_args()
 
 
@@ -47,7 +49,7 @@ def make_config_from_celebi(args):
             print(lines)
 
             for i, S in enumerate("IQUV"):
-                ds_filepath = lines[i+1].split(':')[1].strip()
+                ds_filepath = os.path.join(args.d, lines[i+1].split(':')[1].strip())
                 print(f"Saving filepath for stokes {S} ds: {ds_filepath}")
                 defpars['data'][f'ds{S}'] = ds_filepath
 
@@ -64,7 +66,7 @@ def make_config_from_celebi(args):
                     print(f"name: {frb_name}")
                     defpars['par']['name'] = frb_name
 
-                for i, par in enumerate(["cfreq", "bw", "corr_DM", "crop_MJD"]):
+                for i, par in enumerate(["cfreq", "bw", "htr_DM", "crop_MJD"]):
                     if par in line:
                         val = float(line.split(":")[1].split()[0])
                         print(f"{yaml_float_pars[i]}:".ljust(10) + f"{val}")

@@ -509,6 +509,56 @@ def zap_chan(f, zap_str):
 
 
 
+def get_zapstr(chan, freq):
+    """
+    Create string of channels to zap based on given nan frequencies in 
+    stokes I dynamic spectrum
+
+    Parameters
+    ----------
+    chan : np.ndarray or array-like
+        Stokes I freq array
+    freq : np.ndarray or array-like
+        Array of frequency values in [MHz]
+
+    Returns
+    -------
+    zap_str: str
+        string of frequencies to zap using zap_chan function
+    
+    """
+
+    # could be improved later with a smarter algorithm, but not nessesary for ilex.
+
+    zap_str = ""
+
+    chan2zap = np.argwhere(np.isnan(chan)).flatten()
+    
+    i = 0
+    while i < chan2zap.size:
+        j = 0
+        while i + j + 1 < chan2zap.size:
+            if chan2zap[i + 1 + j] - chan2zap[i + j] == 1:
+                j += 1
+            else:
+                break
+
+        if j > 3:
+            zap_str += "," + str(freq[chan2zap[i]]) + ":" + str(freq[chan2zap[i + j]])
+        else:
+            for k in range(j+1):
+                zap_str += f",{freq[chan2zap[i+k]]}"
+        
+        i += j + 1
+
+        
+    if zap_str != "":
+        zap_str = zap_str[1:]   # remove ','
+    
+    return zap_str
+
+
+
 
 
 ##===============================================##
@@ -900,7 +950,7 @@ def calc_freqs(cfreq, bw = 336.0, df = 1.0, upper = True):
 def residuals(y,n=5):
     """
     Calculate residuals of a data array by subtracting the mean
-    model
+    model. This function can handle NaN values
 
     Parameters
     ----------
@@ -919,23 +969,63 @@ def residuals(y,n=5):
 
     # set x vals to nans for corrosponding y values
     mask = np.isnan(y)
-    x[mask] = np.nan
 
     y_fit = np.poly1d(np.polyfit(x[~mask],y[~mask],n))
+    y_out = y.copy()
+    y_out[~mask] -= y_fit(x[~mask])
     
-    return (y - y_fit(x)), y_fit
+    return y_out, y_fit
+
+
+
+
+def _nanacf(x):
+    """
+    autocorrelate with NaN values
+
+    Parameters
+    ----------
+    x : np.ndarray (1D) 
+        1D vector to correlate
+    
+    """
+
+    kmax = 2*x.size - 1
+
+    # output vector of 1D correlation
+    corrout = np.zeros(kmax)
+
+    # set up arrays
+    y = x.conj().T
+
+    # First half
+    for k in range(kmax // 2):
+
+        # calculate acf, need to normalise in case NaNs are present
+        corrout[k] = np.nanmean(x[0:k+1] * y[y.size - 1 - k:]) * (k + 1)
+    
+    # if there is a mid point
+    corrout[k + 1] = np.nanmean(x * y) * (x.size)
+
+    # second half
+    corrout[k + 2:] = corrout[-k - 3::-1]
+
+    return corrout
+
+
 
 
 ## [ AUTO-CORRELATION FUNCTION ] ##
 def acf(x, outs = "unique"):
     """
     Calculate normalised Auto-Correlation function using 'fft' method of 
-    real-valued data
+    real-valued data. If NaN values are present, the acf function will use a direct
+    summation approach that ignores any NaN values.
 
     Parameters
     ----------
     x : np.ndarray
-        data array
+        data array, 1D vector
     outs : str, optional
         describes output of acf function, by default "unique" \n
         [unique] - Take positive acf lags, exclude zero-lag peak
@@ -947,9 +1037,14 @@ def acf(x, outs = "unique"):
         Auto-Correlation of x data
     """
 
-    #correlate
-    acorr = correlate(x,x,mode = "full",method = "fft")
-    acorr /= np.sum(x**2)
+    # if nan values exist, use "direct" method, will use sum method instead
+    if np.any(np.isnan(x)):
+        acorr = _nanacf(x)
+    else:
+        #correlate using FFT approach
+        acorr = correlate(x,x,mode = "full", method = "fft")
+    
+    acorr /= acorr[acorr.size // 2]
     
     if outs == "unique":
         return acorr[x.size:]
@@ -965,12 +1060,14 @@ def acf(x, outs = "unique"):
 def ccf(x, y, outs = "unique"):
     """
     Calculate normalised Cross-Correlation function using 'fft' method of 
-    real-valued data
+    real-valued data. Does NOT support NaN values
 
     Parameters
     ----------
     x : np.ndarray
-        data array
+        data array, 1D
+    y : np.ndarray
+        data array, 1D
     outs : str, optional
         describes output of ccf function, by default "unique" \n
         [unique] - Take positive acf lags, including zero-lag peak

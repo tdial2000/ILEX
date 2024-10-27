@@ -11,6 +11,7 @@
 import argparse, os
 import numpy as np
 import matplotlib.pyplot as plt
+from ilex.data import average
 
 
 def get_args():
@@ -19,6 +20,7 @@ def get_args():
 
     # ext params
     parser.add_argument("--tN", help = "time scrunching", type = int, default = 1)
+    parser.add_argument("--fN", help = "freq scrunching", type = int, default = 1)
 
     ## FILENAME ##
     parser.add_argument("specfile",help = "filename of dynamic spectrum")
@@ -36,14 +38,17 @@ if __name__ == "__main__":
     dynspec = np.load(args.specfile)
 
     # scrunch
-    if args.tN > 1:
+    if (args.tN > 1) or (args.fN > 1):
         t_new = (dynspec.shape[1] // args.tN) * args.tN
-        dynspec = np.mean(dynspec[:,:t_new].reshape(dynspec.shape[0], t_new // args.tN, args.tN), axis = 2)
+        dynspec = average(dynspec, axis = 1, N = args.tN)
+        dynspec = average(dynspec, axis = 0, N = args.fN)
 
 
 
     #plot data 
     plt.figure("Dynamic Spectrum",figsize = (10,10))
-    plt.imshow(dynspec,aspect = 'auto', extent=[0,1,0,1])
+    plt.imshow(dynspec,aspect = 'auto')
+    plt.xlabel("Time Bins", fontsize = 16)
+    plt.ylabel("Freq Bins", fontsize = 16)
 
     plt.show()

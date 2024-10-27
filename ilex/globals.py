@@ -48,7 +48,7 @@ _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000", "MJD
                           "df": 1.0, "RM":None, "f0":None, "pa0":0.0, "t_ref": 0.0}
 
 # dict of frb meta params
-_G.mp = {"t_crop": [0.0, 1.0], "f_crop":[0.0, 1.0], "terr_crop":None,
+_G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None", "zapchan": None}
 
 # dict of hyper parameters``

@@ -191,7 +191,8 @@ def log(pstr, stype = "log", lpf = True, lpf_col = 'None', end = "\n"):
         Color to label parent function, by default 'None'
     """
 
-    if not get_verbose():
+    # check verbose
+    if (not get_verbose()) and (stype != "err"):
         return
 
     if type(pstr) != str:

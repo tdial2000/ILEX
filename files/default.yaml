@@ -27,8 +27,8 @@ par:
 
 # parameters for data processing
 metapar:
-  t_crop:     [0.0, 1.0]
-  f_crop:     [0.0, 1.0]
+  t_crop:     ["min", "max"]
+  f_crop:     ["min", "max"]
   terr_crop:  null
   tN:         1
   fN:         1

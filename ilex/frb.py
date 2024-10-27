@@ -209,9 +209,9 @@ class FRB:
 
 
         if t_crop is None:
-            self.metapar.t_crop = [0.0, 1.0]    # crop of time axis
+            self.metapar.t_crop = ["min", "max"]    # crop of time axis
         if f_crop is None:
-            self.metapar.f_crop = [0.0, 1.0]    # crop of frequency axis
+            self.metapar.f_crop = ["min", "max"]    # crop of frequency axis
             
         self.this_metapar = self.metapar.copy()
         self.prev_metapar = FRB_metaparams(EMPTY = True)
@@ -341,28 +341,43 @@ class FRB:
             self.par.nsamp = x.shape[1]       
             self.par.t_lim_base  = [0.0, self.par.dt * self.par.nsamp]
 
-            # check if any channels are nan's i.e. flagged
-            if np.any(np.isnan(x[:,0])):
-                self.zap = True
 
 
         ## dict. of files that will be loaded in
         data_files = {"dsI": dsI, "dsQ": dsQ, "dsU": dsU, "dsV": dsV}
+        old_chans = None
 
         # loop through files
         for key in data_files.keys():
 
             file = data_files[key]
+            init_key = None
             if file is not None:
-
-                init_key = key
 
                 # load all dynamic spectra
                 self.ds[key[-1]] = load_data(file, mmap)
                 log(f"Loading stokes {key[-1]} Dynspec from: {file} with shape {self.ds[key[-1]].shape}",
                         lpf_col=self.pcol)
 
-        init_par_from_load(self.ds[init_key[-1]])
+                if init_key is None:
+                    init_par_from_load(self.ds[key[-1]])
+                    init_key = key
+            
+                # check if any channels are nan's i.e. flagged
+                chans = self.ds[key[-1]][:,0]
+                if np.any(np.isnan(chans)):
+                    self.zap = True
+                    log("Finding zapped channels...")
+                    self.metapar.zapchan = get_zapstr(chans, self.par.get_freqs())
+                    if old_chans is not None:
+                        if not np.all(old_chans == chans):
+                            log("Channels being zapped are different for each Stokes Dynamic spectra!!", stype = "warn")
+                    old_chans = chans.copy()
+
+
+
+
+        # init_par_from_load(self.ds[init_key[-1]])
 
 
 
@@ -1062,19 +1077,21 @@ class FRB:
         kw = kwargs.keys()
         for key in metapar.keys():
             if key not in kw:
-                kwargs[key] = metapar[key]
-
+                kwargs[key] = metapar[key]       
+                
         # make sure metaparameters are updated first  
-        self._proc_kwargs(**kwargs)
-        
+        self._proc_kwargs(**kwargs) 
+
+        # update hyper parameters
+        self._update_hyperpar(**kwargs)
+
         # update self.this_metapar
         self._update_metapar(**kwargs)
 
         # update self.this_par
         self._update_par(**kwargs)
 
-        # update hyper parameters
-        self._update_hyperpar(**kwargs)
+
 
 
 
@@ -1166,6 +1183,8 @@ class FRB:
                 log("Something went wrong converting crops, no domain chosen.", stype = "err")
 
             phase_vars = [0.0, 1.0]
+            if self.crop_units == "physical":
+                phase_vars = [_vars[0], _vars[1]]
 
             for i, spe in zip([0, -1], ["min", "max"]):
                 if isinstance(crop[i], str):
@@ -1608,6 +1627,11 @@ class FRB:
         t_crop[0] -= 0.1*width
         t_crop[1] += 0.1*width
 
+        # if units are physical 
+        if self.crop_units == "physical":
+            self.par.set_par(t_ref = t_ref)
+            t_crop,_ = self.par.phase2lim(t_crop = t_crop)
+
         self.metapar.set_metapar(t_crop = t_crop)
         self.par.set_par(t_ref = t_ref)
 
@@ -1961,14 +1985,17 @@ class FRB:
         # in the case channel zapping has been performed, first calc residuals of non.nan values
         # then convert nans to zeros for acf.
         if self.zap:
-            print("SCintillation fitting with zapped channels not supported yet... I am looking into this with astropy convolution algorithms that properly treat nan values. ")
-            return None
+            sumfunc = np.nansum
         else:
-            # caculate acf of residuals
-            y, yfit = residuals(self._f['I'], n = n)
-            yrms = np.sum(y**2)
-            y = acf(y)
+            sumfunc = np.sum
+        
+        # caculate acf of residuals
+        y, yfit = residuals(self._f['I'], n = n)
+        yrms = sumfunc(y**2)
+        y = acf(y)
 
+        # in case zapping is involved
+        mask = np.isnan(y)
 
         # lags
         x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
@@ -1977,7 +2004,7 @@ class FRB:
 
         # create instance of fitting
         yerr = None
-        p = fit(x = x, y = y, yerr = yerr, func = lorentz, prior = priors,
+        p = fit(x = x[~mask], y = y[~mask], yerr = None, func = lorentz, prior = priors,
                 static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior)
 
@@ -1999,10 +2026,11 @@ class FRB:
         
         if self.verbose:
             p.stats()
-            print(p)
+        
 
             print(f"RMS in poly-n = {n} fitting (sum in square of residuals):")
             print(yrms)
+        print(p)
 
 
 
@@ -2132,7 +2160,7 @@ class FRB:
         # print best fit parameters
         if self.verbose:
             p.stats()
-            print(p)
+        print(p)
 
         # plot
         if self.show_plots or self.save_plots:
@@ -2288,7 +2316,7 @@ class FRB:
 
 
 
-    def fit_RM(self, method = "RMquad", plot = True, fit_params: dict = None, 
+    def fit_RM(self, method = "RMquad", fit_params: dict = None, 
                filename: str = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
@@ -2299,8 +2327,6 @@ class FRB:
             Method to perform Rotation Measure fitting, by default "RMquad" \n
             [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
             [RMsynth] - Use the RM-tools RM-Synthesis method
-        plot : bool, optional
-            plot data after fitting if true, by default True
         fit_params : dict, optional
             keyword parameters for fitting method, by default None \n
             [RMquad] - Scipy.optimise.curve_fit keyword params \n
@@ -2378,7 +2404,9 @@ class FRB:
         self.fitted_params['RM'] = p.get_posteriors()
         self.fitted_params['RM']['f0'] = _posterior(f0, 0, 0)
         p._is_fit = True
+        p._is_stats = True
         p._get_stats()
+        print(p)
 
         # plot
         if self.save_plots or self.show_plots:
@@ -2528,3 +2556,112 @@ class FRB:
 
         return fig
                                                 
+
+
+
+    def get_polfrac(self, debias = False, **kwargs):
+        """
+        Get the polarisation fractions of the Stokes data, if I, Q, U and V are loaded in,
+        will get their fractions. If Q and U are loaded in, will get L frac, if Q, U and V
+        are loaded in, will get P frac.
+
+        Parameters
+        ----------
+        debais : bool, optional
+            calculate debiased L and P fractions, by default false
+        
+        """
+
+        log_title("Calculating Polarisation fractions [fluence{S}/fluence{I}]", col = "lblue")
+
+        # check if I data loaded in
+        if self.ds['I'] is None:
+            log("Must have at least Stokes I dynamic spectra loaded in to calculate pol fractions...", stype = "err")
+            return None, None
+
+        # check what data is avaliable 
+        loaded_stk = ""
+        for S in "QUV":
+            if self.ds[S] is not None:
+                loaded_stk += S
+            
+        data_list = [f"t{S}" for S in loaded_stk]
+        data_list += ["tI"]
+
+        # proc KWARGS
+        self._load_new_params(**kwargs) 
+
+        # get data
+        data = self.get_data(data_list, get = True, **kwargs)
+
+        # check if error was given, else turn off debias
+        err = True
+        if data['tIerr'] is None:
+            debias = False
+            err = False
+            log("No off-pulse crop given to calculate dibased L and/or P, specify [terr_crop]...", stype = "warn")
+            
+
+        # if Q and U are loaded, also get stokes L
+        if ("Q" in loaded_stk) and ("U" in loaded_stk):
+            loaded_stk += "L"
+            if debias:
+                data['tL'], data['tLerr'] = calc_Ldebiased(data['tQ'], data['tU'], data['tIerr'], data['tQerr'], data['tUerr'])
+            else:
+                data['tL'], data['tLerr'] = calc_L(data['tQ'], data['tU'], data['tQerr'], data['tUerr'])
+
+            data['tLerr'] = np.mean(data['tLerr'])
+        
+
+        # if if Q, U and V are loaded, also get stokes P
+        if ("Q" in loaded_stk) and ("U" in loaded_stk) and ("V" in loaded_stk):
+            loaded_stk += "P"
+            if debias:
+                data['tP'], data['tPerr'] = calc_Pdebiased(data['tQ'], data['tU'], data['tV'], data['tIerr'], 
+                                                            data['tQerr'], data['tUerr'], data['tVerr'])
+
+            else:
+                data['tP'], data['tPerr'] = calc_P(data['tQ'], data['tU'], data['tV'], data['tQerr'], data['tUerr'],
+                                                    data['tVerr'])
+            data['tPerr'] = np.mean(data['tPerr'])
+            
+        
+        # now calculate fractions
+        polfracs = {}
+        fluence = {}
+        fluence['I'] = np.sum(data['tI'])
+        noise_scalar = float(data['tI'].size)**0.5
+
+        if err:
+            fluence['Ierr'] = np.abs(noise_scalar * data['tIerr'])
+
+        for S in loaded_stk:
+
+            # calculate Stokes fluence
+            fluence[S] = np.sum(data[f"t{S}"])
+
+            if err:
+                fluence[f"{S}err"] = np.abs(noise_scalar * data[f"t{S}err"])
+
+            # calculate stokes frac errors
+            polfracs[S] = fluence[S]/fluence['I']
+
+            if err:
+                polfracs[f"{S}err"] = np.abs(polfracs[S] * ((fluence[f"{S}err"]/fluence[S])**2 + (fluence["Ierr"]/fluence["I"])**2)**0.5)
+            
+        # print stuff:
+        print(f"\nPOLARISATION FRACTIONS FOR [{self.this_par.name}]:")
+        print("="*50)
+        for S in loaded_stk:
+            if err:
+                print(f"{S}/I:".ljust(10) + f"{polfracs[S]:.3f}".ljust(8) + f"+/-  {polfracs[f'{S}err']:.3f}")
+            else:
+                print(f"{S}/I:".ljust(10) + f"{polfracs[S]:.3f}")
+
+        return polfracs, fluence
+
+
+
+        
+
+

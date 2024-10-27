@@ -285,9 +285,9 @@
 
 
         <span class="k">if</span> <span class="n">t_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>    <span class="c1"># crop of time axis</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span>    <span class="c1"># crop of time axis</span>
         <span class="k">if</span> <span class="n">f_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>    <span class="c1"># crop of frequency axis</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]</span>    <span class="c1"># crop of frequency axis</span>
             
         <span class="bp">self</span><span class="o">.</span><span class="n">this_metapar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prev_metapar</span> <span class="o">=</span> <span class="n">FRB_metaparams</span><span class="p">(</span><span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
@@ -419,29 +419,44 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>       
             <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">t_lim_base</span>  <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">nsamp</span><span class="p">]</span>
 
-            <span class="c1"># check if any channels are nan&#39;s i.e. flagged</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">zap</span> <span class="o">=</span> <span class="kc">True</span>
 
 
         <span class="c1">## dict. of files that will be loaded in</span>
         <span class="n">data_files</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dsI&quot;</span><span class="p">:</span> <span class="n">dsI</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">:</span> <span class="n">dsQ</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">:</span> <span class="n">dsU</span><span class="p">,</span> <span class="s2">&quot;dsV&quot;</span><span class="p">:</span> <span class="n">dsV</span><span class="p">}</span>
+        <span class="n">old_chans</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># loop through files</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data_files</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
 
             <span class="n">file</span> <span class="o">=</span> <span class="n">data_files</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">init_key</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-
-                <span class="n">init_key</span> <span class="o">=</span> <span class="n">key</span>
 
                 <span class="c1"># load all dynamic spectra</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">mmap</span><span class="p">)</span>
                 <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading stokes </span><span class="si">{</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> Dynspec from: </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2"> with shape </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                         <span class="n">lpf_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pcol</span><span class="p">)</span>
 
-        <span class="n">init_par_from_load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">init_key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span></div>
+                <span class="k">if</span> <span class="n">init_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">init_par_from_load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+                    <span class="n">init_key</span> <span class="o">=</span> <span class="n">key</span>
+            
+                <span class="c1"># check if any channels are nan&#39;s i.e. flagged</span>
+                <span class="n">chans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]][:,</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">chans</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">zap</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Finding zapped channels...&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">chans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">old_chans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">old_chans</span> <span class="o">==</span> <span class="n">chans</span><span class="p">):</span>
+                            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Channels being zapped are different for each Stokes Dynamic spectra!!&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                    <span class="n">old_chans</span> <span class="o">=</span> <span class="n">chans</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
+
+
+
+
+        <span class="c1"># init_par_from_load(self.ds[init_key[-1]])</span>
 
 
 
@@ -1153,19 +1168,21 @@
         <span class="n">kw</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">metapar</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kw</span><span class="p">:</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">metapar</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">metapar</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>       
+                
         <span class="c1"># make sure metaparameters are updated first  </span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_proc_kwargs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proc_kwargs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+
+        <span class="c1"># update hyper parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_hyperpar</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
         <span class="c1"># update self.this_metapar</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_metapar</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># update self.this_par</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_par</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="c1"># update hyper parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_update_hyperpar</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
 
 
 
@@ -1257,6 +1274,8 @@
                 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Something went wrong converting crops, no domain chosen.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
 
             <span class="n">phase_vars</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_units</span> <span class="o">==</span> <span class="s2">&quot;physical&quot;</span><span class="p">:</span>
+                <span class="n">phase_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
 
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">spe</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">]):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">crop</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
@@ -1701,6 +1720,11 @@
         <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">width</span>
         <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">width</span>
 
+        <span class="c1"># if units are physical </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_units</span> <span class="o">==</span> <span class="s2">&quot;physical&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">t_ref</span> <span class="o">=</span> <span class="n">t_ref</span><span class="p">)</span>
+            <span class="n">t_crop</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">phase2lim</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">set_metapar</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">set_par</span><span class="p">(</span><span class="n">t_ref</span> <span class="o">=</span> <span class="n">t_ref</span><span class="p">)</span>
 
@@ -2066,14 +2090,17 @@
         <span class="c1"># in the case channel zapping has been performed, first calc residuals of non.nan values</span>
         <span class="c1"># then convert nans to zeros for acf.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zap</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SCintillation fitting with zapped channels not supported yet... I am looking into this with astropy convolution algorithms that properly treat nan values. &quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">sumfunc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># caculate acf of residuals</span>
-            <span class="n">y</span><span class="p">,</span> <span class="n">yfit</span> <span class="o">=</span> <span class="n">residuals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">)</span>
-            <span class="n">yrms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">y</span> <span class="o">=</span> <span class="n">acf</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">sumfunc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
+        
+        <span class="c1"># caculate acf of residuals</span>
+        <span class="n">y</span><span class="p">,</span> <span class="n">yfit</span> <span class="o">=</span> <span class="n">residuals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">],</span> <span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">yrms</span> <span class="o">=</span> <span class="n">sumfunc</span><span class="p">(</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">acf</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
+        <span class="c1"># in case zapping is involved</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
         <span class="c1"># lags</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">bw</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">,</span>
@@ -2082,7 +2109,7 @@
 
         <span class="c1"># create instance of fitting</span>
         <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">lorentz</span><span class="p">,</span> <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">lorentz</span><span class="p">,</span> <span class="n">prior</span> <span class="o">=</span> <span class="n">priors</span><span class="p">,</span>
                 <span class="n">static</span> <span class="o">=</span> <span class="n">statics</span><span class="p">,</span> <span class="n">fit_keywords</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span>
                 <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">,</span> <span class="n">plotPosterior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span><span class="p">)</span>
 
@@ -2104,10 +2131,11 @@
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        
 
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS in poly-n = </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> fitting (sum in square of residuals):&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">yrms</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
 
 
@@ -2240,7 +2268,7 @@
         <span class="c1"># print best fit parameters</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">stats</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
         <span class="c1"># plot</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_plots</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_plots</span><span class="p">:</span>
@@ -2402,7 +2430,7 @@
 
 <div class="viewcode-block" id="FRB.fit_RM">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_RM">[docs]</a>
-    <span class="k">def</span> <span class="nf">fit_RM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="k">def</span> <span class="nf">fit_RM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
                <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit Spectra for Rotation Measure</span>
@@ -2413,8 +2441,6 @@
 <span class="sd">            Method to perform Rotation Measure fitting, by default &quot;RMquad&quot; \n</span>
 <span class="sd">            [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n</span>
 <span class="sd">            [RMsynth] - Use the RM-tools RM-Synthesis method</span>
-<span class="sd">        plot : bool, optional</span>
-<span class="sd">            plot data after fitting if true, by default True</span>
 <span class="sd">        fit_params : dict, optional</span>
 <span class="sd">            keyword parameters for fitting method, by default None \n</span>
 <span class="sd">            [RMquad] - Scipy.optimise.curve_fit keyword params \n</span>
@@ -2492,7 +2518,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fitted_params</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_posteriors</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fitted_params</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">][</span><span class="s1">&#39;f0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="n">f0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">p</span><span class="o">.</span><span class="n">_is_fit</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">_is_stats</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">p</span><span class="o">.</span><span class="n">_get_stats</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
         <span class="c1"># plot</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_plots</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_plots</span><span class="p">:</span>
@@ -2644,9 +2672,121 @@
 
 
         <span class="k">return</span> <span class="n">fig</span></div>
-</div>
 
                                                 
+
+
+
+<div class="viewcode-block" id="FRB.get_polfrac">
+<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.get_polfrac">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_polfrac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the polarisation fractions of the Stokes data, if I, Q, U and V are loaded in,</span>
+<span class="sd">        will get their fractions. If Q and U are loaded in, will get L frac, if Q, U and V</span>
+<span class="sd">        are loaded in, will get P frac.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        debais : bool, optional</span>
+<span class="sd">            calculate debiased L and P fractions, by default false</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log_title</span><span class="p">(</span><span class="s2">&quot;Calculating Polarisation fractions [fluence</span><span class="si">{S}</span><span class="s2">/fluence</span><span class="si">{I}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s2">&quot;lblue&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check if I data loaded in</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must have at least Stokes I dynamic spectra loaded in to calculate pol fractions...&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># check what data is avaliable </span>
+        <span class="n">loaded_stk</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QUV&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ds</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">loaded_stk</span> <span class="o">+=</span> <span class="n">S</span>
+            
+        <span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">]</span>
+        <span class="n">data_list</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;tI&quot;</span><span class="p">]</span>
+
+        <span class="c1"># proc KWARGS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> 
+
+        <span class="c1"># get data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># check if error was given, else turn off debias</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">debias</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No off-pulse crop given to calculate dibased L and/or P, specify [terr_crop]...&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            
+
+        <span class="c1"># if Q and U are loaded, also get stokes L</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;Q&quot;</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;U&quot;</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">):</span>
+            <span class="n">loaded_stk</span> <span class="o">+=</span> <span class="s2">&quot;L&quot;</span>
+            <span class="k">if</span> <span class="n">debias</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tL&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tLerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tL&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tLerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_L</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">])</span>
+
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tLerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tLerr&#39;</span><span class="p">])</span>
+        
+
+        <span class="c1"># if if Q, U and V are loaded, also get stokes P</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;Q&quot;</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;U&quot;</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;V&quot;</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">):</span>
+            <span class="n">loaded_stk</span> <span class="o">+=</span> <span class="s2">&quot;P&quot;</span>
+            <span class="k">if</span> <span class="n">debias</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tP&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tPerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_Pdebiased</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tV&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">],</span> 
+                                                            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tVerr&#39;</span><span class="p">])</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tP&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tPerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_P</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tU&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tV&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tQerr&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tUerr&#39;</span><span class="p">],</span>
+                                                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tVerr&#39;</span><span class="p">])</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tPerr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tPerr&#39;</span><span class="p">])</span>
+            
+        
+        <span class="c1"># now calculate fractions</span>
+        <span class="n">polfracs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fluence</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">fluence</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tI&#39;</span><span class="p">])</span>
+        <span class="n">noise_scalar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;tI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">fluence</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">noise_scalar</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">:</span>
+
+            <span class="c1"># calculate Stokes fluence</span>
+            <span class="n">fluence</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">fluence</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">noise_scalar</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">])</span>
+
+            <span class="c1"># calculate stokes frac errors</span>
+            <span class="n">polfracs</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">fluence</span><span class="p">[</span><span class="n">S</span><span class="p">]</span><span class="o">/</span><span class="n">fluence</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">polfracs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">polfracs</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">*</span> <span class="p">((</span><span class="n">fluence</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">fluence</span><span class="p">[</span><span class="n">S</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">fluence</span><span class="p">[</span><span class="s2">&quot;Ierr&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">fluence</span><span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span>
+            
+        <span class="c1"># print stuff:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">POLARISATION FRACTIONS FOR [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">50</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">loaded_stk</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">/I:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">polfracs</span><span class="p">[</span><span class="n">S</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/-  </span><span class="si">{</span><span class="n">polfracs</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s1">err&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">/I:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">polfracs</span><span class="p">[</span><span class="n">S</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">polfracs</span><span class="p">,</span> <span class="n">fluence</span></div>
+</div>
+
+
+
+
+        
+
+
 </pre></div>
 
            </div>

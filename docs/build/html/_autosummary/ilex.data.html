@@ -62,6 +62,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.ccf"><code class="docutils literal notranslate"><span class="pre">ccf()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.f_weight"><code class="docutils literal notranslate"><span class="pre">f_weight()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.fday_rot"><code class="docutils literal notranslate"><span class="pre">fday_rot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.get_zapstr"><code class="docutils literal notranslate"><span class="pre">get_zapstr()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.norm"><code class="docutils literal notranslate"><span class="pre">norm()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.pslice"><code class="docutils literal notranslate"><span class="pre">pslice()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.residuals"><code class="docutils literal notranslate"><span class="pre">residuals()</span></code></a></li>
@@ -117,11 +118,12 @@
 <dt class="sig sig-object py" id="ilex.data.acf">
 <span class="sig-name descname"><span class="pre">acf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unique'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#acf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.acf" title="Link to this definition"></a></dt>
 <dd><p>Calculate normalised Auto-Correlation function using ‘fft’ method of
-real-valued data</p>
+real-valued data. If NaN values are present, the acf function will use a direct
+summation approach that ignores any NaN values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>np.ndarray</em>) – data array</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – data array, 1D vector</p></li>
 <li><p><strong>outs</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>describes output of acf function, by default “unique”</p>
 <p>[unique] - Take positive acf lags, exclude zero-lag peak
 [all] - Take full acf, including positive, negative and zero lags</p>
@@ -363,11 +365,12 @@ total polarisation (see Everett &amp; Weisberg+2001)</p>
 <dt class="sig sig-object py" id="ilex.data.ccf">
 <span class="sig-name descname"><span class="pre">ccf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unique'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#ccf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.ccf" title="Link to this definition"></a></dt>
 <dd><p>Calculate normalised Cross-Correlation function using ‘fft’ method of
-real-valued data</p>
+real-valued data. Does NOT support NaN values</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>np.ndarray</em>) – data array</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – data array, 1D</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – data array, 1D</p></li>
 <li><p><strong>outs</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>describes output of ccf function, by default “unique”</p>
 <p>[unique] - Take positive acf lags, including zero-lag peak
 [all] - Take full acf, including positive, negative and zero lags</p>
@@ -430,6 +433,27 @@ the freq axis is axis = 0</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.get_zapstr">
+<span class="sig-name descname"><span class="pre">get_zapstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#get_zapstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.get_zapstr" title="Link to this definition"></a></dt>
+<dd><p>Create string of channels to zap based on given nan frequencies in
+stokes I dynamic spectrum</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chan</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Stokes I freq array</p></li>
+<li><p><strong>freq</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Array of frequency values in [MHz]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zap_str</strong> – string of frequencies to zap using zap_chan function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.norm">
 <span class="sig-name descname"><span class="pre">norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'abs_max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.norm" title="Link to this definition"></a></dt>
 <dd><p>Normalise data</p>
@@ -482,7 +506,7 @@ is set to 0.</p>
 <dt class="sig sig-object py" id="ilex.data.residuals">
 <span class="sig-name descname"><span class="pre">residuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#residuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.residuals" title="Link to this definition"></a></dt>
 <dd><p>Calculate residuals of a data array by subtracting the mean
-model</p>
+model. This function can handle NaN values</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

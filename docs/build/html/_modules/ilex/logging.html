@@ -285,7 +285,8 @@
 <span class="sd">        Color to label parent function, by default &#39;None&#39;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_verbose</span><span class="p">():</span>
+    <span class="c1"># check verbose</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">get_verbose</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stype</span> <span class="o">!=</span> <span class="s2">&quot;err&quot;</span><span class="p">):</span>
         <span class="k">return</span>
 
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>

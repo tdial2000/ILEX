@@ -53,12 +53,8 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.htr</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.htr.baseline_correction"><code class="docutils literal notranslate"><span class="pre">baseline_correction()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.htr.coherent_desperse"><code class="docutils literal notranslate"><span class="pre">coherent_desperse()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.htr.make_ds"><code class="docutils literal notranslate"><span class="pre">make_ds()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.htr.phasor_"><code class="docutils literal notranslate"><span class="pre">phasor_()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.htr.phasor_DM"><code class="docutils literal notranslate"><span class="pre">phasor_DM()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ilex.htr.pulse_fold"><code class="docutils literal notranslate"><span class="pre">pulse_fold()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.htr.stk_I"><code class="docutils literal notranslate"><span class="pre">stk_I()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.htr.stk_Q"><code class="docutils literal notranslate"><span class="pre">stk_Q()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.htr.stk_U"><code class="docutils literal notranslate"><span class="pre">stk_U()</span></code></a></li>
@@ -104,84 +100,6 @@
   <section id="module-ilex.htr">
 <span id="ilex-htr"></span><h1>ilex.htr<a class="headerlink" href="#module-ilex.htr" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="ilex.htr.baseline_correction">
-<span class="sig-name descname"><span class="pre">baseline_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rough_bline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#baseline_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.baseline_correction" title="Link to this definition"></a></dt>
-<dd><p>Get baseline corrections to the Dynamic spectra data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Dynamic spectra</p></li>
-<li><p><strong>sigma</strong> (<em>float</em>) – S/N threshold for bounds</p></li>
-<li><p><strong>guard</strong> (<em>float</em>) – Time in [ms] between rough bounds and rms crop region</p></li>
-<li><p><strong>baseline</strong> (<em>float</em>) – Width of buffer in [ms] to estimate baseline correction</p></li>
-<li><p><strong>tN</strong> (<em>int</em>) – Time Averaging factor for Dynamic spectrum, helps with S/N calculation.</p></li>
-<li><p><strong>rough_bline</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, will estimate baseline by averaging over entire buffer, not ideal in many cases</p></li>
-<li><p><strong>rbounds</strong> (<em>list</em>) – Bounds of FRB burst, if Unspecified, the code will do a rough S/N calculation
-to determine a bursts bounds</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>bs_mean</strong> (<em>np.ndarray or array-like</em>) – Baseline mean</p></li>
-<li><p><strong>bs_std</strong> (<em>np.ndarray or array-like</em>) – Baseline std</p></li>
-<li><p><strong>rbounds</strong> (<em>np.ndarray or array-like</em>) – Bounds of FRB burst in Phase units</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.htr.coherent_desperse">
-<span class="sig-name descname"><span class="pre">coherent_desperse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#coherent_desperse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.coherent_desperse" title="Link to this definition"></a></dt>
-<dd><p>Apply Coherent dedespersion on Complex Polarisation time series data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>np.mmap</em><em> or </em><em>np.ndarray</em>) – Complex Polarisation time series data</p></li>
-<li><p><strong>cfreq</strong> (<em>float</em>) – Central Frequency of observing band [MHz]</p></li>
-<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth of observation [MHz]</p></li>
-<li><p><strong>f0</strong> (<em>float</em>) – Reference Frequency</p></li>
-<li><p><strong>DM</strong> (<em>float</em>) – Dispersion Measure [pc/cm^3]</p></li>
-<li><p><strong>fast</strong> (<em>bool</em><em>, </em><em>optional</em>) – <p>Apply FFT and IFFT quickly by zero-padding data to optimal length. , by default False</p>
-<p>Note: This shouldn’t affect results too much assuming full CELEBI HTR data, however, the longer
-the padding relative to the original size of dataset, the worse the data, so use wisely.</p>
-</p></li>
-<li><p><strong>DM_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of iterations to split Dispersion into, by default 50</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>t_d</strong> – De-dispersed Complex Polarisation times series data</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.htr.make_ds">
-<span class="sig-name descname"><span class="pre">make_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xpol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ypol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'I'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nFFT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">336</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#make_ds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.make_ds" title="Link to this definition"></a></dt>
-<dd><p>Make dynamic spectra from complex X, Y polarisation time series arrays</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>xpol</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – X time series polarisation data</p></li>
-<li><p><strong>ypol</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Y time series polarisation data</p></li>
-<li><p><strong>S</strong> (<em>str</em><em>, </em><em>optional</em>) – type of Stokes dynamic spectra to make, options are [‘I’, ‘Q’, ‘U’, ‘V’], by default “I”</p></li>
-<li><p><strong>nFFT</strong> (<em>int</em><em>, </em><em>optional</em>) – number of frequency channels in final dynamic spectrum, by default 336</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ds</strong> – dynamic spectrum</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="ilex.htr.phasor_">
 <span class="sig-name descname"><span class="pre">phasor_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#phasor_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.phasor_" title="Link to this definition"></a></dt>
 <dd><p>Calculate General Phasor Rotator</p>
@@ -219,35 +137,6 @@ the padding relative to the original size of dataset, the worse the data, so use
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ilex.htr.pulse_fold">
-<span class="sig-name descname"><span class="pre">pulse_fold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MJD0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MJD1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">F1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/htr.html#pulse_fold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.htr.pulse_fold" title="Link to this definition"></a></dt>
-<dd><p>Takes Pulsar dynamic spectrum and folds it, removes periods
-at far left and right sides to avoid band artifacts produced during
-de-dispersion.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ds</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – dynamic spectrum</p></li>
-<li><p><strong>MJD0</strong> (<em>float</em>) – Initial Epoch MJD</p></li>
-<li><p><strong>MJD1</strong> (<em>float</em>) – Observation MJD</p></li>
-<li><p><strong>F0</strong> (<em>float</em>) – initial Epoch Frequency period</p></li>
-<li><p><strong>F1</strong> (<em>float</em>) – Spin-down rate</p></li>
-<li><p><strong>sphase</strong> (<em>float</em>) – Starting phase of folding, if not given will be estimated (best done using “I” ds)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>ds_f</strong> (<em>np.ndarray</em>)</p></li>
-<li><p><em>Raw folded Dynamic spectra</em></p></li>
-<li><p><strong>sphase</strong> (<em>float</em>)</p></li>
-<li><p><em>Starting phase of folding from original dynspec</em></p></li>
-</ul>
-</p>
 </dd>
 </dl>
 </dd></dl>

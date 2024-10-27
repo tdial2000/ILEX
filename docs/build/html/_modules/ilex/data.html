@@ -610,6 +610,59 @@
 
 
 
+<div class="viewcode-block" id="get_zapstr">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.get_zapstr">[docs]</a>
+<span class="k">def</span> <span class="nf">get_zapstr</span><span class="p">(</span><span class="n">chan</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create string of channels to zap based on given nan frequencies in </span>
+<span class="sd">    stokes I dynamic spectrum</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    chan : np.ndarray or array-like</span>
+<span class="sd">        Stokes I freq array</span>
+<span class="sd">    freq : np.ndarray or array-like</span>
+<span class="sd">        Array of frequency values in [MHz]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zap_str: str</span>
+<span class="sd">        string of frequencies to zap using zap_chan function</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># could be improved later with a smarter algorithm, but not nessesary for ilex.</span>
+
+    <span class="n">zap_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">chan2zap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">chan</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">chan2zap</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">chan2zap</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">chan2zap</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">chan2zap</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">zap_str</span> <span class="o">+=</span> <span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">freq</span><span class="p">[</span><span class="n">chan2zap</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">freq</span><span class="p">[</span><span class="n">chan2zap</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">zap_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">freq</span><span class="p">[</span><span class="n">chan2zap</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">k</span><span class="p">]]</span><span class="si">}</span><span class="s2">&quot;</span>
+        
+        <span class="n">i</span> <span class="o">+=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+
+        
+    <span class="k">if</span> <span class="n">zap_str</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">zap_str</span> <span class="o">=</span> <span class="n">zap_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>   <span class="c1"># remove &#39;,&#39;</span>
+    
+    <span class="k">return</span> <span class="n">zap_str</span></div>
+
+
+
+
 
 
 <span class="c1">##===============================================##</span>
@@ -1027,7 +1080,7 @@
 <span class="k">def</span> <span class="nf">residuals</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate residuals of a data array by subtracting the mean</span>
-<span class="sd">    model</span>
+<span class="sd">    model. This function can handle NaN values</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1046,11 +1099,50 @@
 
     <span class="c1"># set x vals to nans for corrosponding y values</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-    <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span><span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">y_out</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">y_out</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">-=</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">])</span>
     
-    <span class="k">return</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">y_fit</span></div>
+    <span class="k">return</span> <span class="n">y_out</span><span class="p">,</span> <span class="n">y_fit</span></div>
+
+
+
+
+
+<span class="k">def</span> <span class="nf">_nanacf</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    autocorrelate with NaN values</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray (1D) </span>
+<span class="sd">        1D vector to correlate</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kmax</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># output vector of 1D correlation</span>
+    <span class="n">corrout</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">kmax</span><span class="p">)</span>
+
+    <span class="c1"># set up arrays</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># First half</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kmax</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+
+        <span class="c1"># calculate acf, need to normalise in case NaNs are present</span>
+        <span class="n">corrout</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">k</span><span class="p">:])</span> <span class="o">*</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># if there is a mid point</span>
+    <span class="n">corrout</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="c1"># second half</span>
+    <span class="n">corrout</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">corrout</span><span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="o">-</span> <span class="mi">3</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">corrout</span>
+
 
 
 
@@ -1060,12 +1152,13 @@
 <span class="k">def</span> <span class="nf">acf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">outs</span> <span class="o">=</span> <span class="s2">&quot;unique&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate normalised Auto-Correlation function using &#39;fft&#39; method of </span>
-<span class="sd">    real-valued data</span>
+<span class="sd">    real-valued data. If NaN values are present, the acf function will use a direct</span>
+<span class="sd">    summation approach that ignores any NaN values.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : np.ndarray</span>
-<span class="sd">        data array</span>
+<span class="sd">        data array, 1D vector</span>
 <span class="sd">    outs : str, optional</span>
 <span class="sd">        describes output of acf function, by default &quot;unique&quot; \n</span>
 <span class="sd">        [unique] - Take positive acf lags, exclude zero-lag peak</span>
@@ -1077,9 +1170,14 @@
 <span class="sd">        Auto-Correlation of x data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1">#correlate</span>
-    <span class="n">acorr</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">)</span>
-    <span class="n">acorr</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># if nan values exist, use &quot;direct&quot; method, will use sum method instead</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+        <span class="n">acorr</span> <span class="o">=</span> <span class="n">_nanacf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#correlate using FFT approach</span>
+        <span class="n">acorr</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;fft&quot;</span><span class="p">)</span>
+    
+    <span class="n">acorr</span> <span class="o">/=</span> <span class="n">acorr</span><span class="p">[</span><span class="n">acorr</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
     
     <span class="k">if</span> <span class="n">outs</span> <span class="o">==</span> <span class="s2">&quot;unique&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">acorr</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:]</span>
@@ -1098,12 +1196,14 @@
 <span class="k">def</span> <span class="nf">ccf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">outs</span> <span class="o">=</span> <span class="s2">&quot;unique&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate normalised Cross-Correlation function using &#39;fft&#39; method of </span>
-<span class="sd">    real-valued data</span>
+<span class="sd">    real-valued data. Does NOT support NaN values</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : np.ndarray</span>
-<span class="sd">        data array</span>
+<span class="sd">        data array, 1D</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        data array, 1D</span>
 <span class="sd">    outs : str, optional</span>
 <span class="sd">        describes output of ccf function, by default &quot;unique&quot; \n</span>
 <span class="sd">        [unique] - Take positive acf lags, including zero-lag peak</span>

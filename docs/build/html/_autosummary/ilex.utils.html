@@ -50,6 +50,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
@@ -60,6 +61,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.check_ruamel_input"><code class="docutils literal notranslate"><span class="pre">check_ruamel_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.check_ruamel_output"><code class="docutils literal notranslate"><span class="pre">check_ruamel_output()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_checktype"><code class="docutils literal notranslate"><span class="pre">dict_checktype()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_get"><code class="docutils literal notranslate"><span class="pre">dict_get()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_init"><code class="docutils literal notranslate"><span class="pre">dict_init()</span></code></a></li>
@@ -118,6 +120,12 @@
 <dd class="field-odd"><p><strong>inp</strong> (<em>_class_</em>) – Change ruamel class to python class</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.check_ruamel_output">
+<span class="sig-name descname"><span class="pre">check_ruamel_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#check_ruamel_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.check_ruamel_output" title="Link to this definition"></a></dt>
+<dd><p>Check if outputs are in right types</p>
 </dd></dl>
 
 <dl class="py function">
@@ -267,7 +275,7 @@ products to make, i.e. “dsI”, “fQ” etc.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.utils.load_param_file">
-<span class="sig-name descname"><span class="pre">load_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_param_file" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ruamel2py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_param_file" title="Link to this definition"></a></dt>
 <dd><p>Load in param file and compare with default params file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

@@ -633,6 +633,10 @@
 
     <span class="c1"># could be improved later with a smarter algorithm, but not nessesary for ilex.</span>
 
+    <span class="k">if</span> <span class="n">freq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">freq</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">chan</span> <span class="o">=</span> <span class="n">chan</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
     <span class="n">zap_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
     <span class="n">chan2zap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">chan</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
@@ -657,6 +661,10 @@
         
     <span class="k">if</span> <span class="n">zap_str</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="n">zap_str</span> <span class="o">=</span> <span class="n">zap_str</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>   <span class="c1"># remove &#39;,&#39;</span>
+
+    <span class="k">if</span> <span class="n">freq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">freq</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">chan</span> <span class="o">=</span> <span class="n">chan</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     
     <span class="k">return</span> <span class="n">zap_str</span></div>
 
@@ -778,13 +786,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Q : np.ndarray</span>
+<span class="sd">    Q : np.ndarray or float</span>
 <span class="sd">        Stokes Q data</span>
-<span class="sd">    U : np.ndarray</span>
+<span class="sd">    U : np.ndarray or float</span>
 <span class="sd">        Stokes U data</span>
-<span class="sd">    Qerr : np.ndarray</span>
+<span class="sd">    Qerr : np.ndarray or float</span>
 <span class="sd">        Stokes Q error</span>
-<span class="sd">    Uerr : np.ndarray</span>
+<span class="sd">    Uerr : np.ndarray or float</span>
 <span class="sd">        Stokes U error</span>
 
 <span class="sd">    Returns</span>
@@ -801,11 +809,11 @@
     <span class="c1"># calc Error in L</span>
     <span class="n">Lerr</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span><span class="o">/</span><span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span>
-        <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">L</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">L</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+            <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">!=</span> <span class="mf">0.0</span>
+            <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">L</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lerr</span></div>
 
@@ -854,9 +862,8 @@
 
     <span class="n">Lerr</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">L_debias</span>
         <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Lerr</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span><span class="o">/</span><span class="n">L_debias</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]</span>
         <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">L_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
@@ -878,17 +885,17 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Q : np.ndarray</span>
+<span class="sd">    Q : np.ndarray or float</span>
 <span class="sd">        Stokes Q data</span>
-<span class="sd">    U : np.ndarray</span>
-<span class="sd">        Stokes U data</span>
-<span class="sd">    V : np.ndarray</span>
+<span class="sd">    U : np.ndarray or float</span>
+<span class="sd">        Stokes U data </span>
+<span class="sd">    V : np.ndarray or float</span>
 <span class="sd">        Stokes V data</span>
-<span class="sd">    Qerr : np.ndarray</span>
-<span class="sd">        Stokes Q error</span>
-<span class="sd">    Uerr : np.ndarray</span>
+<span class="sd">    Qerr : np.ndarray or float</span>
+<span class="sd">        Stokes Q error </span>
+<span class="sd">    Uerr : np.ndarray or float </span>
 <span class="sd">        Stokes U error</span>
-<span class="sd">    Verr : np.ndarray</span>
+<span class="sd">    Verr : np.ndarray or float</span>
 <span class="sd">        Stokes V error</span>
 
 <span class="sd">    Returns</span>
@@ -907,11 +914,11 @@
     <span class="c1"># calculate Perr</span>
     <span class="n">Perr</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Lerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Verr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span><span class="o">/</span><span class="n">P</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span>
-        <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">P</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">P</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+            <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P</span> <span class="o">!=</span> <span class="mf">0.0</span>
+            <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">P</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">return</span> <span class="n">P</span><span class="p">,</span> <span class="n">Perr</span></div>
 
@@ -963,9 +970,8 @@
     <span class="c1"># calc P err</span>
     <span class="n">Perr</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Lerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Verr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L_debias</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L_debias</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">P_debias</span>
         <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">Perr</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span><span class="o">/</span><span class="n">P_debias</span><span class="p">[</span><span class="n">Pmask</span><span class="p">]</span>
         <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="n">P_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
@@ -1019,6 +1025,34 @@
         <span class="c1">#         XIerr = np.nanmean(XIerr)</span>
 
     <span class="k">return</span> <span class="n">XI</span><span class="p">,</span> <span class="n">XIerr</span></div>
+
+
+
+<div class="viewcode-block" id="calc_stokes_abs_debias">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_stokes_abs_debias">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_stokes_abs_debias</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the absolute Stokes profile, debiased as outlined in Karastergiou et al. 2003 and </span>
+<span class="sd">    Posselt et al. 2022.</span>
+
+<span class="sd">    Works best if the Stokes profile is zero-mean, i.e. baseline subtracted.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : np.array or array-like</span>
+<span class="sd">        Stokes profile</span>
+<span class="sd">    Ierr : Uncertainties in Stokes I profile</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="n">absX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> 
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">absX</span> <span class="o">&gt;</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">absX</span> <span class="o">-=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">absX</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">absX</span></div>
+
+
 
 
 

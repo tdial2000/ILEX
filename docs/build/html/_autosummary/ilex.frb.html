@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ilex.globals" href="ilex.globals.html" />
+    <link rel="next" title="ilex.frbutils" href="ilex.frbutils.html" />
     <link rel="prev" title="ilex.fitting" href="ilex.fitting.html" /> 
 </head>
 
@@ -77,13 +77,13 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.apply_tw"><code class="docutils literal notranslate"><span class="pre">FRB.apply_tw</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.apply_fw"><code class="docutils literal notranslate"><span class="pre">FRB.apply_fw</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.fitted_params"><code class="docutils literal notranslate"><span class="pre">FRB.fitted_params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.calc_polfracs"><code class="docutils literal notranslate"><span class="pre">FRB.calc_polfracs()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.find_frb"><code class="docutils literal notranslate"><span class="pre">FRB.find_frb()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.fit_RM"><code class="docutils literal notranslate"><span class="pre">FRB.fit_RM()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.fit_scintband"><code class="docutils literal notranslate"><span class="pre">FRB.fit_scintband()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.fit_tscatt"><code class="docutils literal notranslate"><span class="pre">FRB.fit_tscatt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.get_data"><code class="docutils literal notranslate"><span class="pre">FRB.get_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.get_freqs"><code class="docutils literal notranslate"><span class="pre">FRB.get_freqs()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.get_polfrac"><code class="docutils literal notranslate"><span class="pre">FRB.get_polfrac()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.load_data"><code class="docutils literal notranslate"><span class="pre">FRB.load_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.plot_PA"><code class="docutils literal notranslate"><span class="pre">FRB.plot_PA()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.plot_crop"><code class="docutils literal notranslate"><span class="pre">FRB.plot_crop()</span></code></a></li>
@@ -96,6 +96,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
@@ -455,6 +456,17 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ilex.frb.FRB.calc_polfracs">
+<span class="sig-name descname"><span class="pre">calc_polfracs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.calc_polfracs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.calc_polfracs" title="Link to this definition"></a></dt>
+<dd><p>Calculate polarisation fractions using a number of different methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>debias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Debiases Stokes L, P and <a href="#id1"><span class="problematic" id="id2">|V|</span></a>, <a href="#id3"><span class="problematic" id="id4">|Q|</span></a> and <a href="#id5"><span class="problematic" id="id6">|U|</span></a>, by default False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.find_frb">
 <span class="sig-name descname"><span class="pre">find_frb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_guard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_roughrms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.find_frb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.find_frb" title="Link to this definition"></a></dt>
 <dd><p>This function searches the stokes I dynamic spectrum for the most likely
@@ -592,19 +604,6 @@ instances to class container attributes</p></li>
 <dt class="sig sig-object py" id="ilex.frb.FRB.get_freqs">
 <span class="sig-name descname"><span class="pre">get_freqs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.get_freqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.get_freqs" title="Link to this definition"></a></dt>
 <dd><p>Get Frequencies</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ilex.frb.FRB.get_polfrac">
-<span class="sig-name descname"><span class="pre">get_polfrac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.get_polfrac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.get_polfrac" title="Link to this definition"></a></dt>
-<dd><p>Get the polarisation fractions of the Stokes data, if I, Q, U and V are loaded in,
-will get their fractions. If Q and U are loaded in, will get L frac, if Q, U and V
-are loaded in, will get P frac.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>debais</strong> (<em>bool</em><em>, </em><em>optional</em>) – calculate debiased L and P fractions, by default false</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -754,7 +753,7 @@ else weird overflow behavior might be present when calculating stokes ratios, by
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.save_data">
-<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.save_data" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_yaml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.save_data" title="Link to this definition"></a></dt>
 <dd><p>Save current instance data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -782,7 +781,7 @@ FRB class will be used.</p></li>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="ilex.fitting.html" class="btn btn-neutral float-left" title="ilex.fitting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ilex.globals.html" class="btn btn-neutral float-right" title="ilex.globals" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ilex.frbutils.html" class="btn btn-neutral float-right" title="ilex.frbutils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

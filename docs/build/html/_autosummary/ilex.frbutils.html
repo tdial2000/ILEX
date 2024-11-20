@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ilex &mdash; ILEX 0.9.0 documentation</title>
+  <title>ilex.frbutils &mdash; ILEX 0.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ilex.data" href="ilex.data.html" />
-    <link rel="prev" title="ILEX scripts" href="../Tutorials/ilex_scripts.html" /> 
+    <link rel="next" title="ilex.globals" href="ilex.globals.html" />
+    <link rel="prev" title="ilex.frb" href="ilex.frb.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,11 +47,14 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ILEX Code</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.frbutils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.frbutils.save_params"><code class="docutils literal notranslate"><span class="pre">save_params()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
@@ -79,9 +82,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">ilex</li>
+          <li class="breadcrumb-item"><a href="ilex.html">ilex</a></li>
+      <li class="breadcrumb-item active">ilex.frbutils</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/_autosummary/ilex.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/_autosummary/ilex.frbutils.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -89,60 +93,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-ilex">
-<span id="ilex"></span><h1>ilex<a class="headerlink" href="#module-ilex" title="Link to this heading"></a></h1>
-<p class="rubric">Modules</p>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.data.html#module-ilex.data" title="ilex.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ilex.fitting.html#module-ilex.fitting" title="ilex.fitting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fitting</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.frb.html#module-ilex.frb" title="ilex.frb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frb</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ilex.frbutils.html#module-ilex.frbutils" title="ilex.frbutils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frbutils</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.globals.html#module-ilex.globals" title="ilex.globals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">globals</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ilex.htr.html#module-ilex.htr" title="ilex.htr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">htr</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.logging.html#module-ilex.logging" title="ilex.logging"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logging</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ilex.master_proc.html#module-ilex.master_proc" title="ilex.master_proc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">master_proc</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.par.html#module-ilex.par" title="ilex.par"><code class="xref py py-obj docutils literal notranslate"><span class="pre">par</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="ilex.plot.html#module-ilex.plot" title="ilex.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.pyfit.html#module-ilex.pyfit" title="ilex.pyfit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyfit</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../ilex.script_core.html#module-ilex.script_core" title="ilex.script_core"><code class="xref py py-obj docutils literal notranslate"><span class="pre">script_core</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="ilex.utils.html#module-ilex.utils" title="ilex.utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">utils</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
+  <section id="module-ilex.frbutils">
+<span id="ilex-frbutils"></span><h1>ilex.frbutils<a class="headerlink" href="#module-ilex.frbutils" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.frbutils.save_params">
+<span class="sig-name descname"><span class="pre">save_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frbutils.html#save_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frbutils.save_params" title="Link to this definition"></a></dt>
+<dd><p>Save frb class parameters to yaml file (don’t look at it, code sucks :( )</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>frb</strong> (<a class="reference internal" href="ilex.frb.html#ilex.frb.FRB" title="ilex.frb.FRB"><em>ilex.frb.FRB</em></a>) – frb class instance</p></li>
+<li><p><strong>file</strong> (<em>str</em>) – yaml file name</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../Tutorials/ilex_scripts.html" class="btn btn-neutral float-left" title="ILEX scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ilex.data.html" class="btn btn-neutral float-right" title="ilex.data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ilex.frb.html" class="btn btn-neutral float-left" title="ilex.frb" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.globals.html" class="btn btn-neutral float-right" title="ilex.globals" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

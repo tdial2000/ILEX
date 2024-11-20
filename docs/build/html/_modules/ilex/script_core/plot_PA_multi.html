@@ -197,14 +197,17 @@
         <span class="n">RMcomp_fits</span> <span class="o">+=</span> <span class="p">[</span><span class="n">p</span><span class="p">]</span>
 
         <span class="c1"># reset tcrops and fcrops</span>
-        <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">t_crop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">f_crop</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">phase2lim</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">t_crop</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">f_crop</span><span class="p">)</span>
+        <span class="c1"># fcrops[i] = frb.prev_metapar.f_crop.copy()</span>
 
-    <span class="n">t_crophase</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">lim2phase</span><span class="p">(</span><span class="n">t_lim</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">t_crop</span><span class="p">)</span>
+    <span class="c1"># t_crophase, _ = frb.par.lim2phase(t_lim = frb.metapar.t_crop)</span>
+
 
     <span class="c1"># get full tcrop bounds</span>
-    <span class="n">tcrop_full</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tcrops</span><span class="p">),</span> <span class="n">t_crophase</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tcrops</span><span class="p">),</span> <span class="n">t_crophase</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="n">tcrop_full</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tcrops</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)]</span>
     <span class="n">fcrop_full</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">fcrops</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">tcrop_full</span><span class="p">)</span>
 
 
     <span class="c1"># get full data to use for plotting</span>
@@ -223,70 +226,70 @@
     <span class="c1"># loop over tcrops again, getting de-rotated stokes data and to calculate</span>
     <span class="c1"># debiased PA</span>
     <span class="c1"># Get de-rotated stokes and plot</span>
-    <span class="n">comp_times</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tcrop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
-        <span class="c1"># get derotated data</span>
-        <span class="n">vals</span> <span class="o">=</span> <span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_post_val</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">data_i</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span> <span class="s2">&quot;tQ&quot;</span><span class="p">,</span> <span class="s2">&quot;tU&quot;</span><span class="p">],</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="n">tcrop</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                <span class="n">RM</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">],</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># comp_times = []</span>
+    <span class="c1"># for i, tcrop in enumerate(tcrops):</span>
+    <span class="c1">#     # get derotated data</span>
+    <span class="c1">#     vals = RMcomp_fits[i].get_post_val(func = False)</span>
+    <span class="c1">#     data_i = frb.get_data([&quot;tI&quot;, &quot;tQ&quot;, &quot;tU&quot;], t_crop = tcrop, f_crop = fcrops[i],</span>
+    <span class="c1">#             RM = vals[&#39;rm&#39;], f0 = vals[&#39;f0&#39;], get = True)</span>
 
-        <span class="n">comp_times</span> <span class="o">+=</span> <span class="p">[[</span><span class="o">*</span><span class="n">data_i</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]]]</span>
+    <span class="c1">#     comp_times += [[*data_i[&#39;time&#39;][[0, -1]]]]</span>
 
-        <span class="c1"># overlay de-rotated stokes data to full stokes spectra</span>
-        <span class="n">xs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">data_i</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
-        <span class="n">ns</span> <span class="o">=</span> <span class="n">data_i</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+    <span class="c1">#     # overlay de-rotated stokes data to full stokes spectra</span>
+    <span class="c1">#     xs = int(round((data_i[&#39;time&#39;][0] - data_full[&#39;time&#39;][0])/dt))</span>
+    <span class="c1">#     ns = data_i[&#39;time&#39;].size</span>
 
-        <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="s2">&quot;QU&quot;</span><span class="p">:</span>
-            <span class="n">data_full</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="n">xs</span><span class="p">:</span><span class="n">xs</span><span class="o">+</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_i</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;t</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="c1">#     for S in &quot;QU&quot;:</span>
+    <span class="c1">#         data_full[f&quot;t{S}&quot;][xs:xs+ns] = data_i[f&quot;t{S}&quot;]</span>
 
-        <span class="c1"># calculate debiased PA then overlap on full PA array</span>
-        <span class="n">PA_i</span><span class="p">,</span> <span class="n">PAerr_i</span> <span class="o">=</span> <span class="n">calc_PAdebiased</span><span class="p">(</span><span class="n">data_i</span><span class="p">,</span> <span class="n">Ldebias_threshold</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;Ldebias_threshold&#39;</span><span class="p">])</span>
-        <span class="n">PA</span><span class="p">[</span><span class="n">xs</span><span class="p">:</span><span class="n">xs</span> <span class="o">+</span> <span class="n">ns</span><span class="p">],</span> <span class="n">PAerr</span><span class="p">[</span><span class="n">xs</span><span class="p">:</span><span class="n">xs</span> <span class="o">+</span> <span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">PA_i</span><span class="p">,</span> <span class="n">PAerr_i</span>
+    <span class="c1">#     # calculate debiased PA then overlap on full PA array</span>
+    <span class="c1">#     PA_i, PAerr_i = calc_PAdebiased(data_i, Ldebias_threshold = pars[&#39;plots&#39;][&#39;Ldebias_threshold&#39;])</span>
+    <span class="c1">#     PA[xs:xs + ns], PAerr[xs:xs + ns] = PA_i, PAerr_i</span>
         
 
 
-    <span class="c1"># plot</span>
-    <span class="c1"># plot PA</span>
-    <span class="n">plot_PA</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PAerr</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">],</span> <span class="n">flipPA</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;flipPA&#39;</span><span class="p">],</span>
-        <span class="n">plot_type</span> <span class="o">=</span> <span class="s2">&quot;scatter&quot;</span><span class="p">)</span>
+    <span class="c1"># # plot</span>
+    <span class="c1"># # plot PA</span>
+    <span class="c1"># plot_PA(data_full[&#39;time&#39;], PA, PAerr, ax = AX_PA[&#39;P&#39;], flipPA = pars[&#39;plots&#39;][&#39;flipPA&#39;],</span>
+    <span class="c1">#     plot_type = &quot;scatter&quot;)</span>
 
 
 
-    <span class="c1"># plot stokes</span>
-    <span class="n">plot_stokes</span><span class="p">(</span><span class="n">data_full</span><span class="p">,</span> <span class="n">stk_type</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">],</span> <span class="n">Ldebias</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;Ldebias&#39;</span><span class="p">],</span>
-            <span class="n">sigma</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">PLOT_TYPE</span><span class="p">,</span> 
-            <span class="n">stk_ratio</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk_ratio&#39;</span><span class="p">],</span> <span class="n">stk2plot</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;stk2plot&#39;</span><span class="p">])</span>
+    <span class="c1"># # plot stokes</span>
+    <span class="c1"># plot_stokes(data_full, stk_type = &quot;t&quot;, ax = AX_PA[&#39;S&#39;], Ldebias = pars[&#39;plots&#39;][&#39;Ldebias&#39;],</span>
+    <span class="c1">#         sigma = pars[&#39;plots&#39;][&#39;sigma&#39;], plot_type = PLOT_TYPE, </span>
+    <span class="c1">#         stk_ratio = pars[&#39;plots&#39;][&#39;stk_ratio&#39;], stk2plot = pars[&#39;plots&#39;][&#39;stk2plot&#39;])</span>
 
-    <span class="c1"># plot bounds</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">showbounds</span><span class="p">:</span>
-        <span class="n">ylim</span> <span class="o">=</span> <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">crop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
-            <span class="n">crop</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">phase2lim</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">crop</span><span class="p">)</span>
-            <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">crop</span><span class="p">,</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">)</span>
-        <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
-
-
-
-    <span class="c1"># plot stokes Dynamic spectrum I</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">ds_freq_lims</span> <span class="o">=</span> <span class="n">fix_ds_freq_lims</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">])],</span> <span class="n">df</span><span class="p">)</span>
-    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][[</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> 
-            <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
-    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Time offset [ms]&quot;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">)</span>
+    <span class="c1"># # plot bounds</span>
+    <span class="c1"># if args.showbounds:</span>
+    <span class="c1">#     ylim = AX_PA[&#39;S&#39;].get_ylim()</span>
+    <span class="c1">#     for _, crop in enumerate(tcrops):</span>
+    <span class="c1">#         crop,_ = frb.par.phase2lim(t_crop = crop)</span>
+    <span class="c1">#         AX_PA[&#39;S&#39;].fill_between(crop, ylim[0], ylim[1], color = [0.3, 0.3, 0.3], alpha = 0.3)</span>
+    <span class="c1">#     AX_PA[&#39;S&#39;].set_ylim(ylim)</span>
 
 
 
-    <span class="c1"># final figure adjustments</span>
-    <span class="n">fig_PA</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-    <span class="n">fig_PA</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;P&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">AX_PA</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># # plot stokes Dynamic spectrum I</span>
+    <span class="c1"># df = abs(data_full[&#39;freq&#39;][1] - data_full[&#39;freq&#39;][0])</span>
+    <span class="c1"># ds_freq_lims = fix_ds_freq_lims([np.min(data_full[&#39;freq&#39;]), np.max(data_full[&#39;freq&#39;])], df)</span>
+    <span class="c1"># AX_PA[&#39;D&#39;].imshow(data_full[&#39;dsI&#39;], aspect = &#39;auto&#39;, extent = [*data_full[&#39;time&#39;][[0,-1]], </span>
+    <span class="c1">#         *ds_freq_lims])</span>
+    <span class="c1"># AX_PA[&#39;D&#39;].set(xlabel = &quot;Time offset [ms]&quot;, ylabel = &quot;Freq [MHz]&quot;)</span>
 
 
 
-    <span class="c1"># save figure to file</span>
-    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;PA_plot&quot;</span><span class="p">)</span>
+    <span class="c1"># # final figure adjustments</span>
+    <span class="c1"># fig_PA.tight_layout()</span>
+    <span class="c1"># fig_PA.subplots_adjust(hspace = 0)</span>
+    <span class="c1"># AX_PA[&#39;P&#39;].get_xaxis().set_visible(False)</span>
+    <span class="c1"># AX_PA[&#39;S&#39;].get_xaxis().set_visible(False)</span>
+
+
+
+    <span class="c1"># # save figure to file</span>
+    <span class="c1"># if args.filename is not None:</span>
+    <span class="c1">#     plt.savefig(args.filename + &quot;PA_plot&quot;)</span>
 
 
 
@@ -319,7 +322,7 @@
 
         <span class="c1"># save figure to file</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;RM_fits&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;RM_fits.png&quot;</span><span class="p">)</span>
 
 
 
@@ -341,7 +344,7 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rmcomp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RMcomp_fits</span><span class="p">):</span>
             <span class="n">_rm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmcomp</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val</span>
             <span class="n">_rmerr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmcomp</span><span class="o">.</span><span class="n">get_mean_err</span><span class="p">()[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span>
-            <span class="n">_rmx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">comp_times</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">comp_times</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">comp_times</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+            <span class="n">_rmx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
 
         <span class="c1"># make twin axes</span>
         <span class="n">ax_B2</span> <span class="o">=</span> <span class="n">ax_B</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>

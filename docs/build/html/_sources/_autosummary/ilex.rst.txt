@@ -17,6 +17,7 @@
    data
    fitting
    frb
+   frbutils
    globals
    htr
    logging

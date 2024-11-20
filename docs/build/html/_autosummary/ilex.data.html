@@ -59,6 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_Pdebiased"><code class="docutils literal notranslate"><span class="pre">calc_Pdebiased()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_freqs"><code class="docutils literal notranslate"><span class="pre">calc_freqs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_ratio"><code class="docutils literal notranslate"><span class="pre">calc_ratio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_stokes_abs_debias"><code class="docutils literal notranslate"><span class="pre">calc_stokes_abs_debias()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.ccf"><code class="docutils literal notranslate"><span class="pre">ccf()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.f_weight"><code class="docutils literal notranslate"><span class="pre">f_weight()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.fday_rot"><code class="docutils literal notranslate"><span class="pre">fday_rot()</span></code></a></li>
@@ -74,6 +75,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
@@ -168,10 +170,10 @@ summation approach that ignores any NaN values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
-<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
-<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
-<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
+<li><p><strong>Q</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes Q data</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes U data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes U error</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -216,12 +218,12 @@ summation approach that ignores any NaN values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q data</p></li>
-<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U data</p></li>
-<li><p><strong>V</strong> (<em>np.ndarray</em>) – Stokes V data</p></li>
-<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q error</p></li>
-<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U error</p></li>
-<li><p><strong>Verr</strong> (<em>np.ndarray</em>) – Stokes V error</p></li>
+<li><p><strong>Q</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes Q data</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes U data</p></li>
+<li><p><strong>V</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes V data</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes Q error</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes U error</p></li>
+<li><p><strong>Verr</strong> (<em>np.ndarray</em><em> or </em><em>float</em>) – Stokes V error</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -357,6 +359,22 @@ total polarisation (see Everett &amp; Weisberg+2001)</p>
 <li><p><strong>XIerr</strong> (<em>np.ndarray, optional</em>) – Stokes X/I err data, by default None</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.calc_stokes_abs_debias">
+<span class="sig-name descname"><span class="pre">calc_stokes_abs_debias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_stokes_abs_debias"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_stokes_abs_debias" title="Link to this definition"></a></dt>
+<dd><p>Calculate the absolute Stokes profile, debiased as outlined in Karastergiou et al. 2003 and
+Posselt et al. 2022.</p>
+<p>Works best if the Stokes profile is zero-mean, i.e. baseline subtracted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.array</em><em> or </em><em>array-like</em>) – Stokes profile</p></li>
+<li><p><strong>Ierr</strong> (<em>Uncertainties in Stokes I profile</em>)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

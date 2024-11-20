@@ -93,6 +93,7 @@
 <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span>    <span class="c1"># wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. </span>
 <span class="kn">import</span> <span class="nn">yaml</span> <span class="k">as</span> <span class="nn">base_yaml</span>        <span class="c1"># default yaml class</span>
 <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">comments</span> <span class="k">as</span> <span class="n">ruamel_comments</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml.scalarfloat</span> <span class="kn">import</span> <span class="n">ScalarFloat</span> <span class="k">as</span> <span class="n">ruamel_float</span>
 
 
 <span class="c1"># empty structure</span>
@@ -453,7 +454,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">ruamel2py</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    p : pars</span>
 <span class="sd">    d : default pars</span>
@@ -469,10 +470,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># check if dict instance</span>
             <span class="c1"># check if ruamel yaml input </span>
-            <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_ruamel_input</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ruamel2py</span><span class="p">:</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_ruamel_input</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                <span class="n">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">)</span>
 
 
     <span class="k">return</span> <span class="n">p</span>
@@ -480,7 +482,7 @@
 
 <div class="viewcode-block" id="load_param_file">
 <a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_param_file">[docs]</a>
-<span class="k">def</span> <span class="nf">load_param_file</span><span class="p">(</span><span class="n">param_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_yaml_obj</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_param_file</span><span class="p">(</span><span class="n">param_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_yaml_obj</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ruamel2py</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load in param file and compare with default params file</span>
 
@@ -510,9 +512,9 @@
         <span class="n">def_pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">deffile</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">return_yaml_obj</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">),</span> <span class="n">yaml</span>
+        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">,</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">),</span> <span class="n">yaml</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">,</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">)</span></div>
 
 
 
@@ -549,8 +551,6 @@
     <span class="c1"># save pars in pars</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
         <span class="n">yaml_obj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
-
-
 
 
 
@@ -697,6 +697,24 @@
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">inp</span></div>
+
+
+
+<div class="viewcode-block" id="check_ruamel_output">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.check_ruamel_output">[docs]</a>
+<span class="k">def</span> <span class="nf">check_ruamel_output</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if outputs are in right types</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ruamel_float</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ruamel_comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">out</span></div>
 
 </pre></div>
 

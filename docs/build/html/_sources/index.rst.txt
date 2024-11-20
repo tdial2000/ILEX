@@ -8,5 +8,6 @@ What does ILEX mean? ¯\_(ツ)_/
    :hidden:
 
    Overview
+   Theory
    Tutorials
    ILEX Code <_autosummary/ilex>

@@ -19,6 +19,7 @@ import os
 from ruamel.yaml import YAML    # wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. 
 import yaml as base_yaml        # default yaml class
 from ruamel.yaml import comments as ruamel_comments
+from ruamel.yaml.scalarfloat import ScalarFloat as ruamel_float
 
 
 # empty structure
@@ -346,7 +347,7 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
 
 
 
-def _init_pars(p, d):
+def _init_pars(p, d, ruamel2py = True):
     """
     p : pars
     d : default pars
@@ -362,16 +363,17 @@ def _init_pars(p, d):
         else:
             # check if dict instance
             # check if ruamel yaml input 
-            p[key] = check_ruamel_input(p[key])
+            if ruamel2py:
+                p[key] = check_ruamel_input(p[key])
 
             if isinstance(d[key], dict):
-                _init_pars(p[key], d[key])
+                _init_pars(p[key], d[key], ruamel2py=ruamel2py)
 
 
     return p
 
 
-def load_param_file(param_file = None, return_yaml_obj = False):
+def load_param_file(param_file = None, return_yaml_obj = False, ruamel2py = True):
     """
     Load in param file and compare with default params file
 
@@ -401,9 +403,9 @@ def load_param_file(param_file = None, return_yaml_obj = False):
         def_pars = yaml.load(deffile)
     
     if return_yaml_obj:
-        return _init_pars(pars, def_pars), yaml
+        return _init_pars(pars, def_pars, ruamel2py=ruamel2py), yaml
     else:
-        return _init_pars(pars, def_pars)
+        return _init_pars(pars, def_pars, ruamel2py=ruamel2py)
 
 
 
@@ -437,8 +439,6 @@ def save_param_file(pars, filename, yaml_obj = None):
     # save pars in pars
     with open(filename, 'w') as file:
         yaml_obj.dump(pars, file)
-
-
 
 
 
@@ -573,3 +573,18 @@ def check_ruamel_input(inp):
         return list(inp)
     
     return inp
+
+
+def check_ruamel_output(out):
+    """
+    Check if outputs are in right types
+
+    
+    """
+
+    if type(out) == float:
+        return ruamel_float(out)
+    elif type(out) == list:
+        return ruamel_comments.CommentedSeq(out)
+    
+    return out

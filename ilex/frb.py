@@ -57,6 +57,8 @@ from .logging import log, get_verbose, set_verbose, log_title
 from .master_proc import master_proc_data
 
 
+from .frbutils import save_params
+
 
     
 
@@ -195,6 +197,8 @@ class FRB:
         """
         Create FRB instance
         """
+
+        self._yaml_file = yaml_file
         
         self.par = FRB_params(name = name, RA = RA, DEC = DEC, MJD = MJD, 
                               DM = DM, bw = bw, cfreq = cfreq,
@@ -303,6 +307,8 @@ class FRB:
             For initial Data loading
         """
 
+        self._yaml_file = yaml_file
+
         log_title("Loading in Stokes dynamic spectra. Assuming the data being loaded are .npy files", col = "lblue")
 
 
@@ -377,8 +383,6 @@ class FRB:
 
 
 
-        # init_par_from_load(self.ds[init_key[-1]])
-
 
 
 
@@ -387,7 +391,7 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, name = None, yaml_file = None, **kwargs):
+    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, **kwargs):
         """
         Save current instance data
 
@@ -402,10 +406,8 @@ class FRB:
 
         log_title("Saving Stokes data, the data is saved as .npy files. ", col = "lblue")
 
-        if yaml_file is not None:
-            # save parmaters to yaml file
-            pass
-
+        if save_yaml:
+            print("Saving fitted parameters to yaml file not yet implemented...")
 
 
         if data_list is None:
@@ -413,9 +415,9 @@ class FRB:
             return
 
 
-        log("Saving the following data products:", lpf_col = self.pcol)
+        print("Saving the following data products:")
         for data in data_list:
-            log(f"[{data}]", lpf_col = self.pcol)
+            print(f"[{data}]")
 
         # get data
         pdat = self.get_data(data_list, get = True)
@@ -737,14 +739,12 @@ class FRB:
             # time series
             elif "t" in data:
                 new_data[data] = self._t[stk].copy()
-                if err_flag:
-                    new_data[f"{data}err"] = self._t[f"{stk}err"]
+                new_data[f"{data}err"] = self._t[f"{stk}err"]
 
             # frequency spectra
             elif "f" in data:
                 new_data[data] = self._f[stk][f_mask].copy()
-                if err_flag:
-                    new_data[f"{data}err"] = self._f[f"{stk}err"]
+                new_data[f"{data}err"] = self._f[f"{stk}err"]
 
         # also add freqs
         if self._freq is not None:
@@ -1548,9 +1548,17 @@ class FRB:
 
         # get dynI spectra (first scrunch)
         
-        self.get_data("dsI", **kwargs)
+        self.get_data(["dsI", "tI"], **kwargs)
         if not self._isdata():
             return None
+
+        
+        # check if data is flagged
+        meanfunc = np.mean
+        if self.zap:
+            meanfunc = np.nanmean
+
+
         
 
 
@@ -1564,8 +1572,7 @@ class FRB:
 
 
         # find max peak
-        tpro = np.mean(self._ds['I'],axis = 0)
-        peak = np.where(tpro == np.max(tpro))[0][0]                                          # peak sample
+        peak = np.argmax(self._t['I'])                                          #            # peak sample
         peak /= self._ds['I'].shape[1]                                                       # peak phase
         
         # get t_ref
@@ -1587,7 +1594,7 @@ class FRB:
 
 
         # apply initial rough S/N estimate
-        sig_i = np.where(tpro / rms_val > sigma)[0]                                          # where signal
+        sig_i = np.where(self._t['I'] / rms_val > sigma)[0]                                          # where signal
                                                                                              # > sigma
         p_start = sig_i[0]/self._ds['I'].shape[1] - pguard - pwidth                          # new start
         p_end   = sig_i[-1]/self._ds['I'].shape[1] + pguard + pwidth                         # new end
@@ -1612,10 +1619,10 @@ class FRB:
 
 
         # S/N calculation, find where signal is greater than S/N = sigma
-        rms_t = np.mean(rms_dyn, axis = 0) 
-        rms_val = np.mean(rms_t**2)**0.5
+        rms_t = meanfunc(rms_dyn, axis = 0) 
+        rms_val = meanfunc(rms_t**2)**0.5
 
-        tpro = np.mean(dynI, axis = 0)                                                       # calculate S/N
+        tpro = meanfunc(dynI, axis = 0)                                                       # calculate S/N
         sig_i = np.where(tpro / rms_val > sigma)[0]
 
 
@@ -2156,6 +2163,7 @@ class FRB:
 
         # set to fitted params
         self.fitted_params['tscatt'] = p.get_posteriors()
+        self.fitted_params['tscatt']['npulse'] = npulse
         
         # print best fit parameters
         if self.verbose:
@@ -2559,109 +2567,153 @@ class FRB:
 
 
 
-    def get_polfrac(self, debias = False, **kwargs):
-        """
-        Get the polarisation fractions of the Stokes data, if I, Q, U and V are loaded in,
-        will get their fractions. If Q and U are loaded in, will get L frac, if Q, U and V
-        are loaded in, will get P frac.
+    def calc_polfracs(self, debias = False, **kwargs):
+        """_summary_
 
         Parameters
         ----------
-        debais : bool, optional
-            calculate debiased L and P fractions, by default false
-        
+        debias : bool, optional
+            _description_, by default False
         """
 
-        log_title("Calculating Polarisation fractions [fluence{S}/fluence{I}]", col = "lblue")
+        log_title("Calculating Polarisation fractions", col = "lblue")
 
-        # check if I data loaded in
-        if self.ds['I'] is None:
-            log("Must have at least Stokes I dynamic spectra loaded in to calculate pol fractions...", stype = "err")
-            return None, None
-
-        # check what data is avaliable 
+        # We wont over complicate this, only calculate polarisation fractions if
+        # all stokes dynamic spectra are loaded
         loaded_stk = ""
-        for S in "QUV":
-            if self.ds[S] is not None:
-                loaded_stk += S
-            
-        data_list = [f"t{S}" for S in loaded_stk]
-        data_list += ["tI"]
+        for s in "IQUV":
+            if self.ds[s] is None:
+                log(f"Stokes {s} dynamic spectrum is missing, make sure all Stokes dynspecs are loaded in!", stype = "err")
+                return
 
         # proc KWARGS
         self._load_new_params(**kwargs) 
 
         # get data
-        data = self.get_data(data_list, get = True, **kwargs)
+        S = self.get_data(["tI", "tQ", "tU", "tV"], get = True, **kwargs)
+        nsamp = S['tI'].size
 
         # check if error was given, else turn off debias
         err = True
-        if data['tIerr'] is None:
+        if self.this_metapar.terr_crop is None:
             debias = False
             err = False
             log("No off-pulse crop given to calculate dibased L and/or P, specify [terr_crop]...", stype = "warn")
-            
 
-        # if Q and U are loaded, also get stokes L
-        if ("Q" in loaded_stk) and ("U" in loaded_stk):
-            loaded_stk += "L"
-            if debias:
-                data['tL'], data['tLerr'] = calc_Ldebiased(data['tQ'], data['tU'], data['tIerr'], data['tQerr'], data['tUerr'])
-            else:
-                data['tL'], data['tLerr'] = calc_L(data['tQ'], data['tU'], data['tQerr'], data['tUerr'])
-
-            data['tLerr'] = np.mean(data['tLerr'])
+        if debias:
+            S['tL'], S['tLerr'] = calc_Ldebiased(S['tQ'], S['tU'], S['tIerr'], S['tQerr'],
+                                                    S['tUerr'])
+            S['tP'], S['tPerr'] = calc_Pdebiased(S['tQ'], S['tU'], S['tV'], S['tIerr'],
+                                                    S['tQerr'], S['tUerr'], S['tVerr'])
+        else:
+            S['tL'], S['tLerr'] = calc_L(S['tQ'], S['tU'], S['tQerr'], S['tUerr'])
+            S['tP'], S['tPerr'] = calc_P(S['tQ'], S['tU'], S['tV'],
+                                            S['tQerr'], S['tUerr'], S['tVerr'])
         
-
-        # if if Q, U and V are loaded, also get stokes P
-        if ("Q" in loaded_stk) and ("U" in loaded_stk) and ("V" in loaded_stk):
-            loaded_stk += "P"
-            if debias:
-                data['tP'], data['tPerr'] = calc_Pdebiased(data['tQ'], data['tU'], data['tV'], data['tIerr'], 
-                                                            data['tQerr'], data['tUerr'], data['tVerr'])
-
+        # calculated integrated stokes
+        intS = {}
+        for s in "IQUVLP":
+            intS[s] = np.sum(S[f't{s}'])
+            if err:
+                if s in "LP":
+                    intS[f'{s}err'] = np.nansum(S[f't{s}err']**2)**0.5
+                else:
+                    intS[f'{s}err'] = nsamp**0.5 * S[f't{s}err']
             else:
-                data['tP'], data['tPerr'] = calc_P(data['tQ'], data['tU'], data['tV'], data['tQerr'], data['tUerr'],
-                                                    data['tVerr'])
-            data['tPerr'] = np.mean(data['tPerr'])
-            
+                intS[f"{s}err"] = None
+
+        # calculate integrated absolute Stokes Q, U and V
+        for s in "QUV":
+            if err:
+                intS[f"abs{s}"] = np.sum(calc_stokes_abs_debias(S[f't{s}'], S['tIerr']))
+            else:
+                intS[f"abs{s}"] = np.sum(np.abs(S[f't{s}']))
         
-        # now calculate fractions
-        polfracs = {}
-        fluence = {}
-        fluence['I'] = np.sum(data['tI'])
-        noise_scalar = float(data['tI'].size)**0.5
+        # calculate Stokes fractions
+        fracS = {}
+        polname = ["I", "q", "u", "v", "l", "p"]
+        for i, s in enumerate("IQUVLP"):
+            fracS[polname[i]], fracS[f'{polname[i]}err'] = calc_ratio(intS['I'], intS[s], 
+                                                intS['Ierr'], intS[f'{s}err'])
+        polname = ["|q|", "|u|", "|v|"]
+        for i, s in enumerate("QUV"): # absolute values
+            fracS[polname[i]], fracS[f'{polname[i]}err'] = calc_ratio(intS['I'], intS[f'abs{s}'],
+                                                intS['Ierr'], intS[f'{s}err'])
 
-        if err:
-            fluence['Ierr'] = np.abs(noise_scalar * data['tIerr'])
-
-        for S in loaded_stk:
-
-            # calculate Stokes fluence
-            fluence[S] = np.sum(data[f"t{S}"])
-
-            if err:
-                fluence[f"{S}err"] = np.abs(noise_scalar * data[f"t{S}err"])
-
-            # calculate stokes frac errors
-            polfracs[S] = fluence[S]/fluence['I']
-
-            if err:
-                polfracs[f"{S}err"] = np.abs(polfracs[S] * ((fluence[f"{S}err"]/fluence[S])**2 + (fluence["Ierr"]/fluence["I"])**2)**0.5)
-            
-        # print stuff:
-        print(f"\nPOLARISATION FRACTIONS FOR [{self.this_par.name}]:")
+        # Now we can print everything out
+        debias_flag = "FALSE\n"
+        if debias:
+            debias_flag = "TRUE\n"
+        print("\nStokes fractions:")
         print("="*50)
-        for S in loaded_stk:
+        print(f"debiased = ", debias_flag)
+
+        def _print_err(val):
             if err:
-                print(f"{S}/I:".ljust(10) + f"{polfracs[S]:.3f}".ljust(8) + f"+/-  {polfracs[f'{S}err']:.3f}")
+                return f"{val:.4f}"
             else:
-                print(f"{S}/I:".ljust(10) + f"{polfracs[S]:.3f}")
-
-        return polfracs, fluence
+                return "None"
 
 
-
+        print("=======  CONTINUUM-ADDED Stokes fractions  =======\n")
+        print("These fractions are calculated by first")
+        print("integrating over the debiased polarisation profile")
+        print("="*50, "\n")
+        print("Legend:")
+        print("l = sum(L(t))/sum(I(t))\n")
+        print("|q|".ljust(15), f"{fracS['|q|']:.4f} +/- {_print_err(fracS['|q|err'])}")
+        print("|u|".ljust(15), f"{fracS['|u|']:.4f} +/- {_print_err(fracS['|u|err'])}")
+        print("|v|".ljust(15), f"{fracS['|v|']:.4f} +/- {_print_err(fracS['|v|err'])}")
+        print("l".ljust(15), f"{fracS['l']:.4f} +/- {_print_err(fracS['lerr'])}")
+        print("p".ljust(15), f"{fracS['p']:.4f} +/- {_print_err(fracS['perr'])}\n")
         
+        print("Integrated (Signed) Stokes Paramters")
+        print("q".ljust(15), f"{fracS['q']:.4f}".ljust(7) + f" +/- {_print_err(fracS['qerr'])}")
+        print("u".ljust(15), f"{fracS['u']:.4f}".ljust(7) + f" +/- {_print_err(fracS['uerr'])}")
+        print("v".ljust(15), f"{fracS['v']:.4f}".ljust(7) + f" +/- {_print_err(fracS['verr'])}\n")
+
+        print("====  Vector-addded Stokes L and P fractions  ====")
+        print("="*50, "\n")
+
+        print("Legend:")
+        print("l* = sqrt(q^2 + u^2)")
+        print("|l|* = sqrt(|q|^2 + |u|^2)")
+        print("p* = sqrt(q^2 + u^2 + v^2)")
+        print("|p|* = sqrt(|q|^2 + |u|^2 + |v|^2)\n")
+
+
+        # calculate l* and p*
+        fracS['l*'], fracS['l*err'] = calc_L(fracS['q'], fracS['u'], fracS['qerr'], fracS['uerr'])
+        fracS['p*'], fracS['p*err'] = calc_P(fracS['q'], fracS['u'], fracS['v'], fracS['qerr'],
+                                    fracS['uerr'], fracS['verr'])
+        print("l*".ljust(15), f"{fracS['l*']:.4f} +/- {_print_err(fracS['l*err'])}")
+        print("p*".ljust(15), f"{fracS['p*']:.4f} +/- {_print_err(fracS['p*err'])}")
+
+        # calculate |l|* and |p|*
+        fracS['|l|*'], fracS['|l|*err'] = calc_L(fracS['|q|'], fracS['|u|'], fracS['|q|err'],
+                                        fracS['|u|err'])
+        fracS['|p|*'], fracS['|p|*err'] = calc_P(fracS['|q|'], fracS['|u|'], fracS['|v|'],
+                                        fracS['|q|err'], fracS['|u|err'], fracS['|v|err'])
+        print("|l|*".ljust(15), f"{fracS['|l|*']:.4f} +/- {_print_err(fracS['|l|*err'])}")
+        print("|p|*".ljust(15), f"{fracS['|p|*']:.4f} +/- {_print_err(fracS['|p|*err'])}\n")
+
+        print("= Total polarisation fraction calculated L and V =")
+        print("="*50, "\n")
+        print("Legend:")
+        print("p^ = sqrt(l^2 + v^2)")
+        print("|p|^ = sqrt(l^2 + |v|^2)\n")
+
+        fracS['p^'], fracS['p^err'] = calc_L(fracS['l'], fracS['v'], fracS['lerr'], fracS['verr'])
+        fracS['|p|^'], fracS['|p|^err'] = calc_L(fracS['l'], fracS['|v|'], fracS['lerr'], fracS['|v|err'])
+        print("p^".ljust(15), f"{fracS['p^']:.4f} +/- {_print_err(fracS['p^err'])}")
+        print("|p|^".ljust(15), f"{fracS['|p|^']:.4f} +/- {_print_err(fracS['|p|^err'])}\n")
+
+        return fracS
+
+
+
+
+
+
 
 

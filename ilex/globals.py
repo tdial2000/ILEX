@@ -55,6 +55,11 @@ _G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
 _G.hp = {'verbose': False, 'plot_type': 'lines',
          'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical"}
 
+_G.yaml_ignore = ["zap"]
+
+_G.yaml_def_prec = 8
+_G.yaml_def_width = 3
+
 # dict of keywords in yaml config file
 _G.yaml_config = ['data', 'par', 'metapar', 'hyperpar', 'plots', 'fits', 'weights', 'multi']
 

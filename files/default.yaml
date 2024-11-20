@@ -40,9 +40,13 @@ hyperpar:
   verbose:        False
   show_plots:     False
   save_plots:     True
-  plot_type:  "lines"
+  plot_type:      "lines"
   residuals:      True
   plotPosterior:  True
+  apply_tW:       True
+  apply_fW:       True
+  crop_units:     "physical"               
+
 
 
 

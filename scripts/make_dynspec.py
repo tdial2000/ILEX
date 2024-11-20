@@ -76,7 +76,7 @@ def get_args():
 
 
     ## output arguments
-    parser.add_argument("--ofile", help = "Name of new dynamic spectra", type = str)
+    parser.add_argument("--ofile", help = "Name of new dynamic spectra", type = str, default = "out")
 
     args = parser.parse_args()
 
@@ -653,12 +653,12 @@ def _proc(args, pol):
 
         ## save data
         print(f"Saving stokes {S} dynamic spectra...")
-        np.save(args.ofile.replace("@", S), ds)
+        np.save(args.ofile + f"_{S}.npy", ds)
 
         if args.do_chanflag:
             ds_raw[chanflag_known] = np.nan
             print(f"Saving non-flagged stokes {S} dynamic spectra...")
-            np.save(args.ofile.replace("@", f"{S}_nochanflag"), ds_raw)
+            np.save(args.ofile + f"_{S}_noflagged.npy", ds_raw)
 
         
 

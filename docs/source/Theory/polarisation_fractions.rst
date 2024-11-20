@@ -28,7 +28,7 @@ We measure the Linear polarisation via the following equation
 Given this functional form, the uncertainty :math:`\sigma_{L}` is
 
 .. math::
-   \sigma_{L} = \frac{1}{L}\sqrt{Q^{2}\sigma_{Q}^2 + U^{2}\sigma^{2}}.
+   \sigma_{L} = \frac{1}{L}\sqrt{Q^{2}\sigma_{Q}^2 + U^{2}\sigma_{U}^{2}}.
 
 there is a need to debias :math:`L` due to the expression used, especially at low signal-to-noise (S/N)
 [Everett & Weisberg 2001; Day et al. 2020]
@@ -73,16 +73,16 @@ We measure the total polarisation fraction by first integrating the Stokes profi
 where the lower case :math:`x` denotes the Stokes polarisation fraction. We can also measure the uncertainty :math:`\sigma_{x}`, 
 which we can split up into two seperate stages.
 
-1. Calculate the uncertainty in the integrated stokes parameters :math:`\sigma\mathrm_{\sum{X}}` and :math:`\sigma\mathrm_{\sum{I}}`. 
+1. Calculate the uncertainty in the integrated stokes parameters :math:`\sigma\mathrm{_{\sum{X}}}` and :math:`\sigma\mathrm{_{\sum{I}}}`. 
 Which we can do using the following equation
 
 .. math::
-   \sigma\mathrm_{\sum{X}} = \sqrt(\sum{\sigma_{X}}).
+   \sigma\mathrm{_{\sum{X}}} = \sqrt(\sum{\sigma_{X}}).
 
 If the error for the entire Stokes profile is a single value, we can estimate the uncertainity using basic noise scaling
 
 .. math::
-   \sigma\mathrm_{\sum{X}} = \sqrt{N} * \sigma_{X},
+   \sigma\mathrm{_{\sum{X}}} = \sqrt{N} * \sigma_{X},
 
 where :math:`N` is the number of samples in the Stokes profile.
 
@@ -90,7 +90,7 @@ where :math:`N` is the number of samples in the Stokes profile.
 2. The next step is to calculate the final uncertainity in the stokes polarisation fraction, which is done using the following equation
 
 .. math::
-   \sigma_{x} = x\sqrt{\frac{\bigg(\sum{X}}{\sigma\mathrm_{\sum{X}}}\bigg)^{2} + \frac{\bigg(\sum{I}}{\sigma\mathrm_{\sum{I}}}\bigg)^{2}}
+   \sigma_{x} = x\sqrt{\frac{\bigg(\sum{X}}{\sigma\mathrm{_{\sum{X}}}}\bigg)^{2} + \frac{\bigg(\sum{I}}{\sigma\mathrm{_{\sum{I}}}}\bigg)^{2}}
 
 With the above equations, we can calculate all the integrated Stokes polarisation fractions and their uncertainties. Below is the list for
 completeness.
@@ -116,7 +116,7 @@ Before integrating the absolute stokes :math:`V` profile, :math:`|V|` needs to b
 and Oswald et al. 2023
 
 .. math::
-   |V|\mathrm_{d} = 
+   |V|\mathrm{_{d}} = 
    \begin{cases} 
       |V| - \sigma_{I}\sqrt{\frac{2}{\pi}} & |V| > \sigma_{I}\sqrt{\frac{2}{\pi}} \\
       0 & \mathrm{otherwise}.
@@ -125,7 +125,7 @@ and Oswald et al. 2023
 thus the absolute integrated Stokes :math:`V` polarisation fraction is
 
 .. math::
-   |v| = \frac{\sum{|V|\mathrm_{d}}}{\sum{I}}.
+   |v| = \frac{\sum{|V|\mathrm{_{d}}}}{\sum{I}}.
 
 
 Note of :math:`|q|` and :math:`|u|`
@@ -149,9 +149,9 @@ calculating the Linear and total integrated polarisation fractions.
 
 .. math::
    \begin{split}
-      & |q| = \frac{\sum{|Q|\mathrm_{d}}}{\sum{I}} \\
-      & |u| = \frac{\sum{|U|\mathrm_{d}}}{\sum{I}} \\
-      & |v| = \frac{\sum{|V|\mathrm_{d}}}{\sum{I}} \\
+      & |q| = \frac{\sum{|Q|\mathrm{_{d}}}}{\sum{I}} \\
+      & |u| = \frac{\sum{|U|\mathrm{_{d}}}}{\sum{I}} \\
+      & |v| = \frac{\sum{|V|\mathrm{_{d}}}}{\sum{I}} \\
       & l = \frac{\sum{L\mathrm{_{d}}}}{\sum{I}} \\
       & p = \frac{\sum{P\mathrm{_{d}}}}{\sum{I}}
    \end{split}

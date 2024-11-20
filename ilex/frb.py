@@ -2568,12 +2568,13 @@ class FRB:
 
 
     def calc_polfracs(self, debias = False, **kwargs):
-        """_summary_
+        """
+        Calculate polarisation fractions using a number of different methods.
 
         Parameters
         ----------
         debias : bool, optional
-            _description_, by default False
+            Debiases Stokes L, P and |V|, |Q| and |U|, by default False.
         """
 
         log_title("Calculating Polarisation fractions", col = "lblue")
@@ -2598,7 +2599,7 @@ class FRB:
         if self.this_metapar.terr_crop is None:
             debias = False
             err = False
-            log("No off-pulse crop given to calculate dibased L and/or P, specify [terr_crop]...", stype = "warn")
+            log("No off-pulse crop given to calculate dibased L, P and/or |U/Q/V|, specify [terr_crop]...", stype = "warn")
 
         if debias:
             S['tL'], S['tLerr'] = calc_Ldebiased(S['tQ'], S['tU'], S['tIerr'], S['tQerr'],

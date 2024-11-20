@@ -49,7 +49,7 @@ def make_config_from_celebi(args):
             print(lines)
 
             for i, S in enumerate("IQUV"):
-                ds_filepath = os.path.join(args.d, lines[i+1].split(':')[1].strip())
+                ds_filepath = os.path.join(os.path.join(args.d, "htr"), lines[i+1].split(':')[1].strip())
                 print(f"Saving filepath for stokes {S} ds: {ds_filepath}")
                 defpars['data'][f'ds{S}'] = ds_filepath
 

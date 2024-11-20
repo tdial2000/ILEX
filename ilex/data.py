@@ -530,6 +530,10 @@ def get_zapstr(chan, freq):
 
     # could be improved later with a smarter algorithm, but not nessesary for ilex.
 
+    if freq[0] > freq[1]:
+        chan = chan[::-1]
+        freq = freq[::-1]
+
     zap_str = ""
 
     chan2zap = np.argwhere(np.isnan(chan)).flatten()
@@ -554,6 +558,10 @@ def get_zapstr(chan, freq):
         
     if zap_str != "":
         zap_str = zap_str[1:]   # remove ','
+
+    if freq[0] > freq[1]:
+        chan = chan[::-1]
+        freq = freq[::-1]
     
     return zap_str
 
@@ -666,13 +674,13 @@ def calc_L(Q, U, Qerr = None, Uerr = None):
 
     Parameters
     ----------
-    Q : np.ndarray
+    Q : np.ndarray or float
         Stokes Q data
-    U : np.ndarray
+    U : np.ndarray or float
         Stokes U data
-    Qerr : np.ndarray
+    Qerr : np.ndarray or float
         Stokes Q error
-    Uerr : np.ndarray
+    Uerr : np.ndarray or float
         Stokes U error
 
     Returns
@@ -689,11 +697,11 @@ def calc_L(Q, U, Qerr = None, Uerr = None):
     # calc Error in L
     Lerr = None
     if (Qerr is not None) and (Uerr is not None):
-        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2)
-        Lmask = L != 0.0
-        Lerr[Lmask] = Lerr[Lmask]/L[Lmask]
-        Lerr[~Lmask] = np.nan
-        L[~Lmask] = np.nan
+        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2) / L
+        if hasattr(Q, '__len__') and hasattr(U, '__len__'):
+            Lmask = L != 0.0
+            Lerr[~Lmask] = np.nan
+            L[~Lmask] = np.nan
 
     return L, Lerr
 
@@ -739,9 +747,8 @@ def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
 
     Lerr = None
     if (Qerr is not None) and (Uerr is not None):
-        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2)
+        Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2) / L_debias
         Lmask = L_debias != 0.0
-        Lerr[Lmask] = Lerr[Lmask]/L_debias[Lmask]
         Lerr[~Lmask] = np.nan
         L_debias[~Lmask] = np.nan
 
@@ -760,17 +767,17 @@ def calc_P(Q, U, V, Qerr = None, Uerr = None, Verr = None):
 
     Parameters
     ----------
-    Q : np.ndarray
+    Q : np.ndarray or float
         Stokes Q data
-    U : np.ndarray
-        Stokes U data
-    V : np.ndarray
+    U : np.ndarray or float
+        Stokes U data 
+    V : np.ndarray or float
         Stokes V data
-    Qerr : np.ndarray
-        Stokes Q error
-    Uerr : np.ndarray
+    Qerr : np.ndarray or float
+        Stokes Q error 
+    Uerr : np.ndarray or float 
         Stokes U error
-    Verr : np.ndarray
+    Verr : np.ndarray or float
         Stokes V error
 
     Returns
@@ -789,11 +796,11 @@ def calc_P(Q, U, V, Qerr = None, Uerr = None, Verr = None):
     # calculate Perr
     Perr = None
     if (Lerr is not None) and (Verr is not None):
-        Perr = np.sqrt(L**2*Lerr**2 + V**2*Verr**2)
-        Pmask = P != 0.0
-        Perr[Pmask] = Perr[Pmask]/P[Pmask]
-        Perr[~Pmask] = np.nan
-        P[~Pmask] = np.nan
+        Perr = np.sqrt(L**2*Lerr**2 + V**2*Verr**2) / P
+        if hasattr(L, '__len__') and hasattr(V, '__len__'):
+            Pmask = P != 0.0
+            Perr[~Pmask] = np.nan
+            P[~Pmask] = np.nan
 
     return P, Perr
 
@@ -842,9 +849,8 @@ def calc_Pdebiased(Q, U, V, Ierr, Qerr = None, Uerr = None, Verr = None):
     # calc P err
     Perr = None
     if (Lerr is not None) and (Verr is not None):
-        Perr = np.sqrt(L_debias**2*Lerr**2 + V**2*Verr**2)
+        Perr = np.sqrt(L_debias**2*Lerr**2 + V**2*Verr**2) / P_debias
         Pmask = P_debias != 0.0
-        Perr[Pmask] = Perr[Pmask]/P_debias[Pmask]
         Perr[~Pmask] = np.nan
         P_debias[~Pmask] = np.nan
 
@@ -895,6 +901,31 @@ def calc_ratio(I, X, Ierr = None, Xerr = None):
         #         XIerr = np.nanmean(XIerr)
 
     return XI, XIerr
+
+
+def calc_stokes_abs_debias(X, Ierr):
+    """
+    Calculate the absolute Stokes profile, debiased as outlined in Karastergiou et al. 2003 and 
+    Posselt et al. 2022.
+
+    Works best if the Stokes profile is zero-mean, i.e. baseline subtracted.
+
+    Parameters
+    ----------
+    X : np.array or array-like
+        Stokes profile
+    Ierr : Uncertainties in Stokes I profile
+    """
+
+
+    absX = np.abs(X) 
+    mask = absX > Ierr * (2/np.pi)**0.5
+    absX -= Ierr * (2/np.pi)**0.5
+    absX[~mask] = 0.0
+
+    return absX
+
+
 
 
 

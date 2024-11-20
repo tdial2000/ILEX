@@ -1,7 +1,9 @@
 Polarisation Fractions
 ----------------------
 
-The following is a list of common ways to calculate the integrated polarisation fraction of a time profile.
+The following is a list of polarisation fraction equations used by ILEX to measure to total
+frequency-time averaged polarisation fractions within an FRB or any radio profile with full polarisation.
+
 We will first define :math:`Q(t), U(t)` to be our Linear polarisation modes and :math:`V(t)` the Circular Polarisation
 as a function of time, assuming we have averaged in frequency. :math:`I(t)` is the total power profile. The uncertainty in these 
 quantities are :math:`\sigma_{X}`, where :math:`X` is the Stokes parameter. For the following I will assume :math:`Q, U, V` ect. 
@@ -12,19 +14,24 @@ This will matter if you are after the absolute integrated flux density of Linear
 calculating fractions, the averaging cancels out.
 
 
+
+
+
 :math:`L` and :math:`P`
 =============================
-The linear polarisation is
+
+We measure the Linear polarisation via the following equation
 
 .. math::
    L = \sqrt{Q^{2} + U^2}.
 
-Given this functional form, the uncertainty in :math:`L` is,
+Given this functional form, the uncertainty :math:`\sigma_{L}` is
 
 .. math::
    \sigma_{L} = \frac{1}{L}\sqrt{Q^{2}\sigma_{Q}^2 + U^{2}\sigma^{2}}.
 
 there is a need to debias :math:`L` due to the expression used, especially at low signal-to-noise (S/N)
+[Everett & Weisberg 2001; Day et al. 2020]
 
 .. math::
    L\mathrm{_{d}} = 
@@ -35,6 +42,8 @@ there is a need to debias :math:`L` due to the expression used, especially at lo
 
 The error in :math:`L\mathrm{_{d}}` is done in a similar way when calculating the un-debiased Linear polarisation uncertainty :math:`\sigma_{L}`,
 but replacing :math:`L` with :math:`L\mathrm{_{d}}`.
+
+
 
 Calculating the total polarisation P can be done one of two ways, either by performing a quadratic sum of :math:`Q,U,V`,
 
@@ -51,83 +60,155 @@ form as for :math:`L` above, but with :math:`Q, U` interchanged with :math:`L, V
 
 
 
-:math:`L/I = l` - Linear Polarisation fraction
+
+
+Calculating Polarisation fractions
+==================================
+
+We measure the total polarisation fraction by first integrating the Stokes profile and dividing by the total integrated power
+
+.. math::
+   x = \frac{\sum{X}}{\sum{I}}
+
+where the lower case :math:`x` denotes the Stokes polarisation fraction. We can also measure the uncertainty :math:`\sigma_{x}`, 
+which we can split up into two seperate stages.
+
+1. Calculate the uncertainty in the integrated stokes parameters :math:`\sigma\mathrm_{\sum{X}}` and :math:`\sigma\mathrm_{\sum{I}}`. 
+Which we can do using the following equation
+
+.. math::
+   \sigma\mathrm_{\sum{X}} = \sqrt(\sum{\sigma_{X}}).
+
+If the error for the entire Stokes profile is a single value, we can estimate the uncertainity using basic noise scaling
+
+.. math::
+   \sigma\mathrm_{\sum{X}} = \sqrt{N} * \sigma_{X},
+
+where :math:`N` is the number of samples in the Stokes profile.
+
+
+2. The next step is to calculate the final uncertainity in the stokes polarisation fraction, which is done using the following equation
+
+.. math::
+   \sigma_{x} = x\sqrt{\frac{\bigg(\sum{X}}{\sigma\mathrm_{\sum{X}}}\bigg)^{2} + \frac{\bigg(\sum{I}}{\sigma\mathrm_{\sum{I}}}\bigg)^{2}}
+
+With the above equations, we can calculate all the integrated Stokes polarisation fractions and their uncertainties. Below is the list for
+completeness.
+
+
+
+
+
+
+Absolute Stokes :math:`V` intergrated polarisation fraction
+===========================================================
+
+One important aspect of Circular polarisation we have to keep in mind is that it is a signed quantity, meaning is can be +/-. It may also
+flip between being + or - across the profile. So simply integrating over the profile is not a reliable measure of the Stokes :math:`V`
+polarisation fraction.
+
+We can calculate the Stokes :math:`V` polarisation fraction by first taking the absolute value of the Stokes profile before integrating
+
+.. math::
+   |v| = \frac{\sum{|V|}}{\sum{I}}.
+
+Before integrating the absolute stokes :math:`V` profile, :math:`|V|` needs to be debiased according to Karastergiou et al. 2003, Posselt et al. 2022 
+and Oswald et al. 2023
+
+.. math::
+   |V|\mathrm_{d} = 
+   \begin{cases} 
+      |V| - \sigma_{I}\sqrt{\frac{2}{\pi}} & |V| > \sigma_{I}\sqrt{\frac{2}{\pi}} \\
+      0 & \mathrm{otherwise}.
+   \end{cases}
+
+thus the absolute integrated Stokes :math:`V` polarisation fraction is
+
+.. math::
+   |v| = \frac{\sum{|V|\mathrm_{d}}}{\sum{I}}.
+
+
+Note of :math:`|q|` and :math:`|u|`
++++++++++++++++++++++++++++++++++++
+
+The same arguments can be made about stokes :math:`Q` and :math:`U` since they can also change sign across time. The above equations may be
+used interchangably, although :math:`|q|` and :math:`|u|` are less useful.
+
+
+
+
+
+
+
+
+Continuum-added polarisation fractions
 ======================================
 
-.. math::
-   \bar{l} = \frac{\sum{(Q^{2} + U^{2})}}{\sum{I}}
-
-Used often in pulsar/FRB literature, such as Sherman et al, 2024. 
+The complete set of integrated polarisation fractions are listed below for completeness. They will also be useful when using other methods for
+calculating the Linear and total integrated polarisation fractions.
 
 .. math::
-   l^{*} = \frac{\sqrt{(\sum{Q})^{2} + (\sum{U})^{2}}}{\sum{I}}
+   \begin{split}
+      & |q| = \frac{\sum{|Q|\mathrm_{d}}}{\sum{I}} \\
+      & |u| = \frac{\sum{|U|\mathrm_{d}}}{\sum{I}} \\
+      & |v| = \frac{\sum{|V|\mathrm_{d}}}{\sum{I}} \\
+      & l = \frac{\sum{L\mathrm{_{d}}}}{\sum{I}} \\
+      & p = \frac{\sum{P\mathrm{_{d}}}}{\sum{I}}
+   \end{split}
 
-This form has mention in Oswald et al, 2023.
-
-The uncertainty in the integrated Stokes profile :math:`\sum{X}` is given by
-
-.. math::
-   \sigma_{\sum{X}} = \sqrt{\sum_{i}{\sigma_{X, i}^{2}}}
-
-if the Stokes profile is mean subtracted, i.e. the mean is zero, then the uncertainty in :math:`\sum{X}` is simply the 
-standard deviation multiplied by :math:`\sqrt{N}`, where :math:`N` is the number of samples in the Stokes profile, i.e., ``N**0.5 * std(\sigma_{X})``.
-
-The final uncertainty of some fraction :math:`X/I` is
+Signed integrated stokes polarisation fractions
 
 .. math::
-   \sigma_{X/I} = \frac{X}{I}\sqrt{\frac{\sigma_{X}^{2}}{X^{2}} + \frac{\sigma_{I}^{1}}{I^{2}}}
-.
-
-It's easier to work through these equations one at a time then to construct a big explicit equation for each Stokes fraction. It can
-get messy...
-   
-
-
-
-:math:`V/I = \nu` - Circular Polarisation fraction
-==================================================
-
-Cicular polarisation can be a pain since the profile can have different signs (+/-). It can also flip sign (change of handedness)
-over time. This there are a few ways of calculating the Circular polarisation fraction,
-
-.. math::
-   \bar{\nu} = \frac{\sum{V}}{\sum{I}}
-
-.. math::
-   |\nu|^{*} = |\bar{\nu}|
-
-.. math::
-   \bar{|\nu|} = \frac{\sum{(|V|\mathrm{_{d}})}}{\sum{I}}.
-
-The last method is used in Oswald et al, 2023. Additionally, :math:`|V|\mathrm{_{d}}` is the debiased absolute Circular polarisation, following
-Karastergiou et al. 2023 and Posselt et al. 2022. This method seems to be the most "correct" when measuring the fraction of Circular
-polarisation.
+   \begin{split}
+      & q = \frac{\sum{Q}}{\sum{I}} \\
+      & u = \frac{\sum{U}}{\sum{I}} \\
+      & v = \frac{\sum{V}}{\sum{I}}.
+   \begin{split}
 
 
 
-:math:`P/I = p` - Total Polarisation fraction (This is the "fun" part)
-======================================================================
 
-There are a few ways of calculating :math:`p`.
 
-The simplest and likely most "correct", has the following form
+
+
+
+
+
+
+Vector-added polarisation fractions
+===================================
+
+Alternative methods for calculating :math:`l` and :math:`p` by first intregrating Stokes :math:`Q, U` and :math:`V`, then adding in
+quadrature. 
 
 .. math::
-   \bar{p} = \frac{\sum{P\mathrm{_{d}}}}{\sum{I}}.
+   \begin{split}
+      & l* = \sqrt{q^{2} + u^{2}} \\
+      & p* = \sqrt{q^{2} + u^{2} + v^{2}} \\
+      & |l|* = \sqrt{|q|^{2} + |u|^{2}} \\
+      & |p|* = \sqrt{|q|^{2} + |u|^{2} + |v|^{2}}.
+   \end{split}
 
-Remember that from the above equations, :math:`L\mathrm{_{d}}}` is used to calculate :math:`P` which is then also debiased.
 
-The second method seperatley calculates the Stokes :math:`Q, U` and :math:`V` polarisation fractions, then adds them in quadrature,
+
+
+
+
+
+
+
+
+
+Vector-added continuum integrated Stokes :math:`P` polarisation fraction
+========================================================================
+
+Alternative method for calculating :math:`p` by adding :math:`l` and :math:`v` in quadrature.
 
 .. math::
-   p^{*} = \sqrt{\bigg(\frac{\sum{Q}}{\sum{I}}\bigg)^{2} + \bigg(\frac{\sum{U}}{\sum{I}}\bigg)^{2} + \bigg(\frac{\sum{V}}{\sum{I}}\bigg)^{2}}.
-
-The third method calculates :math:`P/I` by first integrating the absolute Stokes V profile
-
-.. math::
-   \bar{p_{|\nu|}} = \sqrt{\bar{l}^{2} + \bar{|\nu|}^{2}}.
-
-This method is less useful, so it's recommended to use the first two.
+   \begin{split}
+      & \hat{p} = \sqrt{l^{2} + v^{2}} \\
+      & \hat{|p|} = \sqrt{l^{2} + |v|^{2}}.
+   \end{split}
 
 
 
@@ -137,4 +218,5 @@ This method is less useful, so it's recommended to use the first two.
 
 
 
-   
+
+

@@ -163,7 +163,7 @@ Signed integrated stokes polarisation fractions
       & q = \frac{\sum{Q}}{\sum{I}} \\
       & u = \frac{\sum{U}}{\sum{I}} \\
       & v = \frac{\sum{V}}{\sum{I}}.
-   \begin{split}
+   \end{split}
 
 
 

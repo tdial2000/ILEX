@@ -115,14 +115,17 @@ def _PA_multi(args):
         RMcomp_fits += [p]
 
         # reset tcrops and fcrops
-        tcrops[i] = frb.prev_metapar.t_crop.copy()
-        fcrops[i] = frb.prev_metapar.f_crop.copy()
+        tcrops[i], fcrops[i] = frb.par.phase2lim(t_crop = frb.prev_metapar.t_crop, f_crop = frb.prev_metapar.f_crop)
+        # fcrops[i] = frb.prev_metapar.f_crop.copy()
 
-    t_crophase, _ = frb.par.lim2phase(t_lim = frb.metapar.t_crop)
+    # t_crophase, _ = frb.par.lim2phase(t_lim = frb.metapar.t_crop)
+
 
     # get full tcrop bounds
-    tcrop_full = [min(np.min(tcrops), t_crophase[0]), max(np.max(tcrops), t_crophase[1])]
+    tcrop_full = [np.min(tcrops), np.max(tcrops)]
     fcrop_full = [np.min(fcrops), np.max(fcrops)]
+
+    print(tcrop_full)
 
 
     # get full data to use for plotting
@@ -141,70 +144,70 @@ def _PA_multi(args):
     # loop over tcrops again, getting de-rotated stokes data and to calculate
     # debiased PA
     # Get de-rotated stokes and plot
-    comp_times = []
-    for i, tcrop in enumerate(tcrops):
-        # get derotated data
-        vals = RMcomp_fits[i].get_post_val(func = False)
-        data_i = frb.get_data(["tI", "tQ", "tU"], t_crop = tcrop, f_crop = fcrops[i],
-                RM = vals['rm'], f0 = vals['f0'], get = True)
+    # comp_times = []
+    # for i, tcrop in enumerate(tcrops):
+    #     # get derotated data
+    #     vals = RMcomp_fits[i].get_post_val(func = False)
+    #     data_i = frb.get_data(["tI", "tQ", "tU"], t_crop = tcrop, f_crop = fcrops[i],
+    #             RM = vals['rm'], f0 = vals['f0'], get = True)
 
-        comp_times += [[*data_i['time'][[0, -1]]]]
+    #     comp_times += [[*data_i['time'][[0, -1]]]]
 
-        # overlay de-rotated stokes data to full stokes spectra
-        xs = int(round((data_i['time'][0] - data_full['time'][0])/dt))
-        ns = data_i['time'].size
+    #     # overlay de-rotated stokes data to full stokes spectra
+    #     xs = int(round((data_i['time'][0] - data_full['time'][0])/dt))
+    #     ns = data_i['time'].size
 
-        for S in "QU":
-            data_full[f"t{S}"][xs:xs+ns] = data_i[f"t{S}"]
+    #     for S in "QU":
+    #         data_full[f"t{S}"][xs:xs+ns] = data_i[f"t{S}"]
 
-        # calculate debiased PA then overlap on full PA array
-        PA_i, PAerr_i = calc_PAdebiased(data_i, Ldebias_threshold = pars['plots']['Ldebias_threshold'])
-        PA[xs:xs + ns], PAerr[xs:xs + ns] = PA_i, PAerr_i
+    #     # calculate debiased PA then overlap on full PA array
+    #     PA_i, PAerr_i = calc_PAdebiased(data_i, Ldebias_threshold = pars['plots']['Ldebias_threshold'])
+    #     PA[xs:xs + ns], PAerr[xs:xs + ns] = PA_i, PAerr_i
         
 
 
-    # plot
-    # plot PA
-    plot_PA(data_full['time'], PA, PAerr, ax = AX_PA['P'], flipPA = pars['plots']['flipPA'],
-        plot_type = "scatter")
+    # # plot
+    # # plot PA
+    # plot_PA(data_full['time'], PA, PAerr, ax = AX_PA['P'], flipPA = pars['plots']['flipPA'],
+    #     plot_type = "scatter")
 
 
 
-    # plot stokes
-    plot_stokes(data_full, stk_type = "t", ax = AX_PA['S'], Ldebias = pars['plots']['Ldebias'],
-            sigma = pars['plots']['sigma'], plot_type = PLOT_TYPE, 
-            stk_ratio = pars['plots']['stk_ratio'], stk2plot = pars['plots']['stk2plot'])
+    # # plot stokes
+    # plot_stokes(data_full, stk_type = "t", ax = AX_PA['S'], Ldebias = pars['plots']['Ldebias'],
+    #         sigma = pars['plots']['sigma'], plot_type = PLOT_TYPE, 
+    #         stk_ratio = pars['plots']['stk_ratio'], stk2plot = pars['plots']['stk2plot'])
 
-    # plot bounds
-    if args.showbounds:
-        ylim = AX_PA['S'].get_ylim()
-        for _, crop in enumerate(tcrops):
-            crop,_ = frb.par.phase2lim(t_crop = crop)
-            AX_PA['S'].fill_between(crop, ylim[0], ylim[1], color = [0.3, 0.3, 0.3], alpha = 0.3)
-        AX_PA['S'].set_ylim(ylim)
-
-
-
-    # plot stokes Dynamic spectrum I
-    df = abs(data_full['freq'][1] - data_full['freq'][0])
-    ds_freq_lims = fix_ds_freq_lims([np.min(data_full['freq']), np.max(data_full['freq'])], df)
-    AX_PA['D'].imshow(data_full['dsI'], aspect = 'auto', extent = [*data_full['time'][[0,-1]], 
-            *ds_freq_lims])
-    AX_PA['D'].set(xlabel = "Time offset [ms]", ylabel = "Freq [MHz]")
+    # # plot bounds
+    # if args.showbounds:
+    #     ylim = AX_PA['S'].get_ylim()
+    #     for _, crop in enumerate(tcrops):
+    #         crop,_ = frb.par.phase2lim(t_crop = crop)
+    #         AX_PA['S'].fill_between(crop, ylim[0], ylim[1], color = [0.3, 0.3, 0.3], alpha = 0.3)
+    #     AX_PA['S'].set_ylim(ylim)
 
 
 
-    # final figure adjustments
-    fig_PA.tight_layout()
-    fig_PA.subplots_adjust(hspace = 0)
-    AX_PA['P'].get_xaxis().set_visible(False)
-    AX_PA['S'].get_xaxis().set_visible(False)
+    # # plot stokes Dynamic spectrum I
+    # df = abs(data_full['freq'][1] - data_full['freq'][0])
+    # ds_freq_lims = fix_ds_freq_lims([np.min(data_full['freq']), np.max(data_full['freq'])], df)
+    # AX_PA['D'].imshow(data_full['dsI'], aspect = 'auto', extent = [*data_full['time'][[0,-1]], 
+    #         *ds_freq_lims])
+    # AX_PA['D'].set(xlabel = "Time offset [ms]", ylabel = "Freq [MHz]")
 
 
 
-    # save figure to file
-    if args.filename is not None:
-        plt.savefig(args.filename + "PA_plot")
+    # # final figure adjustments
+    # fig_PA.tight_layout()
+    # fig_PA.subplots_adjust(hspace = 0)
+    # AX_PA['P'].get_xaxis().set_visible(False)
+    # AX_PA['S'].get_xaxis().set_visible(False)
+
+
+
+    # # save figure to file
+    # if args.filename is not None:
+    #     plt.savefig(args.filename + "PA_plot")
 
 
 
@@ -237,7 +240,7 @@ def _PA_multi(args):
 
         # save figure to file
         if args.filename is not None:
-            plt.savefig(args.filename + "RM_fits")
+            plt.savefig(args.filename + "RM_fits.png")
 
 
 
@@ -259,7 +262,7 @@ def _PA_multi(args):
         for i, rmcomp in enumerate(RMcomp_fits):
             _rm[i] = rmcomp.posterior['rm'].val
             _rmerr[i] = rmcomp.get_mean_err()['rm']
-            _rmx[i] = comp_times[i][0] + (comp_times[i][-1] - comp_times[i][0])/2
+            _rmx[i] = tcrops[i][0] + (tcrops[i][-1] - tcrops[i][0])/2
 
         # make twin axes
         ax_B2 = ax_B.twinx()

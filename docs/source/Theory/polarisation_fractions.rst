@@ -90,7 +90,7 @@ where :math:`N` is the number of samples in the Stokes profile.
 2. The next step is to calculate the final uncertainity in the stokes polarisation fraction, which is done using the following equation
 
 .. math::
-   \sigma_{x} = x\sqrt{\frac{\bigg(\sum{X}}{\sigma\mathrm{_{\sum{X}}}}\bigg)^{2} + \frac{\bigg(\sum{I}}{\sigma\mathrm{_{\sum{I}}}}\bigg)^{2}}
+   \sigma_{x} = x\sqrt{\Bigg(\frac{\sum{X}}{\sigma\mathrm{_{\sum{X}}}}\Bigg)^{2} + \Bigg(\frac{\sum{I}}{\sigma\mathrm{_{\sum{I}}}}\Bigg)^{2}}
 
 With the above equations, we can calculate all the integrated Stokes polarisation fractions and their uncertainties. Below is the list for
 completeness.

@@ -136,6 +136,72 @@ def _clean_bilby_run(outdir, label):
 
 
 
+
+# likelyhood function for specifying both yerr and xerr
+class PyfitGaussianLikeihood(bibly.Likelihood):
+    def __init__(self, x, y, func, xerr = None, yerr = None, sigma = None, **kwargs):
+        """
+        A general gaussian likelihood function that estimates variance in posterior 
+        given uncertainty in both x and y.
+
+        Parameters
+        ----------
+        x : np.ndarray or array-like
+            x values
+        y : np.ndarray or array-like
+            y values
+        xerr : np.ndarray or array-like
+            x uncertainties
+        yerr : np.ndarray or array-like
+            y uncertainties
+        func : 
+            callable function to evaluate data with
+
+        """
+        
+        # Check if either x or y uncertainties are given, if not then
+        if (xerr is None) and (yerr is None) and (sigma is None):
+            self.sigma = None
+            self.parameters['sigma'] = None
+
+        self.x = np.array(x)
+        self.y = np.array(y)
+
+        if xerr is not None:
+            if hasattr(xerr, "__len__"):
+                self.xerr = np.array(xerr)
+        if yerr is not None:
+            if hasattr(yerr, "__len__"):
+                self.yerr = np.array(yerr)
+
+        self.func = func
+        
+
+        def log_likelihood(self):
+            """
+            Evaluate the log liklihood of function
+        
+            """
+
+            # calculate variance
+
+            # calculate log_liklihood
+
+            pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class _globals:
     pass
 
@@ -228,6 +294,7 @@ class fit:
         self.x = None
         self.y = None
         self.yerr = None
+        self.mask = None
 
         # function 
         self.func = None
@@ -543,6 +610,33 @@ class fit:
                 return 0
         
         return 1
+
+
+
+
+    def _isnan(self):
+        """
+        
+        Make mask of data incorporating any nan values
+        """
+        # nans in [x]
+        mask = np.isnan(self.x)
+        mask = np.concatenate((mask, np.isnan(self.y)))
+        
+        if self.yerr:
+            mask = np.concatenate((mask, np.isnan(self.yerr)))
+
+        self.mask = mask.copy()
+        return
+        
+    
+
+
+    def mask_data(self):
+        """
+        Mask data using mask, return x, y and yerr
+        """
+        pass        
 
         
     
@@ -885,6 +979,9 @@ class fit:
         # check if fit params attributes to use are in the right format
         priors, statics = self.get_priors()
 
+        # get data mask incase of nan values
+        self._isnan()
+
 
 
 
@@ -941,6 +1038,8 @@ class fit:
                 priors_list += [priors_wrap[key]]                
                 b_min += [self.bounds[key][0]]
                 b_max += [self.bounds[key][1]]
+
+            
 
             _val, _err = curve_fit(func_wrap, self.x, self.y, p0 = priors_list, 
                                     sigma = self.yerr, bounds = (b_min, b_max), **self.fit_keywords)

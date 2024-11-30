@@ -46,18 +46,13 @@ from .globals import _G, c
 
 ## import plot functions ##
 from .plot import (plot_RM, plot_PA, plot_stokes,      
-                  plot_poincare_track, create_poincare_sphere, plot_data)
+                  plot_poincare_track, create_poincare_sphere, plot_data, _PLOT)
 
 ## import processing functions ##
-# from .FRBproc import proc_data
-
 from .logging import log, get_verbose, set_verbose, log_title
-
-
 from .master_proc import master_proc_data
-
-
 from .frbutils import save_params
+from .widths import *
 
 
     
@@ -186,14 +181,14 @@ class FRB:
 
 
     ## [ INITIALISE FRB ] ##
-    def __init__(self, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
+    def __init__(self, yaml_file = None, name: str = _G.p['name'],    RA: str = _G.p['RA'],    DEC: str = _G.p['DEC'], 
                        MJD: float = _G.p['MJD'], DM: float = _G.p['DM'],      bw: int = _G.p['bw'],    cfreq: float = _G.p['cfreq'], 
                        t_crop = None,               f_crop = None,           tN: int = 1,
                        fN: int = 1,                 t_lim_base = _G.p['t_lim_base'],   f_lim_base = _G.p['f_lim_base'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
-                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref'],       
-                       yaml_file = None):
+                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref']      
+                       ):
         """
         Create FRB instance
         """
@@ -1508,25 +1503,44 @@ class FRB:
 
 
     ## [ FIND FRB PEAK AND TAKE REGION AROUND IT ] ##
-    def find_frb(self, sigma: int = 5, _guard: float = 10, _width: float = 50, 
-                _roughrms: float = 100, **kwargs):
+    def find_frb(self, method = "sigma", sigma: int = 5, rms_guard: float = 10, rms_width: float = 50, 
+                    rms_offset: float = 60, yfrac: float = 0.95, buffer: float = None, 
+                    padding: float = None, dt_from_peak_sigma: float = None, **kwargs):
         """
-        This function searches the stokes I dynamic spectrum for the most likely
-        location of the frb. It's important to note that this function will look through
-        the entire dataset regardless of crop parameters. It will first scrunch, so if memory
-        is an issue first set 'tN'.
+        This function uses a number of method of finding the bounds of a burst.
+
+        1. Find FRB bounds using a sigma threshold [method = "sigma"]
+        find_optimal_sigma_width(sigma, rms_guard, rms_width, rms_offset)
+
+        2. Find FRB width and centroid using a fractional fluence threshold method [method = "fluence"]
+        find_optimal_fluence_width(yfrac)
+
+        Note, the centroid of the burst is the point along the burst that splits the fluence 50/50 on either side.
+
 
         Parameters
         ----------
+        method: str
+            method to use for finding burst bounds ["sigma", "fluence"]
         sigma: int 
             S/N threshold
-        _guard: float 
+        rms_guard: float 
             gap between estiamted pulse region and 
             off-pulse region for rms and baseband estimation, in (ms)
-        _width: float 
+        rms_width: float 
             width of off-pulse region on either side of pulse region in (ms)
-        _roughrms: float 
+        rms_offset: float 
             rough offset from peak on initial S/N threshold in (ms)
+        yfrac: float
+            fraction of total fluence on either side of FRB effective centroid to take
+            as FRB bounds
+        buffer: float
+            initial width of data in [ms] centered at the peak that will be used to estimate 
+            FRB bounds
+        pading: float
+            Add additional padding to measured bounds, as a fraction of the width of the burst
+        dt_from_peak_sigma: float
+            Determine maximum time resolution (dt) to achieve a peak S/N of dt_from_peak_sigma
         **kwargs: 
             FRB parameters + FRB meta-parameters
 
@@ -1534,117 +1548,106 @@ class FRB:
         -------
         t_crop: list
             New Phase start and end limits for found frb burst
+        t_ref: float
+            Zero point, either the peak or centroid, depending on the method used
 
         """
-        log_title(f"Looking for FRB burst, Finding approximate bounds of burst up to a S/N of [{sigma}].", col = "lblue")
+        log_title(f"Looking for FRB burst.", col = "lblue")
+        ms2phase = lambda x : x / (tI.size * self.this_par.dt)
 
         ##====================##
         ## check if data valid##
         ##====================## 
 
         kwargs['t_crop'] = ["min", "max"]
-        kwargs['f_crop'] = ["min", "max"]  
+        # kwargs['f_crop'] = ["min", "max"]  
         kwargs['terr_crop'] = None
-
-        # get dynI spectra (first scrunch)
         
-        self.get_data(["dsI", "tI"], **kwargs)
+        if dt_from_peak_sigma is not None:
+            kwargs['tN'] = 1
+
+            # get full data
+            self.get_data("tI", **kwargs)
+            if not self._isdata():
+                return None
+            tI = self._t['I']
+
+            kwargs['tN'] = find_optimal_sigma_dt(tI, sigma = dt_from_peak_sigma,
+                        rms_offset = ms2phase(rms_offset), rms_width = ms2phase(rms_width))
+            
+        # get data   
+        self.get_data("tI", **kwargs)
         if not self._isdata():
             return None
-
         
-        # check if data is flagged
-        meanfunc = np.mean
-        if self.zap:
-            meanfunc = np.nanmean
+        # make smaller buffer of data
+        if buffer is not None:
+            log(f"Searching Buffer [{buffer}] ms around peak of burst", lpf_col = self.pcol)
+            buffer = int(buffer / self.this_par.dt)
+            peak = np.argmax(self._t['I'])
 
-
+            tI = self._t['I'][peak - buffer//2 : peak + buffer//2]
+            buffer_ref = peak - buffer//2
+        else:
+            log(f"Searching full time series", lpf_col = self.pcol)
+            tI = self._t['I']
+            buffer_ref = 0
         
 
-
-        ##==========================##
-        ## First (rough) FRB search ##
-        ##==========================##
-        log("Proceeding with First rough FRB search", lpf_col = self.pcol)
-
-
-
-
-
-        # find max peak
-        peak = np.argmax(self._t['I'])                                          #            # peak sample
-        peak /= self._ds['I'].shape[1]                                                       # peak phase
+        # now choose method of finding burst bounds
+        if method == "sigma":
+            ms2phase = lambda x : x / (tI.size * self.this_par.dt)
+            ref_ind, lw, rw = find_optimal_sigma_width(tI = tI, sigma = sigma,
+                                rms_guard = ms2phase(rms_guard), 
+                                rms_width = ms2phase(rms_width),
+                                rms_offset = ms2phase(rms_offset))
+            
+            log("Setting zero point reference [t_ref] to PEAK of burst", lpf_col = self.pcol)
         
-        # get t_ref
-        t_ref = self.par.t_lim[0] + peak * (self.par.t_lim[1] - self.par.t_lim[0])
+        elif method == "fluence":
+            ref_ind, lw, rw = find_optimal_fluence_width(tI = tI, yfrac = yfrac)
+
+            log("Setting zero point reference [t_ref] to EFFECTIVE CENTROID of burst", lpf_col = self.pcol)
+        
+        else:
+            log(f"Undefined method [{method}].. Aborting!", lpf_col = self.pcol, stype = "err")
+            return (None)*2
 
 
-        # take 2 equal length regions away from the peak on either side
-        # and measure rms as a rough first estimate
-        pguard = _guard/(self.this_par.nsamp * self.this_par.dt)                                 # phase guard
-        pwidth = _width/(self.this_par.nsamp * self.this_par.dt)                                 # phase width
-        proughrms = _roughrms/(self.this_par.nsamp * self.this_par.dt) # phase rough rms
+        # Calculate new t_crop and t_ref relative to full time series dataset
+        t_ref = (buffer_ref + ref_ind) * self.this_par.dt
+        t_crop = [-lw * self.this_par.dt, rw * self.this_par.dt]
 
 
-        rms_lhs = pslice(self._ds['I'], peak - proughrms - pwidth, peak - proughrms,1)       # lhs region
-        rms_rhs = pslice(self._ds['I'], peak + proughrms, peak + proughrms + pwidth,1)       # rhs region
-
-        rms_dyn = np.concatenate((rms_lhs,rms_rhs),axis = 1)                                 # full rms region
-        rms_val = np.mean(np.mean(rms_dyn,axis = 0)**2)**0.5                                 # rms value
-
-
-        # apply initial rough S/N estimate
-        sig_i = np.where(self._t['I'] / rms_val > sigma)[0]                                          # where signal
-                                                                                             # > sigma
-        p_start = sig_i[0]/self._ds['I'].shape[1] - pguard - pwidth                          # new start
-        p_end   = sig_i[-1]/self._ds['I'].shape[1] + pguard + pwidth                         # new end
-
-
-        ##===============================##
-        ## second (optomized) FRB search ##
-        ##===============================##
-        log("Proceeding with Optomised FRB search", lpf_col = self.pcol)
-
-
-        # crop region
-        dynI = pslice(self._ds['I'],p_start,p_end,1)                                         # crop new region
-
-
-        # recalculate phase positions of rms
-        pwidth = _width/(self.this_par.nsamp * self.this_par.dt)                                 # phase width
-
-        rms_lhs = pslice(dynI,0.0,pwidth,1)
-        rms_rhs = pslice(dynI,1.0 - pwidth,1.0,1)
-        rms_dyn = np.concatenate((rms_lhs,rms_rhs),axis = 1)
-
-
-        # S/N calculation, find where signal is greater than S/N = sigma
-        rms_t = meanfunc(rms_dyn, axis = 0) 
-        rms_val = meanfunc(rms_t**2)**0.5
-
-        tpro = meanfunc(dynI, axis = 0)                                                       # calculate S/N
-        sig_i = np.where(tpro / rms_val > sigma)[0]
-
-
-        # calculate new t_crop
-        t_crop = [0.0,1.0]
-        t_crop[0] = p_start + sig_i[0]/tpro.size*(p_end - p_start)
-        t_crop[1] = p_start + sig_i[-1]/tpro.size*(p_end - p_start)
+        # add padding 
         width = t_crop[1] - t_crop[0]
-        t_crop[0] -= 0.1*width
-        t_crop[1] += 0.1*width
+        padded_width = width
+        if padding is not None:
+            t_crop[0] -= padding * width
+            t_crop[1] += padding * width
+            padded_width += 2 * padding * width
+        else:
+            padding = 0
+
 
         # if units are physical 
-        if self.crop_units == "physical":
+        if self.crop_units == "phase":
             self.par.set_par(t_ref = t_ref)
-            t_crop,_ = self.par.phase2lim(t_crop = t_crop)
+            t_crop,_ = self.par.lim2phase(t_lim = t_crop)
 
         self.metapar.set_metapar(t_crop = t_crop)
         self.par.set_par(t_ref = t_ref)
 
-        log("New t_crop: [{:.5f}, {:.5f}]".format(t_crop[0],t_crop[1]), lpf_col = self.pcol)
-        log(f"New time series 0-point at Maxima of time series: [{t_ref:.2f}]", lpf = self.pcol)
-
+        log("New t_crop: [{:.4f}, {:.4f}]".format(t_crop[0],t_crop[1]), lpf_col = self.pcol)
+        log(f"New time series 0-point: [{t_ref:.4f}]", lpf_col = self.pcol)
+        log(f"Width of burst without padding: {width:.4f} ms", lpf_col = self.pcol)
+        log(f"Width LHS, RHS of zero point (without padding): {-lw * self.this_par.dt:.4f}, {rw * self.this_par.dt:.4f} ms", 
+                                                                                                lpf_col = self.pcol)
+        log(f"Width of burst with padding: {padded_width:.4f} ms", lpf_col = self.pcol)
+        log(f"Width LHS, RHS of zero point (with padding): {-lw * self.this_par.dt - padding * width:.4f}, {rw * self.this_par.dt + padding * width:.4f} ms", 
+                                                                                                lpf_col = self.pcol)
+        if dt_from_peak_sigma is not None:
+            log(f"time resolution for peak S/N [{dt_from_peak_sigma:.4f}]: {self.this_par.dt:.4f} ms", lpf_col = self.pcol)
 
         # clear dsI
         self._clear_instance(data_list = ["dsI"])
@@ -1874,6 +1877,7 @@ class FRB:
         tcrop_ds = [0.0, 1.0]
         tcrop_ds[0] = min(tcrop[0], terrcrop[0]) - tpad
         tcrop_ds[1] = max(tcrop[1], terrcrop[1]) + tpad
+        
 
         # cut crop to between [0.0, 1.0]
         if tcrop_ds[0] < 0.0:
@@ -1881,9 +1885,16 @@ class FRB:
         if tcrop_ds[1] > 1.0:
             tcrop_ds[1] = 1.0
 
+
+
+        if self.crop_units == "physical":
+            tcrop_ds, fcrop_ds = self.par.phase2lim(t_crop = tcrop_ds,
+                                                    f_crop = fcrop_ds)       
+                                                    
         # get data
         kwargs['t_crop'] = [*tcrop_ds]
         kwargs['f_crop'] = [*fcrop_ds]
+
         self.get_data([f"ds{stk}"], **kwargs)
 
 
@@ -2476,8 +2487,6 @@ class FRB:
 
         Returns
         -------
-        p : pyfit.fit
-            pyfit class fitting structure
         fig : figure
             Return figure instance
         """
@@ -2567,7 +2576,7 @@ class FRB:
 
 
 
-    def calc_polfracs(self, debias = False, **kwargs):
+    def calc_polfracs(self, debias = False, sigma = 3.0, **kwargs):
         """
         Calculate polarisation fractions using a number of different methods.
 
@@ -2575,6 +2584,10 @@ class FRB:
         ----------
         debias : bool, optional
             Debiases Stokes L, P and |V|, |Q| and |U|, by default False.
+        sigma : float, optional
+            Provide a threshold in terms of I/Ierr that will be used to mask the data
+            before estimating the peak fraction of each stokes parameter. This will be 
+            nessesary to filter out noisy data.
         """
 
         log_title("Calculating Polarisation fractions", col = "lblue")
@@ -2600,6 +2613,7 @@ class FRB:
             debias = False
             err = False
             log("No off-pulse crop given to calculate dibased L, P and/or |U/Q/V|, specify [terr_crop]...", stype = "warn")
+            log("No peak fractions we be calculatedm specify [terr_crop]...", stype = "warn")
 
         if debias:
             S['tL'], S['tLerr'] = calc_Ldebiased(S['tQ'], S['tU'], S['tIerr'], S['tQerr'],
@@ -2614,7 +2628,7 @@ class FRB:
         # calculated integrated stokes
         intS = {}
         for s in "IQUVLP":
-            intS[s] = np.sum(S[f't{s}'])
+            intS[s] = np.nansum(S[f't{s}'])
             if err:
                 if s in "LP":
                     intS[f'{s}err'] = np.nansum(S[f't{s}err']**2)**0.5
@@ -2626,9 +2640,9 @@ class FRB:
         # calculate integrated absolute Stokes Q, U and V
         for s in "QUV":
             if err:
-                intS[f"abs{s}"] = np.sum(calc_stokes_abs_debias(S[f't{s}'], S['tIerr']))
+                intS[f"abs{s}"] = np.nansum(calc_stokes_abs_debias(S[f't{s}'], S['tIerr']))
             else:
-                intS[f"abs{s}"] = np.sum(np.abs(S[f't{s}']))
+                intS[f"abs{s}"] = np.nansum(np.abs(S[f't{s}']))
         
         # calculate Stokes fractions
         fracS = {}
@@ -2640,6 +2654,47 @@ class FRB:
         for i, s in enumerate("QUV"): # absolute values
             fracS[polname[i]], fracS[f'{polname[i]}err'] = calc_ratio(intS['I'], intS[f'abs{s}'],
                                                 intS['Ierr'], intS[f'{s}err'])
+
+
+
+        # get peak Q, U, V, L and P
+        if err:
+            peaks = {}
+            peaks_pos = {}
+            mask = S['tI']/S['tIerr'] < sigma
+            stk_frac = {}
+            for s in "QUVLP":
+                stk_frac[s.lower()], stk_frac[f'{s.lower()}err'] = calc_ratio(S['tI'], S[f't{s}'], S['tIerr'], S[f't{s}err'])
+                stk_frac[s.lower()][mask] = np.nan
+                stk_frac[f'{s.lower()}err'][mask] = np.nan
+                peak_ind = np.nanargmax(np.abs(stk_frac[s.lower()]))
+                print(peak_ind, stk_frac[s.lower()][peak_ind])
+                peaks[s.lower()] = stk_frac[s.lower()][peak_ind]
+                peaks[f"{s.lower()}err"] = stk_frac[f'{s.lower()}err'][peak_ind]
+                peaks_pos[s.lower()] = S['time'][peak_ind]
+            
+            # diagnostic plots
+            fig, ax = plt.subplots(1, 1, figsize = (12,8))
+            
+            for s in "quvlp":
+                _PLOT(S['time'], stk_frac[s], stk_frac[f'{s}err'], ax = ax, plot_type = self.plot_type, 
+                        color = _G.stk_colors[s.upper()])
+            ylim = ax.get_ylim()
+            for s in "quvlp":
+                # plot marker
+                ax.plot([peaks_pos[s]]*2, ylim, color = _G.stk_colors[s.upper()], linestyle = "--",
+                            label = f'${s}_{{peak}}$ at t = {peaks_pos[s]:.2f} ms')
+            
+            ax.set(ylim = ylim, xlabel = "Time [ms]", ylabel = "Stokes X/I fraction")
+            ax.legend()
+
+            # save figure
+            if self.save_plots:
+                filename = f"{self.par.name}_peak_polfracs.png"
+            
+                plt.savefig(filename)
+
+
 
         # Now we can print everything out
         debias_flag = "FALSE\n"
@@ -2708,6 +2763,17 @@ class FRB:
         fracS['|p|^'], fracS['|p|^err'] = calc_L(fracS['l'], fracS['|v|'], fracS['lerr'], fracS['|v|err'])
         print("p^".ljust(15), f"{fracS['p^']:.4f} +/- {_print_err(fracS['p^err'])}")
         print("|p|^".ljust(15), f"{fracS['|p|^']:.4f} +/- {_print_err(fracS['|p|^err'])}\n")
+
+        if err:
+            print(f"= Peak absolute polarisation fraction at dt = [{self.this_par.dt * 1000:.0f}] us =")
+            print(f"="*50, "\n")
+            for s in "quvlp":
+                print(f"{s}_peak".ljust(15), f"{peaks[s]:.4f} +/- {peaks[f'{s}err']:.4f}".ljust(25), f"at time t = {peaks_pos[s]:.2f} ms")
+            print(f"\nPrinting out diagnostic plot of stokes polarisation fractions as a function of time [{filename}]\n")
+
+        if self.show_plots and err:
+            plt.show()
+        
 
         return fracS
 

@@ -29,9 +29,9 @@ def get_args():
     parser.add_argument("--showbounds", help = "Show bounds of each component", action = "store_true")
     parser.add_argument("--filename", help = "save to file", type = str, default = None)
 
-    # t_crops
-    parser.add_argument("--tcrops_start", help = "Start time in [ms] of list of t_crops", default = None, type = float)
-    parser.add_argument("--tcrops_width", help = "Width in [ms] of each t_crop segment", default = None, type = float)
+    # t_crops (Manual)
+    parser.add_argument("--start", help = "Start time in [ms] of list of t_crops", default = None, type = float)
+    parser.add_argument("--width", help = "Width in [ms] of each t_crop segment", default = None, type = float)
     parser.add_argument("--ncomp", help = "Number of components (number of tcrops)", default = None, type = int)
 
     return parser.parse_args()
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     # plot 
     fig = plot_PA_multi(parfile = args.parfile, RMplots = args.RMplots, RMburst = args.RMburst, 
-                        tcrops_start = args.tcrops_start, tcrops_width = args.tcrops_width, ncomp = args.ncomp,
+                        start = args.start, width = args.width, ncomp = args.ncomp,
                         showbounds = args.showbounds, filename = args.filename)
 
     plt.show()

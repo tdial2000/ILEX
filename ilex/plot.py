@@ -76,7 +76,10 @@ def _data_from_dict(dic, keys):
         if (key not in ["freq", "time"]) and ("err" not in key):
             err_keys += [f"{key}err"]
             if f"{key}err" in dic_keys:
-                out_dic[f"{key}err"] = dic[f"{key}err"].copy()
+                if dic[f"{key}err"] is not None:
+                    out_dic[f"{key}err"] = dic[f"{key}err"].copy()
+                else:
+                    err_flag = False
             else:
                 err_flag = False
 

@@ -1,5 +1,5 @@
 # imports
-from matplotlib.pyplot import Line2D
+from matplotlib.pyplot import Line2D, rcParams
 import inspect
 
 class globals_:
@@ -112,6 +112,10 @@ _G.plot_args = ['agg_filter',
 _G.errorbar_args = ['fmt', 'ecolor', 'elinewidth', 'capsize', 'capthick', 'barsabove'] 
 _G.errorbar_args += _G.plot_args
 
+
+# constants
+_G.default_colors = rcParams['axes.prop_cycle'].by_key()['color']
+_G.stk_colors = {"I":'k', "Q":_G.default_colors[1], "U":_G.default_colors[2], "V":'b', "L": 'r', "P": 'darkviolet'}
 
 
 ## constants

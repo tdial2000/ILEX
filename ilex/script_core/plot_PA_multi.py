@@ -25,15 +25,15 @@ class _empty:
 
 
 def plot_PA_multi(parfile, RMplots = False, RMburst = False, showbounds = False, 
-                    tcrops_start = None, tcrops_width = None, ncomp = None, 
+                    start = None, width = None, ncomp = None, 
                     filename = None):
     
     args = _empty
     args.parfile = parfile
     args.RMplots = RMplots
     args.RMburst = RMburst
-    args.tcrops_start = tcrops_start
-    args.tcrops_width = tcrops_width
+    args.start = start
+    args.width = width
     args.ncomp = ncomp
     args.showbounds = showbounds
     args.filename = filename
@@ -68,10 +68,10 @@ def _PA_multi(args):
     PLOT_TYPE = pars['plots']['plot_type']
 
 
-    if (args.tcrops_start is not None) and (args.tcrops_width is not None) and (args.ncomp is not None):
+    if (args.start is not None) and (args.width is not None) and (args.ncomp is not None):
         print("Creating components with tcrops using:")
-        print(f"Start time [ms]: {args.tcrops_start}")
-        print(f"Width in time [ms]: {args.tcrops_width}")
+        print(f"Start time [ms]: {args.start}")
+        print(f"Width in time [ms]: {args.width}")
         print(f"# comps: {args.ncomp}")
 
         # get t_crops
@@ -80,7 +80,7 @@ def _PA_multi(args):
         fcrops = []
 
         for i in range(args.ncomp):
-            tcrops += [[args.tcrops_start + i*args.tcrops_width, args.tcrops_start + (i+1)*args.tcrops_width]]
+            tcrops += [[args.start + i*args.width, args.start + (i+1)*args.width]]
             fcrops += [frb.metapar.f_crop]
 
 
@@ -277,7 +277,7 @@ def _PA_multi(args):
 
         # save figure to file
         if args.filename is not None:
-            plt.savefig(args.filename + "RM_burst")
+            plt.savefig(args.filename + "RM_burst.png")
 
 
     return fig_PA

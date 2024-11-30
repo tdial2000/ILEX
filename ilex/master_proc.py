@@ -683,7 +683,7 @@ def _diag_plot_weights(ds, par):
     """
 
     # diagnostic plot for time weights
-    if par['tW'] is not None:
+    if (par['tW'] is not None) and (ds is not None):
         plt.figure()
         t = np.nanmean(ds, axis = 0)
         weights = _average_weight(par['tW'], par['tN'])
@@ -701,7 +701,7 @@ def _diag_plot_weights(ds, par):
         plt.close()
     
     # diagnostic plot for freq weights
-    if par['fW'] is not None:
+    if (par['fW'] is not None) and (ds is not None):
         plt.figure()
         f = np.mean(ds, axis = 1)
         weights = _average_weights(par['fW'], par['fN'])

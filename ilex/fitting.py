@@ -77,6 +77,19 @@ def model_curve(y, n: int = 5, samp: int = None):
 
 
 
+def make_polyfit(n):
+
+    mstr = "lambda x"
+    mstr2 = ""
+
+    for i in range(n):
+        mstr += f", x{i}"
+        mstr2 += f"x{i} * x**{n-i} + "
+    
+    mstr += ", c : "
+    mstr2 += "+ c"
+
+    return eval(mstr + mstr2)
 
 
 

@@ -266,7 +266,14 @@ def get_stk_from_datalist(data_list):
     for data in data_list:
         stk.append(data[-1])
     
-    return ''.join(set(stk))
+    stk_s = ''.join(set(stk))
+    if "L" in stk_s:
+        stk_s = stk_s.replace("L", "")
+    if "P" in stk_s:
+        stk_s = stk_s.replace("P", "")
+
+    
+    return stk_s
 
 
 

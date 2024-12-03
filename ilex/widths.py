@@ -13,7 +13,7 @@
 ##===============================================##
 # imports
 import numpy as np
-
+from scipy.signal import correlate
 from .data import average, pslice
 import matplotlib.pyplot as plt
 
@@ -93,7 +93,8 @@ def find_optimal_sigma_width(tI, sigma: int = 5, rms_guard: float = 0.033,
 
 
 
-def find_optimal_fluence_width(tI, yfrac = 0.95):
+
+def find_optimal_fluence_width(tI, yfrac = 0.95, mode = "median"):
     """
     Find optimal width/bounds of frb by finding the 95% cutoff on either
     side of the effective centroid.
@@ -105,6 +106,10 @@ def find_optimal_fluence_width(tI, yfrac = 0.95):
     yfrac : float
         fraction of total fluence on either side of FRB effective centroid to take
         as FRB bounds
+    mode : str
+        type of algorithm to use when finding optimal fluence width \n
+        [median] -> find burst width by estimating centroid of burst and fluence threshold on either side \n
+        [min] -> find minimum burst width that captures the desired fluence threshold (moving window algorithm)
 
     Returns
     -------
@@ -117,6 +122,34 @@ def find_optimal_fluence_width(tI, yfrac = 0.95):
     
     """
 
+
+    # Check data first
+    if (yfrac < 0.0) or (yfrac > 1.0):
+        raise ValueError("yfrac must be between [0.0, 1.0]")
+    
+    if mode not in ["median", "min"]:
+        raise ValueError(f"mode = {mode} invalid, must be either 'median' or 'min'")
+    
+    print(f"Finding optimal [{mode}] burst width and centroid")
+
+    # perform burst width search
+    if mode == "median":
+        centroid, lw, rw = _find_median_fluence_width(tI, yfrac)
+    elif mode == "min":
+        centroid, lw, rw = _find_min_fluence_width(tI, yfrac)
+    
+
+    return centroid, lw, rw
+
+
+
+
+
+
+def _find_median_fluence_width(tI, yfrac = 0.95):
+    """
+    Find median fluence width
+    """
 
     # calculate effective centroid of burst
     fluence = np.sum(tI)
@@ -135,6 +168,59 @@ def find_optimal_fluence_width(tI, yfrac = 0.95):
     rw = rhs_ind - centroid
 
     return centroid, lw, rw
+
+
+
+
+def _find_min_fluence_width(tI, yfrac = 0.95):    
+    
+    # fulence and starting window
+    fluence = np.sum(tI)
+    N = 1
+
+    def find_N_length(tI, Nstart, Nstep):
+
+        N = Nstart
+
+        while True:
+            corr = correlate(tI, 1/fluence * np.ones(N), mode = "valid")
+            p = np.where(corr >= yfrac)[0]
+            if p.size > 0:
+                if N == 1:
+                    print("The window offset found was 1, there may be something wrong with the data or input data is too small?")
+                    return N, p
+                if Nstep == 1:
+                    if p.size > 1:
+                        print("There appears to be two centroids to a minimum width.")
+                    return N, p
+                if Nstep > 1:
+                    N, p = find_N_length(tI, N - Nstep, Nstep // 10)
+                
+                break
+            N += Nstep
+
+        return N, p
+
+    # get minimum width of burst
+    N, p = find_N_length(tI, N, 100)
+    print(f"Found fluence threshold at N = {N}")
+
+    # find centroid of burst
+    tI_burst = tI[p[0]:p[0] + N]
+    burst_fluence = np.sum(tI_burst)
+    cumsum = np.cumsum(tI_burst)
+    centroid = np.argmin(np.abs(cumsum - burst_fluence/2))
+
+    # output centroid in original time series frame and LHS RHS width w.r.t centroid
+    lw = centroid 
+    rw = N - centroid
+    centroid += p[0]
+
+    return centroid, lw, rw
+
+
+
+
 
 
 def find_optimal_sigma_dt(tI, sigma: float = 15.0, rms_offset: float = 0.33, rms_width: float = 0.0667):

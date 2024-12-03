@@ -58,14 +58,15 @@ class weights:
     def __init__(self, W = None, x = None, func = None, method = None, args = None, norm = True):
 
         # initialise arguments dictionary
-        args = dict_init(args)
+        if args is not None:
+            args = dict_init(args)
 
         # set parameters to defaults first, then use the set method
         self.W = None
         self.x = None
         self.func = None
         self.method = "None"
-        self.args = {}
+        self.args = None
         self.norm = None
 
         # set attributes whilst running some checks

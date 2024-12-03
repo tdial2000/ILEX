@@ -29,7 +29,9 @@ _G = globals_()
 _G.hkeys = ["dsI","tI","fI",
             "dsQ","tQ","fQ",
             "dsU","tU","fU",
-            "dsV","tV","fV"]
+            "dsV","tV","fV",
+            "tL", "fL", "tP",
+            "fP"]
 
 
 _G.DATA = "IQUVXY"
@@ -53,7 +55,8 @@ _G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
 
 # dict of hyper parameters``
 _G.hp = {'verbose': False, 'plot_type': 'lines',
-         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical"}
+         'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical",
+         'dynspec_cmap':'viridis'}
 
 _G.yaml_ignore = ["zap"]
 

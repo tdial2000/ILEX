@@ -22,6 +22,7 @@ from copy import deepcopy
 import inspect
 from .pyfit import fit, _posterior
 import yaml
+from .frbutils import set_dynspec_plot_properties
 
 ## import utils ##
 from .utils import (load_data, save_data, dict_get,
@@ -46,7 +47,7 @@ from .globals import _G, c
 
 ## import plot functions ##
 from .plot import (plot_RM, plot_PA, plot_stokes,      
-                  plot_poincare_track, create_poincare_sphere, plot_data, _PLOT)
+                  plot_poincare_track, create_poincare_sphere, plot_data, _PLOT, plot_dynspec)
 
 ## import processing functions ##
 from .logging import log, get_verbose, set_verbose, log_title
@@ -175,6 +176,8 @@ class FRB:
         if true, apply freq dependant weights when scrunching in freq, i.e. making time profiles, default is True
     fitted_params: dict
         dictionary of fitted values, i.e. RM
+    dynspec_cmap: str
+        cmap for plotting dynamic spectra
     """
 
 
@@ -222,9 +225,6 @@ class FRB:
 
         for S in "IQUV":
             self.ds[S] = None
-        
-        for P in "XY":
-            self.pol[P] = None
 
         
         ## data instance containers
@@ -235,15 +235,14 @@ class FRB:
         self._time = {}                 # container to store time samples 
 
         # initilise data containers
-        for S in "IQUV":
+        for S in "IQUVLP":
             self._t[S] = None
             self._t[f"{S}err"] = None
             self._f[S] = None
             self._f[f"{S}err"] = None
+        for S in "IQUV":
             self._ds[S]= None
         
-        for P in "XY":
-            self.pol[P]= None
   
         self.empty = True               # used to initialise FRB instance and data loading 
         self.verbose = verbose          # TODO: implement
@@ -266,10 +265,33 @@ class FRB:
         self._isinstance = False        # if data instance is valid
         self.fitted_params = {}
 
+        # plotting stuff
+        self.dynspec_cmap = "viridis"
+
 
         # quick load yaml file
         if yaml_file is not None:
             self.load_data(yaml_file = yaml_file)
+
+
+    @property
+    def dynspec_cmap(self):
+        return self.dynspec_cmap
+
+    # Setters
+    @dynspec_cmap.setter
+    def dynspec_cmap(self, cmap):
+        """
+        Change cmap of dynamic spectra
+
+        Parameters
+        ----------
+        cmap : str
+            color map
+
+        """
+
+        set_dynspec_plot_properties(cmap = cmap)
 
 
 
@@ -473,7 +495,8 @@ class FRB:
         
     # implement FRB_params struct  
     ## [ GET DATA ] ##
-    def get_data(self, data_list = "dsI", get = False, ignore_nans = False, **kwargs):
+    def get_data(self, data_list = "dsI", get = False, ignore_nans = False, debias = False, 
+                    ratio = False, ratio_rms_threshold = None, **kwargs):
         """
         Make new instance of loaded data. This will take a crop of the 
         loaded mmap-ed stokes data, pass it through the back-end processing
@@ -489,6 +512,12 @@ class FRB:
             instances to class container attributes
         ignore_nans : bool, optional
             If true, if nans exist in data, they will be removed before saving the data instance
+        debias, bool, optional
+            If true, tL/fL and tP/fP will be debiased 
+        ratio, bool, optional
+            If true, calculate X/I for t and f products
+        ratio_rms_threshold : float, optional
+            Mask X/I data by ratio_rms_threshold * rms
 
         Returns
         -------
@@ -512,8 +541,7 @@ class FRB:
         log(f"Retrieving the following data: {data_list}", lpf_col = self.pcol)
 
         # get all data products needed
-        data_products = self._init_proc(data_list)
-
+        data_products = self._init_proc(data_list, debias = debias, ratio = ratio)
 
         ## first check if there is data to use
         if not self._isvalid(data_products):
@@ -523,7 +551,8 @@ class FRB:
             return 
 
         ## make new instances
-        self._make_instance(data_list, ignore_nans)
+        self._make_instance(data_list = data_list, ignore_nans = ignore_nans, debias = debias, ratio = ratio,
+                            ratio_rms_threshold = ratio_rms_threshold)
 
 
         ## set new instance param 
@@ -541,147 +570,6 @@ class FRB:
         #return data
         return
 
-
-
-    # def _check_instance(self, data_list = None):
-    #     """
-    #     Run through unit checks of current instance of crops, do all crops match in shape,
-    #     have any parameters changed since last call to get_data().
-
-    #     Parameters
-    #     ----------
-    #     data_list : List(str), optional
-    #         data to check, by default None
-
-    #     Returns
-    #     -------
-    #     bool
-    #         0 if failed, 1 if passed
-    #     """
-
-    #     if self.force_reload:
-    #         log("forcing reload of data", stype = "warn")
-    #         return 0
-
-    #     if not dict_isall(self.prev_par.par2dict(), 
-    #                       self.this_par.par2dict()):
-    #         log("params do not match", stype = "warn")
-    #         return 0
-        
-    #     if not dict_isall(self.prev_metapar.metapar2dict(),
-    #                       self.this_metapar.metapar2dict()):
-    #         log("metaparams do not match", stype = "warn")
-    #         return 0
-
-    #     # flags
-    #     err_flag = self._iserr()
-
-        
-    #     ## check for data in instance
-    #     _shape = {"ds":[], "t":[], "f":[]}
-    #     freq_shape = 0
-    #     time_shape = 0
-    #     for data in data_list:
-    #         stk = data[-1]
-            
-    #         # dynamic spectra
-    #         if data[:2] == "ds":
-    #             dat = self._ds[stk]
-    #             typ = "ds"
-            
-    #         # time series
-    #         if data[0] == "t":
-    #             dat = self._t[stk]
-    #             daterr = self._t[f"{stk}err"]
-    #             typ = "t"
-
-    #         # frequency spectra
-    #         if data[0] == "f":
-    #             dat = self._f[stk]
-    #             daterr = self._f[f"{stk}err"]
-    #             typ = "f"
-
-            
-    #         # check data
-    #         if dat is None:
-    #             log(f"{data} is missing, will be made", stype = "warn")
-    #             return 0
-    #         _shape[typ].append(dat.shape)
-    #         if err_flag and typ != "ds":
-    #             if daterr is None:
-    #                 log(f"{data}err is missing, will be made", stype = "warn")
-    #                 return 0
-    #             if typ == "f":
-    #                 _shape[typ].append(daterr.shape)
-
-
-    #         # frequency band array
-    #         elif data == "freq":
-    #             if self._freq is None:
-    #                 log("freq data is missing, will be made", stype = "warn")
-    #                 return 0
-    #             freq_shape = self._freq.shape
-            
-    #         elif data == "time":
-    #             if self._time is None:
-    #                 log("time data is missing, will be made", stype = "warn")
-    #                 return 0
-    #             time_shape = self._time.shape
-
-
-    #     ## check if all shapes match up
-    #     if not all(x==_shape['ds'][0] for x in _shape['ds']):
-    #         log("cropped ds shapes do not match, will be remade", stype = "warn")
-    #         return 0
-        
-    #     if not all(x==_shape['t'][0] for x in _shape['t']):
-    #         log("cropped t shapes do not match, will be remade", stype = "warn")
-    #         return 0
-
-    #     if not all(x==_shape['f'][0] for x in _shape['f']):
-    #         log("cropped f shapes do not match, will be remade", stype = "warn")
-    #         return 0
-
-    #     ## check if cross products i.e. ds and t match up
-    #     if len(_shape['ds']) > 0 and len(_shape['t']) > 0:
-    #         if _shape['ds'][0][1] != _shape['t'][0][0]:
-    #             log(f"# samples for ds and t do not match, data will be remade\n{_shape['ds'][0][1]} != {_shape['t'][0][0]}",
-    #                 stype = "warn")
-    #             return 0
-        
-    #     if len(_shape['ds']) > 0 and len(_shape['f']) > 0:
-    #         if _shape['ds'][0][0] != _shape['f'][0][0]:
-    #             log(f"# channels for ds and f do not match, data will be remade\n{_shape['ds'][0][0]} != {_shape['t'][0][0]}",
-    #                 stype = "warn")
-    #             return 0
-        
-    #     if len(_shape['ds']) > 0 and freq_shape > 0:
-    #         if _shape['ds'][0][0] != freq_shape:
-    #             log(f"# channels for ds and freq do not match, data will be remade\n{_shape['ds'][0][0]} != {freq_shape}",
-    #                 stype = "warn")
-    #             return 0
-
-    #     if len(_shape['ds']) > 0 and time_shape > 0:
-    #         if _shape['ds'][0][1] != time_shape:
-    #             log(f"# samples for ds and time do not match, data will be remade\n{_shape['ds'][0][1]} != {time_shape}",
-    #                 stype = "warn")
-    #             return 0
-            
-    #     if len(_shape['f']) > 0 and freq_shape > 0:
-    #         if _shape['f'][0][0] != freq_shape:
-    #             log(f"# channels for f and freq do not match, data will be remade\n{_shape['f'][0][0]} != {freq_shape}",
-    #                 stype = "warn")
-    #             return 0
-        
-    #     if len(_shape['t']) > 0 and time_shape > 0:
-    #         if _shape['t'][0][0] != time_shape:
-    #             log(f"# samples for t and time do not match, data will be remade\n{_shape['t'][0][0]} != {time_shape}",
-    #                 stype = "warn") 
-    #             return 0               
-
-        
-    #     ## all checks passed, return true
-    #     return 1
 
 
 
@@ -758,7 +646,8 @@ class FRB:
 
 
 
-    def _make_instance(self, data_list = None, ignore_nans = False):
+    def _make_instance(self, data_list = None, ignore_nans = False, debias = False, ratio = False,
+                        ratio_rms_threshold = None):
         """
         Make New data crops for current instance
 
@@ -780,6 +669,11 @@ class FRB:
             self._f[f"{S}err"] = None
             self._freq = None
             self._time = None
+        for S in "LP":
+            self._t[S] = None
+            self._t[f"{S}err"] = None
+            self._f[S] = None
+            self._f[f"{S}err"] = None
 
 
         # get frequencies
@@ -809,7 +703,7 @@ class FRB:
 
         # pass through to backend processing script
         _ds, _t, _f, self._freq, _flags = master_proc_data(self.ds, freqs, 
-                                                            data_list, full_par)
+                                            data_list, full_par, debias, ratio, ratio_rms_threshold)
 
         # process flags
         self.zap = _flags['zap_flag']
@@ -925,7 +819,7 @@ class FRB:
 
 
     
-    def _init_proc(self, data_list):
+    def _init_proc(self, data_list, debias = False, ratio = False):
         """
         Check if all requested data products and their
         dependencies are being requested. 
@@ -958,6 +852,36 @@ class FRB:
             stk += "I"
 
 
+        # if requesting L and/or P
+        if ("tL" in data_list) or ("fL" in data_list):
+            for s in "QU":
+                if s not in stk:
+                    log(f"Added stokes {s} to process for retrieving L polarisation", lpf = False)
+                    stk += s
+        
+        if ("tP" in data_list) or ("fP" in data_list):
+            for s in "QUV":
+                if s not in stk:
+                    log(f"Added stokes {s} to process for retrieving P polarisation", lpf = False)
+                    stk += s
+
+        # if debiasing L and/or P
+        add_stokes_I = False
+        for s in ["tL", "fL", "tP", "fP"]:
+            if s in data_list:
+                if debias:
+                    add_stokes_I = True
+        if add_stokes_I:
+            log("Added stokes I to process for debiasing L and/or P polarisations", lpf = False)
+            if "I" not in stk:
+                stk += "I"
+        
+        # if calculating ratios
+        if ratio:
+            log("Added stokes I to process for calculating stokes ratios", lpf = False)
+            if "I" not in stk:
+                stk += "I"
+        
         return stk
 
 
@@ -1306,6 +1230,7 @@ class FRB:
         """
 
         data_shape = []
+        print(data_products)
         for key in data_products:
             # check if none
             if self.ds[key] is None:
@@ -1409,6 +1334,8 @@ class FRB:
         for S in "IQUV":
             if self._ds[S] is not None:
                 ds_str += f"ds{S}:".ljust(25) + f"{list(self._ds[S].shape)}".ljust(25) + "\n"
+        
+        for S in "IQUVLP":
             
             if self._t[S] is not None:
                 t_str += f"t{S}:".ljust(25) + f"{list(self._t[S].shape)}".ljust(25) + "\n"
@@ -1503,7 +1430,7 @@ class FRB:
 
 
     ## [ FIND FRB PEAK AND TAKE REGION AROUND IT ] ##
-    def find_frb(self, method = "sigma", sigma: int = 5, rms_guard: float = 10, rms_width: float = 50, 
+    def find_frb(self, method = "sigma", mode = "median", sigma: int = 5, rms_guard: float = 10, rms_width: float = 50, 
                     rms_offset: float = 60, yfrac: float = 0.95, buffer: float = None, 
                     padding: float = None, dt_from_peak_sigma: float = None, **kwargs):
         """
@@ -1522,6 +1449,10 @@ class FRB:
         ----------
         method: str
             method to use for finding burst bounds ["sigma", "fluence"]
+        mode: str
+            type of algorithm to use when finding optimal fluence width (method = "fluence")\n
+            [median] -> find burst width by estimating centroid of burst and fluence threshold on either side \n
+            [min] -> find minimum burst width that captures the desired fluence threshold (moving window algorithm) 
         sigma: int 
             S/N threshold
         rms_guard: float 
@@ -1563,6 +1494,7 @@ class FRB:
         # kwargs['f_crop'] = ["min", "max"]  
         kwargs['terr_crop'] = None
         
+        tN = None
         if dt_from_peak_sigma is not None:
             kwargs['tN'] = 1
 
@@ -1574,6 +1506,8 @@ class FRB:
 
             kwargs['tN'] = find_optimal_sigma_dt(tI, sigma = dt_from_peak_sigma,
                         rms_offset = ms2phase(rms_offset), rms_width = ms2phase(rms_width))
+
+            tN = kwargs['tN']
             
         # get data   
         self.get_data("tI", **kwargs)
@@ -1605,7 +1539,7 @@ class FRB:
             log("Setting zero point reference [t_ref] to PEAK of burst", lpf_col = self.pcol)
         
         elif method == "fluence":
-            ref_ind, lw, rw = find_optimal_fluence_width(tI = tI, yfrac = yfrac)
+            ref_ind, lw, rw = find_optimal_fluence_width(tI = tI, yfrac = yfrac, mode = mode)
 
             log("Setting zero point reference [t_ref] to EFFECTIVE CENTROID of burst", lpf_col = self.pcol)
         
@@ -1636,23 +1570,26 @@ class FRB:
             t_crop,_ = self.par.lim2phase(t_lim = t_crop)
 
         self.metapar.set_metapar(t_crop = t_crop)
+        if dt_from_peak_sigma is not None:
+            self.metapar.set_metapar(tN = kwargs['tN'])
         self.par.set_par(t_ref = t_ref)
 
-        log("New t_crop: [{:.4f}, {:.4f}]".format(t_crop[0],t_crop[1]), lpf_col = self.pcol)
-        log(f"New time series 0-point: [{t_ref:.4f}]", lpf_col = self.pcol)
+        print("New t_crop: [{:.4f}, {:.4f}]".format(t_crop[0],t_crop[1]))
+        print(f"New time series 0-point: [{t_ref:.4f}]")        
+        if dt_from_peak_sigma is not None:
+            print(f"time resolution for peak S/N [{dt_from_peak_sigma:.4f}]: {self.this_par.dt:.4f} ms (tN = {kwargs['tN']})")
         log(f"Width of burst without padding: {width:.4f} ms", lpf_col = self.pcol)
         log(f"Width LHS, RHS of zero point (without padding): {-lw * self.this_par.dt:.4f}, {rw * self.this_par.dt:.4f} ms", 
                                                                                                 lpf_col = self.pcol)
         log(f"Width of burst with padding: {padded_width:.4f} ms", lpf_col = self.pcol)
         log(f"Width LHS, RHS of zero point (with padding): {-lw * self.this_par.dt - padding * width:.4f}, {rw * self.this_par.dt + padding * width:.4f} ms", 
                                                                                                 lpf_col = self.pcol)
-        if dt_from_peak_sigma is not None:
-            log(f"time resolution for peak S/N [{dt_from_peak_sigma:.4f}]: {self.this_par.dt:.4f} ms", lpf_col = self.pcol)
+
 
         # clear dsI
         self._clear_instance(data_list = ["dsI"])
 
-        return t_crop, t_ref
+        return t_crop, t_ref, tN
     
 
 
@@ -1667,7 +1604,8 @@ class FRB:
     ##===============================================##
     ##                Plotting Methods               ##
     ##===============================================##
-    def plot_data(self, data = "dsI", ax = None, filename: str = None, **kwargs):
+    def plot_data(self, data = "dsI", ax = None, debias = False, ratio = False, ratio_rms_threshold = None,
+                     filename: str = None, **kwargs):
         """
         General Plotting function, choose to plot either dynamic spectrum or time series 
         data for all stokes parameters
@@ -1676,6 +1614,14 @@ class FRB:
         ----------
         data : str, optional
             type of data to plot, by default "dsI"
+        ax : axes, optional
+            Axes object to plot data into
+        debias : bool, optional
+            If True, Any L or P data plotted will be debiased
+        ratio : bool, optional
+            If True, any t or f data will be converted to X/I and plotted
+        ratio_rms_threshold, optional
+            Mask Stokes ratios by ratio_rms_threshold * rms
         filename : str, optional
             filename to save figure to, by default None
 
@@ -1688,7 +1634,9 @@ class FRB:
         log_title(f"plotting [{data}] product.", col = "lblue")
 
         # get data
-        pdat = self.get_data(data_list = data, get = True, **kwargs)
+        pdat = self.get_data(data_list = data, get = True, debias = debias, 
+                                ratio = ratio, ratio_rms_threshold=ratio_rms_threshold,
+                                **kwargs)
         if not self._isdata():
             return None
 
@@ -1901,7 +1849,7 @@ class FRB:
 
         # plot dynamic spectra
         fig = plt.figure(figsize = (12,12))
-        plt.imshow(self._ds[stk], aspect = 'auto', extent = [*self.this_par.t_lim, 
+        plot_dynspec(self._ds[stk], aspect = 'auto', extent = [*self.this_par.t_lim, 
                                                              *self.this_par.f_lim])
         plt.xlabel("Time [ms]")
         plt.ylabel("Freq [MHz]")
@@ -2539,7 +2487,7 @@ class FRB:
 
         ## plot dynamic spectra
         ds_freq_lims = fix_ds_freq_lims(self.this_par.f_lim, self.this_par.df)
-        AX['D'].imshow(self._ds['I'], aspect = 'auto', 
+        plot_dynspec(self._ds['I'], ax = AX['D'], aspect = 'auto', 
                        extent = [*self.this_par.t_lim,*ds_freq_lims])
         AX['D'].set_ylabel("Frequency [MHz]", fontsize = 12)
         AX['D'].set_xlabel("Time [ms]", fontsize = 12)
@@ -2576,7 +2524,7 @@ class FRB:
 
 
 
-    def calc_polfracs(self, debias = False, sigma = 3.0, **kwargs):
+    def calc_polfracs(self, debias = False, peak_sigma = 3.0, peak_average_factor = 1, **kwargs):
         """
         Calculate polarisation fractions using a number of different methods.
 
@@ -2584,10 +2532,12 @@ class FRB:
         ----------
         debias : bool, optional
             Debiases Stokes L, P and |V|, |Q| and |U|, by default False.
-        sigma : float, optional
+        peak_sigma : float, optional
             Provide a threshold in terms of I/Ierr that will be used to mask the data
             before estimating the peak fraction of each stokes parameter. This will be 
             nessesary to filter out noisy data.
+        peak_average_factor, float
+            averaging (downsampling) factor to apply to X(t) stokes profiles to help estimate their peaks
         """
 
         log_title("Calculating Polarisation fractions", col = "lblue")
@@ -2604,7 +2554,7 @@ class FRB:
         self._load_new_params(**kwargs) 
 
         # get data
-        S = self.get_data(["tI", "tQ", "tU", "tV"], get = True, **kwargs)
+        S = self.get_data(["tI", "tQ", "tU", "tV", "tL", "tP"], get = True, debias = debias, **kwargs)
         nsamp = S['tI'].size
 
         # check if error was given, else turn off debias
@@ -2615,15 +2565,6 @@ class FRB:
             log("No off-pulse crop given to calculate dibased L, P and/or |U/Q/V|, specify [terr_crop]...", stype = "warn")
             log("No peak fractions we be calculatedm specify [terr_crop]...", stype = "warn")
 
-        if debias:
-            S['tL'], S['tLerr'] = calc_Ldebiased(S['tQ'], S['tU'], S['tIerr'], S['tQerr'],
-                                                    S['tUerr'])
-            S['tP'], S['tPerr'] = calc_Pdebiased(S['tQ'], S['tU'], S['tV'], S['tIerr'],
-                                                    S['tQerr'], S['tUerr'], S['tVerr'])
-        else:
-            S['tL'], S['tLerr'] = calc_L(S['tQ'], S['tU'], S['tQerr'], S['tUerr'])
-            S['tP'], S['tPerr'] = calc_P(S['tQ'], S['tU'], S['tV'],
-                                            S['tQerr'], S['tUerr'], S['tVerr'])
         
         # calculated integrated stokes
         intS = {}
@@ -2658,17 +2599,35 @@ class FRB:
 
 
         # get peak Q, U, V, L and P
+        
         if err:
+            # average Stokes I for masking
             peaks = {}
             peaks_pos = {}
-            mask = S['tI']/S['tIerr'] < sigma
+
+            # find mask based on sigma value
+            mask = (average(S['tI'], N = peak_average_factor, nan = True)
+                    /average(S['tIerr'], N = peak_average_factor, nan = True)) < peak_sigma
             stk_frac = {}
+            S['time'] = average(S['time'], N = peak_average_factor)
+
+            print(S['tI'].size)
+            print(S['tQ'].size)
+
             for s in "QUVLP":
+                # get Stokes ratio
                 stk_frac[s.lower()], stk_frac[f'{s.lower()}err'] = calc_ratio(S['tI'], S[f't{s}'], S['tIerr'], S[f't{s}err'])
+
+                # average
+                stk_frac[s.lower()] = average(stk_frac[s.lower()], N = peak_average_factor, nan = True)
+                stk_frac[f'{s.lower()}err'] = average(stk_frac[f'{s.lower()}err'], N = peak_average_factor, nan = True)
+
+                # mask
                 stk_frac[s.lower()][mask] = np.nan
                 stk_frac[f'{s.lower()}err'][mask] = np.nan
+                
+                # find peak
                 peak_ind = np.nanargmax(np.abs(stk_frac[s.lower()]))
-                print(peak_ind, stk_frac[s.lower()][peak_ind])
                 peaks[s.lower()] = stk_frac[s.lower()][peak_ind]
                 peaks[f"{s.lower()}err"] = stk_frac[f'{s.lower()}err'][peak_ind]
                 peaks_pos[s.lower()] = S['time'][peak_ind]
@@ -2769,7 +2728,8 @@ class FRB:
             print(f"="*50, "\n")
             for s in "quvlp":
                 print(f"{s}_peak".ljust(15), f"{peaks[s]:.4f} +/- {peaks[f'{s}err']:.4f}".ljust(25), f"at time t = {peaks_pos[s]:.2f} ms")
-            print(f"\nPrinting out diagnostic plot of stokes polarisation fractions as a function of time [{filename}]\n")
+            if self.save_plots:
+                print(f"\nPrinting out diagnostic plot of stokes polarisation fractions as a function of time [{filename}]\n")
 
         if self.show_plots and err:
             plt.show()

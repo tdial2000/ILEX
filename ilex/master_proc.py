@@ -11,7 +11,8 @@ import matplotlib.pyplot as plt
 ## MAIN PROCESSING FUNCTION ##
 ##==========================##
 
-def master_proc_data(stk, freq, data_list, par: dict = {}):
+def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, ratio = False,
+                        ratio_rms_threshold = None):
     """
     Info:
         Master function for processing data
@@ -23,7 +24,7 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
         Dictionary of memory maps of Stokes Dynamic spectra
     freq: (ndarray) 
         Array of frequencies before cropping/averaging (processing)
-    data_list: List 
+    base_data_list: List 
         List of requested data products
     par: Dict 
         Parameters for data processing, the following are required \n
@@ -39,6 +40,12 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
         [cfreq]: Central Frequency (default = 1271.5) \n
         [f0]: reference frequency (default = cfreq) \n
         [pa0]: PA at f0 (default = 0.0)
+    debias: bool, optional
+        if True, debias L and P polarisations if requested
+    ratio: bool, optional
+        If True, calculates Stokes ratios X/I for all t and f products
+    ratio_rms_threshold: float, optional
+        Mask Stokes ratios by ratio_rms_threshold * rms
 
     Returns
     -------
@@ -61,10 +68,10 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
         stk_data[key] = stk[key]
     stk_data['freq'] = freq.copy()
 
-    par = _proc_par(par)
+    par = _proc_par(par)    
+    
+    data_list = base_data_list.copy()
 
-    # Create empty data containers
-    _ds, _t, _f, stk_list, ds_list, t_list, f_list = _get_containers_and_lists(data_list)
 
     # flags
     err_flag = False
@@ -75,12 +82,38 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     if par['zapchan'] is not None:
         zap_flag = True
 
+    fw_flag = par['fW'] is not None
+    tw_flag = par['tW'] is not None
+    
+
+    if not err_flag:
+        debias = False
+        ratio_rms_threshold = None
+
+    # update data_list in case pre-requisists are needed
+    if "tL" in data_list:
+        data_list += ["tQ", "tU"]
+    if "fL" in data_list:
+        data_list += ["fQ", "fU"]
+    if "tP" in data_list:
+        data_list += ["tQ", "tU", "tV"]
+    if "fP" in data_list:
+        data_list += ["fQ", "fU", "fV"]
+    if debias or ratio:
+        data_list += ["tI", "fI"]
+    
+    data_list = list(set(data_list))    
+    
+    # Create empty data containers
+    _ds, _t, _f, stk_list, ds_list, t_list, f_list = _get_containers_and_lists(data_list) 
+
     fday_flag = False
     if "Q" in stk_list and "U" in stk_list:
         fday_flag = True 
 
-    fw_flag = par['fW'] is not None
-    tw_flag = par['tW'] is not None
+    L_flag = ("tL" in data_list) or ("fL" in data_list)
+    P_flag = ("tP" in data_list) or ("fP" in data_list)
+
 
     # get verbose
     verbose = get_verbose()
@@ -94,7 +127,8 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     if err_flag:
         tick = "X"
     log(f"PROCESSING: Data [X], Error [{tick}]\n", lpf_col = "lgreen")
-    _log_progress([True, True, zap_flag, True, fday_flag, True, True, tw_flag, fw_flag], par)
+    _log_progress([True, True, zap_flag, True, fday_flag, True, True, tw_flag, fw_flag, L_flag, P_flag, debias, ratio], par,
+                    ratio_rms_threshold)
 
     ## ============================== ##
     ##         RUN PROCESSING         ##
@@ -157,7 +191,8 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
     if verbose:
 
         # plot frequency weights
-        _diag_plot_weights(stk_ds['I'], par)
+        if "I" in stk_ds.keys():
+            _diag_plot_weights(stk_ds['I'], par)
 
 
         # can add more later
@@ -188,20 +223,27 @@ def master_proc_data(stk, freq, data_list, par: dict = {}):
 
 
 
-
-
-
-        #freq spectra
+        #----------- freq spectra -----------#
         if S in f_list:
             if err_flag:
                 _f[f"{S}err"] = _freq_err(stk_ds[f"{S}err"], par['t_crop'], par['terr_crop'])
                 
             _f[S] = _scrunch(stk_ds[S], xtype = "f", W = _average_weight(par['tW'], par['tN']))
+
         
         # del temp data
         del stk_ds[S]
         if err_flag:
             del stk_ds[f"{S}err"]
+
+    
+    #-------- L and P polarisations --------# 
+    _retrieve_LP(_t, _f, data_list, debias = debias)
+
+
+    # ----- Convert to Stokes ratios ----- #
+    _stokes_ratios(_t, _f, ratio = ratio, ratio_rms_threshold = ratio_rms_threshold)
+
     
 
     # compile all flags for future use
@@ -282,6 +324,7 @@ def _get_containers_and_lists(data_list):
 
     for S in "IQUV":
         _ds[S], _ds[f"{S}err"] = None, None
+    for S in "IQUVLP":
         _t[S], _t[f"{S}err"] = None, None
         _f[S], _f[f"{S}err"] = None, None
     
@@ -647,13 +690,94 @@ def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
 
 
 
+def _retrieve_LP(_t, _f, data_list, debias = False):
+    """
+    Retrieve L and P data products if requested
+    """
+
+    # Linear polarisation
+    if "tL" in data_list:
+        if debias:
+            _t["L"], _t["Lerr"] = calc_Ldebiased(_t['Q'], _t['U'], _t['Ierr'], 
+                                                    _t['Qerr'], _t['Uerr'])
+        else:
+            _t["L"], _t["Lerr"] = calc_L(_t['Q'], _t['U'], _t['Qerr'], _t['Uerr'])
+
+    if "fL" in data_list:
+        if debias:
+            _f["L"], _f["Lerr"] = calc_Ldebiased(_f['Q'], _f['U'], _f['Ierr'], 
+                                                    _f['Qerr'], _f['Uerr'])
+        else:
+            _f["L"], _f["Lerr"] = calc_L(_f['Q'], _f['U'], _f['Qerr'], _f['Uerr'])
+
+    # Total polarisation
+    if "tP" in data_list:
+        if debias:
+            _t["P"], _t["Perr"] = calc_Pdebiased(_t['Q'], _t['U'], _t['V'], _t['Ierr'], 
+                                                    _t['Qerr'], _t['Uerr'], _t['Verr'])
+        else:
+            _t["P"], _t["Perr"] = calc_P(_t['Q'], _t['U'], _t['V'], _t['Qerr'], _t['Uerr'],
+                                         _t['Verr'])
+
+    if "fP" in data_list:
+        if debias:
+            _f["P"], _f["Perr"] = calc_Pdebiased(_f['Q'], _f['U'], _f['V'], _f['Ierr'], 
+                                                    _f['Qerr'], _f['Uerr'], _f['Verr'])
+        else:
+            _f["P"], _f["PLerr"] = calc_P(_f['Q'], _f['U'],_f['V'], _f['Qerr'], _f['Uerr'],
+                                          _f['Verr'])
+
+
+    return
+
+
+
+
+
+def _stokes_ratios(_t, _f, ratio = False, ratio_rms_threshold = None):
+    """
+    Convert to Stokes ratios
+    """
+
+    if not ratio:
+        return
+
+    # create mask
+    if ratio_rms_threshold is not None:
+        t_mask = _t['I'] < ratio_rms_threshold * _t['Ierr']
+        f_mask = _f['I'] < ratio_rms_threshold * _f['Ierr']
+
+    # time series
+    for s in "QUVLP":
+        if _t[s] is not None:
+            _t[s], _t[f"{s}err"] = calc_ratio(_t['I'], _t[s], _t['Ierr'], _t[f"{s}err"])
+            if ratio_rms_threshold is not None:
+                _t[s][t_mask] = np.nan
+                _t[f"{s}err"][t_mask] = np.nan
+    # freq series
+    for s in "QUVLP":
+        if _f[s] is not None:
+            _f[s], _f[f"{s}err"] = calc_ratio(_f['I'], _f[s], _f['Ierr'], _f[f"{s}err"])
+            if ratio_rms_threshold is not None:
+                _f[s][f_mask] = np.nan
+                _f[f"{s}err"][f_mask] = np.nan
+    
+    return
+
+
+
+
+
+
+
+
 
 
 
 
 
 # diagnostics functions
-def _log_progress(flags, par):
+def _log_progress(flags, par, ratio_rms_threshold = None):
     """
     Batch log progress
     
@@ -661,7 +785,8 @@ def _log_progress(flags, par):
 
     logs = [f"Time cropping [{par['t_crop'][0]}, {par['t_crop'][1]}]", f"Freq cropping [{par['f_crop'][0]}, {par['f_crop'][1]}]", 
             f"Channel zapping [{par['zapchan']}]", f"Normalising [{par['norm']}]", f"Faraday De-rotating [RM = {par['RM']}]", 
-            f"Time averaging [N = {par['tN']}]", f"Freq averaging [N = {par['fN']}]", f"Time weighting", f"Freq weighting", f"Making products"]
+            f"Time averaging [N = {par['tN']}]", f"Freq averaging [N = {par['fN']}]", f"Time weighting", f"Freq weighting", 
+            f"Calculating L (t and/or f)", f"Calculating P (t and/or P)", f"Debiasing L and/or P", f"Converting to Stokes ratios (t and f) [masking sigma = {ratio_rms_threshold}]"]
 
     pstr = ""
 

@@ -23,7 +23,7 @@ import bilby
 from bilby.core.utils.io import check_directory_exists_and_if_not_mkdir
 import glob, os
 import math
-
+from bilby.core.utils import infer_parameters_from_function
 
 #----------------------------------------#
 # UTILITY FUNCTIONS                      #
@@ -138,11 +138,14 @@ def _clean_bilby_run(outdir, label):
 
 
 # likelyhood function for specifying both yerr and xerr
-class PyfitGaussianLikeihood(bibly.Likelihood):
-    def __init__(self, x, y, func, xerr = None, yerr = None, sigma = None, **kwargs):
+class PyfitLikelihood(bilby.Likelihood):
+    def __init__(self, x, y, func, xerr = None, yerr = None, **kwargs):
         """
         A general gaussian likelihood function that estimates variance in posterior 
         given uncertainty in both x and y.
+
+        This class is a basis class the user should use when the user wants to estimate 
+        the max likelihood using both x and y errors.
 
         Parameters
         ----------
@@ -157,37 +160,107 @@ class PyfitGaussianLikeihood(bibly.Likelihood):
         func : 
             callable function to evaluate data with
 
-        """
+        """         
         
+        #---------- Get function arguments ----------#
+        parameters = inspect.getfullargspec(func).args[1:]
+        super().__init__(parameters = dict.fromkeys(parameters))
+        self.parameters = dict.fromkeys(parameters)
+        self.func_keys = self.parameters.keys()        
+        
+        #---------- Set data -----------#
+        self.x = x
+        self.y = y
+        self.yerr = yerr
+        self.xerr = xerr
+
         # Check if either x or y uncertainties are given, if not then
-        if (xerr is None) and (yerr is None) and (sigma is None):
+        self.sigma_flag = False
+        if self.yerr is None:
             self.sigma = None
             self.parameters['sigma'] = None
+            self.sigma_flag = True
 
-        self.x = np.array(x)
-        self.y = np.array(y)
 
-        if xerr is not None:
+        # if xerr is Undefined, we want to skip the propogation sigma calculation
+        self._skip_propogation_sigma = False
+        if self.xerr is not None:
             if hasattr(xerr, "__len__"):
                 self.xerr = np.array(xerr)
-        if yerr is not None:
+        else:
+            self._skip_propogation_sigma = True
+            self.xerr = 0.0
+
+        if self.yerr is not None:
             if hasattr(yerr, "__len__"):
                 self.yerr = np.array(yerr)
+        else:
+            self.yerr = 0.0
+
 
         self.func = func
+
+
+    # function
+    def propogated_sigma(self):
+
+        return 0.0
+
+
+    def calc_sigma(self):
+
+        # default way to calculate sigma
+        if self._skip_propogation_sigma:
+            return self.yerr
+        else:
+            return (self.yerr**2 + self.propogated_sigma()**2)**0.5
+
+
+    @property
+    def model_parameters(self):
+
+        return {key : self.parameters[key] for key in self.func_keys}
+    
+
+    def log_likelihood(self):
+        """
+        Evaluate the log liklihood of function
+    
+        """
+
+        sigma = self.sigma
+        y_model = self.func(self.x, **self.model_parameters)
+
+        # for a gaussian log likelihood
+        return -0.5 * np.sum(((self.y - y_model)/sigma)**2 + np.log(2 * np.pi * sigma**2))
+
+    @property
+    def sigma(self):
+
+        if self.sigma_flag:
+            return self.parameters.get('sigma', self._sigma)
+        else:
+            return self.calc_sigma()
+
+    
+    def get_sigma(self):
+
+        sigma = self.sigma
+        if sigma is None:
+            return None
+        elif hasattr(sigma, "__len__"):
+            return sigma.copy()
+        else:
+            return sigma
+
+
+
+
+class _PyfitDefault(PyfitLikelihood):
+    pass
         
 
-        def log_likelihood(self):
-            """
-            Evaluate the log liklihood of function
-        
-            """
-
-            # calculate variance
-
-            # calculate log_liklihood
-
-            pass
+            
 
 
 
@@ -207,9 +280,9 @@ class _globals:
 
 _fit = _globals()
 
-_fit.attr = ["x", "y", "yerr", "func", "method",
+_fit.attr = ["x", "y", "xerr", "yerr", "func", "method",
             "fit_keywords", "prior", "keys",
-            "static", "residuals"]
+            "static", "residuals", "likelihood"]
 
 _fit.meth = ["least squares", "bayesian"]
 
@@ -242,6 +315,8 @@ class fit:
         X data
     y : np.ndarray
         Y data
+    xerr: np.ndarray
+        X data error
     yerr : np.ndarray
         Y data error
     func : __func__
@@ -258,6 +333,8 @@ class fit:
         Priors to keep constant during modelling
     posterior : Dict
         Sampled posteriors
+    likelihood : Bilby.Likelihood
+        Likelihood class used for bayesian inference
     keys : List
         parameter names to be sampled
     chi2 : float
@@ -293,13 +370,20 @@ class fit:
         # data
         self.x = None
         self.y = None
+        self.xerr = None
         self.yerr = None
+        self.sigma = None
+
+        # proc
         self.mask = None
 
         # function 
         self.func = None
         self.method = "least squares"
         self.fit_keywords = {}
+
+        # bilby inputs
+        self.likelihood = _PyfitDefault
 
         # params
         self.prior = {}
@@ -369,32 +453,43 @@ class fit:
             if pkey in kwargs.keys():
                 # check if the right type
                 if type(kwargs[pkey]) != dict:
-                    print(f"[fit]: {pkey} must be of type 'dict'")
+                    raise ValueError(f"[fit]: {pkey} must be of type 'dict'")
                 else:
                     setattr(self, pkey, kwargs[pkey])
         
         # func
         if "func" in kwargs.keys():
             if not callable(kwargs["func"]):
-                print("[fit]: func must be a callable function")
+                raise ValueError("[fit]: func must be a callable function")
             else:
                 self.func = kwargs["func"]
         
         # method
         if "method" in kwargs.keys():
             if kwargs["method"] not in _fit.meth:
-                print(f"[fit]: Method of fitting must be one of the following types:\n {_fit.meth}")
+                raise ValueError(f"[fit]: Method of fitting must be one of the following types:\n {_fit.meth}")
             else:
                 self.method = kwargs["method"]
         
         # data
-        for pkey in ["x", "y", "yerr"]:
+        data_flag = False
+        for pkey in ["x", "y", "xerr", "yerr"]:
             if pkey in kwargs.keys():
+                data_flag = True
                 setattr(self, pkey, kwargs[pkey])
+        if data_flag:
+            self._get_mask()
 
         # other
         if "residuals" in kwargs.keys():
             self.residuals = kwargs['residuals']
+
+        # likelihood
+        if "likelihood" in kwargs.keys():
+            if issubclass(kwargs['likelihood'], PyfitLikelihood):
+                self.likelihood = kwargs['likelihood']
+            else:
+                raise ValueError("Likelihood Class must be a sub-class of PyfitLikelihood")
 
                 
     
@@ -408,39 +503,52 @@ class fit:
 
         # method 
         if not self.method in _fit.meth:
-            print(f"[fit]: Method of fitting must be one of the following:\n {_fit.meth}")
+            raise ValueError(f"[fit]: Method of fitting must be one of the following:\n {_fit.meth}")
             return 0 
 
         # func
         if not callable(self.func):
-            print(f"[fit]: func must be a callable function")
+            raise ValueError(f"[fit]: func must be a callable function")
             return 0
 
         # check posteriors and priors and statics
         for pkey in ["prior", "posterior", "static"]:
             if type(getattr(self, pkey)) != dict:
-                print(f"[fit]: {pkey} must be a dictionary of values")
+                raise ValueError(f"[fit]: {pkey} must be a dictionary of values")
                 return 0
 
         # check data
         for pkey in ["x", "y"]:
             attr = getattr(self, pkey)
             if attr is None:
-                print(f"[fit]: Must specify {pkey}")
+                raise ValueError(f"[fit]: Must specify {pkey}")
                 return 0
             elif  not hasattr(attr, "__len__"):
-                print(f"[fit]: {pkey} data must be array-like")
+                raise ValueError(f"[fit]: {pkey} data must be array-like")
                 return 0
         
         if self.x.size != self.y.size:
-            print("[fit]: Length mismatch between x and y data")
+            raise ValueError("[fit]: Length mismatch between x and y data")
             return 0
         
+        
         # check yerr
-        if self.yerr is not None:
-            if self.yerr.size != self.y.size:
-                print("[fit]: Length mismatch between yerr and y")
-                return 0
+        for pkey in ["xerr", "yerr"]:
+            attr = getattr(self, pkey)
+            if attr is not None:
+                if hasattr(attr, "__len__"):
+                    if attr.size != getattr(self, pkey[0]).size:
+                        raise RuntimeError(f"[fit]: Array Length mismatch between {pkey} and {pkey[0]}!")
+                        return 0
+                elif isinstance(attr, float) or isinstance(attr, int):
+                    pass
+                else:
+                    raise ValueError(f"[{pkey}] must be array-like or a float/int value!")
+
+        # check likelihood
+        if not issubclass(self.likelihood, PyfitLikelihood):
+            raise ValueError("Likelihood Class must be a sub-class of PyfitLikelihood")
+
         
         # only if all passed
         return 1
@@ -614,29 +722,72 @@ class fit:
 
 
 
-    def _isnan(self):
-        """
+    # def _isnan(self):
+    #     """
         
-        Make mask of data incorporating any nan values
-        """
-        # nans in [x]
-        mask = np.isnan(self.x)
-        mask = np.concatenate((mask, np.isnan(self.y)))
+    #     Make mask of data incorporating any nan values
+    #     """
+    #     # nans in [x]
+    #     mask = np.isnan(self.x)
+    #     mask = np.concatenate((mask, np.isnan(self.y)))
         
-        if self.yerr:
-            mask = np.concatenate((mask, np.isnan(self.yerr)))
+    #     if self.yerr:
+    #         mask = np.concatenate((mask, np.isnan(self.yerr)))
 
-        self.mask = mask.copy()
-        return
+    #     self.mask = mask.copy()
+    #     return
+
+    def _get_mask(self):
+        """
+        Mask data, find common mask amoung x, y, xerr and yerr
+        """
+        # Nans in [x]
+        self.mask = ~np.isnan(self.x)
+
+        # Nans in [y]
+        self.mask[np.isnan(self.y)] = False
+
+        # nans in [xerr?]
+        if self.xerr is not None:
+            if hasattr(self.xerr, "__len__"):
+                self.mask[np.isnan(self.xerr)] = False
+        
+        # nans in [yerr?]
+        if self.yerr is not None:
+            if hasattr(self.yerr, "__len__"):
+                self.mask[np.isnan(self.yerr)] = False
+
+
+
+
         
     
-
-
-    def mask_data(self):
+    def _proc_data(self):
         """
-        Mask data using mask, return x, y and yerr
+        Perform pre-processing tasks on data before passing through fitting
+        methods
+
+        1. Mask any nans
         """
-        pass        
+        xerr = None
+        yerr = None
+        
+        # mask data
+
+        if self.xerr is not None:
+            if hasattr(self.xerr, "__len__"):
+                xerr = self.xerr[self.mask]
+            else:
+                xerr = self.xerr
+        if self.yerr is not None:
+            if hasattr(self.yerr, "__len__"):
+                yerr = self.yerr[self.mask]
+            else:
+                yerr = self.yerr
+        
+        return self.x[self.mask], self.y[self.mask], xerr, yerr
+
+        
 
         
     
@@ -979,9 +1130,8 @@ class fit:
         # check if fit params attributes to use are in the right format
         priors, statics = self.get_priors()
 
-        # get data mask incase of nan values
-        self._isnan()
-
+        # # proc data before hand (i.e. masking)
+        x, y, xerr, yerr = self._proc_data()
 
 
 
@@ -990,6 +1140,10 @@ class fit:
         #-----------------------------#
         args_str = "lambda x"
         func_str = "func(x = x"
+
+        # NOTE I am aware that Bilby has DeltaFunction priors I could use for static paramters,
+        # however, trhis method, athough scary, works for both least squares and bilby. 
+
 
         priors_wrap = {}
         statics_wrap = {}
@@ -1041,10 +1195,11 @@ class fit:
 
             
 
-            _val, _err = curve_fit(func_wrap, self.x, self.y, p0 = priors_list, 
-                                    sigma = self.yerr, bounds = (b_min, b_max), **self.fit_keywords)
+            _val, _err = curve_fit(func_wrap, x, y, p0 = priors_list, 
+                                    sigma = yerr, bounds = (b_min, b_max), **self.fit_keywords)
 
             self._curve_fit2posterior(_val, _err, inspect.getfullargspec(func_wrap)[0][1:])
+            self.sigma = yerr
 
 
         # fit using bilby bayesian inference
@@ -1067,10 +1222,9 @@ class fit:
                 keys += ['sigma']
             bil_priors = _dict_get(priors, keys)
 
-                
-            # init likelihood function
-            likelihood = bilby.likelihood.GaussianLikelihood(self.x, self.y, func_wrap,
-                                        sigma = self.yerr)
+            
+            likelihood = self.likelihood(x = x, y = y,
+                                        func = func_wrap, xerr = xerr, yerr = yerr)
             
             # run sampler
             result_ = bilby.run_sampler(likelihood = likelihood, priors = _priorUniform(bil_priors),
@@ -1079,9 +1233,13 @@ class fit:
             # get posteriors
             self._results2posterior(result_)
 
+            # REUSE LIKELIHOOD INSTANCE TO CALCULATE SIGMA
+            likelihood.parameters = self.get_post_val()
+            self.sigma = likelihood.get_sigma()
+
             # plot bilby outputs for diagnostic purposes
             if self.plotPosterior:
-                result_.plot_with_data(func_wrap, self.x, self.y)
+                result_.plot_with_data(func_wrap, x, y)
                 result_.plot_corner()
 
 
@@ -1124,13 +1282,17 @@ class fit:
         if self._is_sigma_sampled:
             sigma = self.posterior['sigma'].val
         else:
-            sigma = self.yerr
+            sigma = self.sigma
+
+        
+        x, y, _, _ = self._proc_data()
+
 
         # degrees of freedom
-        self.dof = self.y.size - self.nfitpar
+        self.dof = y.size - self.nfitpar
 
         # calculate chi squared and reduced chi squared
-        self.chi2 = np.sum((self.y - self.get_model()[1])**2/(sigma**2))
+        self.chi2 = np.sum((y - self.get_model(x = x)[1])**2/(sigma**2))
         self.rchi2 = self.chi2/self.dof
 
         # calculate errors in chi squared and reduced chi squared
@@ -1148,7 +1310,7 @@ class fit:
 
         if self.method == "bayesian":
             # bayesian Information Criterion
-            self.bic = self.nfitpar*np.log(self.y.size) - 2*self.max_log_likelihood
+            self.bic = self.nfitpar*np.log(y.size) - 2*self.max_log_likelihood
             self.bic_err = 2*self.max_log_likelihood_err
 
         
@@ -1260,16 +1422,16 @@ class fit:
         AX[0].plot(self.x, y_fit, color = [0.9098, 0.364, 0.3961], linewidth = 2.5)
 
         # plot errorbars if specified
-        if self.yerr is not None:
-            AX[0].errorbar(self.x, self.y, self.yerr, color = 'k', 
+        if (self.yerr is not None) or (self.xerr is not None):
+            AX[0].errorbar(x = self.x, y = self.y, xerr = self.xerr, yerr = self.yerr, color = 'k', 
                         alpha = 0.4, linestyle = '')
 
         # plot residuals
         if self.residuals:
             AX[1].scatter(self.x, self.y - y_fit, c = 'k', s = 10)
-            if self.yerr is not None:
-                AX[1].errorbar(self.x, self.y - y_fit, self.yerr, color = 'k',
-                alpha = 0.4, linestyle = '')
+            if (self.yerr is not None) or (self.xerr is not None):
+                AX[1].errorbar(x = self.x, y = self.y - y_fit, xerr = self.xerr,
+                                 yerr = self.yerr, color = 'k', alpha = 0.4, linestyle = '')
 
         # last figure changes
         fig.tight_layout()        
@@ -1312,8 +1474,12 @@ class fit:
         pstr += "\nDATA\n"
         pstr += "--------\n"
         for d in ["x", "y", "yerr"]:
-            if getattr(self,d) is not None:
-                o = list(getattr(self,d).shape)
+            attr = getattr(self, d)
+            if attr is not None:
+                if hasattr(attr, "__len__"):
+                    o = list(attr.shape)
+                elif isinstance(attr, float) or isinstance(attr, int):
+                    o = attr
             else:
                 o = None
             pstr += f"{d}:".ljust(10) + f"{o}\n"

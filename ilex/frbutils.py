@@ -18,6 +18,8 @@ from ruamel.yaml.scalarfloat import ScalarFloat
 import numpy as np
 from ruamel.yaml import YAML
 import os
+from yaml import safe_load as base_yaml_save_load
+from yaml import safe_dump as base_yaml_save_dump
 
 
 
@@ -155,7 +157,45 @@ def save_params(frb, file):
     return
 
 
+def _make_new_dynspec_plot_properties_file(dynspec_file):
+
+    with open(dynspec_file, "w") as file:
+        pass
+    
 
 
+def _get_dynspec_plot_properties_file():
+
+    dynspec_file = os.path.join(os.environ['ILEX_PATH'], "files/_dynspec_plot_properties.yaml")
+    if not os.path.exists:
+        _make_new_dynspec_plot_properties_file(dynspec_file)
+
+    return dynspec_file
+    
+
+
+
+# functions for changing plotting properties
+def get_dynspec_plot_properties():
+
+    dynspec_file = _get_dynspec_plot_properties_file()
+    with open(dynspec_file, 'r') as file:
+        properties = base_yaml_save_load(file)
+
+    return properties
+
+
+# function to save dynspec_plot properties
+def set_dynspec_plot_properties(**kwargs):
+
+    properties = get_dynspec_plot_properties()
+    for key in kwargs.keys():
+        properties[key] = kwargs[key]
+
+    dynspec_file = _get_dynspec_plot_properties_file()
+    with open(dynspec_file, "w") as file:
+        base_yaml_save_dump(properties, file)
+
+    
 
 

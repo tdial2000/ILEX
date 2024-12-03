@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -93,6 +94,8 @@
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">cmasher</span> <span class="k">as</span> <span class="nn">cmr</span>
+<span class="kn">from</span> <span class="nn">.frbutils</span> <span class="kn">import</span> <span class="n">get_dynspec_plot_properties</span>
 
 <span class="c1">## import stats functions ##</span>
 <span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="p">(</span><span class="n">lorentz</span><span class="p">,</span> <span class="n">scatt_pulse_profile</span><span class="p">,</span> <span class="n">scat</span><span class="p">,</span>
@@ -150,7 +153,10 @@
         <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;err&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="p">):</span>
             <span class="n">err_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span> <span class="ow">in</span> <span class="n">dic_keys</span><span class="p">:</span>
-                <span class="n">out_dic</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">dic</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">out_dic</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">err_flag</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">err_flag</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -272,6 +278,46 @@
 
 
 
+<div class="viewcode-block" id="plot_dynspec">
+<a class="viewcode-back" href="../../_autosummary/ilex.plot.html#ilex.plot.plot_dynspec">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_dynspec</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot dynamic spectrum</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds : np.ndarray</span>
+<span class="sd">        dynamic spectrum</span>
+<span class="sd">    ax : axes, optional</span>
+<span class="sd">        axes to plot dynspec, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">get_dynspec_plot_properties</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="c1"># cases</span>
+    <span class="k">if</span> <span class="s2">&quot;cmap&quot;</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;cmap&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">plt</span><span class="o">.</span><span class="n">colormaps</span><span class="p">():</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;cmap&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;arctic&quot;</span><span class="p">:</span>
+            <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;cmap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmr</span><span class="o">.</span><span class="n">arctic_r</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Colorbar not supported, either must be a known matplotlib colorbar or [artic] from cmasher&quot;</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;cmap&#39;</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">)</span>
+    
+
+    <span class="k">return</span></div>
+
+
+
+
 
 
 
@@ -351,7 +397,8 @@
     <span class="c1"># check type </span>
     <span class="k">if</span> <span class="n">typ</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ds&quot;</span><span class="p">:</span>
         <span class="c1"># plot dynspec</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">tlim</span><span class="p">,</span> <span class="o">*</span><span class="n">flim</span><span class="p">])</span>
+        <span class="n">plot_dynspec</span><span class="p">(</span><span class="n">pdat</span><span class="p">[</span><span class="n">typ</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span><span class="p">,</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">tlim</span><span class="p">,</span> <span class="o">*</span><span class="n">flim</span><span class="p">])</span>
+        <span class="c1"># ax.imshow(pdat[typ], aspect = &#39;auto&#39;, )</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">tname</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="n">fname</span><span class="p">)</span>
     
     <span class="k">elif</span> <span class="n">typ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>

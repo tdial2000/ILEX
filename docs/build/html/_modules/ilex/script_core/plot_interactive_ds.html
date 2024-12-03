@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -87,6 +88,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="n">pslice</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">fix_ds_freq_lims</span>
+<span class="kn">from</span> <span class="nn">..plot</span> <span class="kn">import</span> <span class="n">plot_dynspec</span>
 
 
 <span class="c1"># empty class</span>
@@ -210,7 +212,9 @@
 
     <span class="c1"># plot dynamic spectrum</span>
     <span class="n">ds_freq_lims</span> <span class="o">=</span> <span class="n">fix_ds_freq_lims</span><span class="p">(</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">f_lim</span><span class="p">,</span> <span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
-    <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ds</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
+
+    <span class="n">plot_dynspec</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;ds</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">S</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+                    <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
 
 
     <span class="c1"># return struct to keep data in memory</span>

@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -86,7 +87,7 @@
 <span class="kn">from</span> <span class="nn">..frb</span> <span class="kn">import</span> <span class="n">FRB</span>
 <span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">load_param_file</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">,</span> <span class="n">fix_ds_freq_lims</span>
-<span class="kn">from</span> <span class="nn">..plot</span> <span class="kn">import</span> <span class="n">_PLOT</span><span class="p">,</span> <span class="n">plot_PA</span>
+<span class="kn">from</span> <span class="nn">..plot</span> <span class="kn">import</span> <span class="n">_PLOT</span><span class="p">,</span> <span class="n">plot_PA</span><span class="p">,</span> <span class="n">plot_dynspec</span>
 <span class="kn">from</span> <span class="nn">..pyfit</span> <span class="kn">import</span> <span class="n">fit</span>
 <span class="kn">from</span> <span class="nn">..fitting</span> <span class="kn">import</span> <span class="n">make_scatt_pulse_profile_func</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
@@ -284,8 +285,8 @@
     <span class="c1"># plot dynamic spectra</span>
     <span class="k">if</span> <span class="n">flags</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]:</span>
         <span class="n">ds_freq_lims</span> <span class="o">=</span> <span class="n">fix_ds_freq_lims</span><span class="p">(</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">f_lim</span><span class="p">,</span> <span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
-        <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> 
-                                              <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
+        <span class="n">plot_dynspec</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">],</span> <span class="n">aspect</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+                        <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">frb</span><span class="o">.</span><span class="n">this_par</span><span class="o">.</span><span class="n">t_lim</span><span class="p">,</span> <span class="o">*</span><span class="n">ds_freq_lims</span><span class="p">])</span>
         <span class="n">AX</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">)</span>
     
 

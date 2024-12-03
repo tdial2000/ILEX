@@ -19,6 +19,8 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import os
+import cmasher as cmr
+from .frbutils import get_dynspec_plot_properties
 
 ## import stats functions ##
 from .fitting import (lorentz, scatt_pulse_profile, scat,
@@ -201,6 +203,43 @@ def _PLOT_LINES(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwarg
 
 
 
+def plot_dynspec(ds, ax = None, **kwargs):
+    """
+    Plot dynamic spectrum
+
+    Parameters
+    ----------
+    ds : np.ndarray
+        dynamic spectrum
+    ax : axes, optional
+        axes to plot dynspec, by default None
+    """
+
+    properties = get_dynspec_plot_properties()
+
+    for key in kwargs.keys():
+        properties[key] = kwargs[key]
+    
+    # cases
+    if "cmap" in properties.keys():
+        if properties["cmap"] in plt.colormaps():
+            pass
+        elif properties["cmap"] == "arctic":
+            properties['cmap'] = cmr.arctic_r
+        else:
+            print("Colorbar not supported, either must be a known matplotlib colorbar or [artic] from cmasher")
+            del properties['cmap']
+    
+    if ax is not None:
+        ax.imshow(ds, **properties)
+    else:
+        plt.imshow(ds, **properties)
+    
+
+    return
+
+
+
 
 
 
@@ -278,7 +317,8 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     # check type 
     if typ[0:2] == "ds":
         # plot dynspec
-        ax.imshow(pdat[typ], aspect = 'auto', extent = [*tlim, *flim])
+        plot_dynspec(pdat[typ], ax = ax, aspect = 'auto', extent = [*tlim, *flim])
+        # ax.imshow(pdat[typ], aspect = 'auto', )
         ax.set(xlabel = tname, ylabel = fname)
     
     elif typ[0] == "t":

@@ -38,14 +38,15 @@ metapar:
 # parameters to control general use of ILEX
 hyperpar:
   verbose:        False
-  show_plots:     False
-  save_plots:     True
+  show_plots:     True
+  save_plots:     False
   plot_type:      "lines"
   residuals:      True
   plotPosterior:  True
   apply_tW:       True
   apply_fW:       True
-  crop_units:     "physical"               
+  crop_units:     "physical"   
+  dynspec_cmap:   "arctic"            
 
 
 

@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ..data import pslice
 from ..utils import fix_ds_freq_lims
+from ..plot import plot_dynspec
 
 
 # empty class
@@ -128,7 +129,9 @@ def _plot_ds_int(args):
 
     # plot dynamic spectrum
     ds_freq_lims = fix_ds_freq_lims(frb.this_par.f_lim, frb.this_par.df)
-    AX[0].imshow(data[f"ds{args.S}"], aspect = 'auto', extent = [*frb.this_par.t_lim, *ds_freq_lims])
+
+    plot_dynspec(ds = data[f"ds{args.S}"], ax = AX[0], aspect = 'auto', 
+                    extent = [*frb.this_par.t_lim, *ds_freq_lims])
 
 
     # return struct to keep data in memory

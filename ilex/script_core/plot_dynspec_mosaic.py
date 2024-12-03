@@ -12,6 +12,7 @@
 from ..frb import FRB
 from ..data import *
 from ..utils import load_param_file, dict_get, fix_ds_freq_lims
+from ..plot import plot_dynspec
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
@@ -105,8 +106,8 @@ def _plot_mosaic(args):
 
 
             # plot dynspec
-            AX[f"{S}{t}"].imshow(data[f"ds{S}"], aspect = 'auto', 
-                            extent = [*t_offset, *ds_freq_lims])
+            plot_dynspec(ds = data[f'ds{S}'], ax = AX[f"{S}{t}"], 
+                            aspect = 'auto', extent = [*t_offset, *ds_freq_lims])
 
             # set labels
             if S == "V":

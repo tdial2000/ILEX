@@ -12,7 +12,7 @@
 from ..frb import FRB
 from ..data import *
 from ..utils import load_param_file, dict_get, fix_ds_freq_lims
-from ..plot import _PLOT, plot_PA
+from ..plot import _PLOT, plot_PA, plot_dynspec
 from ..pyfit import fit
 from ..fitting import make_scatt_pulse_profile_func
 import yaml
@@ -196,8 +196,8 @@ def _plot(args, figpar, flags):
     # plot dynamic spectra
     if flags['D']:
         ds_freq_lims = fix_ds_freq_lims(frb.this_par.f_lim, frb.this_par.df)
-        AX['D'].imshow(data['dsI'], aspect = 'auto', extent = [*frb.this_par.t_lim, 
-                                              *ds_freq_lims])
+        plot_dynspec(ds = data['dsI'], ax = AX['D'], aspect = 'auto', 
+                        extent = [*frb.this_par.t_lim, *ds_freq_lims])
         AX['D'].set(ylabel = "Freq [MHz]")
     
 

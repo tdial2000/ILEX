@@ -12,6 +12,7 @@
 from ..frb import FRB
 from ..data import *
 from ..utils import load_param_file, dict_get, fix_ds_freq_lims
+from ..plot import plot_dynspec
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
@@ -69,8 +70,8 @@ def _plot_stokes(args):
     xw = data['time'][-1] - data['time'][0]
     yw = abs(data['freq'][-1] - data['freq'][0])
     for S in "IQUV":
-        AX[S].imshow(data[f"ds{S}"], aspect = 'auto', 
-            extent = extent)
+        plot_dynspec(ds = data[f"ds{S}"], ax = AX[S], aspect = 'auto',
+                        extent = extent)
         AX[S].set(ylabel = "Freq [MHz]")
         # add textbox
         AX[S].text(data['time'][0] + 0.97*xw, np.min(data['freq']) + 0.95*yw,

@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -134,14 +135,15 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 
         <span class="c1"># initialise arguments dictionary</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
 
         <span class="c1"># set parameters to defaults first, then use the set method</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># set attributes whilst running some checks</span>

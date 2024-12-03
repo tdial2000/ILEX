@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ilex.globals" href="ilex.globals.html" />
-    <link rel="prev" title="ilex.frb" href="ilex.frb.html" /> 
+    <link rel="prev" title="ilex.fitting" href="ilex.fitting.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,9 +51,10 @@
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.frbutils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.frbutils.get_dynspec_plot_properties"><code class="docutils literal notranslate"><span class="pre">get_dynspec_plot_properties()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.frbutils.save_params"><code class="docutils literal notranslate"><span class="pre">save_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.frbutils.set_dynspec_plot_properties"><code class="docutils literal notranslate"><span class="pre">set_dynspec_plot_properties()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
@@ -61,10 +62,10 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
 </li>
 </ul>
@@ -97,18 +98,28 @@
   <section id="module-ilex.frbutils">
 <span id="ilex-frbutils"></span><h1>ilex.frbutils<a class="headerlink" href="#module-ilex.frbutils" title="Link to this heading"></a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.frbutils.get_dynspec_plot_properties">
+<span class="sig-name descname"><span class="pre">get_dynspec_plot_properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frbutils.html#get_dynspec_plot_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frbutils.get_dynspec_plot_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.frbutils.save_params">
 <span class="sig-name descname"><span class="pre">save_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frbutils.html#save_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frbutils.save_params" title="Link to this definition"></a></dt>
 <dd><p>Save frb class parameters to yaml file (don’t look at it, code sucks :( )</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>frb</strong> (<a class="reference internal" href="ilex.frb.html#ilex.frb.FRB" title="ilex.frb.FRB"><em>ilex.frb.FRB</em></a>) – frb class instance</p></li>
+<li><p><strong>frb</strong> (<em>ilex.frb.FRB</em>) – frb class instance</p></li>
 <li><p><strong>file</strong> (<em>str</em>) – yaml file name</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.frbutils.set_dynspec_plot_properties">
+<span class="sig-name descname"><span class="pre">set_dynspec_plot_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frbutils.html#set_dynspec_plot_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frbutils.set_dynspec_plot_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 
@@ -116,7 +127,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.frb.html" class="btn btn-neutral float-left" title="ilex.frb" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.fitting.html" class="btn btn-neutral float-left" title="ilex.fitting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ilex.globals.html" class="btn btn-neutral float-right" title="ilex.globals" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

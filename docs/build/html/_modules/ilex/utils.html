@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -369,7 +370,14 @@
     <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
         <span class="n">stk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">stk</span><span class="p">))</span></div>
+    <span class="n">stk_s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">stk</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;L&quot;</span> <span class="ow">in</span> <span class="n">stk_s</span><span class="p">:</span>
+        <span class="n">stk_s</span> <span class="o">=</span> <span class="n">stk_s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;P&quot;</span> <span class="ow">in</span> <span class="n">stk_s</span><span class="p">:</span>
+        <span class="n">stk_s</span> <span class="o">=</span> <span class="n">stk_s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    
+    <span class="k">return</span> <span class="n">stk_s</span></div>
 
 
 

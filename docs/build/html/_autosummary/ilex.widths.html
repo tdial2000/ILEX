@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.widths &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="ilex.utils" href="ilex.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.widths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.widths.find_optimal_fluence_width"><code class="docutils literal notranslate"><span class="pre">find_optimal_fluence_width()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.widths.find_optimal_sigma_dt"><code class="docutils literal notranslate"><span class="pre">find_optimal_sigma_dt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.widths.find_optimal_sigma_width"><code class="docutils literal notranslate"><span class="pre">find_optimal_sigma_width()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ilex.html">ilex</a></li>
+      <li class="breadcrumb-item active">ilex.widths</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/ilex.widths.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ilex.widths">
+<span id="ilex-widths"></span><h1>ilex.widths<a class="headerlink" href="#module-ilex.widths" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.widths.find_optimal_fluence_width">
+<span class="sig-name descname"><span class="pre">find_optimal_fluence_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yfrac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'median'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/widths.html#find_optimal_fluence_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.widths.find_optimal_fluence_width" title="Link to this definition"></a></dt>
+<dd><p>Find optimal width/bounds of frb by finding the 95% cutoff on either
+side of the effective centroid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tI</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Stokes I time series profile</p></li>
+<li><p><strong>yfrac</strong> (<em>float</em>) – fraction of total fluence on either side of FRB effective centroid to take
+as FRB bounds</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – <p>type of algorithm to use when finding optimal fluence width</p>
+<p>[median] -&gt; find burst width by estimating centroid of burst and fluence threshold on either side</p>
+<p>[min] -&gt; find minimum burst width that captures the desired fluence threshold (moving window algorithm)</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>centroid</strong> (<em>int</em>) – index of effective centroid of tI</p></li>
+<li><p><strong>lw</strong> (<em>int</em>) – effective yfrac width on the LHS of centroid</p></li>
+<li><p><strong>rw</strong> (<em>int</em>) – effective yfrac width on the RHS of centroid</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.widths.find_optimal_sigma_dt">
+<span class="sig-name descname"><span class="pre">find_optimal_sigma_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.33</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0667</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/widths.html#find_optimal_sigma_dt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.widths.find_optimal_sigma_dt" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tI</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – time series</p></li>
+<li><p><strong>sigma</strong> (<em>int</em><em>, </em><em>optional</em>) – minimum peak Signal-to-noise, by default 15</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>tN</strong> – averaging factor needed to reach desired peak Signal-to-noise threshold</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.widths.find_optimal_sigma_width">
+<span class="sig-name descname"><span class="pre">find_optimal_sigma_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_guard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.033</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0667</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.33</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/widths.html#find_optimal_sigma_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.widths.find_optimal_sigma_width" title="Link to this definition"></a></dt>
+<dd><p>This function searches the stokes I dynamic spectrum for the most likely
+location of the frb. It’s important to note that this function will look through
+the entire dataset regardless of crop parameters. It will first scrunch, so if memory
+is an issue first set ‘tN’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> (<em>int</em>) – S/N threshold</p></li>
+<li><p><strong>rms_guard</strong> (<em>float</em>) – gap between estiamted pulse region and
+off-pulse region for rms and baseband estimation, in [phase units]</p></li>
+<li><p><strong>rms_width</strong> (<em>float</em>) – width of off-pulse region on either side of pulse region in [phase units]</p></li>
+<li><p><strong>rms_offset</strong> (<em>float</em>) – rough offset from peak on initial S/N threshold in [phase units]</p></li>
+<li><p><strong>**kwargs</strong> – FRB parameters + FRB meta-parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>peak</strong> (<em>int</em>) – index of peak value in burst</p></li>
+<li><p><strong>lw</strong> (<em>int</em>) – lower bound width from peak</p></li>
+<li><p><strong>hw</strong> (<em>int</em>) – upper bound width from peak</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex.utils.html" class="btn btn-neutral float-left" title="ilex.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

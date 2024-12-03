@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ilex.script_core" href="ilex.script_core.html" />
-    <link rel="prev" title="ilex.plot" href="ilex.plot.html" /> 
+    <link rel="prev" title="ilex.par" href="ilex.par.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,18 +51,26 @@
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.pyfit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.calc_sigma"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.calc_sigma()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.get_sigma"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.get_sigma()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.log_likelihood"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.log_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.model_parameters"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.model_parameters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.propogated_sigma"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.propogated_sigma()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.sigma"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.sigma</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.pyfit.fit"><code class="docutils literal notranslate"><span class="pre">fit</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.x"><code class="docutils literal notranslate"><span class="pre">fit.x</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.y"><code class="docutils literal notranslate"><span class="pre">fit.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.xerr"><code class="docutils literal notranslate"><span class="pre">fit.xerr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.yerr"><code class="docutils literal notranslate"><span class="pre">fit.yerr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.func"><code class="docutils literal notranslate"><span class="pre">fit.func</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.method"><code class="docutils literal notranslate"><span class="pre">fit.method</span></code></a></li>
@@ -70,6 +78,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.prior"><code class="docutils literal notranslate"><span class="pre">fit.prior</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.static"><code class="docutils literal notranslate"><span class="pre">fit.static</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.posterior"><code class="docutils literal notranslate"><span class="pre">fit.posterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.likelihood"><code class="docutils literal notranslate"><span class="pre">fit.likelihood</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.keys"><code class="docutils literal notranslate"><span class="pre">fit.keys</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.chi2"><code class="docutils literal notranslate"><span class="pre">fit.chi2</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.chi2err"><code class="docutils literal notranslate"><span class="pre">fit.chi2err</span></code></a></li>
@@ -99,6 +108,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
 </li>
 </ul>
@@ -131,6 +141,42 @@
   <section id="module-ilex.pyfit">
 <span id="ilex-pyfit"></span><h1>ilex.pyfit<a class="headerlink" href="#module-ilex.pyfit" title="Link to this heading"></a></h1>
 <dl class="py class">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PyfitLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.calc_sigma">
+<span class="sig-name descname"><span class="pre">calc_sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood.calc_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.calc_sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.get_sigma">
+<span class="sig-name descname"><span class="pre">get_sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood.get_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.get_sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.log_likelihood">
+<span class="sig-name descname"><span class="pre">log_likelihood</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood.log_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.log_likelihood" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the log liklihood of function</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.model_parameters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_parameters</span></span><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.model_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.propogated_sigma">
+<span class="sig-name descname"><span class="pre">propogated_sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood.propogated_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.propogated_sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.sigma">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sigma</span></span><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.sigma" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ilex.pyfit.fit">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit" title="Link to this definition"></a></dt>
 <dd><p>General fitting class, model a function using either bayesian inference using BILBY, or
@@ -151,6 +197,17 @@ including model plotting and statistics such as chi2.</p>
 <dt class="sig sig-object py" id="ilex.pyfit.fit.y">
 <span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#ilex.pyfit.fit.y" title="Link to this definition"></a></dt>
 <dd><p>Y data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.xerr">
+<span class="sig-name descname"><span class="pre">xerr</span></span><a class="headerlink" href="#ilex.pyfit.fit.xerr" title="Link to this definition"></a></dt>
+<dd><p>X data error</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
@@ -233,6 +290,17 @@ including model plotting and statistics such as chi2.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.likelihood">
+<span class="sig-name descname"><span class="pre">likelihood</span></span><a class="headerlink" href="#ilex.pyfit.fit.likelihood" title="Link to this definition"></a></dt>
+<dd><p>Likelihood class used for bayesian inference</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Bilby.Likelihood</p>
 </dd>
 </dl>
 </dd></dl>
@@ -519,7 +587,7 @@ including model plotting and statistics such as chi2.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.plot.html" class="btn btn-neutral float-left" title="ilex.plot" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.par.html" class="btn btn-neutral float-left" title="ilex.par" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ilex.script_core.html" class="btn btn-neutral float-right" title="ilex.script_core" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -92,6 +93,8 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">safe_load</span> <span class="k">as</span> <span class="n">base_yaml_save_load</span>
+<span class="kn">from</span> <span class="nn">yaml</span> <span class="kn">import</span> <span class="n">safe_dump</span> <span class="k">as</span> <span class="n">base_yaml_save_dump</span>
 
 
 
@@ -232,8 +235,52 @@
 
 
 
+<span class="k">def</span> <span class="nf">_make_new_dynspec_plot_properties_file</span><span class="p">(</span><span class="n">dynspec_file</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dynspec_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">pass</span>
+    
 
 
+<span class="k">def</span> <span class="nf">_get_dynspec_plot_properties_file</span><span class="p">():</span>
+
+    <span class="n">dynspec_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_dynspec_plot_properties.yaml&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
+        <span class="n">_make_new_dynspec_plot_properties_file</span><span class="p">(</span><span class="n">dynspec_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dynspec_file</span>
+    
+
+
+
+<span class="c1"># functions for changing plotting properties</span>
+<div class="viewcode-block" id="get_dynspec_plot_properties">
+<a class="viewcode-back" href="../../_autosummary/ilex.frbutils.html#ilex.frbutils.get_dynspec_plot_properties">[docs]</a>
+<span class="k">def</span> <span class="nf">get_dynspec_plot_properties</span><span class="p">():</span>
+
+    <span class="n">dynspec_file</span> <span class="o">=</span> <span class="n">_get_dynspec_plot_properties_file</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dynspec_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="n">base_yaml_save_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">properties</span></div>
+
+
+
+<span class="c1"># function to save dynspec_plot properties</span>
+<div class="viewcode-block" id="set_dynspec_plot_properties">
+<a class="viewcode-back" href="../../_autosummary/ilex.frbutils.html#ilex.frbutils.set_dynspec_plot_properties">[docs]</a>
+<span class="k">def</span> <span class="nf">set_dynspec_plot_properties</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">get_dynspec_plot_properties</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="n">dynspec_file</span> <span class="o">=</span> <span class="n">_get_dynspec_plot_properties_file</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dynspec_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">base_yaml_save_dump</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
+
+
+    
 
 
 </pre></div>

@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -153,6 +154,22 @@
 
 
 
+
+<div class="viewcode-block" id="make_polyfit">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_polyfit">[docs]</a>
+<span class="k">def</span> <span class="nf">make_polyfit</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+
+    <span class="n">mstr</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">mstr2</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">mstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">mstr2</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> * x**</span><span class="si">{</span><span class="n">n</span><span class="o">-</span><span class="n">i</span><span class="si">}</span><span class="s2"> + &quot;</span>
+    
+    <span class="n">mstr</span> <span class="o">+=</span> <span class="s2">&quot;, c : &quot;</span>
+    <span class="n">mstr2</span> <span class="o">+=</span> <span class="s2">&quot;+ c&quot;</span>
+
+    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">mstr</span> <span class="o">+</span> <span class="n">mstr2</span><span class="p">)</span></div>
 
 
 

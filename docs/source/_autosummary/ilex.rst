@@ -27,4 +27,5 @@
    pyfit
    script_core
    utils
+   widths
 

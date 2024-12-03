@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; ILEX 0.9.0 documentation</title>
+  <title>Rotation Measure &mdash; ILEX 0.9.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -17,9 +18,12 @@
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ILEX Tutorials" href="../Tutorials.html" />
+    <link rel="prev" title="Scattering and Scintillation" href="scattering_and_scintillation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,9 +45,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="polarisation_fractions.html">Polarisation Fractions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scattering_and_scintillation.html">Scattering &amp; Scintillation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Rotation Measure</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -62,8 +71,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Overview: module code</li>
+          <li class="breadcrumb-item"><a href="../Theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Rotation Measure</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Theory/rotation_measure.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -71,23 +82,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="ilex/data.html">ilex.data</a></li>
-<li><a href="ilex/fitting.html">ilex.fitting</a></li>
-<li><a href="ilex/frbutils.html">ilex.frbutils</a></li>
-<li><a href="ilex/globals.html">ilex.globals</a></li>
-<li><a href="ilex/htr.html">ilex.htr</a></li>
-<li><a href="ilex/logging.html">ilex.logging</a></li>
-<li><a href="ilex/master_proc.html">ilex.master_proc</a></li>
-<li><a href="ilex/par.html">ilex.par</a></li>
-<li><a href="ilex/pyfit.html">ilex.pyfit</a></li>
-<li><a href="ilex/utils.html">ilex.utils</a></li>
-<li><a href="ilex/widths.html">ilex.widths</a></li>
-</ul>
+  <section id="rotation-measure">
+<h1>Rotation Measure<a class="headerlink" href="#rotation-measure" title="Link to this heading"></a></h1>
+<p>An FRB propogating through a magnetised cold-plasma will undergo a phenomena known as Faraday rotation, where the Linear polarisation position
+angle is rotated due to the magnetic field parallel/anti-parallel to the FRB line of sight. This is usually quantified using the Rotation Measure.
+The rotation measures for a cold plasma is well described by the following equation</p>
+<div class="math notranslate nohighlight">
+\[\chi(\nu) = \mathrm{RMc^{2}}\Bigg(\frac{1}{\nu^{2}} - \frac{1}{\nu_{0}^{2}})\]</div>
+<p>where <span class="math notranslate nohighlight">\(RM\)</span> is the rotation measure, <span class="math notranslate nohighlight">\(\chi\)</span> is the Linear polarisation position angle and <span class="math notranslate nohighlight">\(\nu_{0}\)</span> the reference frequency.</p>
+</section>
+
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="scattering_and_scintillation.html" class="btn btn-neutral float-left" title="Scattering and Scintillation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Tutorials.html" class="btn btn-neutral float-right" title="ILEX Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

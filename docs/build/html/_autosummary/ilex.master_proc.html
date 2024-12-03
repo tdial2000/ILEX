@@ -51,7 +51,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
@@ -61,10 +60,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
 </li>
 </ul>
@@ -98,7 +97,7 @@
 <span id="ilex-master-proc"></span><h1>ilex.master_proc<a class="headerlink" href="#module-ilex.master_proc" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.master_proc.master_proc_data">
-<span class="sig-name descname"><span class="pre">master_proc_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/master_proc.html#master_proc_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.master_proc.master_proc_data" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">master_proc_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_data_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio_rms_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/master_proc.html#master_proc_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.master_proc.master_proc_data" title="Link to this definition"></a></dt>
 <dd><dl class="simple">
 <dt>Info:</dt><dd><p>Master function for processing data</p>
 </dd>
@@ -108,7 +107,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>stk</strong> (<em>dict</em><em>[</em><em>np.memmap</em><em>]</em>) – Dictionary of memory maps of Stokes Dynamic spectra</p></li>
 <li><p><strong>freq</strong> (<em>(</em><em>ndarray</em><em>)</em>) – Array of frequencies before cropping/averaging (processing)</p></li>
-<li><p><strong>data_list</strong> (<em>List</em>) – List of requested data products</p></li>
+<li><p><strong>base_data_list</strong> (<em>List</em>) – List of requested data products</p></li>
 <li><p><strong>par</strong> (<em>Dict</em>) – <p>Parameters for data processing, the following are required</p>
 <p>[t_crop]: Crop in Time phase (default = [0.0, 1.0])</p>
 <p>[f_crop]: Crop in Freq phase (default = [0.0, 1.0])</p>
@@ -123,6 +122,9 @@
 <p>[f0]: reference frequency (default = cfreq)</p>
 <p>[pa0]: PA at f0 (default = 0.0)</p>
 </p></li>
+<li><p><strong>debias</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, debias L and P polarisations if requested</p></li>
+<li><p><strong>ratio</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, calculates Stokes ratios X/I for all t and f products</p></li>
+<li><p><strong>ratio_rms_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Mask Stokes ratios by ratio_rms_threshold * rms</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

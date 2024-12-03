@@ -43,6 +43,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
 </ul>
@@ -73,7 +74,7 @@
              
   <h1>Source code for ilex.globals</h1><div class="highlight"><pre>
 <span></span><span class="c1"># imports</span>
-<span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="n">Line2D</span>
+<span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="n">Line2D</span><span class="p">,</span> <span class="n">rcParams</span>
 <span class="kn">import</span> <span class="nn">inspect</span>
 
 <div class="viewcode-block" id="globals_">
@@ -106,7 +107,9 @@
 <span class="n">_G</span><span class="o">.</span><span class="n">hkeys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span><span class="s2">&quot;fI&quot;</span><span class="p">,</span>
             <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span><span class="s2">&quot;tQ&quot;</span><span class="p">,</span><span class="s2">&quot;fQ&quot;</span><span class="p">,</span>
             <span class="s2">&quot;dsU&quot;</span><span class="p">,</span><span class="s2">&quot;tU&quot;</span><span class="p">,</span><span class="s2">&quot;fU&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;dsV&quot;</span><span class="p">,</span><span class="s2">&quot;tV&quot;</span><span class="p">,</span><span class="s2">&quot;fV&quot;</span><span class="p">]</span>
+            <span class="s2">&quot;dsV&quot;</span><span class="p">,</span><span class="s2">&quot;tV&quot;</span><span class="p">,</span><span class="s2">&quot;fV&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tL&quot;</span><span class="p">,</span> <span class="s2">&quot;fL&quot;</span><span class="p">,</span> <span class="s2">&quot;tP&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fP&quot;</span><span class="p">]</span>
 
 
 <span class="n">_G</span><span class="o">.</span><span class="n">DATA</span> <span class="o">=</span> <span class="s2">&quot;IQUVXY&quot;</span>
@@ -130,7 +133,8 @@
 
 <span class="c1"># dict of hyper parameters``</span>
 <span class="n">_G</span><span class="o">.</span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;plot_type&#39;</span><span class="p">:</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;residuals&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_tW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_fW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;zap&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;show_plots&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;save_plots&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;crop_units&#39;</span><span class="p">:</span> <span class="s2">&quot;physical&quot;</span><span class="p">}</span>
+         <span class="s1">&#39;residuals&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_tW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_fW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;zap&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;show_plots&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;save_plots&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;crop_units&#39;</span><span class="p">:</span> <span class="s2">&quot;physical&quot;</span><span class="p">,</span>
+         <span class="s1">&#39;dynspec_cmap&#39;</span><span class="p">:</span><span class="s1">&#39;viridis&#39;</span><span class="p">}</span>
 
 <span class="n">_G</span><span class="o">.</span><span class="n">yaml_ignore</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;zap&quot;</span><span class="p">]</span>
 
@@ -189,6 +193,10 @@
 <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fmt&#39;</span><span class="p">,</span> <span class="s1">&#39;ecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;elinewidth&#39;</span><span class="p">,</span> <span class="s1">&#39;capsize&#39;</span><span class="p">,</span> <span class="s1">&#39;capthick&#39;</span><span class="p">,</span> <span class="s1">&#39;barsabove&#39;</span><span class="p">]</span> 
 <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">+=</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span>
 
+
+<span class="c1"># constants</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span> <span class="o">=</span> <span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.prop_cycle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">by_key</span><span class="p">()[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">stk_colors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span><span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;U&quot;</span><span class="p">:</span><span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">:</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s1">&#39;darkviolet&#39;</span><span class="p">}</span>
 
 
 <span class="c1">## constants</span>

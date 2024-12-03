@@ -8,5 +8,7 @@ functionality of ILEX.
    :hidden:
 
    Polarisation Fractions <Theory/polarisation_fractions>
+   Scattering & Scintillation <Theory/scattering_and_scintillation>
+   Rotation Measure <Theory/rotation_measure>
    
 

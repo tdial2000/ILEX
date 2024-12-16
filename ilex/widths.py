@@ -176,6 +176,7 @@ def _find_min_fluence_width(tI, yfrac = 0.95):
     
     # fulence and starting window
     fluence = np.sum(tI)
+    print(f"Fluence: {fluence}")
     N = 1
 
     def find_N_length(tI, Nstart, Nstep):

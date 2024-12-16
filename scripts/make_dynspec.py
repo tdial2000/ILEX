@@ -52,7 +52,7 @@ def get_args():
     parser.add_argument("--QUV", help = "make full stokes dynamic spectra", action = "store_true")
 
     # chan flagging
-    parser.add_argument("--chanlists", help = "path to dir of files for static channel masking", type = str)
+    # parser.add_argument("--chanlists", help = "path to dir of files for static channel masking", type = str)
     parser.add_argument("--do_chanflag", help = "Do channel flagging based on channel noise", action = "store_true")
 
 
@@ -61,7 +61,7 @@ def get_args():
     parser.add_argument("--baseline", help = "Width of rms crops in [ms]", type = float, default = 50.0)
     parser.add_argument("--tN", help = "Time averaging factor, helps with S/N calculation", type = int, default = 50)
     parser.add_argument("--guard", help = "Time between rms crops and burst in [ms]",
-                        type = float, default = 1.0)
+                        type = float, default = 10.0)
 
 
     ## Pulsar arguments (Polarisation calibration)
@@ -303,21 +303,21 @@ def flag_chan(ds, flag_thresh, tN, args, rbounds = None):
     chanmask = np.ones(ds.shape[0], dtype = bool)
     
     
-    # Channel flagging of known bad ASKAP channels
-    if args.chanlists is not None:
-        print("Flagging known bad channels on ASKAP...")
+    # # Channel flagging of known bad ASKAP channels
+    # if args.chanlists is not None:
+    #     print("Flagging known bad channels on ASKAP...")
 
-        askap_badchan_file = path.join(args.chanlists, "htrchanlist_low.txt")
-        if args.cfreq > 1100.0:
-            askap_badchan_file = path.join(args.chanlists, "htrchanlist_mid.txt")
-        if args.cfreq > 1500.0:
-            askap_badchan_file = path.join(args.chanlists, "htrchanlist_high.txt")
+    #     askap_badchan_file = path.join(args.chanlists, "htrchanlist_low.txt")
+    #     if args.cfreq > 1100.0:
+    #         askap_badchan_file = path.join(args.chanlists, "htrchanlist_mid.txt")
+    #     if args.cfreq > 1500.0:
+    #         askap_badchan_file = path.join(args.chanlists, "htrchanlist_high.txt")
 
-        # flag bad channels within bandwidth
-        askap_chan2flag = np.loadtxt(askap_badchan_file)
-        if askap_chan2flag.shape[0] > 2:
-            for i in range(2, askap_chan2flag.shape[0]):
-                chanmask[int(round(askap_chan2flag[i,0])):int(round(askap_chan2flag[i,1]))+1] = False
+    #     # flag bad channels within bandwidth
+    #     askap_chan2flag = np.loadtxt(askap_badchan_file)
+    #     if askap_chan2flag.shape[0] > 2:
+    #         for i in range(2, askap_chan2flag.shape[0]):
+    #             chanmask[int(round(askap_chan2flag[i,0])):int(round(askap_chan2flag[i,1]))+1] = False
 
     chanmask_known = chanmask.copy()
     

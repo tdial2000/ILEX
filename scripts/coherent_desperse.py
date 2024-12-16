@@ -9,7 +9,37 @@
 ##################################################
 import numpy as np
 import argparse
+from scipy.fft import next_fast_len
+from scipy.fft import fft, ifft
 
+
+
+##=====================##
+## AUXILIARY FUNCTIONS ##
+##=====================##
+
+def phasor_DM(f, DM: float, f0: float):
+    """
+    Calculate Phasor Rotator for DM dispersion
+
+    Parameters
+    ----------
+    f : np.ndarray
+        Frequency array [MHz]
+    DM : float
+        Dispersion Measure [pc/cm^3]
+    f0 : float
+        Reference Frequency [MHz]
+
+    Returns
+    -------
+    phasor_DM : np.ndarray
+        Phasor Rotator array in frequency domain
+    """
+    # constants
+    kDM = 4.14938e3         # DM constant
+
+    return np.exp(2j*np.pi*kDM*DM*(f-f0)**2/(f*f0**2)*1e6)
 
 
 

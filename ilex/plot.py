@@ -215,6 +215,8 @@ def plot_dynspec(ds, ax = None, **kwargs):
         axes to plot dynspec, by default None
     """
 
+    ds[np.isnan(ds[:,0])] = 0
+
     properties = get_dynspec_plot_properties()
 
     for key in kwargs.keys():
@@ -229,6 +231,7 @@ def plot_dynspec(ds, ax = None, **kwargs):
         else:
             print("Colorbar not supported, either must be a known matplotlib colorbar or [artic] from cmasher")
             del properties['cmap']
+
     
     if ax is not None:
         ax.imshow(ds, **properties)
@@ -580,7 +583,7 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
     else:
         print("Invalid type")
     ## update ax
-    ax.set_ylabel("Flux Density. ", fontsize = 12)
+    ax.set_ylabel("Flux Density (arb.)", fontsize = 12)
 
     st = stk_type
 

@@ -166,8 +166,8 @@ class PyfitLikelihood(bilby.Likelihood):
         parameters = inspect.getfullargspec(func).args[1:]
         super().__init__(parameters = dict.fromkeys(parameters))
         self.parameters = dict.fromkeys(parameters)
-        self.func_keys = self.parameters.keys()        
         
+        self.func_keys = list(self.parameters.keys())      
         #---------- Set data -----------#
         self.x = x
         self.y = y
@@ -241,6 +241,18 @@ class PyfitLikelihood(bilby.Likelihood):
             return self.parameters.get('sigma', self._sigma)
         else:
             return self.calc_sigma()
+
+    @sigma.setter
+    def sigma(self, sigma):
+        if sigma is None:
+            self._sigma = sigma
+        elif isinstance(sigma, float) or isinstance(sigma, int):
+            self._sigma = sigma
+        elif len(sigma) == self.n:
+            self._sigma = sigma
+        else:
+            raise ValueError('Sigma must be either float or array-like x.')
+
 
     
     def get_sigma(self):
@@ -373,6 +385,7 @@ class fit:
         self.xerr = None
         self.yerr = None
         self.sigma = None
+        self._sigma = None
 
         # proc
         self.mask = None
@@ -423,6 +436,34 @@ class fit:
         # run set function for initalised attributes
         self.set(**kwargs)
 
+
+
+
+    @property
+    def sigma(self):
+
+        if self.method not in ["least squares", "bayesian"]:
+            raise ValueError("Incorrect method for fitting")
+
+        if self._sigma is not None:
+            return self._sigma
+        
+        print("[pyfit] Recalculating SIGMA")
+        if self.method == "least squares":
+            return self.yerr
+
+        if self.method == "bayesian":
+            if self._is_fit:
+                likelihood = self.likelihood(x = self.x, y = self.y, func = self.func, 
+                                xerr = self.xerr, yerr = self.yerr)
+                likelihood.parameters = self.get_post_val()
+                return likelihood.get_sigma()
+
+
+    @sigma.setter
+    def sigma(self, sigma):
+        self._sigma = sigma
+
     
 
 
@@ -441,8 +482,6 @@ class fit:
         self._check_params_keys()
 
 
-
-
     def _set_attr(self, **kwargs):
         """
         Check kwargs
@@ -455,7 +494,7 @@ class fit:
                 if type(kwargs[pkey]) != dict:
                     raise ValueError(f"[fit]: {pkey} must be of type 'dict'")
                 else:
-                    setattr(self, pkey, kwargs[pkey])
+                    setattr(self, pkey, deepcopy(kwargs[pkey]))
         
         # func
         if "func" in kwargs.keys():
@@ -720,22 +759,6 @@ class fit:
         return 1
 
 
-
-
-    # def _isnan(self):
-    #     """
-        
-    #     Make mask of data incorporating any nan values
-    #     """
-    #     # nans in [x]
-    #     mask = np.isnan(self.x)
-    #     mask = np.concatenate((mask, np.isnan(self.y)))
-        
-    #     if self.yerr:
-    #         mask = np.concatenate((mask, np.isnan(self.yerr)))
-
-    #     self.mask = mask.copy()
-    #     return
 
     def _get_mask(self):
         """
@@ -1283,10 +1306,10 @@ class fit:
             sigma = self.posterior['sigma'].val
         else:
             sigma = self.sigma
-
+        
         
         x, y, _, _ = self._proc_data()
-
+        
 
         # degrees of freedom
         self.dof = y.size - self.nfitpar

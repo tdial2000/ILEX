@@ -359,7 +359,7 @@ def norm(x, method = "abs_max", nan = False):
 ##===============================================##
 
 
-def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
+def fday_rot(Q, U, f,  RM, f0 = None, pa0 = 0.0):
     """
     Apply Faraday rotation to 1D or 2D Stokes data
 
@@ -388,12 +388,17 @@ def fday_rot(Q, U, f,  RM, f0, pa0 = 0.0):
 
     if RM == 0.0 or RM is None:
         return Q, U
-    if f0 is None or f0 == 0.0:
-        print("Must specify non-zero f0")
-        return Q, U
+    # if f0 is None or f0 == 0.0:
+    #     print("Must specify non-zero f0")
+    #     return Q, U
+    if pa0 is None:
+        pa0 = 0.0
     
     # calculate faraday angle
-    fang = RM * c**2 / 1e12 * (1/f**2 - 1/f0**2) + pa0
+    if (f0 is None) or (f0 == 0.0):
+        fang = RM * c**2 / 1e12 * (1/f**2) + pa0
+    else:    
+        fang = RM * c**2 / 1e12 * (1/f**2 - 1/f0**2) + pa0
 
     # dynamic spectra or spectra?
     if Q.ndim > 1:

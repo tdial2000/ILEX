@@ -23,6 +23,7 @@ import sys, inspect
 from .logging import log
 from math import ceil, floor
 import matplotlib.pyplot as plt
+import bilby
 
 # rm synthesis
 from RMtools_1D.do_RMsynth_1D import run_rmsynth
@@ -33,7 +34,7 @@ from .utils import struct_
 
 from .data import *
 
-from .pyfit import fit
+from .pyfit import fit, _clean_bilby_run, _priorUniform
 
 from .globals import *
 
@@ -592,3 +593,150 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
 
 
 
+
+# QUfitting likelihood class
+class QUfit_likelihood(bilby.Likelihood):
+    def __init__(self, f, Q, U, Ierr, Qerr, Uerr):
+        """
+        Likelihood function for evaluating Stokes Q and U parameters to fit RM. L will be debiased
+        and a mask will be applied to all Stokes parameters based on L debiased.
+
+        Parameters
+        ----------
+        f : np.ndarray
+            Frequencies in MHz
+        Q : np.ndarray
+            Stokes Q parameter
+        U : np.ndarray
+            Stokes U parameter
+        Ierr : np.ndarray
+            Stokes I parameter noise, used to calculate L debiased
+        Qerr : np.ndarray
+            Stokes Q parameter noise
+        Uerr : np.ndarray
+            Stokes U parameter noise
+        """
+
+        # constants
+        self.c = 299_792_458    # [m/s^2]
+
+        # calculate debiased L
+        L_meas = np.sqrt(Q**2 + U**2)
+        self.L = Ierr * np.sqrt((L_meas/Ierr)**2 - 1)
+        self.L[L_meas/Ierr < 1.57] = np.nan 
+        self.mask = ~np.isnan(self.L)
+        self.L = self.L[self.mask] 
+ 
+        # f data
+        self.f = f[self.mask] * 1e6        # in Hz
+        self.N = f.size
+        
+        # stk data 
+        self.Q = Q[self.mask]
+        self.U = U[self.mask]
+
+        # stk noise
+        self.Qerr = Qerr[self.mask]
+        self.Uerr = Uerr[self.mask]
+
+        # These lines of code infer parameters from provided function
+        parameters = inspect.getfullargspec(self.PA).args[1:]
+        super().__init__(parameters = dict.fromkeys(parameters))
+        self.parameters = dict.fromkeys(parameters)
+
+        self.function_keys = ["RM", "pa0"]
+
+
+    @property
+    def model_parameters(self):
+
+        return {k: self.parameters[k] for k in self.function_keys}
+
+    
+    def PA(self, RM, pa0):
+        """
+        PA function to evaluate
+
+        Parameters
+        ----------
+        RM : float
+            Rotation Measure [rad/m^2]
+        pa0 : float
+            Initial reference polarisation position angle [rad]
+        """
+
+        return pa0 + RM * self.c**2 / self.f**2
+
+    
+
+    def log_likelihood(self):
+        """
+        Log likelihood, adding Q and U likelihoods together
+        
+        """
+
+        PA = self.PA(**self.model_parameters)
+
+        # calculate Stokes Q log likelihood
+        ll_Q = -0.5 * np.sum(np.log(2 * np.pi * self.Qerr**2) + ((self.Q - self.L * np.cos(2*PA))/self.Qerr)**2)
+
+        # calculate Stokes U log likelihood
+        ll_U = -0.5 * np.sum(np.log(2 * np.pi * self.Uerr**2) + ((self.U - self.L * np.sin(2*PA))/self.Uerr)**2)
+
+        return ll_Q + ll_U
+
+
+
+
+def RM_QUfit(Q, U, Ierr, Qerr, Uerr, f, rm_priors = [-1000, 1000], pa0_priors = [-np.pi, 0], **kwargs):
+    """
+    Fit RM using QUfit method
+
+    Parameters
+    ----------
+    f : np.ndarray
+        Frequencies in MHz
+    Q : np.ndarray
+        Stokes Q parameter
+    U : np.ndarray
+        Stokes U parameter
+    Ierr : np.ndarray
+        Stokes I parameter noise, used to calculate L debiased
+    Qerr : np.ndarray
+        Stokes Q parameter noise
+    Uerr : np.ndarray
+        Stokes U parameter noise
+    """
+
+    outdir = "outdir"
+    if "outdir" in kwargs.keys():
+        outdir = kwargs["outdir"]
+    label = "label"
+    if "label" in kwargs.keys():
+        label = kwargs["label"]
+    _clean_bilby_run(outdir, label)
+
+
+    priors = {'RM':rm_priors.copy(), 'pa0':pa0_priors.copy()}
+
+    # start sampling
+    likelihood = QUfit_likelihood(f = f, Q = Q, U = U, Ierr = Ierr, Qerr = Qerr, Uerr = Uerr)
+
+    result = bilby.run_sampler(likelihood = likelihood, priors = _priorUniform(priors),
+                                **kwargs)
+
+    # get rm and pa0 measurements
+    rm_posterior = result.get_one_dimensional_median_and_error_bar('RM')
+    rm = rm_posterior.median
+    rm_err = (abs(rm_posterior.plus) + abs(rm_posterior.minus))/2
+
+    pa0_posterior = result.get_one_dimensional_median_and_error_bar('pa0')
+    pa0 = pa0_posterior.median
+    pa0_err = (abs(pa0_posterior.plus) + abs(pa0_posterior.minus))/2
+
+    # plots 
+    result.plot_corner()
+
+    return rm, rm_err, pa0, pa0_err
+
+    

@@ -18,8 +18,9 @@ from .logging import log
 import os
 from ruamel.yaml import YAML    # wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. 
 import yaml as base_yaml        # default yaml class
-from ruamel.yaml import comments as ruamel_comments
 from ruamel.yaml.scalarfloat import ScalarFloat as ruamel_float
+from ruamel.yaml import comments
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 
 # empty structure
@@ -374,6 +375,7 @@ def _init_pars(p, d, ruamel2py = True):
                 p[key] = check_ruamel_input(p[key])
 
             if isinstance(d[key], dict):
+                d[key].fa.set_flow_style()
                 _init_pars(p[key], d[key], ruamel2py=ruamel2py)
 
 
@@ -416,7 +418,6 @@ def load_param_file(param_file = None, return_yaml_obj = False, ruamel2py = True
 
 
 
-
 def save_param_file(pars, filename, yaml_obj = None):
     """
     save to new parameter file
@@ -446,6 +447,84 @@ def save_param_file(pars, filename, yaml_obj = None):
     # save pars in pars
     with open(filename, 'w') as file:
         yaml_obj.dump(pars, file)
+
+
+
+def update_ruamel_CommentedSeq(commented_seq, val):
+    """
+    Updates the value of the CommentedSeq whilst preserving the flow
+    stype and comments
+
+    """
+
+    # copy comments
+    if commented_seq is not None:
+        comment = commented_seq.ca.comment
+    else:
+        comment = None
+
+    # create new Commented Sequence initialised to val
+    commented_seq = CommentedSeq(val)
+
+    # add comments and preserved flow style
+    commented_seq._yaml_add_comment(comment)
+    commented_seq.fa.set_flow_style()
+    
+    return commented_seq
+
+
+
+def update_ruamel_CommentedMap(commented_map, key, val):
+    """
+    Updated Commented map based on key, value pair
+    """
+
+    if key not in commented_map.keys():
+
+        if val is None:
+            commented_map[key] = None
+
+        # add to commented_map
+        if isinstance(val, list):
+            # create CommentedSeq
+            commented_map[key] = CommentedSeq(val)
+            commented_map[key].fa.set_flow_style()
+        elif isinstance(val, dict):
+            # create CommentedMap
+            commented_map[key] = CommentedMap(val)
+            commented_map[key].fa.set_flow_style()
+        elif isinstance(val, float) or isinstance(val, int) or isinstance(val, str) or isinstance(val, bool):
+            # add to map
+            commented_map[key] = val
+        else:
+            raise ValueError("Can only add list, dict, float, int, bool or str to CommentedMap yaml.")
+    
+        return    
+        
+        
+    commented_map.setdefault(key, {})
+
+    if isinstance(val, np.float64):
+        val = float(val)
+
+    if isinstance(val, list):
+        for i, _ in enumerate(val):
+            if isinstance(val[i], np.float64):
+                val[i] = float(val[i])
+        
+        commented_map[key] = update_ruamel_CommentedSeq(commented_map[key], val)
+    elif isinstance(val, dict):
+        for dict_key in val.keys():
+            if isinstance(val[dict_key], np.float64):
+                val[dict_key] = float(val[dict_key])
+        
+        commented_map[key] = val
+
+    else:
+        commented_map[key] = val
+        
+
+    return
 
 
 
@@ -573,10 +652,10 @@ def check_ruamel_input(inp):
         Change ruamel class to python class
     """
 
-    if type(inp) == ruamel_comments.CommentedMap:
+    if type(inp) == comments.CommentedMap:
         return dict(inp)
     
-    if type(inp) == ruamel_comments.CommentedSeq:
+    if type(inp) == comments.CommentedSeq:
         return list(inp)
     
     return inp
@@ -592,6 +671,6 @@ def check_ruamel_output(out):
     if type(out) == float:
         return ruamel_float(out)
     elif type(out) == list:
-        return ruamel_comments.CommentedSeq(out)
+        return comments.CommentedSeq(out)
     
     return out

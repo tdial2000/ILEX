@@ -11,10 +11,11 @@
 ##===============================================##
 ##===============================================##
 
-from .utils import load_param_file, save_param_file, check_ruamel_output
+from .utils import (load_param_file, save_param_file, check_ruamel_output, 
+                    update_ruamel_CommentedMap, update_ruamel_CommentedSeq)
 from .globals import _G
 from ruamel.yaml import comments
-from ruamel.yaml.scalarfloat import ScalarFloat
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
 import numpy as np
 from ruamel.yaml import YAML
 import os
@@ -31,8 +32,7 @@ def _load_ruamel_default_constructors():
         return yaml.load(file)
 
 
-
-def save_params(frb, file):
+def save_frb_to_param_file(frb, file):
     """
     Save frb class parameters to yaml file (don't look at it, code sucks :( )
 
@@ -46,116 +46,63 @@ def save_params(frb, file):
 
     # get params of loaded yaml file, else get defaults
     filename = frb._yaml_file
+    if file is None:
+        file = filename
 
     yaml = YAML()
 
     initpars, yaml_obj = load_param_file(filename, True, False)
-    ruamel_yaml_defaults = _load_ruamel_default_constructors()
-    defscalarfloat = ruamel_yaml_defaults['scalarfloat']
-    print(defscalarfloat._prec)
-    # print(initpars['par']['pa0'].v, type(initpars['par']['pa0']))
-    # print(type(ruamel_yaml_defaults['scalarfloat'].v))
+
+    # [pars]
+    for key in _G.p:
+        update_ruamel_CommentedMap(initpars['par'], key, getattr(frb.par, key))
 
 
-    def set_ruamel_item(ruamel_obj, item):
-
-        if type(item) == dict:
-            ruamel_obj = comments.CommentedMap(item)
-            return ruamel_obj
-
-        if type(item) == str:
-            ruamel_obj = item
-            return ruamel_obj
-
-        if type(item) == bool:
-            ruamel_obj = item
-            return ruamel_obj
-
-        if hasattr(item, '__len__'):
-            if len(item) == 1:
-                item = float(item[0])
-            else:
-                item = list(item)
-
-        if (type(item) == float) or (type(item) == np.float64):
-            if ruamel_obj is None:
-                ruamel_obj = ScalarFloat(item, prec =_G.yaml_def_prec)
-                print(ruamel_obj._prec)
-                return ruamel_obj
-
-            ruamel_obj = ScalarFloat(item, width=_G.yaml_def_width, prec =_G.yaml_def_prec)
-
-        if type(item) == list:
-            if ruamel_obj is None:
-                ruamel_obj = comments.CommentedSeq(item)
-                return ruamel_obj
-
-            ruamel_obj.clear()
-            for _, val in enumerate(item):
-                if type(val) == np.float64:
-                    ruamel_obj.append(float(val))
-                else:
-                    ruamel_obj.append(val)
-            
-
-        return ruamel_obj
+    # [metapars]
+    for key in _G.mp:
+        update_ruamel_CommentedMap(initpars['metapar'], key, getattr(frb.metapar, key))
 
 
+    # [hyperpars]
+    for key in _G.hp:
+        update_ruamel_CommentedMap(initpars['hyperpar'], key, getattr(frb, key))
 
-    # Set [pars]
-    for _, key in enumerate(_G.p):
-        item = getattr(frb.par, key)
-        initpars['par'][key] = set_ruamel_item(initpars['par'][key], item)
 
-    # set [metapars]
-    for _, key in enumerate(_G.mp):
-        item = getattr(frb.metapar, key)
-        initpars['metapar'][key] = set_ruamel_item(initpars['metapar'][key], item)
-
-    # set [hyperpars]
-    for _, key in enumerate(_G.hp):
-        if key not in _G.yaml_ignore:
-            item = getattr(frb, key)
-            initpars['hyperpar'][key] = set_ruamel_item(initpars['hyperpar'][key], item)
+    # Set RM if applicable 
+    if "RM" in frb.fitted_params.keys():
+        print("Saving fitted RM values")
+        for parkey, fitkey in zip(["RM", "f0", "pa0"], ["rm", "f0", "pa0"]):
+            val = frb.fitted_params['RM'][fitkey].val
+            print(fitkey, type(val))
+            update_ruamel_CommentedMap(initpars['par'], parkey, val)
 
     
-    # set RM if applicable
-    # if "RM" in frb.fitted_params.keys():
-    #     print("Saving fitted RM values")
-    #     for parkey, fitkey in zip(["RM", "f0", "pa0"], ["rm", "f0", "pa0"]):
-    #         print(parkey, fitkey)
-    #         val = frb.fitted_params['RM'][fitkey].val
-    #         print(val, type(val))
-    #         print(initpars['par'][parkey] is None)
-    #         initpars['par'][parkey] = set_ruamel_item(initpars['par'][parkey], val)
-    #         print(initpars['par'][parkey], type(initpars['par'][parkey]))
-    
-    # print(initpars['par']['RM'])
-    
-    # # set component fitting to time weights if applicable
-    # if "tscatt" in frb.fitted_params.keys():
-    #     print("Saving component fitting params as time-dependent weights")
-    #     initpars['weights']['time']['method'] = "func"
+    # set time weights if tscatt has been fitted for
+    if "tscatt" in frb.fitted_params.keys():
+        print("Saving fitted Profile as time weights")
+        # make function
+        update_ruamel_CommentedMap(initpars['weights']['time'], 'func', 
+                f"make_scatt_pulse_profile_func({frb.fitted_params['tscatt']['npulse']:d})")
 
-    #     initpars['weights']['time']['args'] = {}
-    #     nonargs = ["sigma", "npulse"]
-    #     for key in frb.fitted_params['tscatt'].keys():
-    #         if key not in nonargs:
-    #             initpars['weights']['time']['args'][key] = frb.fitted_params['tscatt'][key]
+        tscatt_args = {}
+        for key in frb.fitted_params['tscatt'].keys():
+            if key == "npulse":
+                continue
+            tscatt_args[key] = frb.fitted_params['tscatt'][key].val
         
-    #     npulse = frb.fitted_params['tscatt']['npulse']
+        # set functions metapars
+        update_ruamel_CommentedMap(initpars['weights']['time'], 'method', "func")
+        update_ruamel_CommentedMap(initpars['weights']['time'], 'norm', True)
+        update_ruamel_CommentedMap(initpars['weights']['time'], 'args', tscatt_args)
+        
+
+    
+    # save params
+    with open(file, "wb") as F:
+        yaml_obj.dump(initpars, F)
 
 
-    #     initpars['weights']['time']['func'] = f"make_scatt_pulse_profile_func({npulse})"
-
-    # save params file
-    if file is not None:
-        filename = file
-    save_param_file(initpars, filename, yaml_obj = yaml_obj)
-
-
-    return
-
+    return 
 
 def _make_new_dynspec_plot_properties_file(dynspec_file):
 

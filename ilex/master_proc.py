@@ -163,7 +163,6 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
     stk_ds = _normalise(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
                         par = par, err = err_flag, zap = zap_flag)
 
-
     ## faraday rotate ##
     if fday_flag:
         log("Applying Faraday De-rotation", lpf = False)
@@ -305,9 +304,9 @@ def _proc_par(par):
     # further case by case parameter processing
 
     # if f0 not specified, set to cfreq
-    if par['f0'] is None:
-        log(f"[f0] unspecified, setting f0 = cfreq = {par['cfreq']}\n", lpf = False)
-        par['f0'] = par['cfreq']
+    # if par['f0'] is None:
+    #     log(f"[f0] unspecified, setting f0 = cfreq = {par['cfreq']}\n", lpf = False)
+    #     par['f0'] = par['cfreq']
     
     return par
 
@@ -784,7 +783,7 @@ def _log_progress(flags, par, ratio_rms_threshold = None):
     """
 
     logs = [f"Time cropping [{par['t_crop'][0]}, {par['t_crop'][1]}]", f"Freq cropping [{par['f_crop'][0]}, {par['f_crop'][1]}]", 
-            f"Channel zapping [{par['zapchan']}]", f"Normalising [{par['norm']}]", f"Faraday De-rotating [RM = {par['RM']}]", 
+            f"Channel zapping [{par['zapchan']}]", f"Normalising [{par['norm']}]", f"Faraday De-rotating [RM = {par['RM']}, f0 = {par['f0']}]", 
             f"Time averaging [N = {par['tN']}]", f"Freq averaging [N = {par['fN']}]", f"Time weighting", f"Freq weighting", 
             f"Calculating L (t and/or f)", f"Calculating P (t and/or P)", f"Debiasing L and/or P", f"Converting to Stokes ratios (t and f) [masking sigma = {ratio_rms_threshold}]"]
 

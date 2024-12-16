@@ -1,12 +1,12 @@
 yaml_file_type: "ILEX"
-data:
+data: # file paths for Stokes I, Q, U and V dynspec .npy files
   dsI: null
   dsQ: null
   dsU: null
   dsV: null
 
-# parameters unique to FRB
-par:
+
+par: # parameters unique to FRB
   name:   "FRBXXXXXX"
   RA:     "00:00:00.0000"
   DEC:    "00:00:00.0000"
@@ -25,8 +25,8 @@ par:
   f0:     null
   pa0:    0.0
 
-# parameters for data processing
-metapar:
+
+metapar: # parameters for data processing
   t_crop:     ["min", "max"]
   f_crop:     ["min", "max"]
   terr_crop:  null
@@ -35,8 +35,8 @@ metapar:
   zapchan:    null
   norm:       "None"
 
-# parameters to control general use of ILEX
-hyperpar:
+
+hyperpar: # parameters to control general use of ILEX
   verbose:        False
   show_plots:     True
   save_plots:     False
@@ -49,17 +49,12 @@ hyperpar:
   dynspec_cmap:   "arctic"            
 
 
-
-
-#---------------------------#
-# Additional Script options #
-
-plots:
+plots: # Plotting options
   plot_type:           "lines"
   plotstyle_file:      null
 
   # plotting stokes data
-  stk2plot:             "IQUV"
+  stk2plot:             "ILV"
   stk_ratio:            False
   Ldebias:              False
   Ldebias_threshold:    2.0
@@ -75,8 +70,8 @@ plots:
   flipPA:           False
 
 
-fits:
-  # for all fitting methods
+fits: # for all fitting methods
+ 
   fitmethod:  "bayesian"
   redo:       False
 
@@ -100,7 +95,7 @@ fits:
     fit_params: {}
 
 
-multi:
+multi:  # for multi crop scripts
   tcrops: null
   fcrops: null
 

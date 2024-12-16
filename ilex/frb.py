@@ -22,18 +22,18 @@ from copy import deepcopy
 import inspect
 from .pyfit import fit, _posterior
 import yaml
-from .frbutils import set_dynspec_plot_properties
+from .frbutils import set_dynspec_plot_properties, save_frb_to_param_file
 
 ## import utils ##
 from .utils import (load_data, save_data, dict_get,
                     dict_init, dict_isall,
-                    merge_dicts, dict_null, get_stk_from_datalist, load_param_file,
+                    merge_dicts, dict_null, get_stk_from_datalist, load_param_file, 
                     set_plotstyle, fix_ds_freq_lims)
 
 from .data import *
 
 ## import FRB stats ##
-from .fitting import (fit_RMquad, fit_RMsynth, lorentz,
+from .fitting import (fit_RMquad, fit_RMsynth, RM_QUfit, lorentz,
                      make_scatt_pulse_profile_func)
 
 ## import FRB params ##
@@ -52,7 +52,6 @@ from .plot import (plot_RM, plot_PA, plot_stokes,
 ## import processing functions ##
 from .logging import log, get_verbose, set_verbose, log_title
 from .master_proc import master_proc_data
-from .frbutils import save_params
 from .widths import *
 
 
@@ -276,7 +275,7 @@ class FRB:
 
     @property
     def dynspec_cmap(self):
-        return self.dynspec_cmap
+        return self._dynspec_cmap
 
     # Setters
     @dynspec_cmap.setter
@@ -290,6 +289,7 @@ class FRB:
             color map
 
         """
+        self._dynspec_cmap = cmap
 
         set_dynspec_plot_properties(cmap = cmap)
 
@@ -424,7 +424,8 @@ class FRB:
         log_title("Saving Stokes data, the data is saved as .npy files. ", col = "lblue")
 
         if save_yaml:
-            print("Saving fitted parameters to yaml file not yet implemented...")
+            log("Saving fitted parameters to yaml file...", lpf_col = "green")
+            save_frb_to_param_file(self, yaml_file)
 
 
         if data_list is None:
@@ -1513,6 +1514,7 @@ class FRB:
         self.get_data("tI", **kwargs)
         if not self._isdata():
             return None
+
         
         # make smaller buffer of data
         if buffer is not None:
@@ -1526,6 +1528,7 @@ class FRB:
             log(f"Searching full time series", lpf_col = self.pcol)
             tI = self._t['I']
             buffer_ref = 0
+
         
 
         # now choose method of finding burst bounds
@@ -1570,11 +1573,13 @@ class FRB:
             t_crop,_ = self.par.lim2phase(t_lim = t_crop)
 
         self.metapar.set_metapar(t_crop = t_crop)
+        self.metapar.set_metapar(terr_crop = [-rms_offset - rms_width, -rms_offset])
         if dt_from_peak_sigma is not None:
             self.metapar.set_metapar(tN = kwargs['tN'])
         self.par.set_par(t_ref = t_ref)
 
         print("New t_crop: [{:.4f}, {:.4f}]".format(t_crop[0],t_crop[1]))
+        print(f"Setting terr_crop: [{-rms_offset - rms_width:.4f}, {-rms_offset:.4f}]")
         print(f"New time series 0-point: [{t_ref:.4f}]")        
         if dt_from_peak_sigma is not None:
             print(f"time resolution for peak S/N [{dt_from_peak_sigma:.4f}]: {self.this_par.dt:.4f} ms (tN = {kwargs['tN']})")
@@ -1655,6 +1660,63 @@ class FRB:
 
         return fig
 
+
+
+
+    # def zap_rfi(self, flagging_threshold = 10, rms_average = 1000, **kwargs):
+    #     """
+    #     Look for channels to zap based on RFI, algorithm developed by [Apurba Bera] and 
+    #     revised (for speed) by [Tyson Dial]
+
+    #     EXPERIMENTAL!!! - NEED TO TEST
+
+    #     Take the terr_crop region and estimates the rfi there
+    #     """
+    #     log_title("Looking for RFI afflicted Channels to ZAP!!!", col = 'lblue')
+
+    #     kwargs['tN'] = rms_average
+
+    #     # initialise
+    #     self._load_new_params(**kwargs)
+
+
+    #     # get data
+    #     data = self.get_data(["dsI", "fI"], get = True, t_crop = self.metapar.terr_crop,
+    #                             **kwargs)
+
+    #     if not self._iserr():
+    #         log("Off-pulse crop required for RFI zappinh", lpf_col = self.pcol,
+    #             stype = "err")
+    #         raise ValueError("terr_crop undefined")
+
+        
+    #     # calculate channel rms and mask according to median and flag_threshold
+    #     data['fI'] = np.nanstd(data['dsI'], axis = 1)
+    #     med_rms = np.nanmedian(data['fI'])
+    #     mad_rms = 1.48 * np.nanmedian(np.abs(data['fI'] - med_rms))
+
+    #     # flag
+    #     chanmask = np.ones(data['fI'].size, dtype = float)
+    #     chan2flag = np.where(data['fI'] > (med_rms + flagging_threshold * mad_rms))[0]
+    #     print(chan2flag)
+
+    #     chanmask[chan2flag] = np.nan
+
+    #     # convert to zap string
+    #     zapstr = get_zapstr(chanmask, data['freq'])
+    #     log(f"Channels to zap: {zapstr}", lpf_col = self.pcol)
+
+    #     if (zapstr is None) or (zapstr == ""):
+    #         return
+
+    #     # add/set to zapchan
+    #     if self.metapar.zapchan is None:
+    #         self.metapar.zapchan = zapstr
+    #     else:
+    #         self.metapar.zapchan += f",{zapstr}"
+        
+    #     return
+        
 
 
 
@@ -1898,7 +1960,7 @@ class FRB:
 
     ## [ PLOT LORENTZ OF CROP ] ##
     def fit_scintband(self, method = "bayesian",priors: dict = None, statics: dict = None, 
-                     fit_params: dict = None, redo = False, filename: str = None, n = 5, **kwargs):
+                     fit_params: dict = None, redo = False, filename: str = None, n: int = None, **kwargs):
         """
         Fit for, Find and plot Scintillation bandwidth in FRB
 
@@ -1918,6 +1980,8 @@ class FRB:
             if True, will redo fitting in the case that results are cached, this is mainly for BILBY fitting, default is False
         filename : str, optional
             Save figure to file, by default None
+        n : float, optional
+            Polynomial order, by default None
 
         Returns
         -------
@@ -1956,8 +2020,12 @@ class FRB:
             sumfunc = np.sum
         
         # caculate acf of residuals
-        y, yfit = residuals(self._f['I'], n = n)
-        yrms = sumfunc(y**2)
+        if n is not None:
+            y, yfit = residuals(self._f['I'], n = n)
+            yrms = sumfunc(y**2)
+        else:
+            y = self._f['I']
+            yrms = None
         y = acf(y)
 
         # in case zapping is involved
@@ -2003,31 +2071,33 @@ class FRB:
         ##===================##
         ##   do plotting     ##
         ##===================##  
-        if self.save_plots or self.show_plots:     
-            plt.figure(figsize = (10,10))
-            plt.plot(self._freq, self._f['I'], 'k', label = "STOKES I spectra")
-            plt.plot(self._freq, yfit(np.arange(self._f['I'].size)), 'r--', label = "STOKES I fit")
-            plt.xlabel("Freq [MHz]")
-            plt.ylabel("Flux (arb.)")
-            plt.title(f"polyfit, n = {n}")
-            plt.legend()
+        if self.save_plots or self.show_plots:    
 
-            if self.save_plots:
-                if filename is None:
-                    filename = f"{self.par.name}_fit_scintband_broad_poly_model.png"
-                else:
-                    filename += "_broad_poly_model.png"
-                
-                plt.savefig(filename)
+            if n is not None: 
+                plt.figure(figsize = (10,10))
+                plt.plot(self._freq, self._f['I'], 'k', label = "STOKES I spectra")
+                plt.plot(self._freq, yfit(np.arange(self._f['I'].size)), 'r--', label = "STOKES I fit")
+                plt.xlabel("Freq [MHz]")
+                plt.ylabel("Flux (arb.)")
+                plt.title(f"polyfit, n = {n}")
+                plt.legend()
+
+                if self.save_plots:
+                    if filename is None:
+                        filename = f"{self.par.name}_fit_scintband_broad_poly_model.png"
+                    else:
+                        filename += "_broad_poly_model.png"
+                    
+                    plt.savefig(filename)
                 
 
             fig = p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", show = False)
 
             if self.save_plots:
                 if filename is None:
-                    filename = f"{self.par.name}_fit_scintband_residuals.png"
+                    filename = f"{self.par.name}_fit_scintband.png"
                 else:
-                    filename += "_residuals.png"
+                    filename += ".png"
                 
                 plt.savefig(filename)
 
@@ -2112,11 +2182,21 @@ class FRB:
 
         # create instance of fitting
         # the implemented convolution algorithm requires that we snap to integer samples
-
+        # check if priors given or not
         p = fit(x = x, y = y, yerr = err, func = make_scatt_pulse_profile_func(npulse),
                 prior = priors, static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior) 
-        
+
+        # make sure we don't sample 0 for select priors
+        if method == "least squares":
+            for key in p.keys:
+                if key == "sigma":
+                    continue
+                if key not in priors.keys():
+                    print("KEYKEY")
+                    if ("sig" in key) or ("tau" in key) or (key[0] == "a"):
+                        p.bounds[key] = [0.0001, math.inf]
+
         # fit 
         p.fit(redo = redo)
 
@@ -2283,8 +2363,8 @@ class FRB:
 
 
 
-    def fit_RM(self, method = "RMquad", fit_params: dict = None, 
-               filename: str = None, **kwargs):
+    def fit_RM(self, method = "RMquad", sigma: float = None, rm_prior: list = [-1000, 1000], 
+                pa0_prior: list = [-np.pi/2, np.pi/2], fit_params: dict = None, filename: str = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
 
@@ -2293,11 +2373,19 @@ class FRB:
         method : str, optional
             Method to perform Rotation Measure fitting, by default "RMquad" \n
             [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
-            [RMsynth] - Use the RM-tools RM-Synthesis method
+            [RMsynth] - Use the RM-tools RM-Synthesis method \n
+            [QUfit] - Fit log-likelihood model of Stokes Q and U parameters (see bannister et al 2019 - supplementary)
+        sigma : float, optional
+            Apply masking based on S/N threshold given, used in [RMquad, RMsynth, QUfit]
+        rm_prior : list
+            priors for rotation measure, used in [QUfit], by default [-1000, 1000]
+        pa0_prior : list
+            priors for PA0, used in [QUfit], by default [-pi/2, pi/2] (Shouldn't need to change)
         fit_params : dict, optional
             keyword parameters for fitting method, by default None \n
             [RMquad] - Scipy.optimise.curve_fit keyword params \n
-            [RMsynth] - RMtools_1D.run_synth keyword params
+            [RMsynth] - RMtools_1D.run_synth keyword params \n
+            [QUfit] - bilby.run_sampler keyword params
         filename : str, optional
             filename to save figure to, by default None
 
@@ -2312,10 +2400,7 @@ class FRB:
         self._load_new_params(**kwargs)
 
         # check which data products are needed
-        if method == "RMquad":
-            data_list = ["fQ", "fU"]
-
-        elif method == "RMsynth":
+        if method in ["RMsynth", "RMquad", "QUfit"]:
             data_list = ["fI", "fQ", "fU"]
         
         else:
@@ -2332,6 +2417,12 @@ class FRB:
         if not self._isdata():
             return None
 
+        ## mask data based on S/N threshold given
+        if sigma is not None:
+            mask = self._f["I"] > self._f['Ierr'] * sigma
+        else:
+            mask = np.ones(self._f['I'].size, dtype = bool)
+
         ## run fitting for RM ##
         if method == "RMquad":
             # run quadrature method
@@ -2341,8 +2432,8 @@ class FRB:
 
             f0 = self.this_par.f0
             # run fitting
-            rm, rm_err, pa0, pa0_err = fit_RMquad(self._f['Q'], self._f['U'], self._f['Qerr'],
-                                                  self._f['Uerr'], self._freq, f0, **fit_params)
+            rm, rm_err, pa0, pa0_err = fit_RMquad(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask],
+                                                  self._f['Uerr'][mask], self._freq[mask], f0, **fit_params)
 
 
         elif method == "RMsynth":
@@ -2350,18 +2441,38 @@ class FRB:
             pa0_err = 0.0       # do this for now, TODO
             I, Q, U = self._f['I'], self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr'] 
-            rm, rm_err, f0, pa0 = fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, self._freq,
-                                          **fit_params)
+            rm, rm_err, f0, pa0 = fit_RMsynth(I[mask], Q[mask], U[mask], Ierr[mask], 
+                                Qerr[mask], Uerr[mask], self._freq[mask], **fit_params)
+
+        
+        elif method == "QUfit":
+
+            # TODO: make reference frequency same as FDF?
+
+            # run log-likelihood estimating for Q and U paramters
+            f0 = 0.0
+            Q, U = self._f['Q'], self._f['U']
+            Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr']
+            rm, rm_err, pa0, pa0_err = RM_QUfit(Q = Q[mask], U = U[mask], Ierr = Ierr[mask], Qerr = Qerr[mask], 
+                                                Uerr = Uerr[mask], f = self._freq[mask], rm_priors = rm_prior, 
+                                                pa0_priors = pa0_prior, **fit_params)
+
+
+        # function for plotting diagnostics
+        if method == "QUfit":
+            def rmquad(f, rm, pa0):
+                angs = pa0 + rm*c**2/(f*1e6)**2
+                return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
+        else:
+            def rmquad(f, rm, pa0):
+                angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+                return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
 
 
         # put into pyfit structure
-        PA, PA_err = calc_PA(self._f['Q'], self._f['U'], self._f['Qerr'], self._f['Uerr'])
+        PA, PA_err = calc_PA(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask], self._f['Uerr'][mask])
 
-        def rmquad(f, rm, pa0):
-            angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
-            return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
-
-        p = fit(x = self._freq, y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
+        p = fit(x = self._freq[mask], y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
                  residuals = self.residuals)
         p.set_posterior('rm', rm, rm_err, rm_err)
         p.set_posterior('pa0', pa0, pa0_err, pa0_err)

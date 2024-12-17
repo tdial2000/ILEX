@@ -93,8 +93,9 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">YAML</span>    <span class="c1"># wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. </span>
 <span class="kn">import</span> <span class="nn">yaml</span> <span class="k">as</span> <span class="nn">base_yaml</span>        <span class="c1"># default yaml class</span>
-<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">comments</span> <span class="k">as</span> <span class="n">ruamel_comments</span>
 <span class="kn">from</span> <span class="nn">ruamel.yaml.scalarfloat</span> <span class="kn">import</span> <span class="n">ScalarFloat</span> <span class="k">as</span> <span class="n">ruamel_float</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml</span> <span class="kn">import</span> <span class="n">comments</span>
+<span class="kn">from</span> <span class="nn">ruamel.yaml.comments</span> <span class="kn">import</span> <span class="n">CommentedMap</span><span class="p">,</span> <span class="n">CommentedSeq</span>
 
 
 <span class="c1"># empty structure</span>
@@ -482,6 +483,7 @@
                 <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_ruamel_input</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
                 <span class="n">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">)</span>
 
 
@@ -527,7 +529,6 @@
 
 
 
-
 <div class="viewcode-block" id="save_param_file">
 <a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.save_param_file">[docs]</a>
 <span class="k">def</span> <span class="nf">save_param_file</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">yaml_obj</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -559,6 +560,90 @@
     <span class="c1"># save pars in pars</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
         <span class="n">yaml_obj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="update_ruamel_CommentedSeq">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.update_ruamel_CommentedSeq">[docs]</a>
+<span class="k">def</span> <span class="nf">update_ruamel_CommentedSeq</span><span class="p">(</span><span class="n">commented_seq</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the value of the CommentedSeq whilst preserving the flow</span>
+<span class="sd">    stype and comments</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># copy comments</span>
+    <span class="k">if</span> <span class="n">commented_seq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="n">commented_seq</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">comment</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># create new Commented Sequence initialised to val</span>
+    <span class="n">commented_seq</span> <span class="o">=</span> <span class="n">CommentedSeq</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="c1"># add comments and preserved flow style</span>
+    <span class="n">commented_seq</span><span class="o">.</span><span class="n">_yaml_add_comment</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+    <span class="n">commented_seq</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">commented_seq</span></div>
+
+
+
+
+<div class="viewcode-block" id="update_ruamel_CommentedMap">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.update_ruamel_CommentedMap">[docs]</a>
+<span class="k">def</span> <span class="nf">update_ruamel_CommentedMap</span><span class="p">(</span><span class="n">commented_map</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updated Commented map based on key, value pair</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">commented_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># add to commented_map</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># create CommentedSeq</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">CommentedSeq</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># create CommentedMap</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">CommentedMap</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="c1"># add to map</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can only add list, dict, float, int, bool or str to CommentedMap yaml.&quot;</span><span class="p">)</span>
+    
+        <span class="k">return</span>    
+        
+        
+    <span class="n">commented_map</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+                <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_ruamel_CommentedSeq</span><span class="p">(</span><span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dict_key</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+                <span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">])</span>
+        
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        
+
+    <span class="k">return</span></div>
 
 
 
@@ -698,10 +783,10 @@
 <span class="sd">        Change ruamel class to python class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">ruamel_comments</span><span class="o">.</span><span class="n">CommentedMap</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedMap</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
     
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">ruamel_comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">inp</span></div>
@@ -720,7 +805,7 @@
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">ruamel_float</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ruamel_comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">out</span></div>
 

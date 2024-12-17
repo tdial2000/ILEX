@@ -18,6 +18,7 @@
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -66,7 +67,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#order-of-process-operations">Order of process operations</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#the-data-products">The Data products</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-data-products">The Data products</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#stokes-l-and-p">Stokes <span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(P\)</span></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#data-instances">data instances</a></li>
 </ul>
 </li>
@@ -153,11 +157,15 @@ at the very least setting <code class="docutils literal notranslate"><span class
 <section id="the-frb-parameters">
 <h2>The <code class="docutils literal notranslate"><span class="pre">FRB</span></code> parameters<a class="headerlink" href="#the-frb-parameters" title="Link to this heading"></a></h2>
 <p>The parameters in the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class are split into 3 groups (for the most part…)</p>
-<p><code class="docutils literal notranslate"><span class="pre">par</span></code>      - parameters that are descriptive to the FRB data, such as name, intrinsic data resolution etc.
-<code class="docutils literal notranslate"><span class="pre">metapar</span></code>  - meta parameters that describe the processing being done on the FRB data, such as time,freq crops, averaging etc.
-<code class="docutils literal notranslate"><span class="pre">hyperpar</span></code> - hyper parameters that describe the functionality of the class itself, such as if verbose printing, showing plots etc.</p>
-<p><code class="docutils literal notranslate"><span class="pre">frb.par</span></code> is where you can find all the parameters of the FRB.
-<code class="docutils literal notranslate"><span class="pre">frb.metapar</span></code> is where you can find all the meta parameters of the FRB.</p>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">par</span></code>      - parameters that are descriptive to the FRB data, such as name, intrinsic data resolution etc.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">metapar</span></code>  - meta parameters that describe the processing being done on the FRB data, such as time,freq crops, averaging etc.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">hyperpar</span></code> - hyper parameters that describe the functionality of the class itself, such as if verbose printing, showing plots etc.</div>
+</div>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">frb.par</span></code> is where you can find all the parameters of the FRB.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">frb.metapar</span></code> is where you can find all the meta parameters of the FRB.</div>
+</div>
 <p>Each hyper parameter is their own attribute in the FRB class, such as verbose, i.e. <code class="docutils literal notranslate"><span class="pre">frb.verbose</span></code> or show_plots, <code class="docutils literal notranslate"><span class="pre">frb.show_plots</span></code></p>
 <section id="par">
 <h3><code class="docutils literal notranslate"><span class="pre">par</span></code><a class="headerlink" href="#par" title="Link to this heading"></a></h3>
@@ -330,13 +338,21 @@ discretion. (This may be removed in a later version of ILEX, so probably don’t
 </section>
 <section id="the-data-products">
 <h2>The Data products<a class="headerlink" href="#the-data-products" title="Link to this heading"></a></h2>
-<p>When you load in any/all of the Stokes I, Q, U and V dynamic spectra you can also for a number
-of data products. Lets look at an example using the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> is the most important function in the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class as this is what retrieves the full processed Stokes
+data products. The following data products can be called:</p>
+<div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dsI</span></code>, <code class="docutils literal notranslate"><span class="pre">tI</span></code> or <code class="docutils literal notranslate"><span class="pre">fI</span></code> - For the Stokes <span class="math notranslate nohighlight">\(I\)</span> dynamic spectrum, time profile and frequency spectrum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dsQ</span></code>, <code class="docutils literal notranslate"><span class="pre">tQ</span></code> or <code class="docutils literal notranslate"><span class="pre">fQ</span></code> - For the Stokes <span class="math notranslate nohighlight">\(Q\)</span> dynamic spectrum, time profile and frequency spectrum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dsU</span></code>, <code class="docutils literal notranslate"><span class="pre">tU</span></code> or <code class="docutils literal notranslate"><span class="pre">fU</span></code> - For the Stokes <span class="math notranslate nohighlight">\(U\)</span> dynamic spectrum, time profile and frequency spectrum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dsV</span></code>, <code class="docutils literal notranslate"><span class="pre">tV</span></code> or <code class="docutils literal notranslate"><span class="pre">fV</span></code> - For the Stokes <span class="math notranslate nohighlight">\(V\)</span> dynamic spectrum, time profile and frequency spectrum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">tL</span></code> or <code class="docutils literal notranslate"><span class="pre">fL</span></code> - For the Stokes <span class="math notranslate nohighlight">\(L\)</span> time profile and frequency spectrum</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">tL</span></code> or <code class="docutils literal notranslate"><span class="pre">fL</span></code> - For the Stokes <span class="math notranslate nohighlight">\(P\)</span> time profile and frequency spectrum.</div>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This call to <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> is requesting a crop of the stokes I and Q dynamic spectra. This
-will run through all the processing steps outlined above and spit out cropped and processing stokes
+will run through all the processing steps outlined above and spit out cropped and processed stokes
 I and Q dynamic spectra, denoted by the <code class="docutils literal notranslate"><span class="pre">ds</span></code>. We also return these data products as a dict by specifying
 <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
 <p>We can also ask for 1D time series data and/or spectra data</p>
@@ -355,6 +371,25 @@ this case <code class="docutils literal notranslate"><span class="pre">tIerr</sp
 <p>Similarly with time series, <code class="docutils literal notranslate"><span class="pre">FRB._t</span></code> and frequency spectra <code class="docutils literal notranslate"><span class="pre">FRB._f</span></code>. In the case that you also want
 the noise/error data as well, specify <code class="docutils literal notranslate"><span class="pre">FRB._t[&quot;{S}err&quot;]</span></code> for any Stokes parameter <code class="docutils literal notranslate"><span class="pre">S</span></code> in the case for time
 series noise (Same thing for frequency spectra). For the time series/freq spectra x-axis, specify <code class="docutils literal notranslate"><span class="pre">FRB._time/FRB._freq</span></code>.</p>
+<p>You can also ask for the fractional Stokes parameters (i.e. <span class="math notranslate nohighlight">\(Q/I\)</span> etc.). To do this set <code class="docutils literal notranslate"><span class="pre">ratio</span> <span class="pre">=</span> <span class="pre">True</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;tQ&quot;</span><span class="p">,</span> <span class="s2">&quot;tU&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can only ask for the fractional Stokes parameters for Stokes <span class="math notranslate nohighlight">\(Q, U, V, L\)</span> and <span class="math notranslate nohighlight">\(P\)</span>. Additionally you can only ask for
+their respective time profiles and/or frequency profiles (<code class="docutils literal notranslate"><span class="pre">t</span></code> or <code class="docutils literal notranslate"><span class="pre">f</span></code>). If, for example you ask for an additional Stokes product that
+doesn’t support <code class="docutils literal notranslate"><span class="pre">ratio</span></code>, the function will just return the default paramter</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="s2">&quot;tQ&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, <code class="docutils literal notranslate"><span class="pre">dsI</span></code> will be the original stokes <span class="math notranslate nohighlight">\(I\)</span> dynamic spectrum, whilst <code class="docutils literal notranslate"><span class="pre">tQ</span></code> will be the time profile of <span class="math notranslate nohighlight">\(Q/I\)</span>.</p>
+<section id="stokes-l-and-p">
+<h3>Stokes <span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(P\)</span><a class="headerlink" href="#stokes-l-and-p" title="Link to this heading"></a></h3>
+<p>When using <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> to retrieve Stokes <span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(P\)</span> products, it is useful to debias them. This can be done by setting
+<code class="docutils literal notranslate"><span class="pre">debias</span> <span class="pre">=</span> <span class="pre">True</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s2">&quot;tL&quot;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">debias</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="data-instances">
 <h2>data instances<a class="headerlink" href="#data-instances" title="Link to this heading"></a></h2>

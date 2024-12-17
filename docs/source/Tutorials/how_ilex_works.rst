@@ -70,12 +70,12 @@ The ``FRB`` parameters
 
 The parameters in the ``FRB`` class are split into 3 groups (for the most part...)
 
-``par``      - parameters that are descriptive to the FRB data, such as name, intrinsic data resolution etc.
-``metapar``  - meta parameters that describe the processing being done on the FRB data, such as time,freq crops, averaging etc.
-``hyperpar`` - hyper parameters that describe the functionality of the class itself, such as if verbose printing, showing plots etc.
+| ``par``      - parameters that are descriptive to the FRB data, such as name, intrinsic data resolution etc.
+| ``metapar``  - meta parameters that describe the processing being done on the FRB data, such as time,freq crops, averaging etc.
+| ``hyperpar`` - hyper parameters that describe the functionality of the class itself, such as if verbose printing, showing plots etc.
 
-``frb.par`` is where you can find all the parameters of the FRB. 
-``frb.metapar`` is where you can find all the meta parameters of the FRB.
+| ``frb.par`` is where you can find all the parameters of the FRB. 
+| ``frb.metapar`` is where you can find all the meta parameters of the FRB.
 
 Each hyper parameter is their own attribute in the FRB class, such as verbose, i.e. ``frb.verbose`` or show_plots, ``frb.show_plots``  
 
@@ -287,15 +287,22 @@ The order in which data is processed goes like this:
 The Data products
 =================
 
-When you load in any/all of the Stokes I, Q, U and V dynamic spectra you can also for a number
-of data products. Lets look at an example using the ``.get_data()`` method.
+The ``.get_data()`` is the most important function in the ``FRB`` class as this is what retrieves the full processed Stokes
+data products. The following data products can be called:
+
+| ``dsI``, ``tI`` or ``fI`` - For the Stokes :math:`I` dynamic spectrum, time profile and frequency spectrum
+| ``dsQ``, ``tQ`` or ``fQ`` - For the Stokes :math:`Q` dynamic spectrum, time profile and frequency spectrum
+| ``dsU``, ``tU`` or ``fU`` - For the Stokes :math:`U` dynamic spectrum, time profile and frequency spectrum
+| ``dsV``, ``tV`` or ``fV`` - For the Stokes :math:`V` dynamic spectrum, time profile and frequency spectrum
+| ``tL`` or ``fL`` - For the Stokes :math:`L` time profile and frequency spectrum
+| ``tL`` or ``fL`` - For the Stokes :math:`P` time profile and frequency spectrum.
 
 .. code-block:: python
 
    data = frb.get_data(["dsI", "dsQ"], get = True)
 
 This call to ``.get_data()`` is requesting a crop of the stokes I and Q dynamic spectra. This
-will run through all the processing steps outlined above and spit out cropped and processing stokes 
+will run through all the processing steps outlined above and spit out cropped and processed stokes 
 I and Q dynamic spectra, denoted by the ``ds``. We also return these data products as a dict by specifying
 ``get = True``.
 
@@ -321,7 +328,32 @@ Similarly with time series, ``FRB._t`` and frequency spectra ``FRB._f``. In the 
 the noise/error data as well, specify ``FRB._t["{S}err"]`` for any Stokes parameter ``S`` in the case for time
 series noise (Same thing for frequency spectra). For the time series/freq spectra x-axis, specify ``FRB._time/FRB._freq``.
 
+You can also ask for the fractional Stokes parameters (i.e. :math:`Q/I` etc.). To do this set ``ratio = True``
 
+.. code-block:: python
+
+   data = frb.get_data(["tQ", "tU"], get = True, ratio = True)
+
+You can only ask for the fractional Stokes parameters for Stokes :math:`Q, U, V, L` and :math:`P`. Additionally you can only ask for
+their respective time profiles and/or frequency profiles (``t`` or ``f``). If, for example you ask for an additional Stokes product that 
+doesn't support ``ratio``, the function will just return the default paramter 
+
+.. code-block:: python
+
+   data = frb.get_data(["dsI", "tQ"], get = True, ratio = True)
+
+In this case, ``dsI`` will be the original stokes :math:`I` dynamic spectrum, whilst ``tQ`` will be the time profile of :math:`Q/I`.
+
+
+Stokes :math:`L` and :math:`P`
+___________
+
+When using ``.get_data()`` to retrieve Stokes :math:`L` and :math:`P` products, it is useful to debias them. This can be done by setting
+``debias = True``
+
+.. code-block:: python
+
+   data = frb.get_data("tL", get = True, debias = True).
 
 
 data instances

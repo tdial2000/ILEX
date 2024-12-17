@@ -98,6 +98,7 @@
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">floor</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">bilby</span>
 
 <span class="c1"># rm synthesis</span>
 <span class="kn">from</span> <span class="nn">RMtools_1D.do_RMsynth_1D</span> <span class="kn">import</span> <span class="n">run_rmsynth</span>
@@ -108,7 +109,7 @@
 
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span>
+<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">_clean_bilby_run</span><span class="p">,</span> <span class="n">_priorUniform</span>
 
 <span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -697,6 +698,165 @@
 
 
 
+
+<span class="c1"># QUfitting likelihood class</span>
+<div class="viewcode-block" id="QUfit_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood">[docs]</a>
+<span class="k">class</span> <span class="nc">QUfit_likelihood</span><span class="p">(</span><span class="n">bilby</span><span class="o">.</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Likelihood function for evaluating Stokes Q and U parameters to fit RM. L will be debiased</span>
+<span class="sd">        and a mask will be applied to all Stokes parameters based on L debiased.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f : np.ndarray</span>
+<span class="sd">            Frequencies in MHz</span>
+<span class="sd">        Q : np.ndarray</span>
+<span class="sd">            Stokes Q parameter</span>
+<span class="sd">        U : np.ndarray</span>
+<span class="sd">            Stokes U parameter</span>
+<span class="sd">        Ierr : np.ndarray</span>
+<span class="sd">            Stokes I parameter noise, used to calculate L debiased</span>
+<span class="sd">        Qerr : np.ndarray</span>
+<span class="sd">            Stokes Q parameter noise</span>
+<span class="sd">        Uerr : np.ndarray</span>
+<span class="sd">            Stokes U parameter noise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># constants</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="mi">299_792_458</span>    <span class="c1"># [m/s^2]</span>
+
+        <span class="c1"># calculate debiased L</span>
+        <span class="n">L_meas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">[</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mf">1.57</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> 
+ 
+        <span class="c1"># f data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e6</span>        <span class="c1"># in Hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span>
+        
+        <span class="c1"># stk data </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># stk noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span> <span class="o">=</span> <span class="n">Qerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span> <span class="o">=</span> <span class="n">Uerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># These lines of code infer parameters from provided function</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PA</span><span class="p">)</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">function_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RM&quot;</span><span class="p">,</span> <span class="s2">&quot;pa0&quot;</span><span class="p">]</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_keys</span><span class="p">}</span>
+
+    
+<div class="viewcode-block" id="QUfit_likelihood.PA">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood.PA">[docs]</a>
+    <span class="k">def</span> <span class="nf">PA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RM</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        PA function to evaluate</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        RM : float</span>
+<span class="sd">            Rotation Measure [rad/m^2]</span>
+<span class="sd">        pa0 : float</span>
+<span class="sd">            Initial reference polarisation position angle [rad]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">RM</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span></div>
+
+
+    
+
+<div class="viewcode-block" id="QUfit_likelihood.log_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood.log_likelihood">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log likelihood, adding Q and U likelihoods together</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">PA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PA</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
+
+        <span class="c1"># calculate Stokes Q log likelihood</span>
+        <span class="n">ll_Q</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">PA</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># calculate Stokes U log likelihood</span>
+        <span class="n">ll_U</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">PA</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ll_Q</span> <span class="o">+</span> <span class="n">ll_U</span></div>
+</div>
+
+
+
+
+
+<div class="viewcode-block" id="RM_QUfit">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.RM_QUfit">[docs]</a>
+<span class="k">def</span> <span class="nf">RM_QUfit</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rm_priors</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="n">pa0_priors</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit RM using QUfit method</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f : np.ndarray</span>
+<span class="sd">        Frequencies in MHz</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q parameter</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U parameter</span>
+<span class="sd">    Ierr : np.ndarray</span>
+<span class="sd">        Stokes I parameter noise, used to calculate L debiased</span>
+<span class="sd">    Qerr : np.ndarray</span>
+<span class="sd">        Stokes Q parameter noise</span>
+<span class="sd">    Uerr : np.ndarray</span>
+<span class="sd">        Stokes U parameter noise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">outdir</span> <span class="o">=</span> <span class="s2">&quot;outdir&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;outdir&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;outdir&quot;</span><span class="p">]</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+    <span class="n">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+
+    <span class="n">priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;RM&#39;</span><span class="p">:</span><span class="n">rm_priors</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s1">&#39;pa0&#39;</span><span class="p">:</span><span class="n">pa0_priors</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span>
+
+    <span class="c1"># start sampling</span>
+    <span class="n">likelihood</span> <span class="o">=</span> <span class="n">QUfit_likelihood</span><span class="p">(</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="n">Uerr</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">run_sampler</span><span class="p">(</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">_priorUniform</span><span class="p">(</span><span class="n">priors</span><span class="p">),</span>
+                                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># get rm and pa0 measurements</span>
+    <span class="n">rm_posterior</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="s1">&#39;RM&#39;</span><span class="p">)</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">rm_posterior</span><span class="o">.</span><span class="n">median</span>
+    <span class="n">rm_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rm_posterior</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rm_posterior</span><span class="o">.</span><span class="n">minus</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">pa0_posterior</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="s1">&#39;pa0&#39;</span><span class="p">)</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0_posterior</span><span class="o">.</span><span class="n">median</span>
+    <span class="n">pa0_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pa0_posterior</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pa0_posterior</span><span class="o">.</span><span class="n">minus</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="c1"># plots </span>
+    <span class="n">result</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span></div>
+
+
+    
 </pre></div>
 
            </div>

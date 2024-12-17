@@ -18,6 +18,7 @@
         <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -55,6 +56,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ILEX scripts</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#quickly-plot-dynamic-spectra">Quickly plot Dynamic spectra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-dynamic-spectra-from-x-and-y-polarisations">Create Dynamic spectra from X and Y polarisations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra">Incoherently Dedisperse Stokes <span class="math notranslate nohighlight">\(I, Q, U\)</span> or <span class="math notranslate nohighlight">\(V\)</span> dynamic spectra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coherently-dedisperse-x-and-y-polarisation-time-series-data">Coherently Dedisperse X and Y polarisation time series data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-new-frb-config-file">Make new FRB config file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#make-frb-panel-plot">Make FRB panel plot</a></li>
@@ -62,6 +64,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#plot-htr-mosaic">Plot HTR mosaic</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plot-interactive-dynamic-spectrum">Plot interactive Dynamic spectrum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plot-multi-component-pa-plot">Plot Multi-Component PA plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-cosmological-luminosity-distance">Calculate Cosmological Luminosity distance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-frb-burst-energetics">Calculate FRB burst energetics</a></li>
 </ul>
 </li>
 </ul>
@@ -115,6 +119,7 @@ Or if you add the script directory to your PATH enviromental variable <code clas
 
 <span class="gp"># </span>options
 <span class="go">--tN 1       # averaging factor in time</span>
+<span class="go">--fN 1       # averaging factor in frequency</span>
 </pre></div>
 </div>
 </section>
@@ -129,6 +134,7 @@ Or if you add the script directory to your PATH enviromental variable <code clas
 <span class="go">--nFFT 336          # Number of freq channels</span>
 <span class="go">--bline             # Apply baseline correction</span>
 <span class="go">--QUV               # make full stokes Dynamic spectrum</span>
+<span class="go">--do_chanflag       # Do automatic channel flagging based on channel noise</span>
 
 <span class="gp"># </span>data<span class="w"> </span>reduction<span class="w"> </span>arguments
 <span class="go">--sigma 5.0         # S/N threshold for baseline correction</span>
@@ -151,9 +157,33 @@ Or if you add the script directory to your PATH enviromental variable <code clas
 </pre></div>
 </div>
 </section>
+<section id="incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra">
+<h2>Incoherently Dedisperse Stokes <span class="math notranslate nohighlight">\(I, Q, U\)</span> or <span class="math notranslate nohighlight">\(V\)</span> dynamic spectra<a class="headerlink" href="#incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra" title="Link to this heading"></a></h2>
+<p>Search for and apply a :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>Delta`DM (incoherently) or just apply a given :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>Delta`DM to the passed
+Stokes dynamic spectrum.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m incoherent_dedisperse</span>
+
+<span class="gp"># </span>options
+<span class="go">-i filename         # Stokes dynamic spectrum, reference frequency assumed bottom of the band.</span>
+
+<span class="go">--dt 0.001          # Time resolution in [ms]</span>
+<span class="go">--tN 1              # Time averaging factor</span>
+<span class="go">--DMmin -1.0        # Minimum of DM [pc/cm^3] range to search over</span>
+<span class="go">--DMmax 1.0         # Maximum of DM [pc/cm^3] range to search over</span>
+<span class="go">--DMstep 0.1        # Step size of DM [pc/cm^3]</span>
+
+<span class="go">--cfreq 919.5       # Central frequency [MHz] of Dynamic spectrum</span>
+<span class="go">--bw 336            # Bandwidth [MHz] of Dynamic spectrum</span>
+<span class="go">--lower             # Use if first channel is bottom of the band</span>
+
+<span class="go">-o filename         # Output filename, No output saved if not specified</span>
+<span class="go">--delDM             # Delta DM [pc/cm^3] to apply for dedispersion, if given will overide DM search</span>
+</pre></div>
+</div>
+</section>
 <section id="coherently-dedisperse-x-and-y-polarisation-time-series-data">
 <h2>Coherently Dedisperse X and Y polarisation time series data<a class="headerlink" href="#coherently-dedisperse-x-and-y-polarisation-time-series-data" title="Link to this heading"></a></h2>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m coherent_desperse</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m coherent_dedisperse</span>
 
 <span class="gp"># </span>options
 <span class="go">-x filepath         # X polarisation filepath</span>
@@ -272,6 +302,46 @@ this is only for demonstrative purposes.</p>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/plot_examplePA_plot.png"><img alt="../_images/plot_examplePA_plot.png" src="../_images/plot_examplePA_plot.png" style="width: 720pt;" /></a>
+</section>
+<section id="calculate-cosmological-luminosity-distance">
+<h2>Calculate Cosmological Luminosity distance<a class="headerlink" href="#calculate-cosmological-luminosity-distance" title="Link to this heading"></a></h2>
+<p>Calculate the luminosity distance of a source given it’s redshift and a number of cosmological paramters.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m cosmo_history</span>
+
+<span class="gp"># </span>options
+<span class="go">-z 0.1                  # Redshift of source</span>
+
+<span class="go">--omega_m 0.315         # Matter density</span>
+<span class="go">--omega_vac 0.685       # Vaccum Dark Energy density</span>
+<span class="go">--H0 67.4               # Hubble Constant [km/s/Mpc]</span>
+<span class="go">--K 0.0                 # Cosmological Curvature parameter</span>
+<span class="go">--omega_r 0.0           # Radiation density</span>
+<span class="go">--w -1.0                # Dark Energy Equation of State parameter (zeroth order)</span>
+<span class="go">--wa 0.0                # Dark Energy Equation of State w(t) parameter (first order)</span>
+<span class="go">--de_eos &quot;constant&quot;     # Dark Energy Equation of State quintessence model, default is constant w</span>
+
+<span class="go">-N 1000000              # Number of samples for Numerical integration</span>
+</pre></div>
+</div>
+</section>
+<section id="calculate-frb-burst-energetics">
+<h2>Calculate FRB burst energetics<a class="headerlink" href="#calculate-frb-burst-energetics" title="Link to this heading"></a></h2>
+<p>Calculate Luminosity, total energy and other energetics of an FRB burst. This script assumes A <span class="math notranslate nohighlight">\(\Lambda\)</span>-CDM
+cosmology.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m frb_energetics</span>
+
+<span class="gp"># </span>options
+<span class="go">--fluence               # FRB Fluence [Jy ms]</span>
+<span class="go">-z 0.1                  # Redshift of FRB (spectroscopic ideally)</span>
+<span class="go">--bw 336                # Bandwidth of observation [MHz]</span>
+<span class="go">--width 1.0             # Width of FRB [ms]</span>
+<span class="go">--lumin_D None          # Luminosity distance [Mpc] (in case of near object - galactic), will overide redshift (z)</span>
+
+<span class="go">--omega_m 0.315         # Matter density</span>
+<span class="go">--omega_vac 0.685       # Dark Energy density</span>
+<span class="go">--H0 67.4               # Hubbles constant [km/s/Mpc]</span>
+</pre></div>
+</div>
 </section>
 </section>
 

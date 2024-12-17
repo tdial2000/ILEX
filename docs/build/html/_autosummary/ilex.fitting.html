@@ -51,6 +51,13 @@
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.fitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.QUfit_likelihood"><code class="docutils literal notranslate"><span class="pre">QUfit_likelihood</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.QUfit_likelihood.PA"><code class="docutils literal notranslate"><span class="pre">QUfit_likelihood.PA()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.QUfit_likelihood.log_likelihood"><code class="docutils literal notranslate"><span class="pre">QUfit_likelihood.log_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.QUfit_likelihood.model_parameters"><code class="docutils literal notranslate"><span class="pre">QUfit_likelihood.model_parameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.RM_QUfit"><code class="docutils literal notranslate"><span class="pre">RM_QUfit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMquad"><code class="docutils literal notranslate"><span class="pre">fit_RMquad()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMsynth"><code class="docutils literal notranslate"><span class="pre">fit_RMsynth()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
@@ -106,6 +113,54 @@
              
   <section id="module-ilex.fitting">
 <span id="ilex-fitting"></span><h1>ilex.fitting<a class="headerlink" href="#module-ilex.fitting" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.fitting.QUfit_likelihood">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QUfit_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#QUfit_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.QUfit_likelihood" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ilex.fitting.QUfit_likelihood.PA">
+<span class="sig-name descname"><span class="pre">PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">RM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#QUfit_likelihood.PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.QUfit_likelihood.PA" title="Link to this definition"></a></dt>
+<dd><p>PA function to evaluate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>RM</strong> (<em>float</em>) – Rotation Measure [rad/m^2]</p></li>
+<li><p><strong>pa0</strong> (<em>float</em>) – Initial reference polarisation position angle [rad]</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.fitting.QUfit_likelihood.log_likelihood">
+<span class="sig-name descname"><span class="pre">log_likelihood</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#QUfit_likelihood.log_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.QUfit_likelihood.log_likelihood" title="Link to this definition"></a></dt>
+<dd><p>Log likelihood, adding Q and U likelihoods together</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ilex.fitting.QUfit_likelihood.model_parameters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_parameters</span></span><a class="headerlink" href="#ilex.fitting.QUfit_likelihood.model_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.RM_QUfit">
+<span class="sig-name descname"><span class="pre">RM_QUfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm_priors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-1000,</span> <span class="pre">1000]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0_priors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-3.141592653589793,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#RM_QUfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.RM_QUfit" title="Link to this definition"></a></dt>
+<dd><p>Fit RM using QUfit method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>np.ndarray</em>) – Frequencies in MHz</p></li>
+<li><p><strong>Q</strong> (<em>np.ndarray</em>) – Stokes Q parameter</p></li>
+<li><p><strong>U</strong> (<em>np.ndarray</em>) – Stokes U parameter</p></li>
+<li><p><strong>Ierr</strong> (<em>np.ndarray</em>) – Stokes I parameter noise, used to calculate L debiased</p></li>
+<li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – Stokes Q parameter noise</p></li>
+<li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U parameter noise</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.fit_RMquad">
 <span class="sig-name descname"><span class="pre">fit_RMquad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_RMquad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_RMquad" title="Link to this definition"></a></dt>

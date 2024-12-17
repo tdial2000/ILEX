@@ -6,6 +6,6 @@ angle is rotated due to the magnetic field parallel/anti-parallel to the FRB lin
 The rotation measures for a cold plasma is well described by the following equation
 
 .. math::
-   \chi(\nu) = \mathrm{RMc^{2}}\Bigg(\frac{1}{\nu^{2}} - \frac{1}{\nu_{0}^{2}})
+   \chi(\nu) = \mathrm{RMc^{2}}\Bigg(\frac{1}{\nu^{2}} - \frac{1}{\nu_{0}^{2}}\Bigg)
 
 where :math:`RM` is the rotation measure, :math:`\chi` is the Linear polarisation position angle and :math:`\nu_{0}` the reference frequency.

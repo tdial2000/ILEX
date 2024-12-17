@@ -457,7 +457,7 @@
 
 <div class="viewcode-block" id="fday_rot">
 <a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.fday_rot">[docs]</a>
-<span class="k">def</span> <span class="nf">fday_rot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span>  <span class="n">RM</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">fday_rot</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span>  <span class="n">RM</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply Faraday rotation to 1D or 2D Stokes data</span>
 
@@ -486,12 +486,17 @@
 
     <span class="k">if</span> <span class="n">RM</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">RM</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span>
-    <span class="k">if</span> <span class="n">f0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">f0</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Must specify non-zero f0&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span>
+    <span class="c1"># if f0 is None or f0 == 0.0:</span>
+    <span class="c1">#     print(&quot;Must specify non-zero f0&quot;)</span>
+    <span class="c1">#     return Q, U</span>
+    <span class="k">if</span> <span class="n">pa0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.0</span>
     
     <span class="c1"># calculate faraday angle</span>
-    <span class="n">fang</span> <span class="o">=</span> <span class="n">RM</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">1e12</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">pa0</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">f0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">f0</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="n">fang</span> <span class="o">=</span> <span class="n">RM</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">1e12</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">pa0</span>
+    <span class="k">else</span><span class="p">:</span>    
+        <span class="n">fang</span> <span class="o">=</span> <span class="n">RM</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="mf">1e12</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">pa0</span>
 
     <span class="c1"># dynamic spectra or spectra?</span>
     <span class="k">if</span> <span class="n">Q</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>

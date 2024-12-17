@@ -30,6 +30,7 @@ Quickly plot dynamic spectrum
 
     # options
     --tN 1       # averaging factor in time
+    --fN 1       # averaging factor in frequency
 
 
 Create Dynamic spectra from X and Y polarisations
@@ -47,6 +48,7 @@ Create Dynamic spectrum from X and Y time series complex polarisations. Note by 
     --nFFT 336          # Number of freq channels
     --bline             # Apply baseline correction
     --QUV               # make full stokes Dynamic spectrum
+    --do_chanflag       # Do automatic channel flagging based on channel noise
 
     # data reduction arguments
     --sigma 5.0         # S/N threshold for baseline correction
@@ -68,12 +70,41 @@ Create Dynamic spectrum from X and Y time series complex polarisations. Note by 
     --ofile filepath    # Name of new dynamic spectra, full output is filepath_{S}.npy where S is the stokes ds
 
 
+
+Incoherently Dedisperse Stokes :math:`I, Q, U` or :math:`V` dynamic spectra
+===========================================================================
+
+Search for and apply a :math:`\Delta`DM (incoherently) or just apply a given :math:`Delta`DM to the passed
+Stokes dynamic spectrum.
+
+.. code-block:: console
+
+    python3 -m incoherent_dedisperse
+
+    # options
+    -i filename         # Stokes dynamic spectrum, reference frequency assumed bottom of the band.
+
+    --dt 0.001          # Time resolution in [ms]
+    --tN 1              # Time averaging factor
+    --DMmin -1.0        # Minimum of DM [pc/cm^3] range to search over
+    --DMmax 1.0         # Maximum of DM [pc/cm^3] range to search over
+    --DMstep 0.1        # Step size of DM [pc/cm^3]
+    
+    --cfreq 919.5       # Central frequency [MHz] of Dynamic spectrum
+    --bw 336            # Bandwidth [MHz] of Dynamic spectrum
+    --lower             # Use if first channel is bottom of the band
+
+    -o filename         # Output filename, No output saved if not specified
+    --delDM             # Delta DM [pc/cm^3] to apply for dedispersion, if given will overide DM search 
+
+
+
 Coherently Dedisperse X and Y polarisation time series data
 ===========================================================
 
 .. code-block:: console
 
-    python3 -m coherent_desperse
+    python3 -m coherent_dedisperse
 
     # options
     -x filepath         # X polarisation filepath
@@ -222,5 +253,55 @@ this is only for demonstrative purposes.
 
 .. image:: plot_examplePA_plot.png
    :width: 720pt
+
+
+
+Calculate Cosmological Luminosity distance
+==========================================
+
+Calculate the luminosity distance of a source given it's redshift and a number of cosmological paramters.
+
+.. code-block:: console
+
+    python3 -m cosmo_history
+
+    # options
+    -z 0.1                  # Redshift of source
+
+    --omega_m 0.315         # Matter density
+    --omega_vac 0.685       # Vaccum Dark Energy density
+    --H0 67.4               # Hubble Constant [km/s/Mpc]
+    --K 0.0                 # Cosmological Curvature parameter
+    --omega_r 0.0           # Radiation density
+    --w -1.0                # Dark Energy Equation of State parameter (zeroth order)
+    --wa 0.0                # Dark Energy Equation of State w(t) parameter (first order)
+    --de_eos "constant"     # Dark Energy Equation of State quintessence model, default is constant w
+
+    -N 1000000              # Number of samples for Numerical integration
+
+
+
+Calculate FRB burst energetics
+==============================
+
+Calculate Luminosity, total energy and other energetics of an FRB burst. This script assumes A :math:`\Lambda`-CDM
+cosmology.
+
+.. code-block:: console
+
+    python3 -m frb_energetics
+
+    # options
+    --fluence               # FRB Fluence [Jy ms]
+    -z 0.1                  # Redshift of FRB (spectroscopic ideally)
+    --bw 336                # Bandwidth of observation [MHz]
+    --width 1.0             # Width of FRB [ms]
+    --lumin_D None          # Luminosity distance [Mpc] (in case of near object - galactic), will overide redshift (z)
+
+    --omega_m 0.315         # Matter density
+    --omega_vac 0.685       # Dark Energy density
+    --H0 67.4               # Hubbles constant [km/s/Mpc]
+
+
 
 

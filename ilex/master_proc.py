@@ -79,7 +79,7 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
         err_flag = True
 
     zap_flag = False
-    if par['zapchan'] is not None:
+    if (par['zapchan'] is not None) and (par['zapchan'] != ""):
         zap_flag = True
 
     fw_flag = par['fW'] is not None

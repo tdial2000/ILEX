@@ -2577,7 +2577,7 @@ class FRB:
         Parameters
         ----------
         debias : bool, optional
-            Debiases Stokes L, P and |V|, |Q| and |U|, by default False.
+            Debiases Stokes L, P and abs(V), abs(Q) and abs(U), by default False.
         peak_sigma : float, optional
             Provide a threshold in terms of I/Ierr that will be used to mask the data
             before estimating the peak fraction of each stokes parameter. This will be 

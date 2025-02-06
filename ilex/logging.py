@@ -31,7 +31,9 @@ def show_terminal_cols():
     Print out avaliable colors for terminal printing
     """
 
-    print(TERMINAL_COLORS)
+    for key in TERMINAL_COLORS.keys():
+        print(strcol(key, key))
+
 
 
 
@@ -259,4 +261,16 @@ def log_title(pstr, col = 'None'):
 
 
 
+def strcol(string: str, col: str):
+    """
+    Wrap string in color for terminal printing
 
+    Parameters
+    ----------
+    string : str
+        string to color wrap
+    col : str
+        color, run show_terminal_colors to check avaliable colors
+    """
+
+    return TERMINAL_COLORS[col] + string + TERMINAL_COLORS['None']

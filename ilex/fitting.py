@@ -64,10 +64,9 @@ def model_curve(y, n: int = 5, samp: int = None):
         Modelled data
     """    
 
+    x = np.linspace(0, 1.0, y.size)    
     if samp is None:
         samp = x.size
-
-    x = np.linspace(0, 1.0, y.size)
     xnew = np.linspace(0, 1.0, samp)
     
     y_fit = np.poly1d(np.polyfit(x,y,n))

@@ -450,12 +450,14 @@ class fit:
         
         print("[pyfit] Recalculating SIGMA")
         if self.method == "least squares":
-            return self.yerr
+            _, _, _, yerr = self._proc_data()
+            return yerr
 
         if self.method == "bayesian":
             if self._is_fit:
-                likelihood = self.likelihood(x = self.x, y = self.y, func = self.func, 
-                                xerr = self.xerr, yerr = self.yerr)
+                x, y, xerr, yerr = self._proc_data()
+                likelihood = self.likelihood(x = x, y = y, func = self.func, 
+                                xerr = xerr, yerr = yerr)
                 likelihood.parameters = self.get_post_val()
                 return likelihood.get_sigma()
 
@@ -1309,6 +1311,9 @@ class fit:
         
         
         x, y, _, _ = self._proc_data()
+        print(x.size, y.size)
+        print(self.get_model(x = x)[1].size)
+        print(sigma)
         
 
         # degrees of freedom

@@ -408,7 +408,7 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, **kwargs):
+    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, debias = False, ratio = False, **kwargs):
         """
         Save current instance data
 
@@ -438,7 +438,7 @@ class FRB:
             print(f"[{data}]")
 
         # get data
-        pdat = self.get_data(data_list, get = True)
+        pdat = self.get_data(data_list, debias = debias, ratio = ratio, get = True)
         if not self._isdata():
             return 
         
@@ -1663,108 +1663,42 @@ class FRB:
 
 
 
-    # def zap_rfi(self, flagging_threshold = 10, rms_average = 1000, **kwargs):
-    #     """
-    #     Look for channels to zap based on RFI, algorithm developed by [Apurba Bera] and 
-    #     revised (for speed) by [Tyson Dial]
 
-    #     EXPERIMENTAL!!! - NEED TO TEST
+    def zap_channels(self, chans: str = None, zapzeros: bool = False, zapzerosmargin: float = 1e-5, resetzap: bool = False):
+        """
+        Zap channels (uses Stokes I freq spectrum)
 
-    #     Take the terr_crop region and estimates the rfi there
-    #     """
-    #     log_title("Looking for RFI afflicted Channels to ZAP!!!", col = 'lblue')
+        Parameters
+        ----------
+        chans : str, optional
+            Channels to zap, by default None
+        zapzeros : bool, optional
+            zap channels at or close to zero, by default False
+        zapzerosmargin : float
+            margin close to zero at which to zap channels, ratio of max channel flux
+        resetzap : bool, optional
+            reset channels zapped, by default False
+        """
 
-    #     kwargs['tN'] = rms_average
+        zapchan = self.metapar.zapchan
 
-    #     # initialise
-    #     self._load_new_params(**kwargs)
-
-
-    #     # get data
-    #     data = self.get_data(["dsI", "fI"], get = True, t_crop = self.metapar.terr_crop,
-    #                             **kwargs)
-
-    #     if not self._iserr():
-    #         log("Off-pulse crop required for RFI zappinh", lpf_col = self.pcol,
-    #             stype = "err")
-    #         raise ValueError("terr_crop undefined")
-
+        if resetzap:
+            data = self.get_data('fI', get = True, zapchan = "")
+            zapchan = get_zapstr(data['fI'], self.par.get_freqs())
         
-    #     # calculate channel rms and mask according to median and flag_threshold
-    #     data['fI'] = np.nanstd(data['dsI'], axis = 1)
-    #     med_rms = np.nanmedian(data['fI'])
-    #     mad_rms = 1.48 * np.nanmedian(np.abs(data['fI'] - med_rms))
-
-    #     # flag
-    #     chanmask = np.ones(data['fI'].size, dtype = float)
-    #     chan2flag = np.where(data['fI'] > (med_rms + flagging_threshold * mad_rms))[0]
-    #     print(chan2flag)
-
-    #     chanmask[chan2flag] = np.nan
-
-    #     # convert to zap string
-    #     zapstr = get_zapstr(chanmask, data['freq'])
-    #     log(f"Channels to zap: {zapstr}", lpf_col = self.pcol)
-
-    #     if (zapstr is None) or (zapstr == ""):
-    #         return
-
-    #     # add/set to zapchan
-    #     if self.metapar.zapchan is None:
-    #         self.metapar.zapchan = zapstr
-    #     else:
-    #         self.metapar.zapchan += f",{zapstr}"
+        if chans is not None:
+            zapchan += ("," + chans)
         
-    #     return
+        if zapzeros:
+            data = self.get_data('fI', get = True, zapchan = zapchan)
+            data['fI'][np.isnan(data['fI'])] = np.max(data['fI'][~np.isnan(data['fI'])])
+            data['fI'][np.abs(data['fI']/np.max(np.abs(data['fI']))) < zapzerosmargin] = np.nan
+            zapchan += ("," + get_zapstr(data['fI'], self.par.get_freqs()))
         
+        # save
+        self.metapar.zapchan = zapchan
+        return
 
-
-
-
-
-    # def zap_rfi(self, sigma = 3, **kwargs):
-    #     """
-    #     Zap channels based on if RFI is present, this assumes RFI will have an off-pulse RMS > sigma * RMS_median where 
-    #     RMS_median is the median RMS of each channel. 
-
-    #     Parameters
-    #     ----------
-    #     sigma : float, optional
-    #         threshold for RFI zapping
-        
-    #     Returns
-    #     -------
-    #     zapchan : np.ndarray
-    #         string of frequency channels to zap
-        
-    #     """
-        
-    #     log(f"zapping RFI", lpf_col = self.pcol)
-
-    #     # get data
-    #     data = self.get_data(["dsI", "fI"], get = True, **kwargs)
-
-    #     if not self._iserr():
-    #         log("Off-pulse crop required for RFI zappinh", lpf_col = self.pcol,
-    #             stype = "err")
-    #         return None
-        
-    #     # flag channels with RMS > then RMS threshold
-    #     print(data['fIerr'])
-    #     print(np.median(data['fIerr']))
-
-    #     data['fIerr'] = np.nanstd(data['dsI'], axis = 1)
-    #     med_rms = np.nanmedian(data['fIerr'])
-    #     mad_rms = 1.48 * np.nanmedian(np.abs(data['fIerr'] - med_rms))
-    #     data['dsI'][data['fIerr'] > (med_rms + sigma*mad_rms)] = np.nan
-
-
-
-    #     # plot bad channels
-    #     plt.figure(figsize = (10,10))
-    #     plt.imshow(data['dsI'], aspect = 'auto', extent = [*self.this_par.t_lim, *self.this_par.f_lim])
-
-    #     plt.show()
 
 
 
@@ -2471,6 +2405,7 @@ class FRB:
 
         # put into pyfit structure
         PA, PA_err = calc_PA(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask], self._f['Uerr'][mask])
+        print(self._freq[mask].size, PA.size)
 
         p = fit(x = self._freq[mask], y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
                  residuals = self.residuals)

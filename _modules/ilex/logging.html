@@ -1,0 +1,406 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.logging &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.logging</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.logging</h1><div class="highlight"><pre>
+<span></span><span class="c1">#######################################</span>
+<span class="c1">#                                     #</span>
+<span class="c1"># Logging function                    #</span>
+<span class="c1">#                                     #</span>
+<span class="c1">#                                     #</span>
+<span class="c1">#######################################</span>
+
+<span class="c1">## imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">getcwd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">verbose_file</span> <span class="o">=</span> <span class="s2">&quot;files/_verbose.txt&quot;</span>
+
+
+
+
+
+<span class="c1">## color hashmap ##</span>
+<span class="n">TERMINAL_COLORS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;None&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[39m&quot;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[30m&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[31m&quot;</span><span class="p">,</span>
+                   <span class="s1">&#39;green&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[32m&quot;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[33m&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[34m&quot;</span><span class="p">,</span>
+                   <span class="s1">&#39;magenta&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[35m&quot;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[36m&quot;</span><span class="p">,</span> <span class="s1">&#39;lgrey&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[37m&quot;</span><span class="p">,</span>
+                   <span class="s1">&#39;dgrey&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[90m&quot;</span><span class="p">,</span> <span class="s1">&#39;lred&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[91m&quot;</span><span class="p">,</span> <span class="s1">&#39;lgreen&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[92m&quot;</span><span class="p">,</span>
+                   <span class="s1">&#39;lyellow&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[93m&quot;</span><span class="p">,</span> <span class="s1">&#39;lblue&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[94m&quot;</span><span class="p">,</span> <span class="s1">&#39;lmagenta&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[95m&quot;</span><span class="p">,</span>
+                   <span class="s1">&#39;lcyan&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[96m&quot;</span><span class="p">,</span> <span class="s1">&#39;white&#39;</span><span class="p">:</span><span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[97m&quot;</span><span class="p">}</span>
+
+
+
+<div class="viewcode-block" id="show_terminal_cols">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.show_terminal_cols">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_terminal_cols</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Print out avaliable colors for terminal printing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">TERMINAL_COLORS</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">strcol</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="break_str">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.break_str">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">break_str</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span> <span class="n">return_list</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Break up string into segments</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr: str</span>
+<span class="sd">        string to break up</span>
+<span class="sd">    bw: int</span>
+<span class="sd">        width of line before break</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">bw</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pstr</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">bw</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">return_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pstr</span>
+
+    <span class="n">back_bound</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">str_pointer</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">str_pointer</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">):</span>
+        <span class="n">str_pointer</span> <span class="o">+=</span> <span class="n">bw</span>
+
+        <span class="k">if</span> <span class="n">str_pointer</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">):</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="s2">&quot; &quot;</span> <span class="ow">in</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span><span class="o">-</span><span class="n">back_bound</span><span class="p">:</span><span class="n">str_pointer</span><span class="p">]:</span>
+            <span class="n">temp_pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span> <span class="o">-</span> <span class="n">back_bound</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="n">str_pointer</span><span class="p">]</span>
+            <span class="n">h_ind</span> <span class="o">=</span> <span class="p">(</span><span class="n">str_pointer</span> <span class="o">-</span> <span class="n">back_bound</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_pstr</span><span class="p">)</span> <span class="o">-</span> <span class="n">temp_pstr</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>  
+            <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[:</span><span class="n">h_ind</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">h_ind</span><span class="p">:]</span>
+            <span class="n">str_pointer</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="p">[:</span><span class="n">str_pointer</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;-</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">str_pointer</span><span class="p">:]</span>
+            <span class="n">str_pointer</span> <span class="o">+=</span> <span class="mi">3</span>
+
+
+    <span class="k">if</span> <span class="n">return_list</span><span class="p">:</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="n">pstr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pstr</span></div>
+
+
+    
+
+
+
+
+
+
+
+
+
+<span class="c1">## functions ##</span>
+
+<div class="viewcode-block" id="get_filepath">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.get_filepath">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_filepath</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get filepath of verbose file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="n">file</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="check_verbosefile">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.check_verbosefile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_verbosefile</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if verbose file exists, else create new one</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">vfile</span> <span class="o">=</span> <span class="n">get_filepath</span><span class="p">(</span><span class="n">verbose_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">vfile</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">vfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">pass</span>
+    
+    <span class="k">return</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="get_verbose">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.get_verbose">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_verbose</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get verbose parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">check_verbosefile</span><span class="p">()</span>
+    <span class="n">vfile</span> <span class="o">=</span> <span class="n">get_filepath</span><span class="p">(</span><span class="n">verbose_file</span><span class="p">)</span>
+
+    <span class="c1"># opening verbose file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">vfile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">r</span> <span class="o">==</span> <span class="s2">&quot;False&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+
+
+
+<div class="viewcode-block" id="set_verbose">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.set_verbose">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_verbose</span><span class="p">(</span><span class="n">verbose</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set verbose parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">vfile</span> <span class="o">=</span> <span class="n">get_filepath</span><span class="p">(</span><span class="n">verbose_file</span><span class="p">)</span>
+
+    <span class="c1"># opening verbose file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">vfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;False&quot;</span><span class="p">)</span></div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">##==========================##</span>
+<span class="c1">##    LOGGING FUNCTIONS     ##</span>
+<span class="c1">##==========================##</span>
+
+<div class="viewcode-block" id="log">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.log">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">lpf_col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logging function, used to replace the python &#39;print&#39; function</span>
+<span class="sd">    with extra functionality for ILEX</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr : str </span>
+<span class="sd">        string to print</span>
+<span class="sd">    stype : str, optional</span>
+<span class="sd">        type of message to print, by default &quot;log&quot; \n</span>
+<span class="sd">        [log] - Normal print, shown in white \n</span>
+<span class="sd">        [warn] - Warn message, shown in yellow \n</span>
+<span class="sd">        [err] - Error message, shown in red</span>
+<span class="sd">    lpf : bool, optional</span>
+<span class="sd">        If true, the message will also label the parent function of the log function call, by default True</span>
+<span class="sd">    lpf_col : str, optional</span>
+<span class="sd">        Color to label parent function, by default &#39;None&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check verbose</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">get_verbose</span><span class="p">())</span> <span class="ow">and</span> <span class="p">(</span><span class="n">stype</span> <span class="o">!=</span> <span class="s2">&quot;err&quot;</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># convert to str if possible</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span>
+
+    <span class="c1"># get parent function name</span>
+    <span class="k">if</span> <span class="n">lpf</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getouterframes</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">())[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="n">fname</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;]: &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="c1"># get type</span>
+    <span class="n">log_type</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;log&quot;</span><span class="p">:</span><span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s2">&quot;None&quot;</span><span class="p">],</span> <span class="s2">&quot;warn&quot;</span><span class="p">:</span><span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s1">&#39;lyellow&#39;</span><span class="p">],</span>
+                <span class="s2">&quot;err&quot;</span><span class="p">:</span><span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s1">&#39;lred&#39;</span><span class="p">]}</span>
+    
+    <span class="c1"># build string</span>
+    <span class="n">pstr</span> <span class="o">=</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="n">lpf_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">fname</span> <span class="o">+</span> <span class="n">log_type</span><span class="p">[</span><span class="n">stype</span><span class="p">]</span> <span class="o">+</span> <span class="n">pstr</span> <span class="o">+</span> <span class="n">log_type</span><span class="p">[</span><span class="s2">&quot;log&quot;</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+ 
+
+<div class="viewcode-block" id="log_title">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.log_title">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_title</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logging function for showing title of executed function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pstr: str</span>
+<span class="sd">        string to print</span>
+<span class="sd">    col: str</span>
+<span class="sd">        color to print</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_verbose</span><span class="p">():</span>
+        <span class="k">return</span> 
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># convert to sting if possible</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pstr</span><span class="p">)</span>
+
+    <span class="c1"># construct string</span>
+
+    <span class="n">outstr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">70</span> <span class="o">+</span> <span class="s2">&quot;#</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># break down title</span>
+    <span class="n">pstr</span> <span class="o">=</span> <span class="n">break_str</span><span class="p">(</span><span class="n">pstr</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span> <span class="n">return_list</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># add white space to all split lines</span>
+    <span class="n">total_str</span> <span class="o">=</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pstr</span><span class="p">)):</span>
+        <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="mi">5</span> <span class="o">+</span> <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">*</span><span class="mi">5</span>
+        <span class="n">total_str</span> <span class="o">+=</span> <span class="n">pstr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">outstr</span> <span class="o">+=</span> <span class="n">total_str</span> <span class="o">+</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s1">&#39;None&#39;</span><span class="p">]</span>
+    
+    <span class="n">outstr</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">#&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">70</span> <span class="o">+</span> <span class="s2">&quot;#</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="strcol">
+<a class="viewcode-back" href="../../_autosummary/ilex.logging.html#ilex.logging.strcol">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">strcol</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrap string in color for terminal printing</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    string : str</span>
+<span class="sd">        string to color wrap</span>
+<span class="sd">    col : str</span>
+<span class="sd">        color, run show_terminal_colors to check avaliable colors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">+</span> <span class="n">string</span> <span class="o">+</span> <span class="n">TERMINAL_COLORS</span><span class="p">[</span><span class="s1">&#39;None&#39;</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

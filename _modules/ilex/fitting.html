@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.fitting &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.fitting</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.fitting</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 25/09/2023 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## Stats functions for analysing FRBs.</span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1"># imports</span>
+<span class="c1">#TODO: add import guards?</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">correlate</span>
+<span class="kn">import</span> <span class="nn">bilby</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">floor</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">bilby</span>
+
+<span class="c1"># rm synthesis</span>
+<span class="kn">from</span> <span class="nn">RMtools_1D.do_RMsynth_1D</span> <span class="kn">import</span> <span class="n">run_rmsynth</span>
+<span class="kn">from</span> <span class="nn">RMtools_1D.do_RMclean_1D</span> <span class="kn">import</span> <span class="n">run_rmclean</span>
+
+<span class="c1">## import utils ##</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">struct_</span>
+
+<span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">_clean_bilby_run</span><span class="p">,</span> <span class="n">_priorUniform</span>
+
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##             utility functions                 ##</span>
+<span class="c1">##===============================================##</span>
+
+
+<div class="viewcode-block" id="model_curve">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.model_curve">[docs]</a>
+<span class="k">def</span> <span class="nf">model_curve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit Polynomial model to data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        data to model</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        Polynomial order, by default 5</span>
+<span class="sd">    samp : int, optional</span>
+<span class="sd">        number of samples to sample modelled data, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Modelled data</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>    
+    <span class="k">if</span> <span class="n">samp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">samp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">xnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">samp</span><span class="p">)</span>
+    
+    <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">xnew</span><span class="p">)</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="make_polyfit">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_polyfit">[docs]</a>
+<span class="k">def</span> <span class="nf">make_polyfit</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+
+    <span class="n">mstr</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">mstr2</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">mstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">mstr2</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> * x**</span><span class="si">{</span><span class="n">n</span><span class="o">-</span><span class="n">i</span><span class="si">}</span><span class="s2"> + &quot;</span>
+    
+    <span class="n">mstr</span> <span class="o">+=</span> <span class="s2">&quot;, c : &quot;</span>
+    <span class="n">mstr2</span> <span class="o">+=</span> <span class="s2">&quot;+ c&quot;</span>
+
+    <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">mstr</span> <span class="o">+</span> <span class="n">mstr2</span><span class="p">)</span></div>
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##           basic fitting functions             ##</span>
+<span class="c1">##===============================================##</span>
+
+<span class="c1">## [ LORENTZIAN FUNCTION ] ##</span>
+<div class="viewcode-block" id="lorentz">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.lorentz">[docs]</a>
+<span class="k">def</span> <span class="nf">lorentz</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lorentz function - Usually used to model scintillation bandwidth</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data - Usually Frequency array</span>
+<span class="sd">    w : float</span>
+<span class="sd">        width - Usually Scintillation Bandwidth</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Amplitude - Usually m^2 where m is modulation index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Y data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+
+<span class="c1">## [ GAUSSIAN FUNCTION ] ##</span>
+<div class="viewcode-block" id="gaussian">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.gaussian">[docs]</a>
+<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian Pulse Function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data</span>
+<span class="sd">    a : float</span>
+<span class="sd">        amplitude</span>
+<span class="sd">    mu : float</span>
+<span class="sd">        position of Gaussian Pulse</span>
+<span class="sd">    sig : float</span>
+<span class="sd">        width of Gaussian Pulse</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Y data </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sig</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+
+
+<div class="viewcode-block" id="scat">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.scat">[docs]</a>
+<span class="k">def</span> <span class="nf">scat</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">sig</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    1 sided (positive side) exponential Scattering tail function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data</span>
+<span class="sd">    tau : float</span>
+<span class="sd">        Scattering Timescale</span>
+<span class="sd">    sig: float</span>
+<span class="sd">        number of standard deviations for defined scat function from mean</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Y data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create x with same time resolution</span>
+    <span class="n">_w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">tau</span><span class="o">*</span><span class="n">sig</span><span class="o">/</span><span class="n">dx</span><span class="p">))</span> 
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">_w</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="n">_w</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_w</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">hw</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="o">//</span><span class="mi">2</span>
+    <span class="n">yscat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="c1"># only fill one side, since this is a one sided</span>
+    <span class="c1"># exponential</span>
+    <span class="n">yscat</span><span class="p">[</span><span class="n">hw</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">hw</span><span class="p">:]</span><span class="o">/</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">yscat</span></div>
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="specindex">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.specindex">[docs]</a>
+<span class="k">def</span> <span class="nf">specindex</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Spectral index power-law function</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Amplitude</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Power-law index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Y data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># spectral index function</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="n">alpha</span></div>
+
+
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##          Advanced fitting functions           ##</span>
+<span class="c1">##===============================================##</span>
+<div class="viewcode-block" id="scatt_pulse_profile">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.scatt_pulse_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">scatt_pulse_profile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scattering time series profile with n pulses. Numerical convolution if done incorrectly</span>
+<span class="sd">    can shift the resultant data in an undesirable way. One way to avoid this is to take a large window</span>
+<span class="sd">    around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.</span>
+<span class="sd">    This of course isn&#39;t realistic when taking a crop of data whose bounds cut through potential signal. </span>
+
+<span class="sd">    To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until </span>
+<span class="sd">    symmetrical, this avoids any potential shifting due to improper convolution. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: np.ndarray</span>
+<span class="sd">        X data array</span>
+<span class="sd">    p: Dict(float)</span>
+<span class="sd">        dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n</span>
+<span class="sd">        [a[n]] - Pulse amplitude \n</span>
+<span class="sd">        [mu[n]] - Pulse position \n</span>
+<span class="sd">        [sig[n]] - Pulse width \n</span>
+<span class="sd">        [tau] - scattering timescale</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y: np.ndarray</span>
+<span class="sd">        Y data array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># create empty output array</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    
+    <span class="c1"># create scattering tail </span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">npulses</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">3</span>
+    <span class="n">stail</span> <span class="o">=</span> <span class="n">scat</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">])</span>
+
+    <span class="c1"># Each gaussian will be isolated and convolved seperatley with enough padding for a complete</span>
+    <span class="c1"># uniform convolution with zero shifting due to numerical error.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npulses</span><span class="p">):</span>
+
+        <span class="c1"># make gaussian with sigma 5</span>
+        <span class="n">xe</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">((</span><span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mu</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sig</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+        <span class="n">xs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">((</span><span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mu</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sig</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+    
+        <span class="c1"># make sure the scattering tail is smaller or equal to the size of the gaussian to convolve</span>
+        <span class="k">if</span> <span class="n">xe</span><span class="o">-</span><span class="n">xs</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">stail</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="c1"># expand to same size as stail</span>
+            <span class="n">lendif</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">((</span><span class="n">stail</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="p">(</span><span class="n">xe</span><span class="o">-</span><span class="n">xs</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+            <span class="n">xe</span> <span class="o">+=</span> <span class="n">lendif</span>
+            <span class="n">xs</span> <span class="o">-=</span> <span class="n">lendif</span>
+            
+            
+        <span class="n">x_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xs</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">xe</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">xe</span><span class="o">-</span><span class="n">xs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            
+        <span class="c1"># crop bounded signal</span>
+        <span class="n">ps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">dt</span><span class="p">))</span>
+        <span class="n">xs</span> <span class="o">-=</span> <span class="n">ps</span>
+        <span class="n">xe</span> <span class="o">-=</span> <span class="n">ps</span>
+
+        <span class="c1"># handle edge cases</span>
+        <span class="k">if</span> <span class="n">xs</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">xe</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># make pulse</span>
+        <span class="n">pulse_i</span> <span class="o">=</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x_i</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;mu</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sig</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+
+        <span class="c1"># convolve</span>
+        <span class="n">conv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">pulse_i</span><span class="p">,</span> <span class="n">stail</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span><span class="p">)</span>
+        <span class="n">pulse_ind</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">conv</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">xs</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pulse_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">-</span> <span class="n">xs</span>
+            <span class="n">xs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">xe</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="n">pulse_ind</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="p">(</span><span class="n">xe</span><span class="o">+</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+            <span class="n">xe</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="n">y</span><span class="p">[</span><span class="n">xs</span><span class="p">:</span><span class="n">xe</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;a</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">conv</span><span class="p">[</span><span class="n">pulse_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">pulse_ind</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y</span></div>
+
+<span class="c1"># def scatt_pulse_profile(x, p):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Scattering time series profile with n pulses. Numerical convolution if done incorrectly</span>
+<span class="c1">#     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window</span>
+<span class="c1">#     around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.</span>
+<span class="c1">#     This of course isn&#39;t realistic when taking a crop of data whose bounds cut through potential signal. </span>
+
+<span class="c1">#     To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until </span>
+<span class="c1">#     symmetrical, this avoids any potential shifting due to improper convolution. </span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     x: np.ndarray</span>
+<span class="c1">#         X data array</span>
+<span class="c1">#     p: Dict(float)</span>
+<span class="c1">#         dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n</span>
+<span class="c1">#         [a[n]] - Pulse amplitude \n</span>
+<span class="c1">#         [mu[n]] - Pulse position \n</span>
+<span class="c1">#         [sig[n]] - Pulse width \n</span>
+<span class="c1">#         [tau] - scattering timescale</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     y: np.ndarray</span>
+<span class="c1">#         Y data array</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     # create empty output array</span>
+<span class="c1">#     y = np.zeros(x.size)</span>
+<span class="c1">#     print(x)</span>
+    
+<span class="c1">#     # create scattering tail </span>
+<span class="c1">#     dt = x[1] - x[0]</span>
+<span class="c1">#     npulses = (len(p) - 1)//3</span>
+<span class="c1">#     stail = scat(dt,p[&#39;tau&#39;], sig = 3)</span>
+<span class="c1">#     print(stail.size)</span>
+<span class="c1">#     # plt.plot(np.linspace(0.0, 1.0, stail.size), stail)</span>
+
+<span class="c1">#     # Each gaussian will be isolated and convolved seperatley with enough padding for a complete</span>
+<span class="c1">#     # uniform convolution with zero shifting due to numerical error.</span>
+<span class="c1">#     for i in range(npulses):</span>
+
+<span class="c1">#         # make gaussian with sigma 5</span>
+<span class="c1">#         xe = int(floor((p[f&quot;mu{i+1}&quot;] + p[f&quot;sig{i+1}&quot;]*5)/dt))  #assuming starts at zero, at increments of </span>
+<span class="c1">#         xs = int(floor((p[f&quot;mu{i+1}&quot;] - p[f&quot;sig{i+1}&quot;]*5)/dt))</span>
+    
+<span class="c1">#         # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve</span>
+<span class="c1">#         # if x.size &lt; stail.size:</span>
+<span class="c1">#         #     # expand to same size as stail</span>
+<span class="c1">#         #     lendif = (stail.size - (x.size))</span>
+<span class="c1">#         #     xe += lendif</span>
+<span class="c1">#         #     xs -= lendif</span>
+            
+            
+<span class="c1">#         x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)</span>
+<span class="c1">#         print(x_i)</span>
+
+<span class="c1">#         # crop bounded signal</span>
+<span class="c1">#         ps = int(floor(x[0]/dt))</span>
+<span class="c1">#         xs -= ps</span>
+<span class="c1">#         xe -= ps</span>
+
+<span class="c1">#         # handle edge cases</span>
+<span class="c1">#         if xs &gt;= x.size:</span>
+<span class="c1">#             continue</span>
+
+<span class="c1">#         if xe &lt;= 0:</span>
+<span class="c1">#             continue</span>
+
+<span class="c1">#         # make pulse</span>
+<span class="c1">#         pulse_i = gaussian(x, 1, p[f&quot;mu{i+1}&quot;], p[f&quot;sig{i+1}&quot;])</span>
+<span class="c1">#         print(pulse_i.size)</span>
+<span class="c1">#         print(x.size)</span>
+<span class="c1">#         print(stail.size)</span>
+<span class="c1">#         # print(pulse_i.size)</span>
+<span class="c1">#         # plt.plot(x_i, pulse_i)</span>
+
+<span class="c1">#         # convolve</span>
+<span class="c1">#         conv = np.convolve(pulse_i, stail, mode = &quot;same&quot;)</span>
+<span class="c1">#         # plt.plot(np.linspace(0,1.0, stail.size),stail)</span>
+<span class="c1">#         plt.plot(x, conv/np.max(conv)*p[f&quot;a{i+1}&quot;], label = f&quot;{1/dt}&quot;)</span>
+<span class="c1">#         pulse_ind = [0, conv.size]</span>
+        
+<span class="c1">#         if xs &lt; 0:</span>
+<span class="c1">#             pulse_ind[0] = 0 - xs</span>
+<span class="c1">#             xs = 0</span>
+<span class="c1">#         if xe + 1 &gt; x.size:</span>
+<span class="c1">#             pulse_ind[1] -= (xe+1 - x.size)</span>
+<span class="c1">#             xe = x.size</span>
+
+<span class="c1">#         # y[xs:xe+1] += p[f&quot;a{i+1}&quot;] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)</span>
+<span class="c1">#     return y</span>
+
+
+
+
+
+
+<div class="viewcode-block" id="make_scatt_pulse_profile_func">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_scatt_pulse_profile_func">[docs]</a>
+<span class="k">def</span> <span class="nf">make_scatt_pulse_profile_func</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make scatter pulse profile wrapping function for fitting</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int</span>
+<span class="sd">        number of pulses in scatter profile</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    func: __func__</span>
+<span class="sd">        lambda function for scatter pulse profile with n pulses</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;scatt_pulse_profile(x,{&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># loop through components</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="s2">&quot;sig&quot;</span><span class="p">]:</span>
+            <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#39;:</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">,&quot;</span>
+            <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># add tau</span>
+    <span class="n">func_str</span> <span class="o">+=</span> <span class="s2">&quot;&#39;tau&#39;:tau&quot;</span>
+    <span class="n">args_str</span> <span class="o">+=</span> <span class="s2">&quot;,tau&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span> <span class="o">+</span> <span class="s2">&quot;})&quot;</span><span class="p">))</span></div>
+
+
+
+
+
+
+
+
+<span class="c1">##============================##</span>
+<span class="c1">##          fitting           ##</span>
+<span class="c1">##============================##</span>
+
+
+
+<span class="c1">## RM fitting functions ##</span>
+<div class="viewcode-block" id="fit_RMsynth">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.fit_RMsynth">[docs]</a>
+<span class="k">def</span> <span class="nf">fit_RMsynth</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">clean_cutoff</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use RM synthesis to calculate RM, pa0 and f0,</span>
+<span class="sd">    f0 is the weighted midband frequency and pa0 the</span>
+<span class="sd">    pa at f0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    I: np.ndarray</span>
+<span class="sd">        stokes I spectra</span>
+<span class="sd">    Q: np.ndarray </span>
+<span class="sd">        stokes Q spectra</span>
+<span class="sd">    U: np.ndarray </span>
+<span class="sd">        stokes U spectra</span>
+<span class="sd">    Ierr: np.ndarray </span>
+<span class="sd">        stokes I rms spectra</span>
+<span class="sd">    Qerr: np.ndarray </span>
+<span class="sd">        stokes Q rms spectra</span>
+<span class="sd">    Uerr: np.ndarray </span>
+<span class="sd">        stokes U rms spectra</span>
+<span class="sd">    f: np.ndarray </span>
+<span class="sd">        frequencies [MHz]</span>
+<span class="sd">    clean_cutoff: float </span>
+<span class="sd">        cutoff arg for run_rmclean()</span>
+<span class="sd">    **kwargs: Dict </span>
+<span class="sd">        keyword arguments for RM tools run_synthesis</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rm: float </span>
+<span class="sd">        rotation measure</span>
+<span class="sd">    rm_err: float </span>
+<span class="sd">        error in rotation measure</span>
+<span class="sd">    f0: float </span>
+<span class="sd">        reference frequency at weighted mid-band</span>
+<span class="sd">    pa0: float </span>
+<span class="sd">        position angle at f0 </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">defkwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;polyOrd&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;phiMax_radm2&quot;</span><span class="p">:</span><span class="mf">1.0e3</span><span class="p">,</span> <span class="s2">&quot;dPhi_radm2&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;nSamples&quot;</span><span class="p">:</span><span class="mf">100.0</span><span class="p">}</span>
+
+    <span class="c1">## process kwargs keys</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">defkwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">defkwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting RM using RM synthesis&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># RM data array</span>
+    <span class="n">rmsyn_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+        <span class="n">f</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span>     <span class="c1"># freqs (Hz)  </span>
+        <span class="n">I</span><span class="p">,</span>           <span class="c1"># I</span>
+        <span class="n">Q</span><span class="p">,</span>           <span class="c1"># Q</span>
+        <span class="n">U</span><span class="p">,</span>           <span class="c1"># U</span>
+        <span class="n">Ierr</span><span class="p">,</span>        <span class="c1"># I rms</span>
+        <span class="n">Qerr</span><span class="p">,</span>        <span class="c1"># Q rms</span>
+        <span class="n">Uerr</span>         <span class="c1"># U rms</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># run RM synthesis</span>
+    <span class="n">rm_sum</span><span class="p">,</span> <span class="n">rm_data</span> <span class="o">=</span> <span class="n">run_rmsynth</span><span class="p">(</span><span class="n">rmsyn_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># apply RM cleaning</span>
+    <span class="n">rmc</span> <span class="o">=</span> <span class="n">run_rmclean</span><span class="p">(</span><span class="n">rm_sum</span><span class="p">,</span> <span class="n">rm_data</span><span class="p">,</span> <span class="n">clean_cutoff</span><span class="p">)</span>
+
+    <span class="c1"># get estimated parameters</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;phiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                             <span class="c1"># RM</span>
+    <span class="n">rm_err</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;dPhiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                        <span class="c1"># RM err</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="n">rm_sum</span><span class="p">[</span><span class="s1">&#39;freq0_Hz&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e6</span>                                               <span class="c1"># f0 (MHz)</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;peakFDFimagFit&#39;</span><span class="p">],</span><span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;peakFDFrealFit&#39;</span><span class="p">])</span>   <span class="c1"># pa0 (at f0)</span>
+
+    <span class="c1"># print</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RM: </span><span class="si">{</span><span class="n">rm</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  +/-  </span><span class="si">{</span><span class="n">rm_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">     (rad/m2)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f0: </span><span class="si">{</span><span class="n">f0</span><span class="si">}</span><span class="s2">    (MHz)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pa0:  </span><span class="si">{</span><span class="n">pa0</span><span class="si">}</span><span class="s2">     (rad)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="fit_RMquad">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.fit_RMquad">[docs]</a>
+<span class="k">def</span> <span class="nf">fit_RMquad</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Info:</span>
+<span class="sd">        Use Quadratic method to fit for RM and pa0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Q: np.ndarray </span>
+<span class="sd">        stokes Q spectra</span>
+<span class="sd">    U: np.ndarray </span>
+<span class="sd">        stokes U spectra</span>
+<span class="sd">    Qerr: np.ndarray </span>
+<span class="sd">        stokes Q rms spectra</span>
+<span class="sd">    Uerr: np.ndarray </span>
+<span class="sd">        stokes U rms spectra</span>
+<span class="sd">    f: np.ndarray </span>
+<span class="sd">        frequencies [MHz]</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        reference Frequency [MHz]</span>
+<span class="sd">    **kwargs: Dict </span>
+<span class="sd">        keyword arguments for RM tools run_synthesis</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rm: float </span>
+<span class="sd">        rotation measure</span>
+<span class="sd">    rm_err: float </span>
+<span class="sd">        error in rotation measure</span>
+<span class="sd">    pa0: float </span>
+<span class="sd">        position angle at f0 </span>
+<span class="sd">    pa0_err: float</span>
+<span class="sd">        position angle err</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting using RM quadratic function&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># fit RM using Quadratic function</span>
+    <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">1e12</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    
+
+    <span class="n">PA_meas</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">)</span>
+    <span class="n">PA_meas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">PA_meas</span><span class="p">,</span> <span class="n">period</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+    <span class="c1"># fit</span>
+    <span class="n">fit_val</span><span class="p">,</span> <span class="n">fit_err</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">rmquad</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">PA_meas</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">PA_err</span><span class="p">,</span> <span class="n">absolute_sigma</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">maxfev</span> <span class="o">=</span> <span class="mi">2000000</span><span class="p">)</span>
+    <span class="n">fit_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">fit_err</span><span class="p">))</span>
+    
+    <span class="c1"># get params</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">fit_val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rm_err</span> <span class="o">=</span> <span class="n">fit_err</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="n">fit_val</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pa0_err</span> <span class="o">=</span> <span class="n">fit_err</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># print</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RM: </span><span class="si">{</span><span class="n">rm</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  +/-  </span><span class="si">{</span><span class="n">rm_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">     (rad/m2)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f0: </span><span class="si">{</span><span class="n">f0</span><span class="si">}</span><span class="s2">    (MHz)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pa0:  </span><span class="si">{</span><span class="n">pa0</span><span class="si">}</span><span class="s2">  +/-  </span><span class="si">{</span><span class="n">pa0_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">     (rad)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span></div>
+
+
+
+
+
+
+
+<span class="c1"># QUfitting likelihood class</span>
+<div class="viewcode-block" id="QUfit_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood">[docs]</a>
+<span class="k">class</span> <span class="nc">QUfit_likelihood</span><span class="p">(</span><span class="n">bilby</span><span class="o">.</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Likelihood function for evaluating Stokes Q and U parameters to fit RM. L will be debiased</span>
+<span class="sd">        and a mask will be applied to all Stokes parameters based on L debiased.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f : np.ndarray</span>
+<span class="sd">            Frequencies in MHz</span>
+<span class="sd">        Q : np.ndarray</span>
+<span class="sd">            Stokes Q parameter</span>
+<span class="sd">        U : np.ndarray</span>
+<span class="sd">            Stokes U parameter</span>
+<span class="sd">        Ierr : np.ndarray</span>
+<span class="sd">            Stokes I parameter noise, used to calculate L debiased</span>
+<span class="sd">        Qerr : np.ndarray</span>
+<span class="sd">            Stokes Q parameter noise</span>
+<span class="sd">        Uerr : np.ndarray</span>
+<span class="sd">            Stokes U parameter noise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># constants</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="mi">299_792_458</span>    <span class="c1"># [m/s^2]</span>
+
+        <span class="c1"># calculate debiased L</span>
+        <span class="n">L_meas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">[</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mf">1.57</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> 
+ 
+        <span class="c1"># f data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e6</span>        <span class="c1"># in Hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span>
+        
+        <span class="c1"># stk data </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># stk noise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span> <span class="o">=</span> <span class="n">Qerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span> <span class="o">=</span> <span class="n">Uerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="c1"># These lines of code infer parameters from provided function</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PA</span><span class="p">)</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">function_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RM&quot;</span><span class="p">,</span> <span class="s2">&quot;pa0&quot;</span><span class="p">]</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">function_keys</span><span class="p">}</span>
+
+    
+<div class="viewcode-block" id="QUfit_likelihood.PA">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood.PA">[docs]</a>
+    <span class="k">def</span> <span class="nf">PA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RM</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        PA function to evaluate</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        RM : float</span>
+<span class="sd">            Rotation Measure [rad/m^2]</span>
+<span class="sd">        pa0 : float</span>
+<span class="sd">            Initial reference polarisation position angle [rad]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">RM</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span></div>
+
+
+    
+
+<div class="viewcode-block" id="QUfit_likelihood.log_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.QUfit_likelihood.log_likelihood">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log likelihood, adding Q and U likelihoods together</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">PA</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PA</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
+
+        <span class="c1"># calculate Stokes Q log likelihood</span>
+        <span class="n">ll_Q</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Q</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">PA</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">Qerr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># calculate Stokes U log likelihood</span>
+        <span class="n">ll_U</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">PA</span><span class="p">))</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">Uerr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ll_Q</span> <span class="o">+</span> <span class="n">ll_U</span></div>
+</div>
+
+
+
+
+
+<div class="viewcode-block" id="RM_QUfit">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.RM_QUfit">[docs]</a>
+<span class="k">def</span> <span class="nf">RM_QUfit</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rm_priors</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="n">pa0_priors</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit RM using QUfit method</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    f : np.ndarray</span>
+<span class="sd">        Frequencies in MHz</span>
+<span class="sd">    Q : np.ndarray</span>
+<span class="sd">        Stokes Q parameter</span>
+<span class="sd">    U : np.ndarray</span>
+<span class="sd">        Stokes U parameter</span>
+<span class="sd">    Ierr : np.ndarray</span>
+<span class="sd">        Stokes I parameter noise, used to calculate L debiased</span>
+<span class="sd">    Qerr : np.ndarray</span>
+<span class="sd">        Stokes Q parameter noise</span>
+<span class="sd">    Uerr : np.ndarray</span>
+<span class="sd">        Stokes U parameter noise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">outdir</span> <span class="o">=</span> <span class="s2">&quot;outdir&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;outdir&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;outdir&quot;</span><span class="p">]</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+    <span class="n">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+
+    <span class="n">priors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;RM&#39;</span><span class="p">:</span><span class="n">rm_priors</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="s1">&#39;pa0&#39;</span><span class="p">:</span><span class="n">pa0_priors</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span>
+
+    <span class="c1"># start sampling</span>
+    <span class="n">likelihood</span> <span class="o">=</span> <span class="n">QUfit_likelihood</span><span class="p">(</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="n">Uerr</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">run_sampler</span><span class="p">(</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">_priorUniform</span><span class="p">(</span><span class="n">priors</span><span class="p">),</span>
+                                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># get rm and pa0 measurements</span>
+    <span class="n">rm_posterior</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="s1">&#39;RM&#39;</span><span class="p">)</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">rm_posterior</span><span class="o">.</span><span class="n">median</span>
+    <span class="n">rm_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rm_posterior</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rm_posterior</span><span class="o">.</span><span class="n">minus</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">pa0_posterior</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="s1">&#39;pa0&#39;</span><span class="p">)</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="n">pa0_posterior</span><span class="o">.</span><span class="n">median</span>
+    <span class="n">pa0_err</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">pa0_posterior</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pa0_posterior</span><span class="o">.</span><span class="n">minus</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="c1"># plots </span>
+    <span class="n">result</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span></div>
+
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

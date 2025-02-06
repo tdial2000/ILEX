@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.par &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.par</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.par</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 11/10/2023 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## FRB params structure</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1"># imports</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">_G</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">dict_init</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">.fitting</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
+
+<span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span>
+
+
+
+<div class="viewcode-block" id="weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights">[docs]</a>
+<span class="k">class</span> <span class="nc">weights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Weights structure, used for storing weights or weight functions that can be</span>
+<span class="sd">    evaluated.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    W: ndarray or array-like</span>
+<span class="sd">        weights</span>
+<span class="sd">    x: ndarray or array-like</span>
+<span class="sd">        sample array defining weights, used for interpolation and function evaluation</span>
+<span class="sd">    func: &lt;lambda&gt;</span>
+<span class="sd">        function to evaluate to get weights</span>
+<span class="sd">    method: str</span>
+<span class="sd">        method to retrive weights \n</span>
+<span class="sd">        [None] - Retrieve weights as is, either scalar or array \n</span>
+<span class="sd">        [interp] - interpolate weights based on bounds and W (weights) \n</span>
+<span class="sd">        [func] - Retrieve weights by evaluating function</span>
+<span class="sd">    args: dict</span>
+<span class="sd">        dictionary of arguments used in evaluating weights function</span>
+<span class="sd">    norm: bool, optional</span>
+<span class="sd">        Normalise weights, default is True</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+
+        <span class="c1"># initialise arguments dictionary</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="c1"># set parameters to defaults first, then use the set method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set attributes whilst running some checks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">func</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">args</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="weights.set">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attributes for weights class</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>         
+
+        <span class="c1"># this block of code makes sure only the correct attributes are taken from the original inputs</span>
+        <span class="n">weights_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">]:</span>
+                <span class="n">weights_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="o">**</span><span class="n">weights_kwargs</span><span class="p">)</span></div>
+
+        
+
+    <span class="k">def</span> <span class="nf">_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        
+        <span class="c1"># set normalisation parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+        <span class="c1"># set attributes</span>
+        <span class="k">if</span> <span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>       <span class="c1"># if weights given is a vector</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>   
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>      <span class="c1"># if weight given is a single float scalar</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>        <span class="c1"># if weight given is a single int scalar</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[W] weights instance attribute must be a float or array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+        
+
+        <span class="c1">#must be an array if used to evaluate functions</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;[x] weights instance attribute must be array-like&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check if string, then eval it </span>
+        <span class="k">if</span> <span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if func is string</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        
+            <span class="c1"># if func is callable, directly set </span>
+            <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+        
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;function must either be a string to evaluate, or a callable function.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+
+        <span class="c1"># must choose a method that is supported</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;interp&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;None&quot;</span><span class="p">]:</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid Method for Weighting, using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>    
+
+        <span class="c1"># set arguments of callable function as attributes. NOTE: if not all arguments are </span>
+        <span class="c1"># specified, then warn the user</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;args must be in dict format&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">func_keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">if_flag</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">missing_args</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">new_args</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_keys</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="n">new_args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">if_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">missing_args</span> <span class="o">+=</span> <span class="n">key</span>
+                
+                <span class="k">if</span> <span class="n">if_flag</span><span class="p">:</span> 
+                    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not all args have been specified for this function </span><span class="si">{</span><span class="n">missing_args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;weight func not given, can&#39;t determine args&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span>
+
+    
+
+<div class="viewcode-block" id="weights.get_weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.weights.get_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get weights, this is a universal function </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : ndarray or array-like, optional</span>
+<span class="sd">            if specified, will interp or evaluate func using this array rather then self.x, by default None</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            method used for retrieving weights, if not spefified, uses self.method, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        W : ndarray or array-like</span>
+<span class="sd">            Weights</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span><span class="p">)</span>
+        
+        <span class="c1"># get weights from .W attribute</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_W</span><span class="p">()</span>
+
+        <span class="c1"># interp weights based on </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;interp&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_interp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;func&quot;</span><span class="p">:</span>
+            <span class="n">outw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_weights_from_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># normalise</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="ow">and</span> <span class="p">(</span><span class="n">outw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">outw</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="n">Wsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">outw</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">Wsum</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Weights sum to zero, cannot normalize!&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">outw</span>
+            <span class="k">return</span> <span class="n">outw</span> <span class="o">/</span> <span class="n">Wsum</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">outw</span></div>
+
+
+
+
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_W</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get stored weights</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        W : float or array-like</span>
+<span class="sd">            Weights</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No Weights specified, returning None object&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_interp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use a reference array [self.x] and compare it to an input array [x] to interpolate </span>
+<span class="sd">        The stored weights.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like, optional</span>
+<span class="sd">            x values that will be compared to self.x, by default None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No weights specified, returning None object&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No x array specified for interpolation, for interpolation a weights array [W] with &quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;array [x] of same size must be defined in the weights class before interpolation is performed.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># check x</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;No x array given for interpolation, returning the full array of weights&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+
+        <span class="c1"># check if bounds of x is larger than [x] saved in weights instance</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Bounds of specified array x larger than array [x] of weights instance, for any x values outside&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;the known weights range they will be set to the bounded values of the weights array.&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
+        <span class="c1"># perform interpolation</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_get_weights_from_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate function to retrieve weights</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : x values to evaluate function with, optional</span>
+<span class="sd">            _description_, by default None, if None, will use what is stored i.e. self.x</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_func_and_args</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify [x] array&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Using stored [x] array of weights instance&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+
+
+    <span class="k">def</span> <span class="nf">_check_func_and_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if function is callable and args are sufficient</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify a function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Must specify args for func&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;func must be callable and args a dictionary of args to evaluate the function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="c1"># check if all args are there</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;argument [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] not specified, cannot evaulate function&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># if all pass return 1</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+
+
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pstr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">Ws</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">Ws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Ws</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[W]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">Ws</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[x]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[x]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;= None</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[func]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[method]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[args]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;=</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">pstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;[args]&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;= None</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">pstr</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="FRB_params">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params">[docs]</a>
+<span class="k">class</span> <span class="nc">FRB_params</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FRB parameter structure </span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: str</span>
+<span class="sd">        name of FRB</span>
+<span class="sd">    RA: str            </span>
+<span class="sd">        Right ascension</span>
+<span class="sd">    DEC: str            </span>
+<span class="sd">        Declination</span>
+<span class="sd">    MJD: float</span>
+<span class="sd">        Modified julian date [days]</span>
+<span class="sd">    DM: float             </span>
+<span class="sd">        Dispersion Measure [pc/cm^3]</span>
+<span class="sd">    bw: float            </span>
+<span class="sd">        Bandwidth [MHz]</span>
+<span class="sd">    cfreq: float          </span>
+<span class="sd">        Central Frequency [MHz]</span>
+<span class="sd">    t_lim: List          </span>
+<span class="sd">        Time bounds [ms]</span>
+<span class="sd">    f_lim: List          </span>
+<span class="sd">        Frequency bounds [MHz]</span>
+<span class="sd">    t_ref: float</span>
+<span class="sd">        Reference point of time-series (0-point)</span>
+<span class="sd">    dt: float             </span>
+<span class="sd">        delta time [ms]</span>
+<span class="sd">    df: float            </span>
+<span class="sd">        delta frequency [MHz]</span>
+<span class="sd">    nchan: int         </span>
+<span class="sd">        Number of channels</span>
+<span class="sd">    nsamp: int          </span>
+<span class="sd">        Number of samples</span>
+<span class="sd">    UP: bool</span>
+<span class="sd">        Upper bandwidth</span>
+<span class="sd">    RM: float</span>
+<span class="sd">        Rotation Measure [Rad/m^2]</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        Reference frequency [MHz]</span>
+<span class="sd">    pa0: float</span>
+<span class="sd">        Positon angle at f0</span>
+<span class="sd">    tW: np.ndarray</span>
+<span class="sd">        time weights</span>
+<span class="sd">    fW: np.ndarray</span>
+<span class="sd">        frequency weights</span>
+
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: str</span>
+<span class="sd">        name of FRB</span>
+<span class="sd">    RA: str            </span>
+<span class="sd">        Right ascension</span>
+<span class="sd">    DEC: str            </span>
+<span class="sd">        Declination</span>
+<span class="sd">    DM: float             </span>
+<span class="sd">        Dispersion Measure [pc/cm^3]</span>
+<span class="sd">    MJD: float</span>
+<span class="sd">        Modified julian date [days]</span>
+<span class="sd">    bw: float            </span>
+<span class="sd">        Bandwidth [MHz]</span>
+<span class="sd">    cfreq: float          </span>
+<span class="sd">        Central Frequency [MHz]</span>
+<span class="sd">    t_lim: List          </span>
+<span class="sd">        Time bounds [ms]</span>
+<span class="sd">    f_lim: List          </span>
+<span class="sd">        Frequency bounds [MHz]</span>
+<span class="sd">    t_ref: float</span>
+<span class="sd">        Reference point of time-series (0-point)</span>
+<span class="sd">    dt: float             </span>
+<span class="sd">        delta time [ms]</span>
+<span class="sd">    df: float            </span>
+<span class="sd">        delta frequency [MHz]</span>
+<span class="sd">    nchan: int         </span>
+<span class="sd">        Number of channels</span>
+<span class="sd">    nsamp: int          </span>
+<span class="sd">        Number of samples</span>
+<span class="sd">    RM: float</span>
+<span class="sd">        Rotation Measure [Rad/m^2]</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        Reference frequency [MHz]</span>
+<span class="sd">    pa0: float</span>
+<span class="sd">        Positon angle at f0</span>
+<span class="sd">    tW: np.ndarray</span>
+<span class="sd">        time weights</span>
+<span class="sd">    fW: np.ndarray</span>
+<span class="sd">        frequency weights</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
+
+
+
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>    <span class="n">RA</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span>    <span class="n">DEC</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> 
+                       <span class="n">MJD</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;MJD&#39;</span><span class="p">],</span>    <span class="n">DM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;DM&#39;</span><span class="p">],</span>      <span class="n">bw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;bw&#39;</span><span class="p">],</span>    
+                       <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;cfreq&#39;</span><span class="p">],</span> 
+                       <span class="n">t_lim_base</span>  <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_lim_base&#39;</span><span class="p">],</span>      <span class="n">f_lim_base</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f_lim_base&#39;</span><span class="p">],</span>   <span class="n">RM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;RM&#39;</span><span class="p">],</span>
+                       <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">],</span>      <span class="n">pa0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">],</span>
+                       <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">],</span>      <span class="n">df</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;df&#39;</span><span class="p">],</span> <span class="n">t_ref</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="s1">&#39;t_ref&#39;</span><span class="p">],</span>
+                       <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+        <span class="c1"># parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span>   <span class="o">=</span> <span class="n">name</span>              <span class="c1"># name of FRB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RA</span>     <span class="o">=</span> <span class="n">RA</span>                <span class="c1"># Right Acension </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEC</span>    <span class="o">=</span> <span class="n">DEC</span>               <span class="c1"># Declination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MJD</span>    <span class="o">=</span> <span class="n">MJD</span>               <span class="c1"># MJD date </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DM</span>     <span class="o">=</span> <span class="n">DM</span>                <span class="c1"># dispersion measure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bw</span>     <span class="o">=</span> <span class="n">bw</span>                <span class="c1"># bandwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span>  <span class="o">=</span> <span class="n">cfreq</span>             <span class="c1"># central frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RM</span>     <span class="o">=</span> <span class="n">RM</span>                <span class="c1"># rotation measure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f0</span>     <span class="o">=</span> <span class="n">f0</span>                <span class="c1"># reference frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pa0</span>    <span class="o">=</span> <span class="n">pa0</span>               <span class="c1"># reference PA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># frequency weightings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tW</span>     <span class="o">=</span> <span class="n">weights</span><span class="p">()</span>         <span class="c1"># time weightings</span>
+
+        <span class="c1"># define base parameters, these will be used when changing the crop parameters, </span>
+        <span class="c1"># all other parameters will be updated from these </span>
+
+        <span class="c1"># crop parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span>  <span class="o">=</span> <span class="n">t_lim_base</span>                                       <span class="c1"># time range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span>  <span class="o">=</span> <span class="p">[</span><span class="n">cfreq</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bw</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">bw</span><span class="p">]</span>             <span class="c1"># frequency range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_ref</span>  <span class="o">=</span> <span class="n">t_ref</span>
+
+        <span class="c1"># calculate resolutions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>     <span class="o">=</span> <span class="n">dt</span>                <span class="c1"># delta time in ms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span>     <span class="o">=</span> <span class="n">df</span>                <span class="c1"># delta frequency in MHz</span>
+
+        <span class="c1"># dimensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="kc">None</span>               <span class="c1"># number of time samples</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcol</span> <span class="o">=</span> <span class="s1">&#39;lgreen&#39;</span>
+
+        <span class="k">if</span> <span class="n">EMPTY</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">empty_par</span><span class="p">()</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t_lim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        t_lim_ref: t_lim translated by t_ref to the zero point.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_ref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_ref</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">f_lim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+
+
+<div class="viewcode-block" id="FRB_params.update_from_crop">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.update_from_crop">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_from_crop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+                            <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update Parameters based on time and frequency crops + averaging</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t_crop : list, optional</span>
+<span class="sd">            time crop, by default [0.0, 1.0]</span>
+<span class="sd">        f_crop : list, optional</span>
+<span class="sd">            frequency crop, by default [0.0, 1.0]</span>
+<span class="sd">        tN : int, optional</span>
+<span class="sd">            Factor for time averaging, by default 1</span>
+<span class="sd">        fN : int, optional</span>
+<span class="sd">            Factor for frequency averaging, by default 1</span>
+<span class="sd">        &quot;&quot;&quot;</span>  
+
+        <span class="c1"># get starting sample, and number of samples</span>
+        <span class="n">t_sampoff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">*</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">t_nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">*</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">t_sampoff</span>
+        <span class="n">t_nsamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t_nsamp</span> <span class="o">/</span> <span class="n">tN</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_sampoff</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_nsamp</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">tN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*=</span> <span class="n">tN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span> <span class="o">=</span> <span class="n">t_nsamp</span>
+        
+
+        <span class="c1"># get starting chan and number of chans</span>
+        <span class="n">f_sampoff</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">*</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">f_nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">*</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">f_sampoff</span>
+        <span class="n">f_nchan</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f_nchan</span> <span class="o">/</span> <span class="n">fN</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f_sampoff</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f_nchan</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*</span> <span class="n">fN</span>      
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">*=</span> <span class="n">fN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span> <span class="o">=</span> <span class="n">f_nchan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">/</span> <span class="mi">2</span></div>
+
+
+
+    
+        
+    
+    <span class="c1"># function to save parameters to parameter file</span>
+<div class="viewcode-block" id="FRB_params.phase2lim">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.phase2lim">[docs]</a>
+    <span class="k">def</span> <span class="nf">phase2lim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">snap</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provide time and frequency phases, based on parameters convert</span>
+<span class="sd">        to ms and MHz crops</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t_crop : list, optional</span>
+<span class="sd">            Time crop, in phase, by default None</span>
+<span class="sd">        f_crop : list, optional</span>
+<span class="sd">            Freq crop, in phase, by default None</span>
+<span class="sd">        snap : bool, optional</span>
+<span class="sd">            if true, snap to nearest multiple of sample resolution, false by default</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        t_lim: List</span>
+<span class="sd">            Time limits in [ms]</span>
+<span class="sd">        f_lim: List</span>
+<span class="sd">            Freq limits in [MHz]</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+        <span class="c1"># init</span>
+        <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="c1"># convert phase to limit based on parameters</span>
+        <span class="k">if</span> <span class="n">t_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># time</span>
+            <span class="n">t_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+                <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">f_crop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># f_lim in ascending freq, convert upperside band crop</span>
+            <span class="n">f_crop_flip</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_crop</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+            <span class="c1"># frequency</span>
+            <span class="n">f_lim</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop_flip</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_crop_flip</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lim_width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+                <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">t_lim</span><span class="p">,</span> <span class="n">f_lim</span></div>
+
+
+    
+
+
+    <span class="c1"># function to get crop from limits</span>
+<div class="viewcode-block" id="FRB_params.lim2phase">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.lim2phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">lim2phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_lim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">snap</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provide time [ms] and Freq [MHz] limits and using params, convert </span>
+<span class="sd">        to time and freq phase.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        t_lim: List</span>
+<span class="sd">            Time limits in [ms]</span>
+<span class="sd">        f_lim: List</span>
+<span class="sd">            Freq limits in [MHz]</span>
+<span class="sd">        snap : bool, optional</span>
+<span class="sd">            if true, snap to nearest multiple of sample resolution, false by default</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        t_crop : list, optional</span>
+<span class="sd">            Time crop, in phase, by default None</span>
+<span class="sd">        f_crop : list, optional</span>
+<span class="sd">            Freq crop, in phase, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        
+        <span class="c1"># init</span>
+        <span class="n">t_phase</span><span class="p">,</span> <span class="n">f_phase</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># convert physical points to phase</span>
+        <span class="k">if</span> <span class="n">t_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># time</span>
+            <span class="n">t_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+                <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+            <span class="n">t_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+
+        <span class="k">if</span> <span class="n">f_lim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># frequency</span>
+            <span class="n">f_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+            <span class="n">lim_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">snap</span><span class="p">:</span>
+                <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+                <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+            <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/=</span> <span class="n">lim_width</span>
+
+            <span class="n">f_phase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">f_phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="k">return</span> <span class="n">t_phase</span><span class="p">,</span> <span class="n">f_phase</span></div>
+
+
+
+    
+<div class="viewcode-block" id="FRB_params.mkpar_from_params">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.mkpar_from_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">mkpar_from_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frb_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make new copy of params instance</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        frb_params : dict, optional</span>
+<span class="sd">            keyword parameters, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        params : FRB_params</span>
+<span class="sd">            New instance of FRB params</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="c1"># make copy of frb params</span>
+        <span class="n">frb_params</span> <span class="o">=</span> <span class="n">dict_init</span><span class="p">(</span><span class="n">frb_params</span><span class="p">)</span>
+
+        <span class="n">new_par</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">crop_par</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># loop over params</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">frb_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_par</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">frb_params</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">crop_par</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+         
+        <span class="c1"># create new par instance and return </span>
+        <span class="k">return</span> <span class="n">new_par</span><span class="o">.</span><span class="n">build_from_crop</span><span class="p">(</span><span class="o">**</span><span class="n">crop_par</span><span class="p">)</span></div>
+
+
+
+    
+<div class="viewcode-block" id="FRB_params.par2dict">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.par2dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">par2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return parameters of class as dictionary</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">new_params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="n">new_params</span><span class="p">[</span><span class="s2">&quot;t_lim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_params</span><span class="p">[</span><span class="s2">&quot;f_lim&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span></div>
+
+
+
+
+    <span class="c1"># print function</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">param_str</span> <span class="o">=</span> <span class="s2">&quot;===== params =====</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">param_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">:       </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">key</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        
+        <span class="n">param_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;t_lim:           </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">param_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;f_lim:           </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f_lim</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">param_str</span>
+    
+
+    <span class="c1"># copy function</span>
+<div class="viewcode-block" id="FRB_params.copy">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return copy of parameter class</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="FRB_params.set_par">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.set_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_par</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attributes of par class</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs : Dict</span>
+<span class="sd">            Keyword parameters</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get all relevant pars</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_lim_base</span>  <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="p">]</span> <span class="c1"># frequency range</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_params.set_weights">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.set_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set properties of weights instances</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xtype: str</span>
+<span class="sd">            Type of weights \n</span>
+<span class="sd">            &quot;t&quot; - Time weights \n</span>
+<span class="sd">            &quot;f&quot; - Freq weights</span>
+
+<span class="sd">        **kwargs: Dict</span>
+<span class="sd">            Keyword arguments for weights instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">xtype</span> <span class="o">==</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="c1"># time weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">xtype</span> <span class="o">==</span> <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="c1"># freq weights</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fW</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;xtype must be either &#39;t&#39; for time, or &#39;f&#39; for freq&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> </div>
+
+
+        
+<div class="viewcode-block" id="FRB_params.get_freqs">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.get_freqs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_freqs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get frequencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfreq</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">nchan</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FRB_params.get_times">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.get_times">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get time bins</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsamp</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_params.empty_par">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.empty_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">empty_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set all parameters to None:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+        
+<div class="viewcode-block" id="FRB_params.default_par">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_params.default_par">[docs]</a>
+    <span class="k">def</span> <span class="nf">default_par</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set all parameters to default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">_G</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">##===================================##</span>
+<span class="c1">## FRB METAPARAMETER CLASS/CONTAINER ##</span>
+<span class="c1">##===================================##</span>
+
+<div class="viewcode-block" id="FRB_metaparams">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams">[docs]</a>
+<span class="k">class</span> <span class="nc">FRB_metaparams</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for FRB meta-params</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_crop : List</span>
+<span class="sd">        Time crop</span>
+<span class="sd">    f_crop : List</span>
+<span class="sd">        Frequency crop</span>
+<span class="sd">    tN : int</span>
+<span class="sd">        Factor for time averaging</span>
+<span class="sd">    fN : int</span>
+<span class="sd">        Factor for frequency averaging</span>
+<span class="sd">    zapchan: str</span>
+<span class="sd">        string used for zapping channels, in format -&gt; &quot;850, 860, 870:900&quot; \n</span>
+<span class="sd">        each element seperated by a &#39;,&#39; is a seperate channel. If &#39;:&#39; is used, user can specify a range of values \n</span>
+<span class="sd">        i.e. 870:900 -&gt; from channel 870 to 900 inclusive of both.</span>
+<span class="sd">    norm: str</span>
+<span class="sd">        Type of normalisation \n</span>
+<span class="sd">        [max] - normalise using maximum \n</span>
+<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
+<span class="sd">        [None] - Skip normalisation</span>
+
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    t_crop : List</span>
+<span class="sd">        Time crop</span>
+<span class="sd">    f_crop : List</span>
+<span class="sd">        Frequency crop</span>
+<span class="sd">    tN : int</span>
+<span class="sd">        Factor for time averaging</span>
+<span class="sd">    fN : int</span>
+<span class="sd">        Factor for frequency averaging</span>
+<span class="sd">    norm: str</span>
+<span class="sd">        Type of normalisation \n</span>
+<span class="sd">        [max] - normalise using maximum \n</span>
+<span class="sd">        [absmax] - normalise using absolute maximum \n</span>
+<span class="sd">        [None] - Skip normalisation</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">terr_crop</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">tN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">],</span> <span class="n">fN</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">],</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">],</span>
+                 <span class="n">zapchan</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;zapchan&#39;</span><span class="p">],</span> <span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+
+        <span class="c1"># set crop parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="n">f_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terr_crop</span> <span class="o">=</span> <span class="n">terr_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">f_crop</span> <span class="o">=</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span>
+
+        <span class="c1"># set averaging parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fN</span> <span class="o">=</span> <span class="n">fN</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+        <span class="k">if</span> <span class="n">EMPTY</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">empty_metapar</span><span class="p">()</span>
+
+    
+
+<div class="viewcode-block" id="FRB_metaparams.set_metapar">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.set_metapar">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set meta-parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+        
+
+
+<div class="viewcode-block" id="FRB_metaparams.metapar2dict">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.metapar2dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">metapar2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return Dictionary of meta-parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">metapar</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">metapar</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">metapar</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FRB_metaparams.copy">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return Copy of Meta-params instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="FRB_metaparams.empty_metapar">
+<a class="viewcode-back" href="../../_autosummary/ilex.par.html#ilex.par.FRB_metaparams.empty_metapar">[docs]</a>
+    <span class="k">def</span> <span class="nf">empty_metapar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set all meta parameters to None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+</div>
+
+        
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

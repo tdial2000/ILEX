@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Polarisation Fractions &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Scattering and Scintillation" href="scattering_and_scintillation.html" />
+    <link rel="prev" title="Theory" href="../Theory.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Theory.html">Theory</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Polarisation Fractions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#l-and-p"><span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(P\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculating-polarisation-fractions">Calculating Polarisation fractions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#absolute-stokes-v-intergrated-polarisation-fraction">Absolute Stokes <span class="math notranslate nohighlight">\(V\)</span> intergrated polarisation fraction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#note-of-q-and-u">Note of <span class="math notranslate nohighlight">\(|q|\)</span> and <span class="math notranslate nohighlight">\(|u|\)</span></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#continuum-added-polarisation-fractions">Continuum-added polarisation fractions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vector-added-polarisation-fractions">Vector-added polarisation fractions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vector-added-continuum-integrated-stokes-p-polarisation-fraction">Vector-added continuum integrated Stokes <span class="math notranslate nohighlight">\(P\)</span> polarisation fraction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scattering_and_scintillation.html">Scattering &amp; Scintillation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rotation_measure.html">Rotation Measure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Polarisation Fractions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Theory/polarisation_fractions.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="polarisation-fractions">
+<h1>Polarisation Fractions<a class="headerlink" href="#polarisation-fractions" title="Link to this heading"></a></h1>
+<p>The following is a list of polarisation fraction equations used by ILEX to measure to total
+frequency-time averaged polarisation fractions within an FRB or any radio profile with full polarisation.</p>
+<p>We will first define <span class="math notranslate nohighlight">\(Q(t), U(t)\)</span> to be our Linear polarisation modes and <span class="math notranslate nohighlight">\(V(t)\)</span> the Circular Polarisation
+as a function of time, assuming we have averaged in frequency. <span class="math notranslate nohighlight">\(I(t)\)</span> is the total power profile. The uncertainty in these
+quantities are <span class="math notranslate nohighlight">\(\sigma_{X}\)</span>, where <span class="math notranslate nohighlight">\(X\)</span> is the Stokes parameter. For the following I will assume <span class="math notranslate nohighlight">\(Q, U, V\)</span> ect.
+are the Stokes time profiles, for readibility.</p>
+<p>Note: when I say “averaged in frequency”, I mean integrating over frequency then deviding by the number of channels.
+This will matter if you are after the absolute integrated flux density of Linear/Circular polarisation, however, for
+calculating fractions, the averaging cancels out.</p>
+<section id="l-and-p">
+<h2><span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(P\)</span><a class="headerlink" href="#l-and-p" title="Link to this heading"></a></h2>
+<p>We measure the Linear polarisation via the following equation</p>
+<div class="math notranslate nohighlight">
+\[L = \sqrt{Q^{2} + U^2}.\]</div>
+<p>Given this functional form, the uncertainty <span class="math notranslate nohighlight">\(\sigma_{L}\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[\sigma_{L} = \frac{1}{L}\sqrt{Q^{2}\sigma_{Q}^2 + U^{2}\sigma_{U}^{2}}.\]</div>
+<p>there is a need to debias <span class="math notranslate nohighlight">\(L\)</span> due to the expression used, especially at low signal-to-noise (S/N)
+[Everett &amp; Weisberg 2001; Day et al. 2020]</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}L\mathrm{_{d}} =
+ \begin{cases}
+   \sigma_{I}\sqrt{\bigg(\frac{L}{\sigma_{I}}\bigg)^{2} - 1} &amp; \frac{L}{\sigma_{I}} &gt; 1.57 \\
+   0 &amp; \mathrm{otherwise}. \\
+\end{cases}\end{split}\]</div>
+<p>The error in <span class="math notranslate nohighlight">\(L\mathrm{_{d}}\)</span> is done in a similar way when calculating the un-debiased Linear polarisation uncertainty <span class="math notranslate nohighlight">\(\sigma_{L}\)</span>,
+but replacing <span class="math notranslate nohighlight">\(L\)</span> with <span class="math notranslate nohighlight">\(L\mathrm{_{d}}\)</span>.</p>
+<p>Calculating the total polarisation P can be done one of two ways, either by performing a quadratic sum of <span class="math notranslate nohighlight">\(Q,U,V\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[P = \sqrt{Q^{2} + U^{2} + V^{2}},\]</div>
+<p>or by using <span class="math notranslate nohighlight">\(L\mathrm{_{d}}\)</span></p>
+<div class="math notranslate nohighlight">
+\[P = \sqrt{L\mathrm{_{d}}^2 + V^{2}}.\]</div>
+<p>The second way is easier, and can easily be debised in the same way as with <span class="math notranslate nohighlight">\(L\)</span>. The uncertainity is of the same functional
+form as for <span class="math notranslate nohighlight">\(L\)</span> above, but with <span class="math notranslate nohighlight">\(Q, U\)</span> interchanged with <span class="math notranslate nohighlight">\(L, V\)</span>, same goes for the debiased total polarisation.</p>
+</section>
+<section id="calculating-polarisation-fractions">
+<h2>Calculating Polarisation fractions<a class="headerlink" href="#calculating-polarisation-fractions" title="Link to this heading"></a></h2>
+<p>We measure the total polarisation fraction by first integrating the Stokes profile and dividing by the total integrated power</p>
+<div class="math notranslate nohighlight">
+\[x = \frac{\sum{X}}{\sum{I}}\]</div>
+<p>where the lower case <span class="math notranslate nohighlight">\(x\)</span> denotes the Stokes polarisation fraction. We can also measure the uncertainty <span class="math notranslate nohighlight">\(\sigma_{x}\)</span>,
+which we can split up into two seperate stages.</p>
+<p>1. Calculate the uncertainty in the integrated stokes parameters <span class="math notranslate nohighlight">\(\sigma\mathrm{_{\sum{X}}}\)</span> and <span class="math notranslate nohighlight">\(\sigma\mathrm{_{\sum{I}}}\)</span>.
+Which we can do using the following equation</p>
+<div class="math notranslate nohighlight">
+\[\sigma\mathrm{_{\sum{X}}} = \sqrt(\sum{\sigma_{X}}).\]</div>
+<p>If the error for the entire Stokes profile is a single value, we can estimate the uncertainity using basic noise scaling</p>
+<div class="math notranslate nohighlight">
+\[\sigma\mathrm{_{\sum{X}}} = \sqrt{N} * \sigma_{X},\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span> is the number of samples in the Stokes profile.</p>
+<ol class="arabic simple" start="2">
+<li><p>The next step is to calculate the final uncertainity in the stokes polarisation fraction, which is done using the following equation</p></li>
+</ol>
+<div class="math notranslate nohighlight">
+\[\sigma_{x} = x\sqrt{\Bigg(\frac{\sum{X}}{\sigma\mathrm{_{\sum{X}}}}\Bigg)^{2} + \Bigg(\frac{\sum{I}}{\sigma\mathrm{_{\sum{I}}}}\Bigg)^{2}}\]</div>
+<p>With the above equations, we can calculate all the integrated Stokes polarisation fractions and their uncertainties. Below is the list for
+completeness.</p>
+</section>
+<section id="absolute-stokes-v-intergrated-polarisation-fraction">
+<h2>Absolute Stokes <span class="math notranslate nohighlight">\(V\)</span> intergrated polarisation fraction<a class="headerlink" href="#absolute-stokes-v-intergrated-polarisation-fraction" title="Link to this heading"></a></h2>
+<p>One important aspect of Circular polarisation we have to keep in mind is that it is a signed quantity, meaning is can be +/-. It may also
+flip between being + or - across the profile. So simply integrating over the profile is not a reliable measure of the Stokes <span class="math notranslate nohighlight">\(V\)</span>
+polarisation fraction.</p>
+<p>We can calculate the Stokes <span class="math notranslate nohighlight">\(V\)</span> polarisation fraction by first taking the absolute value of the Stokes profile before integrating</p>
+<div class="math notranslate nohighlight">
+\[|v| = \frac{\sum{|V|}}{\sum{I}}.\]</div>
+<p>Before integrating the absolute stokes <span class="math notranslate nohighlight">\(V\)</span> profile, <span class="math notranslate nohighlight">\(|V|\)</span> needs to be debiased according to Karastergiou et al. 2003, Posselt et al. 2022
+and Oswald et al. 2023</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}|V|\mathrm{_{d}} =
+\begin{cases}
+   |V| - \sigma_{I}\sqrt{\frac{2}{\pi}} &amp; |V| &gt; \sigma_{I}\sqrt{\frac{2}{\pi}} \\
+   0 &amp; \mathrm{otherwise}.
+\end{cases}\end{split}\]</div>
+<p>thus the absolute integrated Stokes <span class="math notranslate nohighlight">\(V\)</span> polarisation fraction is</p>
+<div class="math notranslate nohighlight">
+\[|v| = \frac{\sum{|V|\mathrm{_{d}}}}{\sum{I}}.\]</div>
+<section id="note-of-q-and-u">
+<h3>Note of <span class="math notranslate nohighlight">\(|q|\)</span> and <span class="math notranslate nohighlight">\(|u|\)</span><a class="headerlink" href="#note-of-q-and-u" title="Link to this heading"></a></h3>
+<p>The same arguments can be made about stokes <span class="math notranslate nohighlight">\(Q\)</span> and <span class="math notranslate nohighlight">\(U\)</span> since they can also change sign across time. The above equations may be
+used interchangably, although <span class="math notranslate nohighlight">\(|q|\)</span> and <span class="math notranslate nohighlight">\(|u|\)</span> are less useful.</p>
+</section>
+</section>
+<section id="continuum-added-polarisation-fractions">
+<h2>Continuum-added polarisation fractions<a class="headerlink" href="#continuum-added-polarisation-fractions" title="Link to this heading"></a></h2>
+<p>The complete set of integrated polarisation fractions are listed below for completeness. They will also be useful when using other methods for
+calculating the Linear and total integrated polarisation fractions.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+   &amp; |q| = \frac{\sum{|Q|\mathrm{_{d}}}}{\sum{I}} \\
+   &amp; |u| = \frac{\sum{|U|\mathrm{_{d}}}}{\sum{I}} \\
+   &amp; |v| = \frac{\sum{|V|\mathrm{_{d}}}}{\sum{I}} \\
+   &amp; l = \frac{\sum{L\mathrm{_{d}}}}{\sum{I}} \\
+   &amp; p = \frac{\sum{P\mathrm{_{d}}}}{\sum{I}}
+\end{split}\end{split}\]</div>
+<p>Signed integrated stokes polarisation fractions</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+   &amp; q = \frac{\sum{Q}}{\sum{I}} \\
+   &amp; u = \frac{\sum{U}}{\sum{I}} \\
+   &amp; v = \frac{\sum{V}}{\sum{I}}.
+\end{split}\end{split}\]</div>
+</section>
+<section id="vector-added-polarisation-fractions">
+<h2>Vector-added polarisation fractions<a class="headerlink" href="#vector-added-polarisation-fractions" title="Link to this heading"></a></h2>
+<p>Alternative methods for calculating <span class="math notranslate nohighlight">\(l\)</span> and <span class="math notranslate nohighlight">\(p\)</span> by first intregrating Stokes <span class="math notranslate nohighlight">\(Q, U\)</span> and <span class="math notranslate nohighlight">\(V\)</span>, then adding in
+quadrature.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+   &amp; l* = \sqrt{q^{2} + u^{2}} \\
+   &amp; p* = \sqrt{q^{2} + u^{2} + v^{2}} \\
+   &amp; |l|* = \sqrt{|q|^{2} + |u|^{2}} \\
+   &amp; |p|* = \sqrt{|q|^{2} + |u|^{2} + |v|^{2}}.
+\end{split}\end{split}\]</div>
+</section>
+<section id="vector-added-continuum-integrated-stokes-p-polarisation-fraction">
+<h2>Vector-added continuum integrated Stokes <span class="math notranslate nohighlight">\(P\)</span> polarisation fraction<a class="headerlink" href="#vector-added-continuum-integrated-stokes-p-polarisation-fraction" title="Link to this heading"></a></h2>
+<p>Alternative method for calculating <span class="math notranslate nohighlight">\(p\)</span> by adding <span class="math notranslate nohighlight">\(l\)</span> and <span class="math notranslate nohighlight">\(v\)</span> in quadrature.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{split}
+   &amp; \hat{p} = \sqrt{l^{2} + v^{2}} \\
+   &amp; \hat{|p|} = \sqrt{l^{2} + |v|^{2}}.
+\end{split}\end{split}\]</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Theory.html" class="btn btn-neutral float-left" title="Theory" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scattering_and_scintillation.html" class="btn btn-neutral float-right" title="Scattering and Scintillation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

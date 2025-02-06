@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.globals &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.globals</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.globals</h1><div class="highlight"><pre>
+<span></span><span class="c1"># imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span><span class="p">,</span> <span class="n">rcParams</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+
+<div class="viewcode-block" id="globals_">
+<a class="viewcode-back" href="../../_autosummary/ilex.globals.html#ilex.globals.globals_">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">globals_</span><span class="p">:</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Container for Global parameters</span>
+
+<span class="sd">  Attributes</span>
+<span class="sd">  ----------</span>
+<span class="sd">  hkeys : List</span>
+<span class="sd">    List of HTR crop products</span>
+<span class="sd">  DATA : List</span>
+<span class="sd">    List of HTR products</span>
+<span class="sd">  p : Dict</span>
+<span class="sd">    Dictionary of FRB parameters</span>
+<span class="sd">  mp : Dict</span>
+<span class="sd">    Dictionary of FRB meta-parameters</span>
+<span class="sd">  hp : Dict</span>
+<span class="sd">    Dictionary of FRB hyper-parameters</span>
+<span class="sd">  </span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">pass</span></div>
+
+
+
+<span class="n">_G</span> <span class="o">=</span> <span class="n">globals_</span><span class="p">()</span>
+
+<span class="c1">#dict of HTR crop products</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">hkeys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span><span class="s2">&quot;fI&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dsQ&quot;</span><span class="p">,</span><span class="s2">&quot;tQ&quot;</span><span class="p">,</span><span class="s2">&quot;fQ&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dsU&quot;</span><span class="p">,</span><span class="s2">&quot;tU&quot;</span><span class="p">,</span><span class="s2">&quot;fU&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dsV&quot;</span><span class="p">,</span><span class="s2">&quot;tV&quot;</span><span class="p">,</span><span class="s2">&quot;fV&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tL&quot;</span><span class="p">,</span> <span class="s2">&quot;fL&quot;</span><span class="p">,</span> <span class="s2">&quot;tP&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fP&quot;</span><span class="p">]</span>
+
+
+<span class="n">_G</span><span class="o">.</span><span class="n">DATA</span> <span class="o">=</span> <span class="s2">&quot;IQUVXY&quot;</span>
+
+<span class="c1"># parameters that are changed during any instance call (i.e. **kwargs) that otherwise shouldn&#39;t be changed but may due to chaching</span>
+<span class="n">sp</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;t_crop&quot;</span><span class="p">,</span> <span class="s2">&quot;terr_crop&quot;</span><span class="p">,</span> <span class="s2">&quot;f_crop&quot;</span><span class="p">]</span>
+
+<span class="n">_G</span><span class="o">.</span><span class="n">sp</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sp</span><span class="p">:</span>
+  <span class="n">_G</span><span class="o">.</span><span class="n">sp</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">_static&quot;</span>
+
+<span class="c1">#dict of FRB parameters</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;FRBXXXXXX&quot;</span><span class="p">,</span> <span class="s2">&quot;RA&quot;</span><span class="p">:</span> <span class="s2">&quot;00:00:00.0000&quot;</span><span class="p">,</span> <span class="s2">&quot;DEC&quot;</span><span class="p">:</span> <span class="s2">&quot;00:00:00.0000&quot;</span><span class="p">,</span> <span class="s2">&quot;MJD&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                      <span class="s2">&quot;DM&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;bw&quot;</span><span class="p">:</span> <span class="mi">336</span><span class="p">,</span> <span class="s2">&quot;cfreq&quot;</span><span class="p">:</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="s2">&quot;t_lim_base&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3100.0</span><span class="p">],</span>
+                        <span class="s2">&quot;f_lim_base&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">336.0</span><span class="p">],</span> <span class="s2">&quot;nchan&quot;</span><span class="p">:</span> <span class="mi">336</span><span class="p">,</span> <span class="s2">&quot;nsamp&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;dt&quot;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span>
+                          <span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;RM&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;pa0&quot;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;t_ref&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">}</span>
+
+<span class="c1"># dict of frb meta params</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">mp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t_crop&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">],</span> <span class="s2">&quot;f_crop&quot;</span><span class="p">:[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">],</span> <span class="s2">&quot;terr_crop&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
+         <span class="s2">&quot;tN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;fN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="s2">&quot;zapchan&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+<span class="c1"># dict of hyper parameters``</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;plot_type&#39;</span><span class="p">:</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+         <span class="s1">&#39;residuals&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_tW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_fW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;zap&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;show_plots&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;save_plots&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;crop_units&#39;</span><span class="p">:</span> <span class="s2">&quot;physical&quot;</span><span class="p">,</span>
+         <span class="s1">&#39;dynspec_cmap&#39;</span><span class="p">:</span><span class="s1">&#39;viridis&#39;</span><span class="p">}</span>
+
+<span class="n">_G</span><span class="o">.</span><span class="n">yaml_ignore</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;zap&quot;</span><span class="p">]</span>
+
+<span class="n">_G</span><span class="o">.</span><span class="n">yaml_def_prec</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">yaml_def_width</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># dict of keywords in yaml config file</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">yaml_config</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;par&#39;</span><span class="p">,</span> <span class="s1">&#39;metapar&#39;</span><span class="p">,</span> <span class="s1">&#39;hyperpar&#39;</span><span class="p">,</span> <span class="s1">&#39;plots&#39;</span><span class="p">,</span> <span class="s1">&#39;fits&#39;</span><span class="p">,</span> <span class="s1">&#39;weights&#39;</span><span class="p">,</span> <span class="s1">&#39;multi&#39;</span><span class="p">]</span>
+
+<span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;c&#39;</span><span class="p">,</span><span class="s1">&#39;marker&#39;</span><span class="p">,</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;cmap&#39;</span><span class="p">,</span> <span class="s1">&#39;vmin&#39;</span><span class="p">,</span><span class="s1">&#39;vmax&#39;</span><span class="p">,</span><span class="s1">&#39;linewidths&#39;</span><span class="p">,</span><span class="s1">&#39;edgecolors&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]</span>
+<span class="c1"># this command fails when building docs, so just brute forcing for now</span>
+<span class="c1">#list(inspect.signature(Line2D.set).parameters.keys())[1:]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;agg_filter&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;alpha&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;animated&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;antialiased&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_box&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_on&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;clip_path&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;color&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dash_capstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dash_joinstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dashes&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;data&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;drawstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;fillstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;gapcolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;gid&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;in_layout&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;label&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;linestyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;linewidth&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;marker&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markeredgecolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markeredgewidth&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markerfacecolor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markerfacecoloralt&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markersize&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;markevery&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;mouseover&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;path_effects&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;picker&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;pickradius&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;rasterized&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;sketch_params&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;snap&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;solid_capstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;solid_joinstyle&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;transform&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;url&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;visible&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;xdata&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;ydata&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;zorder&#39;</span><span class="p">]</span>
+ 
+<span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;fmt&#39;</span><span class="p">,</span> <span class="s1">&#39;ecolor&#39;</span><span class="p">,</span> <span class="s1">&#39;elinewidth&#39;</span><span class="p">,</span> <span class="s1">&#39;capsize&#39;</span><span class="p">,</span> <span class="s1">&#39;capthick&#39;</span><span class="p">,</span> <span class="s1">&#39;barsabove&#39;</span><span class="p">]</span> 
+<span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span> <span class="o">+=</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span>
+
+
+<span class="c1"># constants</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span> <span class="o">=</span> <span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.prop_cycle&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">by_key</span><span class="p">()[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span>
+<span class="n">_G</span><span class="o">.</span><span class="n">stk_colors</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;I&quot;</span><span class="p">:</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">:</span><span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;U&quot;</span><span class="p">:</span><span class="n">_G</span><span class="o">.</span><span class="n">default_colors</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;V&quot;</span><span class="p">:</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">:</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="s1">&#39;darkviolet&#39;</span><span class="p">}</span>
+
+
+<span class="c1">## constants</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mf">2.997924538e8</span>       <span class="c1"># Speed of light [m/s]</span>
+<span class="n">kDM</span> <span class="o">=</span> <span class="mf">4.14938e3</span>         <span class="c1"># DM constant</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

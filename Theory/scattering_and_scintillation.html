@@ -1,0 +1,146 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scattering and Scintillation &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Rotation Measure" href="rotation_measure.html" />
+    <link rel="prev" title="Polarisation Fractions" href="polarisation_fractions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Theory.html">Theory</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="polarisation_fractions.html">Polarisation Fractions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Scattering &amp; Scintillation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scattering">Scattering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scintillation">Scintillation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rotation_measure.html">Rotation Measure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Theory.html">Theory</a></li>
+      <li class="breadcrumb-item active">Scattering and Scintillation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Theory/scattering_and_scintillation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scattering-and-scintillation">
+<h1>Scattering and Scintillation<a class="headerlink" href="#scattering-and-scintillation" title="Link to this heading"></a></h1>
+<section id="scattering">
+<h2>Scattering<a class="headerlink" href="#scattering" title="Link to this heading"></a></h2>
+<p>We do not nessesarily know (as of writing this, 2/12/2024) the instrinsic emission of FRBs. Hence when we go to fit their
+profiles we need to make some assumption. The most widely used and resonable basis function is a Gaussian pulse</p>
+<div class="math notranslate nohighlight">
+\[f(t) = Ae^{-(t - \mu)^{2}/2\sigma^{2}}.\]</div>
+<p>Where <span class="math notranslate nohighlight">\(A, \mu\)</span> amd <span class="math notranslate nohighlight">\(\sigma\)</span> are the amplitude, position and width (standard deviation) of the pulse.
+An FRB can have multiple components, so usually we model the instrinic emission of an FRB as a sum of gaussian components.
+However, the observed signal will have undergone some level of scattering as it propogated through ionised plasma along the line of
+sight. This can be modelled simply using a one-sided exponential (where the ‘one-sided’ means ill-defined for <span class="math notranslate nohighlight">\(t &lt; 0\)</span>). This scattering
+function is then convolved with the intrinsic FRB emission to get the observed FRB emission</p>
+<div class="math notranslate nohighlight">
+\[I(t) = \sum_{i = 1}^{N}\bigg[A_{i}e^{-(t-\mu_{i})^{2}/2\sigma_{i}^{2}}\bigg] * e^{-t/\tau_{s}}.\]</div>
+<p>Here the FRB emission is made up of <span class="math notranslate nohighlight">\(N\)</span> Gaussian pulses, which have been scattered by a timescale of <span class="math notranslate nohighlight">\(\tau_{s}\)</span> (scattering timescale).</p>
+</section>
+<section id="scintillation">
+<h2>Scintillation<a class="headerlink" href="#scintillation" title="Link to this heading"></a></h2>
+<p>Scintillation is the phenomena where incoming radio emission undergoes a phase of focusing and defocusing due to large/small scale inhomogenities
+in the intervening ionised plasma. This is a frequency dependant effect and results in “patchy” structures in the radio emission spectra.</p>
+<p>Modelling scintillation in FRBs is most commonly done by modelling the 1D ACF (Auto-correlation function) of the spectrum as a lorentzian function</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{ACF}(\Delta \nu) = m^{2}\frac{\nu_{dc}^{2}}{\nu_{dc}^{2} + \Delta \nu^{2}},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta \nu\)</span> is the frequency lag in the ACF and <span class="math notranslate nohighlight">\(\nu_{dc}\)</span> is the decorrelation bandwidth.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="polarisation_fractions.html" class="btn btn-neutral float-left" title="Polarisation Fractions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rotation_measure.html" class="btn btn-neutral float-right" title="Rotation Measure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

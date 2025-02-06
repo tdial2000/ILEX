@@ -1,0 +1,839 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.utils &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 25/09/2023 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## Utils library</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.globals</span><span class="w"> </span><span class="kn">import</span> <span class="n">_G</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span><span class="p">,</span> <span class="n">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ruamel.yaml</span><span class="w"> </span><span class="kn">import</span> <span class="n">YAML</span>    <span class="c1"># wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. </span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">base_yaml</span>        <span class="c1"># default yaml class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ruamel.yaml.scalarfloat</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScalarFloat</span> <span class="k">as</span> <span class="n">ruamel_float</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ruamel.yaml</span><span class="w"> </span><span class="kn">import</span> <span class="n">comments</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ruamel.yaml.comments</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommentedMap</span><span class="p">,</span> <span class="n">CommentedSeq</span>
+
+
+<span class="c1"># empty structure</span>
+<div class="viewcode-block" id="struct_">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.struct_">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">struct_</span><span class="p">:</span>
+    <span class="k">pass</span></div>
+
+
+
+
+
+<span class="c1"># TODO: Add header guard to this statement below?? </span>
+<span class="c1"># would like to allow for notebook usage</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+
+
+<span class="c1"># def interactive_on():</span>
+<span class="c1">#     log(&quot;Turning interactive ON&quot;, lpf = False)</span>
+<span class="c1">#     plt.ion()</span>
+
+
+<span class="c1"># def interactive_off():</span>
+<span class="c1">#     log(&quot;Turning interactive OFF&quot;, lpf = False)</span>
+<span class="c1">#     plt.ioff()</span>
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##              load/save functions              ##</span>
+<span class="c1">##===============================================##</span>
+
+
+<div class="viewcode-block" id="load_data">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="n">datafile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mmap</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load data to memory map</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    datafile : str</span>
+<span class="sd">        filename or path</span>
+<span class="sd">    mmap : bool, optional</span>
+<span class="sd">        is memorymap?, by default True</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data : np.mmap or np.ndarray</span>
+<span class="sd">        loaded data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># option to enable memory mapping</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">m_mode</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">mmap</span><span class="p">:</span>
+        <span class="n">m_mode</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+
+    <span class="c1">#load in a .npy file</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">datafile</span><span class="p">,</span><span class="n">mmap_mode</span> <span class="o">=</span> <span class="n">m_mode</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="save_data">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.save_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save data to file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
+<span class="sd">        data to save to file</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        filename to save data to</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">data</span><span class="p">)</span></div>
+
+
+
+
+
+
+<span class="c1">##===============================================##</span>
+<span class="c1">##           dict. Utilility functions           ##</span>
+<span class="c1">##===============================================##</span>
+
+<span class="c1">## [ CHECK IF ALL ENTRIES IN DICT HAVE SAME TYPE ] ##</span>
+<div class="viewcode-block" id="dict_checktype">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.dict_checktype">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_checktype</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if all entries of Dict are type = t</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict : Dict</span>
+<span class="sd">        Dictionary</span>
+<span class="sd">    t : Type()</span>
+<span class="sd">        type to check against</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    _type_</span>
+<span class="sd">        _description_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+    <span class="k">return</span> <span class="mi">1</span></div>
+
+
+
+<span class="c1">## [ GET LIST OF ITEMS FROM DICT ] ##</span>
+<div class="viewcode-block" id="dict_get">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.dict_get">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_get</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a sub-set of the Dictionary based on keys</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict : Dict</span>
+<span class="sd">        Original dictionary</span>
+<span class="sd">    keys : List(str)</span>
+<span class="sd">        List of items to retrieve</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dict : Dict</span>
+<span class="sd">        Sub-set of Dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">new_dict</span></div>
+
+
+
+
+<div class="viewcode-block" id="dict_init">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.dict_init">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_init</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initilise any number of dictionaries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    *dicts</span>
+<span class="sd">        A number of Dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1">#assign input dictionaries to empty {} object</span>
+    <span class="n">out_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dicts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">dic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dic</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">out_</span> <span class="o">=</span> <span class="n">out_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">out_</span></div>
+
+
+
+<div class="viewcode-block" id="dict_isall">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.dict_isall">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_isall</span><span class="p">(</span><span class="n">dictA</span><span class="p">,</span> <span class="n">dictB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if Entires in Dict A match those in Dict B</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dictA : Dict</span>
+<span class="sd">        Dict A</span>
+<span class="sd">    dictB : Dict</span>
+<span class="sd">        Dict B</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        1 if True, 0 if False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if entires in dictA equal those in dictB, </span>
+    <span class="c1"># if so return 1, else return 0</span>
+
+    <span class="n">keysA</span> <span class="o">=</span> <span class="n">dictA</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keysA</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dictA</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">dictB</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+    <span class="k">return</span> <span class="mi">1</span></div>
+
+
+
+<div class="viewcode-block" id="merge_dicts">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.merge_dicts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_dicts</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combine multiple Dictionaries into 1 dictionary</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    *dicts : </span>
+<span class="sd">        A number of dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1"># combine multiple dictionaries together</span>
+    <span class="n">dicts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dicts</span><span class="p">)</span>
+    <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dicts</span><span class="p">):</span>
+        <span class="n">odict</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">odict</span><span class="p">,</span> <span class="o">**</span><span class="n">dic</span><span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">odict</span></div>
+
+
+
+<div class="viewcode-block" id="dict_null">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.dict_null">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dict_null</span><span class="p">(</span><span class="n">dic</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set all entries in a Dictionary to &#39;None&#39;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dic : Dict</span>
+<span class="sd">        Dictionary</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dic : Dict</span>
+<span class="sd">        Dict with entries set to &#39;None&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="n">new_dic</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">dic</span><span class="p">)</span>
+
+    <span class="c1"># set all items in dict to None</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">new_dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">new_dic</span></div>
+
+
+
+<div class="viewcode-block" id="get_stk_from_datalist">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.get_stk_from_datalist">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_stk_from_datalist</span><span class="p">(</span><span class="n">data_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get Stokes characters, i.e. I, Q, U and V from list of Stokes </span>
+<span class="sd">    products to make, i.e. &quot;dsI&quot;, &quot;fQ&quot; etc.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_list : List(str)</span>
+<span class="sd">        List of data products to make</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stk : str</span>
+<span class="sd">        Stokes Characters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stk</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">:</span>
+        <span class="n">stk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="n">stk_s</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">stk</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;L&quot;</span> <span class="ow">in</span> <span class="n">stk_s</span><span class="p">:</span>
+        <span class="n">stk_s</span> <span class="o">=</span> <span class="n">stk_s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;P&quot;</span> <span class="ow">in</span> <span class="n">stk_s</span><span class="p">:</span>
+        <span class="n">stk_s</span> <span class="o">=</span> <span class="n">stk_s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    
+    <span class="k">return</span> <span class="n">stk_s</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">#------------------------------------------------#</span>
+<span class="c1"># plotting utilities                             #</span>
+<span class="c1">#------------------------------------------------#</span>
+
+<div class="viewcode-block" id="plotnum2grid">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.plotnum2grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plotnum2grid</span><span class="p">(</span><span class="n">nrows</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes the number of axes you want and creates a grid,</span>
+<span class="sd">    one can constrain either the number of rows or colums to </span>
+<span class="sd">    make the grid. If Neither is specified, will create the smallest </span>
+<span class="sd">    sqaure grid to fit.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nrows : int </span>
+<span class="sd">        number of rows to keep constant</span>
+<span class="sd">    ncols : int</span>
+<span class="sd">        number of columns to keep constant</span>
+<span class="sd">    num : int</span>
+<span class="sd">        number of axes to make into grid</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    grid_nrows : int</span>
+<span class="sd">        number of rows of new grid</span>
+<span class="sd">    grid_ncols : int </span>
+<span class="sd">        number of columns of new grid</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># constraining the number of rows</span>
+    <span class="k">if</span> <span class="n">nrows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">num</span> <span class="o">&lt;=</span> <span class="n">nrows</span><span class="p">:</span>
+            <span class="n">grid_nrows</span> <span class="o">=</span> <span class="n">num</span>
+            <span class="n">grid_ncols</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grid_nrows</span> <span class="o">=</span> <span class="n">nrows</span>
+            <span class="n">grid_ncols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="n">nrows</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        
+    <span class="c1"># constraining the number of columns</span>
+    <span class="k">elif</span> <span class="n">ncols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">num</span> <span class="o">&lt;=</span> <span class="n">ncols</span><span class="p">:</span>
+            <span class="n">grid_ncols</span> <span class="o">=</span> <span class="n">num</span>
+            <span class="n">grid_nrows</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grid_ncols</span> <span class="o">=</span> <span class="n">ncols</span>
+            <span class="n">grid_nrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="n">ncols</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># conform to nearest square grid</span>
+    <span class="k">elif</span> <span class="n">nrows</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ncols</span> <span class="ow">in</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># length of square grid</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">grid_num</span> <span class="o">=</span> <span class="n">n2</span><span class="o">**</span><span class="mi">2</span>
+            <span class="k">if</span> <span class="n">num</span> <span class="o">&lt;=</span> <span class="n">grid_num</span><span class="p">:</span>
+                <span class="n">grid_ncols</span> <span class="o">=</span> <span class="n">n2</span>
+                <span class="n">grid_nrows</span> <span class="o">=</span> <span class="n">n2</span>
+                <span class="k">break</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Only nrows or ncols can be constrained, or specifiy neither and build aa square grid&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+    
+    <span class="k">return</span> <span class="n">grid_nrows</span><span class="p">,</span> <span class="n">grid_ncols</span></div>
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">ruamel2py</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    p : pars</span>
+<span class="sd">    d : default pars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># check if dict instance</span>
+            <span class="c1"># check if ruamel yaml input </span>
+            <span class="k">if</span> <span class="n">ruamel2py</span><span class="p">:</span>
+                <span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_ruamel_input</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+                <span class="n">_init_pars</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">p</span>
+
+
+<div class="viewcode-block" id="load_param_file">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_param_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_param_file</span><span class="p">(</span><span class="n">param_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_yaml_obj</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ruamel2py</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load in param file and compare with default params file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    param_file : str</span>
+<span class="sd">        parameter file to load in, if None, will return default yaml file values</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    params : Dict</span>
+<span class="sd">        parameters, compared with defaults</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">yaml</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">param_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># open param file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">param_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># open default param file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/default.yaml&quot;</span><span class="p">))</span> <span class="k">as</span> <span class="n">deffile</span><span class="p">:</span>
+        <span class="n">def_pars</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">deffile</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">return_yaml_obj</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">,</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">),</span> <span class="n">yaml</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_init_pars</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">def_pars</span><span class="p">,</span> <span class="n">ruamel2py</span><span class="o">=</span><span class="n">ruamel2py</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="save_param_file">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.save_param_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_param_file</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">yaml_obj</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    save to new parameter file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pars : dict</span>
+<span class="sd">        dictionary of parameters in ilex.yaml format</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        filename of saved yaml file</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># class MyDumper(yaml.SafeDumper):</span>
+    <span class="c1"># # HACK: insert blank lines between top-level objects</span>
+    <span class="c1"># # inspired by https://stackoverflow.com/a/44284819/3786245</span>
+    <span class="c1">#     def write_line_break(self, data=None):</span>
+    <span class="c1">#         super().write_line_break(data)</span>
+
+    <span class="c1">#         if len(self.indents) == 1:</span>
+    <span class="c1">#             super().write_line_break()</span>
+
+    <span class="k">if</span> <span class="n">yaml_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">yaml_obj</span> <span class="o">=</span> <span class="n">YAML</span><span class="p">()</span> 
+
+
+    <span class="c1"># save pars in pars</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">yaml_obj</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="update_ruamel_CommentedSeq">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.update_ruamel_CommentedSeq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_ruamel_CommentedSeq</span><span class="p">(</span><span class="n">commented_seq</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updates the value of the CommentedSeq whilst preserving the flow</span>
+<span class="sd">    stype and comments</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># copy comments</span>
+    <span class="k">if</span> <span class="n">commented_seq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="n">commented_seq</span><span class="o">.</span><span class="n">ca</span><span class="o">.</span><span class="n">comment</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">comment</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># create new Commented Sequence initialised to val</span>
+    <span class="n">commented_seq</span> <span class="o">=</span> <span class="n">CommentedSeq</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="c1"># add comments and preserved flow style</span>
+    <span class="n">commented_seq</span><span class="o">.</span><span class="n">_yaml_add_comment</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+    <span class="n">commented_seq</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">commented_seq</span></div>
+
+
+
+
+<div class="viewcode-block" id="update_ruamel_CommentedMap">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.update_ruamel_CommentedMap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_ruamel_CommentedMap</span><span class="p">(</span><span class="n">commented_map</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updated Commented map based on key, value pair</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">commented_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># add to commented_map</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># create CommentedSeq</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">CommentedSeq</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># create CommentedMap</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">CommentedMap</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">fa</span><span class="o">.</span><span class="n">set_flow_style</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="c1"># add to map</span>
+            <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can only add list, dict, float, int, bool or str to CommentedMap yaml.&quot;</span><span class="p">)</span>
+    
+        <span class="k">return</span>    
+        
+        
+    <span class="n">commented_map</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+                <span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">update_ruamel_CommentedSeq</span><span class="p">(</span><span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dict_key</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+                <span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">dict_key</span><span class="p">])</span>
+        
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">commented_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        
+
+    <span class="k">return</span></div>
+
+
+
+
+
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_new_plotstyle_file</span><span class="p">():</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span>
+
+
+<div class="viewcode-block" id="load_plotstyle">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.load_plotstyle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_plotstyle</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load in plotstyle file and compare with default plotstyle file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_default_plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">):</span>
+        <span class="n">_make_new_plotstyle_file</span><span class="p">()</span>
+
+    <span class="c1"># read in _plotstyle file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># will use given file</span>
+        <span class="n">plotstyle_file</span> <span class="o">=</span> <span class="n">filepath</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># will use default file</span>
+        <span class="n">plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/default_plot_param_file.yaml&quot;</span><span class="p">)</span>
+    
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">plotstyle_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">plf</span><span class="p">:</span>
+        <span class="n">plot_pars</span> <span class="o">=</span> <span class="n">base_yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">plf</span><span class="p">)</span>
+
+    <span class="c1"># check if they match avalaible</span>
+    <span class="c1"># scatter</span>
+    <span class="n">scatter_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">scatter_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">scatter_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;scatter&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># plot</span>
+    <span class="n">plot_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">plot_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">plot_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="c1"># errorbars</span>
+    <span class="n">errorbar_keys</span> <span class="o">=</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">errorbar_keys</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_G</span><span class="o">.</span><span class="n">errorbar_args</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">plot_pars</span><span class="p">[</span><span class="s1">&#39;errorbar&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">plot_pars</span></div>
+
+
+
+    
+<div class="viewcode-block" id="set_plotstyle">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.set_plotstyle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_plotstyle</span><span class="p">(</span><span class="n">filepath</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    set plotstyle path, if not given, will be set to default.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filepath : str, optional</span>
+<span class="sd">        filepath to plotstyle yaml file, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">filepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">_default_plotstyle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ILEX_PATH&#39;</span><span class="p">],</span> <span class="s2">&quot;files/_plotstyle.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">):</span>
+        <span class="n">_make_new_plotstyle_file</span><span class="p">()</span>
+
+    <span class="c1"># read in _plotstyle file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_default_plotstyle_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;filepath: </span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="fix_ds_freq_lims">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.fix_ds_freq_lims">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fix_ds_freq_lims</span><span class="p">(</span><span class="n">lims</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; fix ds frequency limits so they extend over the full dynamic spectrum. By default each frequency channel </span>
+<span class="sd">    represents the midpoint of a frequency bin, but when plotting the dynamic spectra using plt.imshow, we need the</span>
+<span class="sd">    entire bandwidth, so we add half a sample to each end.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lims : list[float]</span>
+<span class="sd">        frequency limits, [min, max]</span>
+<span class="sd">    df : float</span>
+<span class="sd">        frequency resolution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fixed_lims</span> <span class="o">=</span> <span class="n">lims</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">fixed_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">df</span>
+    <span class="n">fixed_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">df</span>
+
+    <span class="k">return</span> <span class="n">fixed_lims</span></div>
+
+
+
+
+<span class="c1"># #-----------------------------------------------#</span>
+<span class="c1"># # extra data utility functions                  #</span>
+<span class="c1"># #-----------------------------------------------#</span>
+
+
+<div class="viewcode-block" id="check_ruamel_input">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.check_ruamel_input">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_ruamel_input</span><span class="p">(</span><span class="n">inp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ruamel yaml is used in some cases, this will be used to process these inputs and make sure</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inp : _class_</span>
+<span class="sd">        Change ruamel class to python class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedMap</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span> <span class="o">==</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">inp</span></div>
+
+
+
+<div class="viewcode-block" id="check_ruamel_output">
+<a class="viewcode-back" href="../../_autosummary/ilex.utils.html#ilex.utils.check_ruamel_output">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_ruamel_output</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if outputs are in right types</span>
+
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ruamel_float</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">comments</span><span class="o">.</span><span class="n">CommentedSeq</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">out</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.script_core.plot_PA_multi &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.script_core.plot_PA_multi</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.script_core.plot_PA_multi</h1><div class="highlight"><pre>
+<span></span><span class="c1">##################################################</span>
+<span class="c1"># Author:   Tyson Dial                           #</span>
+<span class="c1"># Email:    tdial@swin.edu.au                    #</span>
+<span class="c1"># Date (created):     17/03/2024                 #</span>
+<span class="c1"># Date (updated):     17/03/2024                 #</span>
+<span class="c1">##################################################</span>
+<span class="c1"># Plot multiple PA components                    #          </span>
+<span class="c1">#                                                #</span>
+<span class="c1">##################################################</span>
+
+<span class="c1">## imports</span>
+<span class="kn">from</span> <span class="nn">..frb</span> <span class="kn">import</span> <span class="n">FRB</span>
+<span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">load_param_file</span><span class="p">,</span> <span class="n">dict_get</span><span class="p">,</span> <span class="n">fix_ds_freq_lims</span>
+<span class="kn">from</span> <span class="nn">..plot</span> <span class="kn">import</span> <span class="n">_PLOT</span><span class="p">,</span> <span class="n">plot_PA</span><span class="p">,</span> <span class="n">plot_stokes</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">floor</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<div class="viewcode-block" id="_empty">
+<a class="viewcode-back" href="../../../ilex.script_core.html#ilex.script_core.plot_PA_multi._empty">[docs]</a>
+<span class="k">class</span> <span class="nc">_empty</span><span class="p">:</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="plot_PA_multi">
+<a class="viewcode-back" href="../../../ilex.script_core.html#ilex.script_core.plot_PA_multi.plot_PA_multi">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_PA_multi</span><span class="p">(</span><span class="n">parfile</span><span class="p">,</span> <span class="n">RMplots</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">RMburst</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">showbounds</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+                    <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ncomp</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                    <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_empty</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">parfile</span> <span class="o">=</span> <span class="n">parfile</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">RMplots</span> <span class="o">=</span> <span class="n">RMplots</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">RMburst</span> <span class="o">=</span> <span class="n">RMburst</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">ncomp</span> <span class="o">=</span> <span class="n">ncomp</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">showbounds</span> <span class="o">=</span> <span class="n">showbounds</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">_PA_multi</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="_PA_multi">
+<a class="viewcode-back" href="../../../ilex.script_core.html#ilex.script_core.plot_PA_multi._PA_multi">[docs]</a>
+<span class="k">def</span> <span class="nf">_PA_multi</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot multiple PA plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create figure</span>
+    <span class="n">fig_PA</span><span class="p">,</span> <span class="n">AX_PA</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot_mosaic</span><span class="p">(</span><span class="s2">&quot;P;S;D&quot;</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
+            <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;height_ratios&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+
+    <span class="c1"># create FRB object</span>
+    <span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">()</span>
+    <span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">yaml_file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">parfile</span><span class="p">)</span>
+
+
+
+    <span class="c1"># get pars from parfile</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">load_param_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">parfile</span><span class="p">)</span>
+    <span class="n">PLOT_TYPE</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;plot_type&#39;</span><span class="p">]</span>
+
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ncomp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating components with tcrops using:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Start time [ms]: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">start</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Width in time [ms]: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;# comps: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">ncomp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get t_crops</span>
+        <span class="n">ncomps</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">ncomp</span>
+        <span class="n">tcrops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">fcrops</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ncomp</span><span class="p">):</span>
+            <span class="n">tcrops</span> <span class="o">+=</span> <span class="p">[[</span><span class="n">args</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="p">]]</span>
+            <span class="n">fcrops</span> <span class="o">+=</span> <span class="p">[</span><span class="n">frb</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">f_crop</span><span class="p">]</span>
+
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creatig components with tcrops using yaml file [multi]&quot;</span><span class="p">)</span>
+       
+        <span class="c1"># get tcrops </span>
+        <span class="n">tcrops</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;multi&#39;</span><span class="p">][</span><span class="s1">&#39;tcrops&#39;</span><span class="p">]</span>
+        <span class="n">fcrops</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;multi&#39;</span><span class="p">][</span><span class="s1">&#39;fcrops&#39;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Must specify tcrops and fcrops in par.yaml file!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>     
+
+
+        <span class="n">ncomps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tcrops</span> <span class="o">=</span> <span class="p">[</span><span class="n">frb</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">t_crop</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fcrops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fcrops</span> <span class="o">=</span> <span class="p">[</span><span class="n">frb</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">f_crop</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)</span>
+
+    
+
+
+
+    <span class="c1"># loop over tcrops, fitting for RM</span>
+    <span class="n">RMcomp_fits</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tcrop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tcrops</span><span class="p">):</span>
+        <span class="c1"># fit for RM</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">fit_RM</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">tcrop</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">method</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;fits&#39;</span><span class="p">][</span><span class="s1">&#39;fitRM&#39;</span><span class="p">][</span><span class="s1">&#39;method&#39;</span><span class="p">],</span> 
+            <span class="n">fit_params</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;fits&#39;</span><span class="p">][</span><span class="s1">&#39;fitRM&#39;</span><span class="p">][</span><span class="s1">&#39;fit_params&#39;</span><span class="p">],</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">RM</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">RMcomp_fits</span> <span class="o">+=</span> <span class="p">[</span><span class="n">p</span><span class="p">]</span>
+
+        <span class="c1"># reset tcrops and fcrops</span>
+        <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">fcrops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">phase2lim</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">t_crop</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">prev_metapar</span><span class="o">.</span><span class="n">f_crop</span><span class="p">)</span>
+        <span class="c1"># fcrops[i] = frb.prev_metapar.f_crop.copy()</span>
+
+    <span class="c1"># t_crophase, _ = frb.par.lim2phase(t_lim = frb.metapar.t_crop)</span>
+
+
+    <span class="c1"># get full tcrop bounds</span>
+    <span class="n">tcrop_full</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">tcrops</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tcrops</span><span class="p">)]</span>
+    <span class="n">fcrop_full</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">fcrops</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fcrops</span><span class="p">)]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">tcrop_full</span><span class="p">)</span>
+
+
+    <span class="c1"># get full data to use for plotting</span>
+    <span class="n">data_full</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">([</span><span class="s2">&quot;tI&quot;</span><span class="p">,</span> <span class="s2">&quot;tQ&quot;</span><span class="p">,</span> <span class="s2">&quot;tU&quot;</span><span class="p">,</span> <span class="s2">&quot;tV&quot;</span><span class="p">,</span> <span class="s2">&quot;dsI&quot;</span><span class="p">],</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="n">tcrop_full</span><span class="p">,</span>
+                    <span class="n">f_crop</span> <span class="o">=</span> <span class="n">fcrop_full</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>    
+    <span class="n">dt</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mi">6</span><span class="p">)</span>
+
+
+
+    <span class="c1"># make nan array for PA</span>
+    <span class="n">PA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;tQ&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">PAerr</span> <span class="o">=</span> <span class="n">PA</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+
+
+    <span class="c1"># loop over tcrops again, getting de-rotated stokes data and to calculate</span>
+    <span class="c1"># debiased PA</span>
+    <span class="c1"># Get de-rotated stokes and plot</span>
+    <span class="c1"># comp_times = []</span>
+    <span class="c1"># for i, tcrop in enumerate(tcrops):</span>
+    <span class="c1">#     # get derotated data</span>
+    <span class="c1">#     vals = RMcomp_fits[i].get_post_val(func = False)</span>
+    <span class="c1">#     data_i = frb.get_data([&quot;tI&quot;, &quot;tQ&quot;, &quot;tU&quot;], t_crop = tcrop, f_crop = fcrops[i],</span>
+    <span class="c1">#             RM = vals[&#39;rm&#39;], f0 = vals[&#39;f0&#39;], get = True)</span>
+
+    <span class="c1">#     comp_times += [[*data_i[&#39;time&#39;][[0, -1]]]]</span>
+
+    <span class="c1">#     # overlay de-rotated stokes data to full stokes spectra</span>
+    <span class="c1">#     xs = int(round((data_i[&#39;time&#39;][0] - data_full[&#39;time&#39;][0])/dt))</span>
+    <span class="c1">#     ns = data_i[&#39;time&#39;].size</span>
+
+    <span class="c1">#     for S in &quot;QU&quot;:</span>
+    <span class="c1">#         data_full[f&quot;t{S}&quot;][xs:xs+ns] = data_i[f&quot;t{S}&quot;]</span>
+
+    <span class="c1">#     # calculate debiased PA then overlap on full PA array</span>
+    <span class="c1">#     PA_i, PAerr_i = calc_PAdebiased(data_i, Ldebias_threshold = pars[&#39;plots&#39;][&#39;Ldebias_threshold&#39;])</span>
+    <span class="c1">#     PA[xs:xs + ns], PAerr[xs:xs + ns] = PA_i, PAerr_i</span>
+        
+
+
+    <span class="c1"># # plot</span>
+    <span class="c1"># # plot PA</span>
+    <span class="c1"># plot_PA(data_full[&#39;time&#39;], PA, PAerr, ax = AX_PA[&#39;P&#39;], flipPA = pars[&#39;plots&#39;][&#39;flipPA&#39;],</span>
+    <span class="c1">#     plot_type = &quot;scatter&quot;)</span>
+
+
+
+    <span class="c1"># # plot stokes</span>
+    <span class="c1"># plot_stokes(data_full, stk_type = &quot;t&quot;, ax = AX_PA[&#39;S&#39;], Ldebias = pars[&#39;plots&#39;][&#39;Ldebias&#39;],</span>
+    <span class="c1">#         sigma = pars[&#39;plots&#39;][&#39;sigma&#39;], plot_type = PLOT_TYPE, </span>
+    <span class="c1">#         stk_ratio = pars[&#39;plots&#39;][&#39;stk_ratio&#39;], stk2plot = pars[&#39;plots&#39;][&#39;stk2plot&#39;])</span>
+
+    <span class="c1"># # plot bounds</span>
+    <span class="c1"># if args.showbounds:</span>
+    <span class="c1">#     ylim = AX_PA[&#39;S&#39;].get_ylim()</span>
+    <span class="c1">#     for _, crop in enumerate(tcrops):</span>
+    <span class="c1">#         crop,_ = frb.par.phase2lim(t_crop = crop)</span>
+    <span class="c1">#         AX_PA[&#39;S&#39;].fill_between(crop, ylim[0], ylim[1], color = [0.3, 0.3, 0.3], alpha = 0.3)</span>
+    <span class="c1">#     AX_PA[&#39;S&#39;].set_ylim(ylim)</span>
+
+
+
+    <span class="c1"># # plot stokes Dynamic spectrum I</span>
+    <span class="c1"># df = abs(data_full[&#39;freq&#39;][1] - data_full[&#39;freq&#39;][0])</span>
+    <span class="c1"># ds_freq_lims = fix_ds_freq_lims([np.min(data_full[&#39;freq&#39;]), np.max(data_full[&#39;freq&#39;])], df)</span>
+    <span class="c1"># AX_PA[&#39;D&#39;].imshow(data_full[&#39;dsI&#39;], aspect = &#39;auto&#39;, extent = [*data_full[&#39;time&#39;][[0,-1]], </span>
+    <span class="c1">#         *ds_freq_lims])</span>
+    <span class="c1"># AX_PA[&#39;D&#39;].set(xlabel = &quot;Time offset [ms]&quot;, ylabel = &quot;Freq [MHz]&quot;)</span>
+
+
+
+    <span class="c1"># # final figure adjustments</span>
+    <span class="c1"># fig_PA.tight_layout()</span>
+    <span class="c1"># fig_PA.subplots_adjust(hspace = 0)</span>
+    <span class="c1"># AX_PA[&#39;P&#39;].get_xaxis().set_visible(False)</span>
+    <span class="c1"># AX_PA[&#39;S&#39;].get_xaxis().set_visible(False)</span>
+
+
+
+    <span class="c1"># # save figure to file</span>
+    <span class="c1"># if args.filename is not None:</span>
+    <span class="c1">#     plt.savefig(args.filename + &quot;PA_plot&quot;)</span>
+
+
+
+    <span class="c1"># plot grid of RM fits for each component</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">RMplots</span><span class="p">:</span>
+
+        <span class="n">nrows</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">ncomps</span><span class="o">/</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">fig_RM</span><span class="p">,</span> <span class="n">AX_RM</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="o">*</span><span class="n">nrows</span><span class="p">))</span>
+
+        <span class="n">botax</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncomps</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">ncomps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncomps</span><span class="p">)</span>
+        <span class="n">AX_RM</span> <span class="o">=</span> <span class="n">AX_RM</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncomps</span><span class="p">):</span>
+            <span class="n">_PLOT</span><span class="p">(</span><span class="n">ax</span> <span class="o">=</span> <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x</span> <span class="o">=</span> <span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> 
+                <span class="n">yerr</span> <span class="o">=</span> <span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+            <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">RMcomp_fits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_model</span><span class="p">()[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">botax</span><span class="p">:</span>
+                <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Freq [MHz]&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;PA [deg]&quot;</span><span class="p">)</span>
+            <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Component </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">][</span><span class="s1">&#39;flipPA&#39;</span><span class="p">]:</span>
+                <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">180</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+        
+        <span class="c1"># turn off extra axes</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncomps</span><span class="p">,</span> <span class="n">nrows</span><span class="o">*</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">AX_RM</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+
+        <span class="c1"># save figure to file</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;RM_fits.png&quot;</span><span class="p">)</span>
+
+
+
+    <span class="c1"># plot RM variability </span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">RMburst</span><span class="p">:</span>
+        <span class="n">fig_B</span><span class="p">,</span> <span class="n">ax_B</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+        <span class="c1"># plot Stokes I time burst</span>
+        <span class="n">_PLOT</span><span class="p">(</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax_B</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;tI&#39;</span><span class="p">],</span> 
+            <span class="n">yerr</span> <span class="o">=</span> <span class="n">data_full</span><span class="p">[</span><span class="s1">&#39;tIerr&#39;</span><span class="p">],</span> <span class="n">plot_type</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">plot_type</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+        <span class="n">ax_B</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ylabel</span> <span class="o">=</span> <span class="s2">&quot;Flux Density (arb.)&quot;</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s2">&quot;Time offset [ms]&quot;</span><span class="p">)</span>
+
+        <span class="c1"># plot RM points</span>
+        <span class="n">_rm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ncomps</span><span class="p">)</span>
+        <span class="n">_rmerr</span> <span class="o">=</span> <span class="n">_rm</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">_rmx</span> <span class="o">=</span> <span class="n">_rm</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scaling RM error bars by sqrt(rchi2)&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rmcomp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RMcomp_fits</span><span class="p">):</span>
+            <span class="n">_rm</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmcomp</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val</span>
+            <span class="n">_rmerr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rmcomp</span><span class="o">.</span><span class="n">get_mean_err</span><span class="p">()[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span>
+            <span class="n">_rmx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tcrops</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="c1"># make twin axes</span>
+        <span class="n">ax_B2</span> <span class="o">=</span> <span class="n">ax_B</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+        
+        <span class="n">ax_B2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">_rmx</span><span class="p">,</span> <span class="n">_rm</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">marker</span> <span class="o">=</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">ax_B2</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">_rmx</span><span class="p">,</span> <span class="n">_rm</span><span class="p">,</span> <span class="n">_rmerr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">capsize</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">ax_B2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;RM $[rad/m^{{2}}]$&quot;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;tab:blue&#39;</span><span class="p">)</span>
+        <span class="n">ax_B2</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">labelcolor</span><span class="o">=</span><span class="s1">&#39;tab:blue&#39;</span><span class="p">)</span>
+
+
+        <span class="c1"># save figure to file</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;RM_burst.png&quot;</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">fig_PA</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

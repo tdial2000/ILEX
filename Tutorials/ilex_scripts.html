@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ILEX scripts &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ilex" href="../_autosummary/ilex.html" />
+    <link rel="prev" title="Using the FRB.yaml config file" href="ilex_config.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how_ilex_works.html">How ILEX works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Using ILEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Advanced ILEX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">ILEX config</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ILEX scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quickly-plot-dynamic-spectra">Quickly plot Dynamic spectra</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-dynamic-spectra-from-x-and-y-polarisations">Create Dynamic spectra from X and Y polarisations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra">Incoherently Dedisperse Stokes <span class="math notranslate nohighlight">\(I, Q, U\)</span> or <span class="math notranslate nohighlight">\(V\)</span> dynamic spectra</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coherently-dedisperse-x-and-y-polarisation-time-series-data">Coherently Dedisperse X and Y polarisation time series data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-new-frb-config-file">Make new FRB config file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-frb-panel-plot">Make FRB panel plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-stokes-ds-panels">Plot stokes ds panels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-htr-mosaic">Plot HTR mosaic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-interactive-dynamic-spectrum">Plot interactive Dynamic spectrum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot-multi-component-pa-plot">Plot Multi-Component PA plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-cosmological-luminosity-distance">Calculate Cosmological Luminosity distance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculate-frb-burst-energetics">Calculate FRB burst energetics</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
+      <li class="breadcrumb-item active">ILEX scripts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/Tutorials/ilex_scripts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ilex-scripts">
+<h1>ILEX scripts<a class="headerlink" href="#ilex-scripts" title="Link to this heading"></a></h1>
+<p>The following is a list of scripts that can be used to either create new FRB dynamic spectra or create different plots.
+There are two ways to envoke these scripts. If you use the absolute filepath of these scripts, you can run them in the
+bash console using</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 &lt;path&gt;/scripts/plot_dynspec.py --options</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;</span></code> is the installation directory of ILEX.
+Or if you add the script directory to your PATH enviromental variable <code class="docutils literal notranslate"><span class="pre">PATH=PATH:&lt;path&gt;/scripts/</span></code></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_dynspec --options</span>
+</pre></div>
+</div>
+<p>In the following we will use the latter.</p>
+<section id="quickly-plot-dynamic-spectra">
+<h2>Quickly plot Dynamic spectra<a class="headerlink" href="#quickly-plot-dynamic-spectra" title="Link to this heading"></a></h2>
+<p>Quickly plot dynamic spectrum</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_dynspec filepath</span>
+
+<span class="gp"># </span>options
+<span class="go">--tN 1       # averaging factor in time</span>
+<span class="go">--fN 1       # averaging factor in frequency</span>
+</pre></div>
+</div>
+</section>
+<section id="create-dynamic-spectra-from-x-and-y-polarisations">
+<h2>Create Dynamic spectra from X and Y polarisations<a class="headerlink" href="#create-dynamic-spectra-from-x-and-y-polarisations" title="Link to this heading"></a></h2>
+<p>Create Dynamic spectrum from X and Y time series complex polarisations. Note by default only stokes I dynamic spectrum is made.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 make_dynspec.py</span>
+
+<span class="gp"># </span>options,<span class="w"> </span>data<span class="w"> </span>arguments
+<span class="go">-x filepath         # X polarisation filepath</span>
+<span class="go">-y filepath         # Y polarisation filepath</span>
+<span class="go">--nFFT 336          # Number of freq channels</span>
+<span class="go">--bline             # Apply baseline correction</span>
+<span class="go">--QUV               # make full stokes Dynamic spectrum</span>
+<span class="go">--do_chanflag       # Do automatic channel flagging based on channel noise</span>
+
+<span class="gp"># </span>data<span class="w"> </span>reduction<span class="w"> </span>arguments
+<span class="go">--sigma 5.0         # S/N threshold for baseline correction</span>
+<span class="go">--baseline 50.0     # Width of rms crops in [ms]</span>
+<span class="go">--tN 50             # Time averaging factor, helps with S/N calculation</span>
+<span class="go">--guard 1.0         # Time between rms crops and burst in [ms]</span>
+
+<span class="gp"># </span>Pulsar<span class="w"> </span>arguments<span class="w"> </span><span class="o">(</span>polarisation<span class="w"> </span>calibration,<span class="w"> </span>or<span class="w"> </span><span class="k">for</span><span class="w"> </span>pulsar<span class="w"> </span>data<span class="o">)</span>
+<span class="go">--pulsar            # enables pulsar folding</span>
+<span class="go">--MJD0 None         # Initial Epoch MJD</span>
+<span class="go">--MJD1 None         # Observation MJD</span>
+<span class="go">--F0 None           # Initial Epoch pulsar frequency</span>
+<span class="go">--F1 None           # Spin-down rate</span>
+<span class="go">--DM None           # Dispersion Measure of Pulsar</span>
+<span class="go">--cfreq 1271.5      # Central Frequency MHz</span>
+<span class="go">--bw 336            # bandwdith MHz</span>
+
+<span class="gp"># </span>output<span class="w"> </span>arguments
+<span class="go">--ofile filepath    # Name of new dynamic spectra, full output is filepath_{S}.npy where S is the stokes ds</span>
+</pre></div>
+</div>
+</section>
+<section id="incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra">
+<h2>Incoherently Dedisperse Stokes <span class="math notranslate nohighlight">\(I, Q, U\)</span> or <span class="math notranslate nohighlight">\(V\)</span> dynamic spectra<a class="headerlink" href="#incoherently-dedisperse-stokes-i-q-u-or-v-dynamic-spectra" title="Link to this heading"></a></h2>
+<p>Search for and apply a :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>Delta`DM (incoherently) or just apply a given :math:<a href="#id3"><span class="problematic" id="id4">`</span></a>Delta`DM to the passed
+Stokes dynamic spectrum.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m incoherent_dedisperse</span>
+
+<span class="gp"># </span>options
+<span class="go">-i filename         # Stokes dynamic spectrum, reference frequency assumed bottom of the band.</span>
+
+<span class="go">--dt 0.001          # Time resolution in [ms]</span>
+<span class="go">--tN 1              # Time averaging factor</span>
+<span class="go">--DMmin -1.0        # Minimum of DM [pc/cm^3] range to search over</span>
+<span class="go">--DMmax 1.0         # Maximum of DM [pc/cm^3] range to search over</span>
+<span class="go">--DMstep 0.1        # Step size of DM [pc/cm^3]</span>
+
+<span class="go">--cfreq 919.5       # Central frequency [MHz] of Dynamic spectrum</span>
+<span class="go">--bw 336            # Bandwidth [MHz] of Dynamic spectrum</span>
+<span class="go">--lower             # Use if first channel is bottom of the band</span>
+
+<span class="go">-o filename         # Output filename, No output saved if not specified</span>
+<span class="go">--delDM             # Delta DM [pc/cm^3] to apply for dedispersion, if given will overide DM search</span>
+</pre></div>
+</div>
+</section>
+<section id="coherently-dedisperse-x-and-y-polarisation-time-series-data">
+<h2>Coherently Dedisperse X and Y polarisation time series data<a class="headerlink" href="#coherently-dedisperse-x-and-y-polarisation-time-series-data" title="Link to this heading"></a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m coherent_dedisperse</span>
+
+<span class="gp"># </span>options
+<span class="go">-x filepath         # X polarisation filepath</span>
+<span class="go">-y filepath         # Y polarisation filepath</span>
+<span class="go">--DM val            # Dispersion Measure pc/cm^3</span>
+<span class="go">--cfreq val         # central frequency MHz</span>
+<span class="go">--bw val            # bandwidth MHz</span>
+<span class="go">--f0 val            # Reference frequency MHz</span>
+<span class="go">--quick             # Apply dispersion using zero-padding to nearest optimal FFT length</span>
+<span class="go">-o filepath         # Output filepath, full output is filepath_{X, Y}.npy for each polarisation</span>
+</pre></div>
+</div>
+</section>
+<section id="make-new-frb-config-file">
+<h2>Make new FRB config file<a class="headerlink" href="#make-new-frb-config-file" title="Link to this heading"></a></h2>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m make_config filepath</span>
+
+<span class="gp"># </span>options
+<span class="go">--celebi            # Make config file based on CELEBI output</span>
+</pre></div>
+</div>
+</section>
+<section id="make-frb-panel-plot">
+<h2>Make FRB panel plot<a class="headerlink" href="#make-frb-panel-plot" title="Link to this heading"></a></h2>
+<p>Make plot of various panels of FRB data</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_master</span>
+
+<span class="gp"># </span>options
+<span class="go">--parfile filepath    # filepath of FRB config file</span>
+<span class="go">--plot_panels &quot;[S;D]&quot; # panels to plot: P = PA profile, S = Stokes time profile, D = Dynamic spectrum, M = model of time series</span>
+<span class="gp">                      # </span><span class="nv">R</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>residual<span class="w"> </span>plot<span class="w"> </span>of<span class="w"> </span>model<span class="w"> </span><span class="nb">time</span><span class="w"> </span>series
+<span class="go">--model               # Model time series plot, if M panel given, will plot in seperate panel, else if S given, will plot in</span>
+<span class="gp">                      # </span>stokes<span class="w"> </span>panel
+<span class="go">--modelpar filepath   # use sepereate yaml file to specify posteriors for plotting model time series</span>
+<span class="go">--modelpulses         # plot each individual convolved gaussian</span>
+<span class="go">--filename filepath   # Save figure in .png type format with given name</span>
+</pre></div>
+</div>
+<p>Here is an example of plotting the stokes time series and dynamic spectrum:
+.. code-block:: console</p>
+<blockquote>
+<div><p>python3 -m plot_master –parfile examples/220610.yaml –plot_panels “[S;D]”</p>
+</div></blockquote>
+<a class="reference internal image-reference" href="../_images/plot_panel_example.png"><img alt="../_images/plot_panel_example.png" src="../_images/plot_panel_example.png" style="width: 720pt;" />
+</a>
+<p>Note: if you use a yaml file for the –modelpar option, the yaml file should look like the following:
+.. code-block:: yaml</p>
+<blockquote>
+<div><p>posterior: {}       # where to put posterior of time series fit
+npulse: 1           # number of convolved gaussian pulses making time series fit</p>
+</div></blockquote>
+</section>
+<section id="plot-stokes-ds-panels">
+<h2>Plot stokes ds panels<a class="headerlink" href="#plot-stokes-ds-panels" title="Link to this heading"></a></h2>
+<p>Plot full panel of stokes dynamic spectrum with time series profilem, example uses the config file <code class="docutils literal notranslate"><span class="pre">examples/220610.yaml</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_stokes_dynspec</span>
+
+<span class="gp"># </span>options
+<span class="go">--parfile filepath  # filepath of FRB config file</span>
+<span class="go">--filename          # Save figure in .png type format with given name</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/plot_dynspec_example.png"><img alt="../_images/plot_dynspec_example.png" src="../_images/plot_dynspec_example.png" style="width: 720pt;" />
+</a>
+</section>
+<section id="plot-htr-mosaic">
+<h2>Plot HTR mosaic<a class="headerlink" href="#plot-htr-mosaic" title="Link to this heading"></a></h2>
+<p>Plot full mosaic of stokes dynamic spectrum with a variety of time resolutions.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_dynspec_mosaic</span>
+
+<span class="gp"># </span>options
+<span class="go">--parfile filepath                        # filepath of FRB config file</span>
+<span class="go">-t 1 3 10 30 100 300 1000                 # Intergration times, list type</span>
+<span class="go">--nsamp 100                               # halfwidth of crop to take around maximum point, in samples</span>
+<span class="go">--tN 10                                   # Averaging factor in time, help find maximum and align spectrum</span>
+<span class="go">--defaraday_ds                            # De-faraday rotate dynamic spectra, by default only the time series is rotated</span>
+<span class="go">--filename filepath                       # Save figure in .png type format with given name</span>
+</pre></div>
+</div>
+<p>Here is an example plotting the intergration times 1, 10 and 50, these are actually time averaging factors, the true intergration
+time will be <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">*</span> <span class="pre">dt</span></code> where <code class="docutils literal notranslate"><span class="pre">dt</span></code> is specified in the config file.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_dynspec_mosaic --parfile examples/220610.yaml -t 1 10 50 --nsamp 20 --tN 1</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/plot_mosaic_example.png"><img alt="../_images/plot_mosaic_example.png" src="../_images/plot_mosaic_example.png" style="width: 720pt;" />
+</a>
+</section>
+<section id="plot-interactive-dynamic-spectrum">
+<h2>Plot interactive Dynamic spectrum<a class="headerlink" href="#plot-interactive-dynamic-spectrum" title="Link to this heading"></a></h2>
+<p>Plots an interactive window with Dynamic spectrum, spectrum and time series profile. Note about this command, when cropping the dynamic
+spectrum using the matplotlib cropping utility, the spectra and time series profile will update according the the crop. The following
+example uses the <code class="docutils literal notranslate"><span class="pre">examples/220610.yaml</span></code> config file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_interactive_ds</span>
+
+<span class="gp"># </span>options
+<span class="go">--parfile filepath      # filepath of FRB config file</span>
+<span class="go">-S                      # Stokes Dynamic spectrum to plot [&quot;I&quot;, &quot;Q&quot;, &quot;U&quot;, &quot;V&quot;]</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/plot_interactive_example.png"><img alt="../_images/plot_interactive_example.png" src="../_images/plot_interactive_example.png" style="width: 720pt;" />
+</a>
+</section>
+<section id="plot-multi-component-pa-plot">
+<h2>Plot Multi-Component PA plot<a class="headerlink" href="#plot-multi-component-pa-plot" title="Link to this heading"></a></h2>
+<p>Plot multiple components, fit RM and plot PA profile along with stokes time series and dynamic spectrum. The following
+example uses the <code class="docutils literal notranslate"><span class="pre">examples/220610.yaml</span></code> config file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_PA_multi</span>
+
+<span class="gp"># </span>options
+<span class="go">--parfile filepath      # filepath of FRB config file</span>
+<span class="go">--RMplots               # Show grid of RM fits of each component</span>
+<span class="go">--RMburst               # Plot varaiblility of RM across burst</span>
+<span class="go">--showbounds            # Show bounds of each component</span>
+<span class="go">--filename filepath     # Save figure in .png type format with given name</span>
+</pre></div>
+</div>
+<p>Example shown below. Note, the results are not ideal, in this case it doesn’t make sense to split a single pulse into 2 components,
+this is only for demonstrative purposes.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m plot_PA_multi --parfile examples/220610.yaml --showbounds</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/plot_examplePA_plot.png"><img alt="../_images/plot_examplePA_plot.png" src="../_images/plot_examplePA_plot.png" style="width: 720pt;" />
+</a>
+</section>
+<section id="calculate-cosmological-luminosity-distance">
+<h2>Calculate Cosmological Luminosity distance<a class="headerlink" href="#calculate-cosmological-luminosity-distance" title="Link to this heading"></a></h2>
+<p>Calculate the luminosity distance of a source given it’s redshift and a number of cosmological paramters.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m cosmo_history</span>
+
+<span class="gp"># </span>options
+<span class="go">-z 0.1                  # Redshift of source</span>
+
+<span class="go">--omega_m 0.315         # Matter density</span>
+<span class="go">--omega_vac 0.685       # Vaccum Dark Energy density</span>
+<span class="go">--H0 67.4               # Hubble Constant [km/s/Mpc]</span>
+<span class="go">--K 0.0                 # Cosmological Curvature parameter</span>
+<span class="go">--omega_r 0.0           # Radiation density</span>
+<span class="go">--w -1.0                # Dark Energy Equation of State parameter (zeroth order)</span>
+<span class="go">--wa 0.0                # Dark Energy Equation of State w(t) parameter (first order)</span>
+<span class="go">--de_eos &quot;constant&quot;     # Dark Energy Equation of State quintessence model, default is constant w</span>
+
+<span class="go">-N 1000000              # Number of samples for Numerical integration</span>
+</pre></div>
+</div>
+</section>
+<section id="calculate-frb-burst-energetics">
+<h2>Calculate FRB burst energetics<a class="headerlink" href="#calculate-frb-burst-energetics" title="Link to this heading"></a></h2>
+<p>Calculate Luminosity, total energy and other energetics of an FRB burst. This script assumes A <span class="math notranslate nohighlight">\(\Lambda\)</span>-CDM
+cosmology.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python3 -m frb_energetics</span>
+
+<span class="gp"># </span>options
+<span class="go">--fluence               # FRB Fluence [Jy ms]</span>
+<span class="go">-z 0.1                  # Redshift of FRB (spectroscopic ideally)</span>
+<span class="go">--bw 336                # Bandwidth of observation [MHz]</span>
+<span class="go">--width 1.0             # Width of FRB [ms]</span>
+<span class="go">--lumin_D None          # Luminosity distance [Mpc] (in case of near object - galactic), will overide redshift (z)</span>
+
+<span class="go">--omega_m 0.315         # Matter density</span>
+<span class="go">--omega_vac 0.685       # Dark Energy density</span>
+<span class="go">--H0 67.4               # Hubbles constant [km/s/Mpc]</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex_config.html" class="btn btn-neutral float-left" title="Using the FRB.yaml config file" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../_autosummary/ilex.html" class="btn btn-neutral float-right" title="ilex" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

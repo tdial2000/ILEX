@@ -1,0 +1,1699 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.pyfit &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.pyfit</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.pyfit</h1><div class="highlight"><pre>
+<span></span><span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">## Author: Tyson Dial</span>
+<span class="c1">## Email: tdial@swin.edu.au</span>
+<span class="c1">## Last Updated: 19/02/2024 </span>
+<span class="c1">##</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<span class="c1">## </span>
+<span class="c1">## General purpose Fitting structure</span>
+<span class="c1">## TODO: </span>
+<span class="c1">##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1">##===============================================##</span>
+<span class="c1"># imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">curve_fit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">chi2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">bilby</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bilby.core.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_directory_exists_and_if_not_mkdir</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bilby.core.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">infer_parameters_from_function</span>
+
+<span class="c1">#----------------------------------------#</span>
+<span class="c1"># UTILITY FUNCTIONS                      #</span>
+<span class="c1">#----------------------------------------#</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dict_init</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initilise any number of dictionaries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    *dicts</span>
+<span class="sd">        A number of Dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1">#assign input dictionaries to empty {} object</span>
+    <span class="n">out_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dicts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">dic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">out_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dic</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">out_</span> <span class="o">=</span> <span class="n">out_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">out_</span>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge_dicts</span><span class="p">(</span><span class="o">*</span><span class="n">dicts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combine multiple Dictionaries into 1 dictionary</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    *dicts : </span>
+<span class="sd">        A number of dictionaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+    <span class="c1"># combine multiple dictionaries together</span>
+    <span class="n">dicts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dicts</span><span class="p">)</span>
+    <span class="n">odict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dic</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dicts</span><span class="p">):</span>
+        <span class="n">odict</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">odict</span><span class="p">,</span> <span class="o">**</span><span class="n">dic</span><span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">odict</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dict_get</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a sub-set of the Dictionary based on keys</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dict : Dict</span>
+<span class="sd">        Original dictionary</span>
+<span class="sd">    keys : List(str)</span>
+<span class="sd">        List of items to retrieve</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_dict : Dict</span>
+<span class="sd">        Sub-set of Dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">new_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">new_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">new_dict</span>
+
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_priorUniform</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert Dictionary of Priors to Bilby Uniform prior instance</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : Dict(List(float))</span>
+<span class="sd">        Dictionary of priors for Bilby.run_sampler</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Bilby.UniformPrior</span>
+<span class="sd">        Bilby uniform priors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">priors</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span><span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="n">priors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">prior</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">p</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="n">key</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">priors</span>
+
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove bilby sample run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removing Bilby sampled run: outdir: </span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">   label: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">outdir</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;*&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="k">return</span> 
+
+
+
+
+
+
+<span class="c1"># likelyhood function for specifying both yerr and xerr</span>
+<div class="viewcode-block" id="PyfitLikelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.PyfitLikelihood">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PyfitLikelihood</span><span class="p">(</span><span class="n">bilby</span><span class="o">.</span><span class="n">Likelihood</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">xerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A general gaussian likelihood function that estimates variance in posterior </span>
+<span class="sd">        given uncertainty in both x and y.</span>
+
+<span class="sd">        This class is a basis class the user should use when the user wants to estimate </span>
+<span class="sd">        the max likelihood using both x and y errors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray or array-like</span>
+<span class="sd">            x values</span>
+<span class="sd">        y : np.ndarray or array-like</span>
+<span class="sd">            y values</span>
+<span class="sd">        xerr : np.ndarray or array-like</span>
+<span class="sd">            x uncertainties</span>
+<span class="sd">        yerr : np.ndarray or array-like</span>
+<span class="sd">            y uncertainties</span>
+<span class="sd">        func : </span>
+<span class="sd">            callable function to evaluate data with</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>         
+        
+        <span class="c1">#---------- Get function arguments ----------#</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>      
+        <span class="c1">#---------- Set data -----------#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="o">=</span> <span class="n">xerr</span>
+
+        <span class="c1"># Check if either x or y uncertainties are given, if not then</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_flag</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+        <span class="c1"># if xerr is Undefined, we want to skip the propogation sigma calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_skip_propogation_sigma</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">xerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">xerr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_skip_propogation_sigma</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">yerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">yerr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+
+
+    <span class="c1"># function</span>
+<div class="viewcode-block" id="PyfitLikelihood.propogated_sigma">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.PyfitLikelihood.propogated_sigma">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">propogated_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="PyfitLikelihood.calc_sigma">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.PyfitLikelihood.calc_sigma">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># default way to calculate sigma</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_skip_propogation_sigma</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">propogated_sigma</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span></div>
+
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_keys</span><span class="p">}</span>
+    
+
+<div class="viewcode-block" id="PyfitLikelihood.log_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.PyfitLikelihood.log_likelihood">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the log liklihood of function</span>
+<span class="sd">    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+        <span class="n">y_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
+
+        <span class="c1"># for a gaussian log likelihood</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_model</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_sigma</span><span class="p">()</span>
+
+    <span class="nd">@sigma</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Sigma must be either float or array-like x.&#39;</span><span class="p">)</span>
+
+
+    
+<div class="viewcode-block" id="PyfitLikelihood.get_sigma">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.PyfitLikelihood.get_sigma">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+        <span class="k">if</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sigma</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sigma</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sigma</span></div>
+</div>
+
+
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_PyfitDefault</span><span class="p">(</span><span class="n">PyfitLikelihood</span><span class="p">):</span>
+    <span class="k">pass</span>
+        
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_globals</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="n">_fit</span> <span class="o">=</span> <span class="n">_globals</span><span class="p">()</span>
+
+<span class="n">_fit</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;xerr&quot;</span><span class="p">,</span> <span class="s2">&quot;yerr&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fit_keywords&quot;</span><span class="p">,</span> <span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;keys&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;residuals&quot;</span><span class="p">,</span> <span class="s2">&quot;likelihood&quot;</span><span class="p">]</span>
+
+<span class="n">_fit</span><span class="o">.</span><span class="n">meth</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;least squares&quot;</span><span class="p">,</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">]</span>
+
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_posterior</span><span class="p">:</span>
+    <span class="c1"># class for posteriors</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>      <span class="c1"># best fit value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>          <span class="c1"># positive error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>         <span class="c1"># negative error</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">return</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="si">:</span><span class="s2">4f</span><span class="si">}</span><span class="s2">  +</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="si">:</span><span class="s2">4f</span><span class="si">}</span><span class="s2">  -</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+
+<span class="c1"># create fitting class</span>
+<div class="viewcode-block" id="fit">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">fit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General fitting class, model a function using either bayesian inference using BILBY, or </span>
+<span class="sd">    least squares using scipy.curve_fit(). This class has a handful of useful quality of life features,</span>
+<span class="sd">    including model plotting and statistics such as chi2. </span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        Y data</span>
+<span class="sd">    xerr: np.ndarray</span>
+<span class="sd">        X data error</span>
+<span class="sd">    yerr : np.ndarray</span>
+<span class="sd">        Y data error</span>
+<span class="sd">    func : __func__</span>
+<span class="sd">        Callable python function to model/fit to</span>
+<span class="sd">    method : str</span>
+<span class="sd">        Method to fit \n</span>
+<span class="sd">        [bayesian] - Use bayesian inference (see https://lscsoft.docs.ligo.org/bilby/) \n</span>
+<span class="sd">        [least squares] - use least squares method (see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html)</span>
+<span class="sd">    fit_keywords : Dict</span>
+<span class="sd">        Dictionary of keywords to apply to fitting method</span>
+<span class="sd">    prior : Dict</span>
+<span class="sd">        Priors for modelling</span>
+<span class="sd">    static : Dict</span>
+<span class="sd">        Priors to keep constant during modelling</span>
+<span class="sd">    posterior : Dict</span>
+<span class="sd">        Sampled posteriors</span>
+<span class="sd">    likelihood : Bilby.Likelihood</span>
+<span class="sd">        Likelihood class used for bayesian inference</span>
+<span class="sd">    keys : List</span>
+<span class="sd">        parameter names to be sampled</span>
+<span class="sd">    chi2 : float</span>
+<span class="sd">        Chi squared statistic</span>
+<span class="sd">    chi2err : float</span>
+<span class="sd">        Chi squared error</span>
+<span class="sd">    rchi2 : float</span>
+<span class="sd">        reduced Chi squared</span>
+<span class="sd">    rchi2err : float</span>
+<span class="sd">        reduced Chi squared error</span>
+<span class="sd">    nfitpar : int</span>
+<span class="sd">        number of fitted parameters</span>
+<span class="sd">    dof : int</span>
+<span class="sd">        degrees of freedom</span>
+<span class="sd">    p : float</span>
+<span class="sd">        p-value statistic</span>
+<span class="sd">    bic : float</span>
+<span class="sd">        bayesian information criterion</span>
+<span class="sd">    bic_err : float</span>
+<span class="sd">        bic error</span>
+<span class="sd">    residuals : bool</span>
+<span class="sd">        if true, plot residuals when .plot() is called</span>
+<span class="sd">    plotPosterior : bool</span>
+<span class="sd">        if true, save image of posterior corner plot</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run through set function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># proc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># function </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;least squares&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># bilby inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">_PyfitDefault</span>
+
+        <span class="c1"># params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">{}</span>    <span class="c1"># for least squares method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># stats (general)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi2err</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rchi2</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rchi2err</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dof</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># stats (Bayesian)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bic</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bic_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bayes_factor</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_evidence</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_evidence_err</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_noise_evidence</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># other</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_sigma_sampled</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_stats</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+
+        <span class="c1"># run set function for initalised attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;least squares&quot;</span><span class="p">,</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Incorrect method for fitting&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[pyfit] Recalculating SIGMA&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_data</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">yerr</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span><span class="p">:</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_data</span><span class="p">()</span>
+                <span class="n">likelihood</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> 
+                                <span class="n">xerr</span> <span class="o">=</span> <span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">)</span>
+                <span class="n">likelihood</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_post_val</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+
+
+    <span class="nd">@sigma</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sigma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+
+    
+
+
+<div class="viewcode-block" id="fit.set">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="c1"># get class kwargs</span>
+        <span class="n">fit_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">_fit</span><span class="o">.</span><span class="n">attr</span><span class="p">:</span>
+                <span class="n">fit_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="c1"># set class attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_attr</span><span class="p">(</span><span class="o">**</span><span class="n">fit_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># check if all params exist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span></div>
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check kwargs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># prior and statics</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;fit_keywords&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="c1"># check if the right type</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">pkey</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">dict</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> must be of type &#39;dict&#39;&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">,</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">pkey</span><span class="p">]))</span>
+        
+        <span class="c1"># func</span>
+        <span class="k">if</span> <span class="s2">&quot;func&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[fit]: func must be a callable function&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># method</span>
+        <span class="k">if</span> <span class="s2">&quot;method&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_fit</span><span class="o">.</span><span class="n">meth</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: Method of fitting must be one of the following types:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_fit</span><span class="o">.</span><span class="n">meth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># data</span>
+        <span class="n">data_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;xerr&quot;</span><span class="p">,</span> <span class="s2">&quot;yerr&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">data_flag</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">pkey</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">data_flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_mask</span><span class="p">()</span>
+
+        <span class="c1"># other</span>
+        <span class="k">if</span> <span class="s2">&quot;residuals&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;residuals&#39;</span><span class="p">]</span>
+
+        <span class="c1"># likelihood</span>
+        <span class="k">if</span> <span class="s2">&quot;likelihood&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">],</span> <span class="n">PyfitLikelihood</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;likelihood&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Likelihood Class must be a sub-class of PyfitLikelihood&quot;</span><span class="p">)</span>
+
+                
+    
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check attributes and see if they are right types,</span>
+<span class="sd">        if pass return 1, if fail return 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># method </span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="n">_fit</span><span class="o">.</span><span class="n">meth</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: Method of fitting must be one of the following:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">_fit</span><span class="o">.</span><span class="n">meth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span> 
+
+        <span class="c1"># func</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: func must be a callable function&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># check posteriors and priors and statics</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> must be a dictionary of values&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># check data</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: Must specify </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">elif</span>  <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> data must be array-like&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;[fit]: Length mismatch between x and y data&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        
+        
+        <span class="c1"># check yerr</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;xerr&quot;</span><span class="p">,</span> <span class="s2">&quot;yerr&quot;</span><span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: Array Length mismatch between </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">pkey</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="mi">0</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2">] must be array-like or a float/int value!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># check likelihood</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="p">,</span> <span class="n">PyfitLikelihood</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Likelihood Class must be a sub-class of PyfitLikelihood&quot;</span><span class="p">)</span>
+
+        
+        <span class="c1"># only if all passed</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_params_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check priors, statics and posteriors </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check if the right attr types</span>
+        <span class="k">for</span> <span class="n">pkey</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;prior&quot;</span><span class="p">,</span> <span class="s2">&quot;static&quot;</span><span class="p">,</span> <span class="s2">&quot;posterior&quot;</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkey</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">pkey</span><span class="si">}</span><span class="s2"> is not of type &#39;dict&#39;&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[fit]: Keys attribute must be array-like&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># check if keys of priors, statics and posteriors match</span>
+        <span class="n">full_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_merge_dicts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+                <span class="n">full_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+        <span class="c1"># check function arguments</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+                <span class="n">full_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        
+        <span class="c1"># check sigma </span>
+        <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+            <span class="n">full_keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_if_no_key_set_none</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+
+            <span class="n">dict_keys</span> <span class="o">=</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">dic</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="k">return</span> <span class="n">dic</span>
+        
+        <span class="c1"># set params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static</span> <span class="o">=</span> <span class="n">_if_no_key_set_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">,</span> <span class="n">full_keys</span><span class="p">)</span>
+
+        <span class="c1"># set bounds</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">full_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">full_keys</span>
+    
+        <span class="k">return</span> <span class="mi">1</span>
+
+    
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_params_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if params are the right type, 1 if passed, 0 if failed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># type of prior given fitting method</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+            <span class="n">typ</span> <span class="o">=</span> <span class="nb">float</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="n">typ</span> <span class="o">=</span> <span class="nb">list</span>
+        
+        <span class="c1"># get arguments to check</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="c1"># sigma parameter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="c1"># check if a static variable</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># check if type float</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> (static) must be of type float&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="mi">0</span>
+                
+            <span class="c1"># check</span>
+            <span class="k">else</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Converting bounds of least squares parameter </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> to median prior&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">float</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: prior [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be of type &#39;float&#39; for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; fitting method&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: prior [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2"> must be of type &#39;list&#39; for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; fitting method&quot;</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="c1"># passed</span>
+        <span class="k">return</span> <span class="mi">1</span>
+                    
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        In the case that you use .fit() and no priors have been specified, </span>
+<span class="sd">        initilaise them</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="c1"># sigma parameter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: unspecified parameter [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">], setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> -&gt; 1.0&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: unspecified parameter [</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">], setting </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> -&gt; [0.0, 1.0]&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+            
+                
+    
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_iserr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if error is present to perform statistics</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if using lsq method</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_sigma_sampled</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+        
+        <span class="k">return</span> <span class="mi">1</span>
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mask data, find common mask amoung x, y, xerr and yerr</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Nans in [x]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Nans in [y]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># nans in [xerr?]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="c1"># nans in [yerr?]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+
+
+        
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_proc_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform pre-processing tasks on data before passing through fitting</span>
+<span class="sd">        methods</span>
+
+<span class="sd">        1. Mask any nans</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xerr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># mask data</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">xerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">xerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">],</span> <span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span>
+
+        
+
+        
+    
+        
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_func_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get fitting function arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+
+<div class="viewcode-block" id="fit.get_model">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get model fit</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            datapoints to evaluate model, if None will use x values already given to current instance</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            x data</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            y data - evaluated model values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">model_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_post_val</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">model_vals</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">model_vals</span><span class="p">)</span></div>
+
+
+
+    
+<div class="viewcode-block" id="fit.get_post_val">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_post_val">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_post_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get values/betfit of posterior</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># check attributes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="c1"># check if posteriors valid</span>
+        <span class="n">func_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior must be valid to plot model&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">_posterior</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior is of wrong type, must be of type &#39;_posterior&#39;, something went wrong&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="n">_vals</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_vals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_vals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">val</span>
+        
+        <span class="k">return</span> <span class="n">_vals</span></div>
+
+
+
+<div class="viewcode-block" id="fit.get_mean_err">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_mean_err">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mean_err</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get mean errors of posterior</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : bool, optional</span>
+<span class="sd">            if true, retrieve errors of posteriors defined in function</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        _errs : dict</span>
+<span class="sd">            dictionary of errors for posteriors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check attributes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="c1"># check if posteriors valid</span>
+        <span class="n">func_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior must be valid to plot model&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">_posterior</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit] &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; posterior is of wrong type, must be of type &#39;_posterior&#39;, something went wrong&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="n">_errs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_errs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_errs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">m</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
+        
+        <span class="k">return</span> <span class="n">_errs</span></div>
+
+
+
+
+<div class="viewcode-block" id="fit.get_priors">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_priors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_priors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get priors and statics</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : bool</span>
+<span class="sd">            if true, only retrieve priors of parameters of function to be modelled, default is True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{},</span> <span class="p">{}</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="c1"># get sigma arg</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
+        
+        <span class="n">priors</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">statics</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">priors</span><span class="p">,</span> <span class="n">statics</span></div>
+
+
+    
+
+
+<div class="viewcode-block" id="fit.get_posteriors">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.get_posteriors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_posteriors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get posteriors</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func : bool</span>
+<span class="sd">            if true, only retrieve posteriors of parameters of function to be modelled, default is True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        posteriors : dict</span>
+<span class="sd">            Dictionary of posterior median/mean best values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+
+        <span class="k">if</span> <span class="n">func</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+
+        <span class="c1"># get sigma arg</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;sigma&quot;</span><span class="p">]</span>
+
+        <span class="n">posteriors</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">posteriors</span></div>
+
+
+
+    
+<div class="viewcode-block" id="fit.set_prior">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.set_prior">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">pr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set prior</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            name of parameter</span>
+<span class="sd">        pr : float or 2-element list</span>
+<span class="sd">            prior value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">pr</span>
+        <span class="k">return</span></div>
+
+
+    
+<div class="viewcode-block" id="fit.set_posterior">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.set_posterior">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">plus</span><span class="p">,</span> <span class="n">minus</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set posterior</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            name of posterior</span>
+<span class="sd">        val : float</span>
+<span class="sd">            bestfit value/median</span>
+<span class="sd">        plus : float </span>
+<span class="sd">            positive std/err</span>
+<span class="sd">        minus : float</span>
+<span class="sd">            negative std/err</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">plus</span><span class="p">,</span> <span class="n">minus</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_curve_fit2posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert output of curve_fit to posteriors</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># calc uncorrelated errors</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">err</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        
+       
+
+        <span class="c1"># set statics to posterior</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> 
+                
+            
+        <span class="k">return</span>
+        
+    
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_results2posterior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert bilby .result output to posteriors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get all parameters excluding log_likelihood</span>
+        <span class="n">par_keys</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">posterior</span><span class="o">.</span><span class="n">columns</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>       
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">par_keys</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+            <span class="c1"># posterior</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">vals</span><span class="o">.</span><span class="n">plus</span><span class="p">,</span> <span class="n">vals</span><span class="o">.</span><span class="n">minus</span><span class="p">)</span>
+        
+        <span class="c1"># set statics to posterior</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_func_args</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">func_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">_posterior</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>  
+
+        <span class="k">if</span> <span class="s2">&quot;sigma&quot;</span> <span class="ow">in</span> <span class="n">par_keys</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_is_sigma_sampled</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># set statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_bayes_factor</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">log_10_bayes_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_evidence</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">log_10_evidence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_evidence_err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">log_10_evidence_err</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_noise_evidence</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">log_10_noise_evidence</span>
+
+        <span class="c1"># get log_likelihood estimates</span>
+        <span class="n">llval</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get_one_dimensional_median_and_error_bar</span><span class="p">(</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood</span> <span class="o">=</span> <span class="n">llval</span><span class="o">.</span><span class="n">median</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">llval</span><span class="o">.</span><span class="n">plus</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">llval</span><span class="o">.</span><span class="n">minus</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="fit.fit">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redo</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit to function</span>
+
+<span class="sd">        Parameters </span>
+<span class="sd">        ----------</span>
+<span class="sd">        redo : bool</span>
+<span class="sd">            redo fitting (in case BILBY is being used, remove cached results of any previous fit), default is False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_sigma_sampled</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1">#--------------------------#</span>
+        <span class="c1"># data and parameter check #</span>
+        <span class="c1">#--------------------------#</span>
+
+        <span class="c1"># set attributes using given keywords</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_attr</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># check if attributes are in right format</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_attr</span><span class="p">():</span>
+            <span class="k">return</span> 
+
+        <span class="c1"># check if all fit params are present</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="c1"># initialise parameters if unspecified</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_params</span><span class="p">()</span>
+        
+        <span class="c1"># check if priors are in the right format given the method of fitting</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_types</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="c1"># check if fit params attributes to use are in the right format</span>
+        <span class="n">priors</span><span class="p">,</span> <span class="n">statics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_priors</span><span class="p">()</span>
+
+        <span class="c1"># # proc data before hand (i.e. masking)</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_data</span><span class="p">()</span>
+
+
+
+        <span class="c1">#-----------------------------#</span>
+        <span class="c1"># wrap function using statics #</span>
+        <span class="c1">#-----------------------------#</span>
+        <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+        <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;func(x = x&quot;</span>
+
+        <span class="c1"># NOTE I am aware that Bilby has DeltaFunction priors I could use for static paramters,</span>
+        <span class="c1"># however, trhis method, athough scary, works for both least squares and bilby. </span>
+
+
+        <span class="n">priors_wrap</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">statics_wrap</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># check each key if it is static or not, we don&#39;t want to add &quot;sigma&quot;</span>
+        <span class="c1"># prior to wrapped function in case we are sampling that as well</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">priors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">statics</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span>
+                    <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">statics</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">statics_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">statics</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;sigma&quot;</span><span class="p">:</span>
+                    <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+
+        <span class="c1"># print priors and statics infomation</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Fitting [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">] using [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The following priors will be sampled/fitted for&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-----------------------------------------------&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">priors_wrap</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">:  </span><span class="si">{</span><span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">statics_wrap</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> The following priors will be kept constant&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------------------------------------------&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">statics_wrap</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">:  </span><span class="si">{</span><span class="n">statics_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+
+        
+        <span class="c1"># put all together (NOTE: The executed function is CAREFULLY constructed, else I </span>
+        <span class="c1"># wouldn&#39;t even think about using the eval function)</span>
+        <span class="n">func_wrap</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot; : &quot;</span> <span class="o">+</span> <span class="n">func_str</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;func&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">})</span>
+
+        <span class="c1"># fit using least squares</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;least squares&quot;</span><span class="p">:</span>
+
+            <span class="c1"># convert prior dict to list in order! convert bounds to curve_fit bounds</span>
+            <span class="n">priors_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">priors_list</span> <span class="o">+=</span> <span class="p">[</span><span class="n">priors_wrap</span><span class="p">[</span><span class="n">key</span><span class="p">]]</span>                
+                <span class="n">b_min</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="n">b_max</span> <span class="o">+=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+            
+
+            <span class="n">_val</span><span class="p">,</span> <span class="n">_err</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">priors_list</span><span class="p">,</span> 
+                                    <span class="n">sigma</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_curve_fit2posterior</span><span class="p">(</span><span class="n">_val</span><span class="p">,</span> <span class="n">_err</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">yerr</span>
+
+
+        <span class="c1"># fit using bilby bayesian inference</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+
+            <span class="c1"># clean previous sampling, if any</span>
+            <span class="k">if</span> <span class="n">redo</span><span class="p">:</span>
+                <span class="n">outdir</span> <span class="o">=</span> <span class="s2">&quot;outdir&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;outdir&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">outdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">[</span><span class="s2">&quot;outdir&quot;</span><span class="p">]</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span>
+                <span class="k">if</span> <span class="s2">&quot;label&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                <span class="n">_clean_bilby_run</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+
+            <span class="n">keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="c1"># if yerr not specified, include sigma for sampling</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+            <span class="n">bil_priors</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
+
+            
+            <span class="n">likelihood</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span>
+                                        <span class="n">func</span> <span class="o">=</span> <span class="n">func_wrap</span><span class="p">,</span> <span class="n">xerr</span> <span class="o">=</span> <span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">)</span>
+            
+            <span class="c1"># run sampler</span>
+            <span class="n">result_</span> <span class="o">=</span> <span class="n">bilby</span><span class="o">.</span><span class="n">run_sampler</span><span class="p">(</span><span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span> <span class="o">=</span> <span class="n">_priorUniform</span><span class="p">(</span><span class="n">bil_priors</span><span class="p">),</span>
+                                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_keywords</span><span class="p">)</span>
+
+            <span class="c1"># get posteriors</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_results2posterior</span><span class="p">(</span><span class="n">result_</span><span class="p">)</span>
+
+            <span class="c1"># REUSE LIKELIHOOD INSTANCE TO CALCULATE SIGMA</span>
+            <span class="n">likelihood</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_post_val</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">get_sigma</span><span class="p">()</span>
+
+            <span class="c1"># plot bilby outputs for diagnostic purposes</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plotPosterior</span><span class="p">:</span>
+                <span class="n">result_</span><span class="o">.</span><span class="n">plot_with_data</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">result_</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
+
+
+        <span class="c1"># last stats to save </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">priors_wrap</span><span class="p">)</span>
+
+        <span class="c1"># run stats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_stats</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span> <span class="o">=</span> <span class="kc">True</span>
+        
+        <span class="k">return</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get stats of last function fitting call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1">#-----------------------------#</span>
+        <span class="c1"># Calculate Chi squared stats #</span>
+        <span class="c1">#-----------------------------# </span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iserr</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[fit]: No error/sigma present to perform statistics&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># check which sigma to use</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_sigma_sampled</span><span class="p">:</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+        
+        
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_data</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+        
+
+        <span class="c1"># degrees of freedom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dof</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span>
+
+        <span class="c1"># calculate chi squared and reduced chi squared</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rchi2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chi2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span>
+
+        <span class="c1"># calculate errors in chi squared and reduced chi squared</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chi2err</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rchi2err</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+
+        <span class="c1"># calculate p value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">chi2</span><span class="o">.</span><span class="n">sf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chi2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="p">)</span>
+
+        
+
+        <span class="c1">#---------------------#</span>
+        <span class="c1"># Bayesian statistics #</span>
+        <span class="c1">#---------------------#</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="c1"># bayesian Information Criterion</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bic_err</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood_err</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_stats</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="fit.stats">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print statistics</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_stats</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># print general statistics</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Model Statistics:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------------------------&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;chi2:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chi2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chi2err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rchi2:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rchi2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rchi2err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;p-value:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;v (degrees of freedom):&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dof</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# free parameters:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nfitpar</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">!=</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># print bayesian statistics if nessesary</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Bayesian Statistics:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---------------------------&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Max Log Likelihood:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> 
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_log_likelihood_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bayes Info Criterion (BIC):&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> 
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bic_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bayes Factor (log10):&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">log_bayes_factor</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evidence (log10):&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> 
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">log_evidence</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;+/- </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">log_evidence_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Noise Evidence (log10):&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">log_noise_evidence</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="fit.plot">
+<a class="viewcode-back" href="../../_autosummary/ilex.pyfit.html#ilex.pyfit.fit.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">ax_kw</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot fitted model and data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        show : bool, optional</span>
+<span class="sd">            if true, display plot </span>
+<span class="sd">        filename : str</span>
+<span class="sd">            name of output image file, default is None</span>
+<span class="sd">        **ax_kw : Dict</span>
+<span class="sd">            keyword parameters for plotting</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : plt._figure_</span>
+<span class="sd">            figure instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_fit</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[fit]: No Model fit found, fit to data before plotting&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="n">rows</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="c1"># now plot, create axis</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">AX</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> 
+                    <span class="n">num</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Figure model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sharex</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+            <span class="n">AX</span> <span class="o">=</span> <span class="n">AX</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">AX</span> <span class="o">=</span> <span class="p">[</span><span class="n">AX</span><span class="p">]</span>
+        
+        <span class="c1"># seperate keywords</span>
+        <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">ax_kw</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+            <span class="n">AX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">**</span><span class="n">ax_kw</span><span class="p">)</span>
+            <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># plot data</span>
+        <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># plot model</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">y_fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">y_fit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.9098</span><span class="p">,</span> <span class="mf">0.364</span><span class="p">,</span> <span class="mf">0.3961</span><span class="p">],</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">)</span>
+
+        <span class="c1"># plot errorbars if specified</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">AX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">xerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> 
+                        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># plot residuals</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">:</span>
+            <span class="n">AX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">AX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_fit</span><span class="p">,</span> <span class="n">xerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xerr</span><span class="p">,</span>
+                                 <span class="n">yerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># last figure changes</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>        
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">hspace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># save file</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+
+        
+
+
+
+
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print infomation abou fit instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params_keys</span><span class="p">()</span>
+
+        <span class="n">pstr</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="c1"># function being used to fit data</span>
+        <span class="n">func_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">func_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Fitting data to [</span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s2">] using [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">]</span><span class="se">\n</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># add data info to string</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">DATA</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;--------</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;yerr&quot;</span><span class="p">]:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                    <span class="n">o</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">o</span> <span class="o">=</span> <span class="n">attr</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">o</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">:&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">o</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        
+        <span class="c1"># priors and posteriors</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Parameter&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;Priors&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">26</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;Posteriors&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">pstr</span> <span class="o">+=</span> <span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="mi">81</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">+=</span> <span class="s2">&quot;  (static)&quot;</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">static</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">pstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">26</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">pstr</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

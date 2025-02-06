@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.utils &mdash; ILEX 0.9.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=39bb1c6d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ilex.widths" href="ilex.widths.html" />
+    <link rel="prev" title="ilex.script_core" href="ilex.script_core.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.check_ruamel_input"><code class="docutils literal notranslate"><span class="pre">check_ruamel_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.check_ruamel_output"><code class="docutils literal notranslate"><span class="pre">check_ruamel_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_checktype"><code class="docutils literal notranslate"><span class="pre">dict_checktype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_get"><code class="docutils literal notranslate"><span class="pre">dict_get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_init"><code class="docutils literal notranslate"><span class="pre">dict_init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_isall"><code class="docutils literal notranslate"><span class="pre">dict_isall()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.dict_null"><code class="docutils literal notranslate"><span class="pre">dict_null()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.fix_ds_freq_lims"><code class="docutils literal notranslate"><span class="pre">fix_ds_freq_lims()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.get_stk_from_datalist"><code class="docutils literal notranslate"><span class="pre">get_stk_from_datalist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_param_file"><code class="docutils literal notranslate"><span class="pre">load_param_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.load_plotstyle"><code class="docutils literal notranslate"><span class="pre">load_plotstyle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.merge_dicts"><code class="docutils literal notranslate"><span class="pre">merge_dicts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.plotnum2grid"><code class="docutils literal notranslate"><span class="pre">plotnum2grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.save_data"><code class="docutils literal notranslate"><span class="pre">save_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.save_param_file"><code class="docutils literal notranslate"><span class="pre">save_param_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.set_plotstyle"><code class="docutils literal notranslate"><span class="pre">set_plotstyle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.struct_"><code class="docutils literal notranslate"><span class="pre">struct_</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.update_ruamel_CommentedMap"><code class="docutils literal notranslate"><span class="pre">update_ruamel_CommentedMap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.utils.update_ruamel_CommentedSeq"><code class="docutils literal notranslate"><span class="pre">update_ruamel_CommentedSeq()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ilex.html">ilex</a></li>
+      <li class="breadcrumb-item active">ilex.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/ilex.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ilex.utils">
+<span id="ilex-utils"></span><h1>ilex.utils<a class="headerlink" href="#module-ilex.utils" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.check_ruamel_input">
+<span class="sig-name descname"><span class="pre">check_ruamel_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#check_ruamel_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.check_ruamel_input" title="Link to this definition"></a></dt>
+<dd><p>Ruamel yaml is used in some cases, this will be used to process these inputs and make sure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inp</strong> (<em>_class_</em>) – Change ruamel class to python class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.check_ruamel_output">
+<span class="sig-name descname"><span class="pre">check_ruamel_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#check_ruamel_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.check_ruamel_output" title="Link to this definition"></a></dt>
+<dd><p>Check if outputs are in right types</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.dict_checktype">
+<span class="sig-name descname"><span class="pre">dict_checktype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_checktype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_checktype" title="Link to this definition"></a></dt>
+<dd><p>Check if all entries of Dict are type = t</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>Dict</em>) – Dictionary</p></li>
+<li><p><strong>t</strong> (<em>Type</em><em>(</em><em>)</em>) – type to check against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_type_</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.dict_get">
+<span class="sig-name descname"><span class="pre">dict_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_get" title="Link to this definition"></a></dt>
+<dd><p>Get a sub-set of the Dictionary based on keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong> (<em>Dict</em>) – Original dictionary</p></li>
+<li><p><strong>keys</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of items to retrieve</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_dict</strong> – Sub-set of Dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.dict_init">
+<span class="sig-name descname"><span class="pre">dict_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dicts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_init" title="Link to this definition"></a></dt>
+<dd><p>Initilise any number of dictionaries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A number of Dictionaries</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>*dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.dict_isall">
+<span class="sig-name descname"><span class="pre">dict_isall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictB</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_isall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_isall" title="Link to this definition"></a></dt>
+<dd><p>Check if Entires in Dict A match those in Dict B</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dictA</strong> (<em>Dict</em>) – Dict A</p></li>
+<li><p><strong>dictB</strong> (<em>Dict</em>) – Dict B</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1 if True, 0 if False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.dict_null">
+<span class="sig-name descname"><span class="pre">dict_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dic</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#dict_null"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.dict_null" title="Link to this definition"></a></dt>
+<dd><p>Set all entries in a Dictionary to ‘None’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dic</strong> (<em>Dict</em>) – Dictionary</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dic</strong> – Dict with entries set to ‘None’</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.fix_ds_freq_lims">
+<span class="sig-name descname"><span class="pre">fix_ds_freq_lims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#fix_ds_freq_lims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.fix_ds_freq_lims" title="Link to this definition"></a></dt>
+<dd><p>fix ds frequency limits so they extend over the full dynamic spectrum. By default each frequency channel
+represents the midpoint of a frequency bin, but when plotting the dynamic spectra using plt.imshow, we need the
+entire bandwidth, so we add half a sample to each end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lims</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – frequency limits, [min, max]</p></li>
+<li><p><strong>df</strong> (<em>float</em>) – frequency resolution</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.get_stk_from_datalist">
+<span class="sig-name descname"><span class="pre">get_stk_from_datalist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#get_stk_from_datalist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.get_stk_from_datalist" title="Link to this definition"></a></dt>
+<dd><p>Get Stokes characters, i.e. I, Q, U and V from list of Stokes
+products to make, i.e. “dsI”, “fQ” etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_list</strong> (<em>List</em><em>(</em><em>str</em><em>)</em>) – List of data products to make</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stk</strong> – Stokes Characters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datafile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_data" title="Link to this definition"></a></dt>
+<dd><p>Load data to memory map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datafile</strong> (<em>str</em>) – filename or path</p></li>
+<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – is memorymap?, by default True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>data</strong> – loaded data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.mmap or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.load_param_file">
+<span class="sig-name descname"><span class="pre">load_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ruamel2py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_param_file" title="Link to this definition"></a></dt>
+<dd><p>Load in param file and compare with default params file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param_file</strong> (<em>str</em>) – parameter file to load in, if None, will return default yaml file values</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>params</strong> – parameters, compared with defaults</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.load_plotstyle">
+<span class="sig-name descname"><span class="pre">load_plotstyle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#load_plotstyle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.load_plotstyle" title="Link to this definition"></a></dt>
+<dd><p>Load in plotstyle file and compare with default plotstyle file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.merge_dicts">
+<span class="sig-name descname"><span class="pre">merge_dicts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">dicts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#merge_dicts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.merge_dicts" title="Link to this definition"></a></dt>
+<dd><p>Combine multiple Dictionaries into 1 dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A number of dictionaries</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>*dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.plotnum2grid">
+<span class="sig-name descname"><span class="pre">plotnum2grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nrows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#plotnum2grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.plotnum2grid" title="Link to this definition"></a></dt>
+<dd><p>Takes the number of axes you want and creates a grid,
+one can constrain either the number of rows or colums to
+make the grid. If Neither is specified, will create the smallest
+sqaure grid to fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nrows</strong> (<em>int</em>) – number of rows to keep constant</p></li>
+<li><p><strong>ncols</strong> (<em>int</em>) – number of columns to keep constant</p></li>
+<li><p><strong>num</strong> (<em>int</em>) – number of axes to make into grid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>grid_nrows</strong> (<em>int</em>) – number of rows of new grid</p></li>
+<li><p><strong>grid_ncols</strong> (<em>int</em>) – number of columns of new grid</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.save_data">
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.save_data" title="Link to this definition"></a></dt>
+<dd><p>Save data to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – data to save to file</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – filename to save data to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.save_param_file">
+<span class="sig-name descname"><span class="pre">save_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#save_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.save_param_file" title="Link to this definition"></a></dt>
+<dd><p>save to new parameter file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pars</strong> (<em>dict</em>) – dictionary of parameters in ilex.yaml format</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – filename of saved yaml file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.set_plotstyle">
+<span class="sig-name descname"><span class="pre">set_plotstyle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#set_plotstyle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.set_plotstyle" title="Link to this definition"></a></dt>
+<dd><p>set plotstyle path, if not given, will be set to default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em>, </em><em>optional</em>) – filepath to plotstyle yaml file, by default None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.utils.struct_">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">struct_</span></span><a class="reference internal" href="../_modules/ilex/utils.html#struct_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.struct_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.update_ruamel_CommentedMap">
+<span class="sig-name descname"><span class="pre">update_ruamel_CommentedMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commented_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#update_ruamel_CommentedMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.update_ruamel_CommentedMap" title="Link to this definition"></a></dt>
+<dd><p>Updated Commented map based on key, value pair</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.utils.update_ruamel_CommentedSeq">
+<span class="sig-name descname"><span class="pre">update_ruamel_CommentedSeq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commented_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/utils.html#update_ruamel_CommentedSeq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.utils.update_ruamel_CommentedSeq" title="Link to this definition"></a></dt>
+<dd><p>Updates the value of the CommentedSeq whilst preserving the flow
+stype and comments</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex.script_core.html" class="btn btn-neutral float-left" title="ilex.script_core" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.widths.html" class="btn btn-neutral float-right" title="ilex.widths" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

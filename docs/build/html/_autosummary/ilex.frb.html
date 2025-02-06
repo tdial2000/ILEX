@@ -95,6 +95,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.plot_stokes"><code class="docutils literal notranslate"><span class="pre">FRB.plot_stokes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.save_data"><code class="docutils literal notranslate"><span class="pre">FRB.save_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.set"><code class="docutils literal notranslate"><span class="pre">FRB.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.frb.FRB.zap_channels"><code class="docutils literal notranslate"><span class="pre">FRB.zap_channels()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -477,7 +478,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>debias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Debiases Stokes L, P and <a href="#id1"><span class="problematic" id="id2">|V|</span></a>, <a href="#id3"><span class="problematic" id="id4">|Q|</span></a> and <a href="#id5"><span class="problematic" id="id6">|U|</span></a>, by default False.</p></li>
+<li><p><strong>debias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Debiases Stokes L, P and abs(V), abs(Q) and abs(U), by default False.</p></li>
 <li><p><strong>peak_sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – Provide a threshold in terms of I/Ierr that will be used to mask the data
 before estimating the peak fraction of each stokes parameter. This will be
 nessesary to filter out noisy data.</p></li>
@@ -811,7 +812,7 @@ else weird overflow behavior might be present when calculating stokes ratios, by
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.frb.FRB.save_data">
-<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_yaml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.save_data" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_yaml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.save_data" title="Link to this definition"></a></dt>
 <dd><p>Save current instance data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -828,6 +829,22 @@ FRB class will be used.</p></li>
 <dt class="sig sig-object py" id="ilex.frb.FRB.set">
 <span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.set" title="Link to this definition"></a></dt>
 <dd><p>Set FRB parameters, see class parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.frb.FRB.zap_channels">
+<span class="sig-name descname"><span class="pre">zap_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chans</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zapzeros</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zapzerosmargin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resetzap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/frb.html#FRB.zap_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.frb.FRB.zap_channels" title="Link to this definition"></a></dt>
+<dd><p>Zap channels (uses Stokes I freq spectrum)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chans</strong> (<em>str</em><em>, </em><em>optional</em>) – Channels to zap, by default None</p></li>
+<li><p><strong>zapzeros</strong> (<em>bool</em><em>, </em><em>optional</em>) – zap channels at or close to zero, by default False</p></li>
+<li><p><strong>zapzerosmargin</strong> (<em>float</em>) – margin close to zero at which to zap channels, ratio of max channel flux</p></li>
+<li><p><strong>resetzap</strong> (<em>bool</em><em>, </em><em>optional</em>) – reset channels zapped, by default False</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

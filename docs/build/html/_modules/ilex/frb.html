@@ -490,7 +490,7 @@
     <span class="c1">## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##</span>
 <div class="viewcode-block" id="FRB.save_data">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.save_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_yaml</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">yaml_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">save_yaml</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">yaml_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">debias</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Save current instance data</span>
 
@@ -520,7 +520,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
 
         <span class="c1"># get data</span>
-        <span class="n">pdat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">pdat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span><span class="p">,</span> <span class="n">debias</span> <span class="o">=</span> <span class="n">debias</span><span class="p">,</span> <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isdata</span><span class="p">():</span>
             <span class="k">return</span> 
         
@@ -1761,108 +1761,45 @@
 
 
 
-    <span class="c1"># def zap_rfi(self, flagging_threshold = 10, rms_average = 1000, **kwargs):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Look for channels to zap based on RFI, algorithm developed by [Apurba Bera] and </span>
-    <span class="c1">#     revised (for speed) by [Tyson Dial]</span>
 
-    <span class="c1">#     EXPERIMENTAL!!! - NEED TO TEST</span>
+<div class="viewcode-block" id="FRB.zap_channels">
+<a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.zap_channels">[docs]</a>
+    <span class="k">def</span> <span class="nf">zap_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chans</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">zapzeros</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">zapzerosmargin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">resetzap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Zap channels (uses Stokes I freq spectrum)</span>
 
-    <span class="c1">#     Take the terr_crop region and estimates the rfi there</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     log_title(&quot;Looking for RFI afflicted Channels to ZAP!!!&quot;, col = &#39;lblue&#39;)</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        chans : str, optional</span>
+<span class="sd">            Channels to zap, by default None</span>
+<span class="sd">        zapzeros : bool, optional</span>
+<span class="sd">            zap channels at or close to zero, by default False</span>
+<span class="sd">        zapzerosmargin : float</span>
+<span class="sd">            margin close to zero at which to zap channels, ratio of max channel flux</span>
+<span class="sd">        resetzap : bool, optional</span>
+<span class="sd">            reset channels zapped, by default False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
-    <span class="c1">#     kwargs[&#39;tN&#39;] = rms_average</span>
+        <span class="n">zapchan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span>
 
-    <span class="c1">#     # initialise</span>
-    <span class="c1">#     self._load_new_params(**kwargs)</span>
-
-
-    <span class="c1">#     # get data</span>
-    <span class="c1">#     data = self.get_data([&quot;dsI&quot;, &quot;fI&quot;], get = True, t_crop = self.metapar.terr_crop,</span>
-    <span class="c1">#                             **kwargs)</span>
-
-    <span class="c1">#     if not self._iserr():</span>
-    <span class="c1">#         log(&quot;Off-pulse crop required for RFI zappinh&quot;, lpf_col = self.pcol,</span>
-    <span class="c1">#             stype = &quot;err&quot;)</span>
-    <span class="c1">#         raise ValueError(&quot;terr_crop undefined&quot;)</span>
-
+        <span class="k">if</span> <span class="n">resetzap</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">zapchan</span> <span class="o">=</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
         
-    <span class="c1">#     # calculate channel rms and mask according to median and flag_threshold</span>
-    <span class="c1">#     data[&#39;fI&#39;] = np.nanstd(data[&#39;dsI&#39;], axis = 1)</span>
-    <span class="c1">#     med_rms = np.nanmedian(data[&#39;fI&#39;])</span>
-    <span class="c1">#     mad_rms = 1.48 * np.nanmedian(np.abs(data[&#39;fI&#39;] - med_rms))</span>
-
-    <span class="c1">#     # flag</span>
-    <span class="c1">#     chanmask = np.ones(data[&#39;fI&#39;].size, dtype = float)</span>
-    <span class="c1">#     chan2flag = np.where(data[&#39;fI&#39;] &gt; (med_rms + flagging_threshold * mad_rms))[0]</span>
-    <span class="c1">#     print(chan2flag)</span>
-
-    <span class="c1">#     chanmask[chan2flag] = np.nan</span>
-
-    <span class="c1">#     # convert to zap string</span>
-    <span class="c1">#     zapstr = get_zapstr(chanmask, data[&#39;freq&#39;])</span>
-    <span class="c1">#     log(f&quot;Channels to zap: {zapstr}&quot;, lpf_col = self.pcol)</span>
-
-    <span class="c1">#     if (zapstr is None) or (zapstr == &quot;&quot;):</span>
-    <span class="c1">#         return</span>
-
-    <span class="c1">#     # add/set to zapchan</span>
-    <span class="c1">#     if self.metapar.zapchan is None:</span>
-    <span class="c1">#         self.metapar.zapchan = zapstr</span>
-    <span class="c1">#     else:</span>
-    <span class="c1">#         self.metapar.zapchan += f&quot;,{zapstr}&quot;</span>
+        <span class="k">if</span> <span class="n">chans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">zapchan</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">chans</span><span class="p">)</span>
         
-    <span class="c1">#     return</span>
+        <span class="k">if</span> <span class="n">zapzeros</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])])</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])))</span> <span class="o">&lt;</span> <span class="n">zapzerosmargin</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">zapchan</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">()))</span>
         
+        <span class="c1"># save</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span>
+        <span class="k">return</span></div>
 
 
-
-
-
-    <span class="c1"># def zap_rfi(self, sigma = 3, **kwargs):</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     Zap channels based on if RFI is present, this assumes RFI will have an off-pulse RMS &gt; sigma * RMS_median where </span>
-    <span class="c1">#     RMS_median is the median RMS of each channel. </span>
-
-    <span class="c1">#     Parameters</span>
-    <span class="c1">#     ----------</span>
-    <span class="c1">#     sigma : float, optional</span>
-    <span class="c1">#         threshold for RFI zapping</span>
-        
-    <span class="c1">#     Returns</span>
-    <span class="c1">#     -------</span>
-    <span class="c1">#     zapchan : np.ndarray</span>
-    <span class="c1">#         string of frequency channels to zap</span>
-        
-    <span class="c1">#     &quot;&quot;&quot;</span>
-        
-    <span class="c1">#     log(f&quot;zapping RFI&quot;, lpf_col = self.pcol)</span>
-
-    <span class="c1">#     # get data</span>
-    <span class="c1">#     data = self.get_data([&quot;dsI&quot;, &quot;fI&quot;], get = True, **kwargs)</span>
-
-    <span class="c1">#     if not self._iserr():</span>
-    <span class="c1">#         log(&quot;Off-pulse crop required for RFI zappinh&quot;, lpf_col = self.pcol,</span>
-    <span class="c1">#             stype = &quot;err&quot;)</span>
-    <span class="c1">#         return None</span>
-        
-    <span class="c1">#     # flag channels with RMS &gt; then RMS threshold</span>
-    <span class="c1">#     print(data[&#39;fIerr&#39;])</span>
-    <span class="c1">#     print(np.median(data[&#39;fIerr&#39;]))</span>
-
-    <span class="c1">#     data[&#39;fIerr&#39;] = np.nanstd(data[&#39;dsI&#39;], axis = 1)</span>
-    <span class="c1">#     med_rms = np.nanmedian(data[&#39;fIerr&#39;])</span>
-    <span class="c1">#     mad_rms = 1.48 * np.nanmedian(np.abs(data[&#39;fIerr&#39;] - med_rms))</span>
-    <span class="c1">#     data[&#39;dsI&#39;][data[&#39;fIerr&#39;] &gt; (med_rms + sigma*mad_rms)] = np.nan</span>
-
-
-
-    <span class="c1">#     # plot bad channels</span>
-    <span class="c1">#     plt.figure(figsize = (10,10))</span>
-    <span class="c1">#     plt.imshow(data[&#39;dsI&#39;], aspect = &#39;auto&#39;, extent = [*self.this_par.t_lim, *self.this_par.f_lim])</span>
-
-    <span class="c1">#     plt.show()</span>
 
 
 
@@ -2586,6 +2523,7 @@
 
         <span class="c1"># put into pyfit structure</span>
         <span class="n">PA</span><span class="p">,</span> <span class="n">PA_err</span> <span class="o">=</span> <span class="n">calc_PA</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">][</span><span class="n">mask</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">PA</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
 
         <span class="n">p</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_freq</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">PA</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">PA_err</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">rmquad</span><span class="p">,</span>
                  <span class="n">residuals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">residuals</span><span class="p">)</span>
@@ -2763,7 +2701,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        debias : bool, optional</span>
-<span class="sd">            Debiases Stokes L, P and |V|, |Q| and |U|, by default False.</span>
+<span class="sd">            Debiases Stokes L, P and abs(V), abs(Q) and abs(U), by default False.</span>
 <span class="sd">        peak_sigma : float, optional</span>
 <span class="sd">            Provide a threshold in terms of I/Ierr that will be used to mask the data</span>
 <span class="sd">            before estimating the peak fraction of each stokes parameter. This will be </span>

@@ -176,12 +176,14 @@ def make_ds(xpol, ypol, S = "I", nFFT = 336):
     if nblock*nsinb < nsamps:
         b_arr = np.append(b_arr, [[(i+1)*nwinb,nwind]], axis = 0)
 
+    # need to add normalising constant to fft (1/sqrt(N))
+
     # loop over blocks
     for i, b in enumerate(b_arr): # b is bounds of block in nFFT windows
         sb = b * nFFT
         wind_w = b[1] - b[0]
-        ds[:,b[0]:b[1]] = Stk_Func[S](fft(xpol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1),
-                                 fft(ypol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1)).T
+        ds[:,b[0]:b[1]] = Stk_Func[S](fft(xpol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho"),
+                                 fft(ypol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho")).T
         
         # print progress
         print(f"[MAKING DYNSPEC]:    [Progress] = {(i+1)/(nblock+1)*100:3.3f}%:    " + prog_str,
@@ -628,7 +630,8 @@ def _proc(args, pol):
             
             ## Apply baseline corrections
             ds -= bs_mean[:, None]
-            ds /= bs_std[:, None]
+            # ds /= bs_std[:, None]
+            print(np.mean(bs_mean), np.mean(bs_std))
 
             if args.do_chanflag:
                 ds_raw -= bs_mean_raw[:, None]

@@ -1,0 +1,122 @@
+yaml_file_type: "ILEX"
+data: # file paths for Stokes I, Q, U and V dynspec .npy files
+  dsI: ../examples/vela240621_I.npy
+  dsQ: ../examples/vela240621_Q.npy
+  dsU: ../examples/vela240621_U.npy
+  dsV: ../examples/vela240621_V.npy
+  
+
+
+par: # parameters unique to FRB
+  name:   "VELA240621"
+  RA:     "00:00:00.0000"
+  DEC:    "00:00:00.0000"
+  DM:     0.0
+  bw:     3328
+  MJD:    0.0
+  cfreq:  2368
+  t_lim_base:  [0.0, 3100.0]
+  f_lim_base:  [0.0, 336.0]
+  t_ref:  0.0
+  nchan:  3328
+  nsamp:  0
+  dt:     0.087331
+  df:     1.0
+  RM:     null
+  f0:     null
+  pa0:    0.0
+
+
+metapar: # parameters for data processing
+  t_crop:     ["min", "max"]
+  f_crop:     ["min", "max"]
+  terr_crop:  null
+  tN:         1
+  fN:         1
+  zapchan:    null
+  norm:       "None"
+
+
+hyperpar: # parameters to control general use of ILEX
+  verbose:        False
+  show_plots:     True
+  save_plots:     False
+  plot_type:      "lines"
+  residuals:      True
+  plotPosterior:  True
+  apply_tW:       True
+  apply_fW:       True
+  crop_units:     "physical"   
+  dynspec_cmap:   "arctic"            
+
+
+plots: # Plotting options
+  plot_type:           "lines"
+  plotstyle_file:      null
+
+  # plotting stokes data
+  stk2plot:             "ILV"
+  stk_ratio:            False
+  Ldebias:              False
+  Ldebias_threshold:    2.0
+  sigma:                2.0
+
+  # plotting poincare sphere data
+  plot_data:        True
+  plot_model:       True
+  n:                True
+  normalise:        True
+
+  # plotting PA
+  flipPA:           False
+
+
+fits: # for all fitting methods
+ 
+  fitmethod:  "bayesian"
+  redo:       False
+
+  # for Time scattering fitting
+  tscatt:
+    npulse:     1
+    priors:     {}
+    statics:    {}
+    fit_params: {}
+
+  # scintillation
+  scint:
+    priors:     {}
+    statics:    {}
+    fit_params: {}
+    n:          5
+
+  # RM fitting
+  fitRM:
+    method:     "RMsynth"
+    fit_params: {}
+
+
+multi:  # for multi crop scripts
+  tcrops: null
+  fcrops: null
+
+
+weights:
+  # time weights
+  time:
+    method: "None"
+    W:      null
+    x:      null
+    norm:   True
+    func:   null
+    args:   null
+
+  # freq weights
+  freq:
+    method: "None"
+    W:      null
+    x:      null
+    norm:   True
+    func:   null
+    args:   null
+

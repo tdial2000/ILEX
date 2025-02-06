@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from ilex.data import average
+from scipy.optimize import curve_fit
 
 
 def get_args():
@@ -42,6 +43,7 @@ def get_args():
     # additional arguments
     parser.add_argument("-o", help = "Output filename, No output saved if not specified", type = str, default = None)
     parser.add_argument("--delDM", help = "Delta DM [pc/cm^3] to apply for dedispersion, if given will overide search", type = float, default = None)
+    parser.add_argument("--quadfit", help = "Fit sn vs dm to a quadratic and extract optimal DM", action = "store_true")
 
     args = parser.parse_args()
 
@@ -49,6 +51,7 @@ def get_args():
     args.kdm = 4149.377593
 
     return args
+
 
 
 
@@ -111,15 +114,45 @@ def search_DM(args):
     
     print(f"Searching trial DMs...   100.00%\n")
 
-    # get best delDM S/N wise
-    args.delDM = trial_dms[np.argmax(trial_dm_vals)]
+    def quadratic(x, a, b, c):
+        return a*x**2 + b*x + c
+
+    if args.quadfit:
+        # fit for peak search DM
+        print(f"Fitting for peak DM trial (Fitting to a simple quadratic)\n")
+        model_samp = trial_dm_vals.size * 50
+
+        peak_samp = np.argmax(trial_dm_vals)
+        wind_samp = int(trial_dm_vals.size * 0.05)
+        lhs_samp, rhs_samp = wind_samp, wind_samp
+        if peak_samp - lhs_samp < 0:
+            lhs_samp = peak_samp
+        if peak_samp + rhs_samp > trial_dm_vals.size - 1:
+            rhs_samp = trial_dm_vals.size - peak_samp - 1
+
+        dm_fit = curve_fit(quadratic, trial_dms[peak_samp - lhs_samp : peak_samp + rhs_samp],
+                            trial_dm_vals[peak_samp - lhs_samp : peak_samp + rhs_samp])
+
+        # sn_model = model_curve(trial_dm_vals, samp = model_samp, n = args.n)
+        dm_model = np.linspace(trial_dms[peak_samp] - args.DMstep * wind_samp * 2, 
+                               trial_dms[peak_samp] + args.DMstep * wind_samp * 2, model_samp)
+        sn_model = quadratic(dm_model, *dm_fit[0])
+
+        # get best delDM S/N wise
+        args.delDM = dm_model[np.argmax(sn_model)]
+    else:
+        args.delDM = trial_dms[np.argmax(trial_dm_vals)]
 
     print(f"Optimal delta DM: {args.delDM:.4f}   [pc/cm^3]")
 
 
     # plot trial DM val over DM range
     plt.figure(figsize = (10,10))
-    plt.plot(trial_dms, trial_dm_vals, 'k')
+    if args.quadfit:
+        plt.scatter(trial_dms, trial_dm_vals, c = 'k')
+        plt.plot(dm_model, sn_model, 'r')
+    else:
+        plt.plot(trial_dms, trial_dm_vals, 'k')
     ylim = plt.gca().get_ylim()
     plt.plot([args.delDM]*2, ylim, 'r--')
     plt.xlabel("Trial DM [pc/cm^3]", fontsize = 16)
@@ -183,7 +216,7 @@ def save_output(args):
 
     args.f0 = np.min(freq)
 
-    dm_shifts = (args.kdm * args.delDM * (1/freq**2 - 1/args.f0**2) / (args.dt * args.tN * 1e-3)).astype(int)
+    dm_shifts = (args.kdm * args.delDM * (1/freq**2 - 1/args.f0**2) / (args.dt * 1e-3)).astype(int)
 
     # get flagged channels before hand to speed things up
     flagged_chans = np.isnan(dynI[:,0])

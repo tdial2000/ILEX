@@ -46,9 +46,18 @@ if __name__ == "__main__":
 
 
     #plot data 
-    plt.figure("Dynamic Spectrum",figsize = (10,10))
-    plt.imshow(dynspec,aspect = 'auto')
-    plt.xlabel("Time Bins", fontsize = 16)
-    plt.ylabel("Freq Bins", fontsize = 16)
+    fig, ax = plt.subplots(2, 1, figsize = (12,10), gridspec_kw = {'height_ratios':[1, 3]}, sharex = True)
+    ax = ax.flatten()
+    ax[0].plot(np.mean(dynspec, axis = 0), 'k')
+    ax[0].get_xaxis().set_visible(False)
+    ax[0].get_yaxis().set_visible(False)
+    ax[0].set_xlim([0, dynspec.shape[1]])
+
+    ax[1].imshow(dynspec,aspect = 'auto')
+    ax[1].set_xlabel("Time Bins", fontsize = 16)
+    ax[1].set_ylabel("Freq Bins", fontsize = 16)
+
+    fig.tight_layout()
+    fig.subplots_adjust(hspace = 0, wspace = 0)
 
     plt.show()

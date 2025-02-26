@@ -457,7 +457,7 @@ def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
 
 
 def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
-            plot_type = "scatter"):
+            plot_type = "scatter", **kwargs):
     """
     Plot PA profile
 
@@ -504,12 +504,18 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
     # flip PA
     if flipPA:
         PA[PA < 0] += np.pi
+
+
+    if "alpha" not in kwargs.keys():
+        kwargs['alpha'] = 0.5
+    if "color" not in kwargs.keys():
+        kwargs['color'] = 'k'
     
     # plot PA
     # PA_mask = ~np.isnan(PA)
     # ax.scatter(x, PA * 180/np.pi, c = 'k', s = 2)
-    _PLOT(x = x, y = PA * 180/np.pi, yerr = PA_err * 180/np.pi, color = 'k',
-                alpha = 0.5, plot_type = plot_type, ax = ax)
+    _PLOT(x = x, y = PA * 180/np.pi, yerr = PA_err * 180/np.pi,
+             plot_type = plot_type, ax = ax, **kwargs)
 
     if flipPA:
         ax.set_ylim([0, 180])

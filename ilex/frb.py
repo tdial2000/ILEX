@@ -371,6 +371,7 @@ class FRB:
         old_chans = None
 
         # loop through files
+        load_zapchan = ""
         for key in data_files.keys():
 
             file = data_files[key]
@@ -391,11 +392,13 @@ class FRB:
                 if np.any(np.isnan(chans)):
                     self.zap = True
                     log("Finding zapped channels...")
-                    self.metapar.zapchan = get_zapstr(chans, self.par.get_freqs())
+                    load_zapchan = get_zapstr(chans, self.par.get_freqs())
                     if old_chans is not None:
                         if not np.all(old_chans == chans):
                             log("Channels being zapped are different for each Stokes Dynamic spectra!!", stype = "warn")
                     old_chans = chans.copy()
+
+        self.metapar.zapchan = combine_zapchan(self.metapar.zapchan, load_zapchan)
 
 
 
@@ -1681,6 +1684,8 @@ class FRB:
         """
 
         zapchan = self.metapar.zapchan
+        if zapchan is None:
+            zapchan = ""
 
         if resetzap:
             data = self.get_data('fI', get = True, zapchan = "")

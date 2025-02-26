@@ -630,8 +630,8 @@ def _proc(args, pol):
             
             ## Apply baseline corrections
             ds -= bs_mean[:, None]
-            # ds /= bs_std[:, None]
-            print(np.mean(bs_mean), np.mean(bs_std))
+            ds /= bs_std[:, None]
+            # print(np.mean(bs_mean), np.mean(bs_std))
 
             if args.do_chanflag:
                 ds_raw -= bs_mean_raw[:, None]

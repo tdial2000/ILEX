@@ -496,7 +496,7 @@ def zap_chan(f, zap_str):
             if crop_zap:
                 print(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{f[zap_0]}, {f[zap_1]}] MHz")
 
-            seg_idx += list(range(zap_0,zap_1+1,df_step))[::df_step]
+            seg_idx += list(range(zap_0,zap_1+(1*df_step),df_step))[::df_step]
 
         
         # if segment is just a single frequency
@@ -569,6 +569,43 @@ def get_zapstr(chan, freq):
         freq = freq[::-1]
     
     return zap_str
+
+
+
+
+
+
+def combine_zapchan(chan1, chan2):
+    """
+    Combine two zapchan strings together without duplication
+
+    Parameters
+    ----------
+    chan1 : str
+        String of current channels
+    chan2 : str
+        String of channels to add
+
+    Returns
+    -------
+
+    zapstr: str
+        combined String of channels to zap
+
+    """
+    if len(chan2) == 0:
+        return chan1
+
+    chan1_list = chan1.split(',')
+    chan2_list = chan2.split(',')
+
+    zapstr = chan1
+
+    for i, chan in enumerate(chan2_list):
+        if chan not in chan1_list:
+            zapstr += f",{chan}"
+            
+    return zapstr
 
 
 

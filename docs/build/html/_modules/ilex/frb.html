@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ilex.frb &mdash; ILEX 0.9.0 documentation</title>
+  <title>ilex.frb &mdash; ILEX 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -90,7 +90,6 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
@@ -283,7 +282,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prev_par</span> <span class="o">=</span> <span class="n">FRB_params</span><span class="p">(</span><span class="n">EMPTY</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span> <span class="o">=</span> <span class="n">FRB_metaparams</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="n">t_crop</span><span class="p">,</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="n">f_crop</span><span class="p">,</span>
-                        <span class="n">terr_crop</span> <span class="o">=</span> <span class="n">terr_crop</span><span class="p">,</span> <span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span><span class="p">,</span> <span class="n">fN</span> <span class="o">=</span> <span class="n">fN</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">)</span>
+                        <span class="n">terr_crop</span> <span class="o">=</span> <span class="n">terr_crop</span><span class="p">,</span> <span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span><span class="p">,</span> <span class="n">fN</span> <span class="o">=</span> <span class="n">fN</span><span class="p">,</span> <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span><span class="p">)</span>
 
 
         <span class="k">if</span> <span class="n">t_crop</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -450,6 +449,7 @@
         <span class="n">old_chans</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># loop through files</span>
+        <span class="n">load_zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">data_files</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
 
             <span class="n">file</span> <span class="o">=</span> <span class="n">data_files</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
@@ -470,11 +470,13 @@
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">chans</span><span class="p">)):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">zap</span> <span class="o">=</span> <span class="kc">True</span>
                     <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Finding zapped channels...&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">chans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
+                    <span class="n">load_zapchan</span> <span class="o">=</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">chans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
                     <span class="k">if</span> <span class="n">old_chans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">old_chans</span> <span class="o">==</span> <span class="n">chans</span><span class="p">):</span>
                             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Channels being zapped are different for each Stokes Dynamic spectra!!&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
-                    <span class="n">old_chans</span> <span class="o">=</span> <span class="n">chans</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+                    <span class="n">old_chans</span> <span class="o">=</span> <span class="n">chans</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">combine_zapchan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span><span class="p">,</span> <span class="n">load_zapchan</span><span class="p">)</span></div>
 
 
 
@@ -1781,6 +1783,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">zapchan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span>
+        <span class="k">if</span> <span class="n">zapchan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">resetzap</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -2925,7 +2929,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Tyson Dial.</p>
+    <p>&#169; Copyright 2025, Tyson Dial.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

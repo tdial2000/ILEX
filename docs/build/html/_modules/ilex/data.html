@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ilex.data &mdash; ILEX 0.9.0 documentation</title>
+  <title>ilex.data &mdash; ILEX 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -14,7 +14,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=39bb1c6d"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -541,6 +541,11 @@
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">if</span> <span class="n">zap_str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zap_str</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
     <span class="c1"># vals</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">f_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -561,6 +566,8 @@
 
     <span class="c1"># split segments</span>
     <span class="n">zap_segments</span> <span class="o">=</span> <span class="n">zap_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">zap_str</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">zap_segments</span><span class="p">)</span>
     <span class="n">seg_idx</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># for each segment, check for delimiter :, else float cast</span>
@@ -597,7 +604,7 @@
             <span class="k">if</span> <span class="n">crop_zap</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zap range cropped from [</span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">] MHz -&gt; [</span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="n">zap_0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="n">zap_1</span><span class="p">]</span><span class="si">}</span><span class="s2">] MHz&quot;</span><span class="p">)</span>
 
-            <span class="n">seg_idx</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">zap_0</span><span class="p">,</span><span class="n">zap_1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">df_step</span><span class="p">))[::</span><span class="n">df_step</span><span class="p">]</span>
+            <span class="n">seg_idx</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">zap_0</span><span class="p">,</span><span class="n">zap_1</span><span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">df_step</span><span class="p">),</span><span class="n">df_step</span><span class="p">))[::</span><span class="n">df_step</span><span class="p">]</span>
 
         
         <span class="c1"># if segment is just a single frequency</span>
@@ -673,6 +680,63 @@
         <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     
     <span class="k">return</span> <span class="n">zap_str</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="combine_zapchan">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.combine_zapchan">[docs]</a>
+<span class="k">def</span> <span class="nf">combine_zapchan</span><span class="p">(</span><span class="n">chan1</span><span class="p">,</span> <span class="n">chan2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Combine two zapchan strings together without duplication. If chan1 is NoneType, return chan2</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    chan1 : str</span>
+<span class="sd">        String of current channels</span>
+<span class="sd">    chan2 : str</span>
+<span class="sd">        String of channels to add</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    zapstr: str</span>
+<span class="sd">        combined String of channels to zap</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">chan1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">chan2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chan2</span>
+    
+    <span class="k">if</span> <span class="n">chan2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">chan1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chan1</span>
+            
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chan2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">chan1</span>
+
+    <span class="n">chan1_list</span> <span class="o">=</span> <span class="n">chan1</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+    <span class="n">chan2_list</span> <span class="o">=</span> <span class="n">chan2</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="n">zapstr</span> <span class="o">=</span> <span class="n">chan1</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chan2_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">chan</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">chan1_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zapstr</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="n">zapstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chan</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">zapstr</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">chan</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+    <span class="k">return</span> <span class="n">zapstr</span></div>
 
 
 
@@ -1277,7 +1341,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Tyson Dial.</p>
+    <p>&#169; Copyright 2025, Tyson Dial.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

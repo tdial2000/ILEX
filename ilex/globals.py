@@ -51,7 +51,7 @@ _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000", "MJD
 
 # dict of frb meta params
 _G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
-         "tN": 1, "fN": 1, "norm": "None", "zapchan": None}
+         "tN": 1, "fN": 1, "norm": "None", "zapchan": ""}
 
 # dict of hyper parameters``
 _G.hp = {'verbose': False, 'plot_type': 'lines',

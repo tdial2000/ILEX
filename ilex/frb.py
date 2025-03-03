@@ -15,7 +15,6 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from time import time
 import math
 import os, sys
 from copy import deepcopy
@@ -206,7 +205,7 @@ class FRB:
         self.prev_par = FRB_params(EMPTY = True)
 
         self.metapar = FRB_metaparams(t_crop = t_crop, f_crop = f_crop,
-                        terr_crop = terr_crop, tN = tN, fN = fN, norm = norm)
+                        terr_crop = terr_crop, tN = tN, fN = fN, norm = norm, zapchan = zapchan)
 
 
         if t_crop is None:

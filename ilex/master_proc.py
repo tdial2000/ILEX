@@ -601,72 +601,73 @@ def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
     Zap channels, assumes contiguous frequency array
     
     """
+    seg_idx = zap_chan(freq, par['zapchan'])
 
-    # vals
-    df = freq[1] - freq[0]
-    f_min = np.min(freq)
-    f_max = np.max(freq)
+    # # vals
+    # df = freq[1] - freq[0]
+    # f_min = np.min(freq)
+    # f_max = np.max(freq)
 
-    if df < 0:
-        # upperside band
-        fi = f_max
-        df_step = -1
+    # if df < 0:
+    #     # upperside band
+    #     fi = f_max
+    #     df_step = -1
 
-    else:
-        # lowerside band
-        fi = f_min
-        df_step = 1
+    # else:
+    #     # lowerside band
+    #     fi = f_min
+    #     df_step = 1
 
-    df = abs(df)
+    # df = abs(df)
     
-    # split segments
-    zap_segments = par['zapchan'].split(',')
-    seg_idx = []
+    # # split segments
+    # zap_segments = par['zapchan'].split(',')
+    # seg_idx = []
 
-    # for each segment, check for delimiter :, else float cast
-    for _, zap_seg in enumerate(zap_segments):
+    # # for each segment, check for delimiter :, else float cast
+    # for _, zap_seg in enumerate(zap_segments):
 
-        # if segment is a range of frequencies
-        if ":" in zap_seg:
-            zap_range = zap_seg.strip().split(':')
-            zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)
-            zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
+    #     # if segment is a range of frequencies
+    #     if ":" in zap_seg:
+    #         zap_range = zap_seg.strip().split(':')
+    #         zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)
+    #         zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
 
 
-            # check if completely outside bounds
-            if (zap_0 < 0 and zap_1 < 0) or (zap_0 > freq.size -1 and zap_1 > freq.size -1):
-                log(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
-                continue            
+    #         # check if completely outside bounds
+    #         if (zap_0 < 0 and zap_1 < 0) or (zap_0 > freq.size -1 and zap_1 > freq.size -1):
+    #             log(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
+    #             continue            
             
-            # check bounds
-            crop_zap = False
+    #         # check bounds
+    #         crop_zap = False
 
-            if zap_0 < 0:
-                crop_zap = True
-                zap_0 = 0
-            elif zap_0 > freq.size - 1:
-                crop_zap = True
-                zap_0 = freq.size - 1
+    #         if zap_0 < 0:
+    #             crop_zap = True
+    #             zap_0 = 0
+    #         elif zap_0 > freq.size - 1:
+    #             crop_zap = True
+    #             zap_0 = freq.size - 1
 
-            if zap_1 < 0:
-                crop_zap = True
-                zap_1 = 0
-            elif zap_1 > freq.size - 1:
-                crop_zap = True
-                zap_1 = freq.size - 1
+    #         if zap_1 < 0:
+    #             crop_zap = True
+    #             zap_1 = 0
+    #         elif zap_1 > freq.size - 1:
+    #             crop_zap = True
+    #             zap_1 = freq.size - 1
 
-            if crop_zap:
-                log(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{freq[zap_0]}, {freq[zap_1]}] MHz", lpf = False, stype = "warn")
+    #         if crop_zap:
+    #             log(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{freq[zap_0]}, {freq[zap_1]}] MHz", lpf = False, stype = "warn")
 
-            seg_idx += list(range(zap_0,zap_1+df_step,df_step))[::df_step]
+    #         seg_idx += list(range(zap_0,zap_1+df_step,df_step))[::df_step]
         
-        # if segment is just a single frequency
-        else:
-            _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
-            if (_idx < 0) or (_idx > freq.size - 1):
-                log(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
-            else:
-                seg_idx += [_idx]
+    #     # if segment is just a single frequency
+    #     else:
+    #         _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
+    #         if (_idx < 0) or (_idx > freq.size - 1):
+    #             log(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
+    #         else:
+    #             seg_idx += [_idx]
 
 
     # check if seg_idx is empty, i.e. if there is no channel zapping.

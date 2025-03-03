@@ -440,6 +440,11 @@ def zap_chan(f, zap_str):
     
     """
 
+    if zap_str is None:
+        return []
+    if len(zap_str) == 0:
+        return []
+
     # vals
     df = f[1] - f[0]
     f_min = np.min(f)
@@ -460,6 +465,8 @@ def zap_chan(f, zap_str):
 
     # split segments
     zap_segments = zap_str.split(',')
+    print(zap_str)
+    print(zap_segments)
     seg_idx = []
 
     # for each segment, check for delimiter :, else float cast
@@ -577,7 +584,7 @@ def get_zapstr(chan, freq):
 
 def combine_zapchan(chan1, chan2):
     """
-    Combine two zapchan strings together without duplication
+    Combine two zapchan strings together without duplication. If chan1 is NoneType, return chan2
 
     Parameters
     ----------
@@ -593,6 +600,20 @@ def combine_zapchan(chan1, chan2):
         combined String of channels to zap
 
     """
+
+    if chan1 is None:
+        if chan2 is None:
+            return ""
+        else:
+            return chan2
+    
+    if chan2 is None:
+        if chan1 is None:
+            return ""
+        else:
+            return chan1
+            
+
     if len(chan2) == 0:
         return chan1
 
@@ -603,7 +624,10 @@ def combine_zapchan(chan1, chan2):
 
     for i, chan in enumerate(chan2_list):
         if chan not in chan1_list:
-            zapstr += f",{chan}"
+            if zapstr == "":
+                zapstr += f"{chan}"
+            else:
+                zapstr += f",{chan}"
             
     return zapstr
 

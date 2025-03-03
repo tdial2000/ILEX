@@ -3,7 +3,7 @@
 import os, sys
 sys.path.insert(0, os.path.abspath("../.."))
 #'numpy', 'matplotlib', 'yaml', 'scipy', 'mpl_toolkits', 'bilby', 'RMtools_1D',
-autodoc_mock_imports = [ 'data', 'fitting', 'plot', 'logging', 'frbutils', 'widths',
+autodoc_mock_imports = [ 'data', 'fitting', 'plot', 'logging', 'frbutils', 'widths', 'math', 'pyfit', 
                         'master_proc', 'utils', 'globals', 'par', 'frb', 'htr', 'numpy', 'matplotlib', 'yaml', 'scipy', 'mpl_toolkits', 'bilby', 'RMtools_1D', 'script_core', 'inspect', 'ruamel', 'cmasher']
 
 #
@@ -14,9 +14,9 @@ autodoc_mock_imports = [ 'data', 'fitting', 'plot', 'logging', 'frbutils', 'widt
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'ILEX'
-copyright = '2024, Tyson Dial'
+copyright = '2025, Tyson Dial'
 author = 'Tyson Dial'
-release = '0.9.0'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

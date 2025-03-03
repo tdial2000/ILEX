@@ -174,8 +174,7 @@ class FRB:
         if true, apply freq dependant weights when scrunching in freq, i.e. making time profiles, default is True
     fitted_params: dict
         dictionary of fitted values, i.e. RM
-    dynspec_cmap: str
-        cmap for plotting dynamic spectra
+
     """
 
 

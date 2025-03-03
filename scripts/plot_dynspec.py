@@ -41,14 +41,14 @@ if __name__ == "__main__":
     if (args.tN > 1) or (args.fN > 1):
         t_new = (dynspec.shape[1] // args.tN) * args.tN
         dynspec = average(dynspec, axis = 1, N = args.tN)
-        dynspec = average(dynspec, axis = 0, N = args.fN)
+        dynspec = average(dynspec, axis = 0, N = args.fN, nan = True)
 
 
 
     #plot data 
     fig, ax = plt.subplots(2, 1, figsize = (12,10), gridspec_kw = {'height_ratios':[1, 3]}, sharex = True)
     ax = ax.flatten()
-    ax[0].plot(np.mean(dynspec, axis = 0), 'k')
+    ax[0].plot(np.nanmean(dynspec, axis = 0), 'k')
     ax[0].get_xaxis().set_visible(False)
     ax[0].get_yaxis().set_visible(False)
     ax[0].set_xlim([0, dynspec.shape[1]])

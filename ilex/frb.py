@@ -2301,7 +2301,7 @@ class FRB:
 
 
     def fit_RM(self, method = "RMquad", sigma: float = None, rm_prior: list = [-1000, 1000], 
-                pa0_prior: list = [-np.pi/2, np.pi/2], fit_params: dict = None, filename: str = None, **kwargs):
+                pa0_prior: list = [-3.1415926/2, 3.1415926/2], fit_params: dict = None, filename: str = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
 

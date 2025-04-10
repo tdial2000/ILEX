@@ -374,6 +374,97 @@ class weights:
 class FRB_params:
     """
     FRB parameter structure 
+    
+    Attributes
+    ----------
+    name: str
+        name of FRB
+    RA: str            
+        Right ascension
+    DEC: str            
+        Declination
+    MJD: float
+        Modified julian date [days]
+    DM: float             
+        Dispersion Measure [pc/cm^3]
+    bw: float            
+        Bandwidth [MHz]
+    cfreq: float          
+        Central Frequency [MHz]
+    t_lim: List          
+        Time bounds [ms]
+    f_lim: List          
+        Frequency bounds [MHz]
+    t_ref: float
+        Reference point of time-series (0-point)
+    dt: float             
+        delta time [ms]
+    df: float            
+        delta frequency [MHz]
+    nchan: int         
+        Number of channels
+    nsamp: int          
+        Number of samples
+    UP: bool
+        Upper bandwidth
+    RM: float
+        Rotation Measure [Rad/m^2]
+    f0: float
+        Reference frequency [MHz]
+    pa0: float
+        Positon angle at f0
+    tW: np.ndarray
+        time weights
+    fW: np.ndarray
+        frequency weights
+
+
+
+    Parameters
+    ----------
+    name: str
+        name of FRB
+    RA: str            
+        Right ascension
+    DEC: str            
+        Declination
+    DM: float             
+        Dispersion Measure [pc/cm^3]
+    MJD: float
+        Modified julian date [days]
+    bw: float            
+        Bandwidth [MHz]
+    cfreq: float          
+        Central Frequency [MHz]
+    t_lim: List          
+        Time bounds [ms]
+    f_lim: List          
+        Frequency bounds [MHz]
+    t_ref: float
+        Reference point of time-series (0-point)
+    dt: float             
+        delta time [ms]
+    df: float            
+        delta frequency [MHz]
+    nchan: int         
+        Number of channels
+    nsamp: int          
+        Number of samples
+    RM: float
+        Rotation Measure [Rad/m^2]
+    f0: float
+        Reference frequency [MHz]
+    pa0: float
+        Positon angle at f0
+    tW: np.ndarray
+        time weights
+    fW: np.ndarray
+        frequency weights
+    
+    
+
+
+
 
     
     """

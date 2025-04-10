@@ -23,7 +23,6 @@ import sys, inspect
 from .logging import log
 from math import ceil, floor
 import matplotlib.pyplot as plt
-import bilby
 
 # rm synthesis
 from RMtools_1D.do_RMsynth_1D import run_rmsynth

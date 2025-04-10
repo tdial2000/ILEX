@@ -64,6 +64,117 @@ class FRB:
     """
     FRB class for Processing of ASKAP FRB data
 
+    Parameters
+    ----------
+    name: str 
+        Name of FRB
+    RA: str 
+        Right acension position
+    DEC: str 
+        Declination position
+    MJD: float
+        Modified Julian date in days
+    DM: float 
+        Dispersion Measure
+    bw: float 
+        Bandwidth
+    cfreq: float 
+        Central Frequency
+    t_crop: list 
+        Crop start and end phase in Time
+    f_crop: list 
+        Crop start and end phase in Frequency
+    tN: int 
+        Factor for averaging in Time
+    fN: int 
+        Factor for averaging in Frequency
+    t_lim: list 
+        Limits for FRB in Time
+    f_lim: list 
+        Limits for FRB in Frequency
+    t_lim_base: list
+        Base limits of FRB in time (not including t_ref)
+    f_lim_base: list
+        Base limits of FRB in freq 
+    t_ref: float
+        Reference zero-point in time
+    RM: float 
+        Rotation Measure
+    f0: float 
+        Reference Frequency
+    pa0: float 
+        Position angle at reference frequency f0
+    zapchan: str
+        string used for zapping channels, in format -> "850, 860, 870:900" \n
+        each element seperated by a ',' is a seperate channel. If ':' is used, user can specify a range of values \n
+        i.e. 870:900 -> from channel 870 to 900 inclusive of both.
+    verbose: bool 
+        Enable verbose logging
+    norm: str
+        Type of normalisation \n
+        [max] - normalise using maximum \n
+        [absmax] - normalise using absolute maximum \n
+        [None] - Skip normalisation
+    terr_crop: list
+        bounds for off-pulse region in time [min, max] [ms], default is None
+    yaml_file: str
+        parameter yaml file of FRB to load in, default is None
+
+    Attributes
+    ----------
+    par: FRB_params 
+        parameters for FRB
+    this_par: FRB_params 
+        Current instance of 'par'
+    prev_par: FRB_params 
+        Last instance of 'par'
+    metapar: FRB_metaparams 
+        hold meta-parameters for FRB
+    this_metapar: FRB_metaparams 
+        Current instance of 'metapar'
+    prev_metapar: FRB_metaparams 
+        Last instance of 'metapar'
+    ds: Dict 
+        Dictionary of loaded stokes dynamic spectra
+    pol: Dict 
+        Dictionary of loaded Polarisation time series
+    _t: Dict 
+        Dictionary of cropped stokes time series
+    _f: Dict 
+        Dictionary of cropped stokes spectra
+    _ds: Dict 
+        Dictionary of cropped stokes dynamic spectra
+    _freq: np.ndarray 
+        Cropped Frequency array [MHz]
+    _time: np.ndarray
+        Cropped time array [ms]
+    verbose: bool 
+        Enable logging
+    savefig: bool 
+        Save all created figures to files
+    pcol: str 
+        Color of text for logging
+    empty: bool 
+        Variable used to initialise FRB instance and data loading
+    plot_type: str
+        type of plot \n
+        [scatter] - scatter plot with error bars \n
+        [lines] - line plot with error patches
+    show_plots: bool
+        If true, shows plots
+    save_plots: bool
+        If true, saves plots to file
+    residuals: bool
+        if true, a residual panel will appear when plotting a fit using pyfit, default is True
+    plotPosterior: bool
+        if true, will save posterior corner plot when fitting using bayesian method, default is True
+    apply_tw: bool
+        if true, apply time dependant weights when scrunching in time, i.e making spectra, default is True
+    apply_fw: bool
+        if true, apply freq dependant weights when scrunching in freq, i.e. making time profiles, default is True
+    fitted_params: dict
+        dictionary of fitted values, i.e. RM
+
     """
 
 

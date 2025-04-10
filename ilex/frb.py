@@ -2387,7 +2387,7 @@ class FRB:
             # TODO: make reference frequency same as FDF?
 
             # run log-likelihood estimating for Q and U paramters
-            f0 = 0.0
+            f0 = self.par.cfreq
             Q, U = self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr']
             rm, rm_err, pa0, pa0_err = RM_QUfit(Q = Q[mask], U = U[mask], Ierr = Ierr[mask], Qerr = Qerr[mask], 

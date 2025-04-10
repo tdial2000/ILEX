@@ -3,7 +3,7 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   :members:                                    <-- add at least this line
+   :members:                                    
 
 
    {% block methods %}

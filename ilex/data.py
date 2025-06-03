@@ -465,8 +465,8 @@ def zap_chan(f, zap_str):
 
     # split segments
     zap_segments = zap_str.split(',')
-    print(zap_str)
-    print(zap_segments)
+    # print(zap_str)
+    # print(zap_segments)
     seg_idx = []
 
     # for each segment, check for delimiter :, else float cast

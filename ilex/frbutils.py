@@ -48,10 +48,20 @@ def save_frb_to_param_file(frb, file):
     filename = frb._yaml_file
     if file is None:
         file = filename
+    if file is None:
+        name = frb.par.name
+        if type(name) != str:
+            name = "ilex_output"
+        file = f"{name}.yaml"
 
     yaml = YAML()
 
     initpars, yaml_obj = load_param_file(filename, True, False)
+
+    # [filepaths]
+    for key in frb._data_files.keys():
+        update_ruamel_CommentedMap(initpars['data'], key, frb._data_files[key])
+
 
     # [pars]
     for key in _G.p:

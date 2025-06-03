@@ -53,6 +53,9 @@ from .logging import log, get_verbose, set_verbose, log_title
 from .master_proc import master_proc_data
 from .widths import *
 
+# interactive module
+from .interactive import ZapInteractive
+
 
     
 
@@ -366,6 +369,7 @@ class FRB:
 
         ## dict. of files that will be loaded in
         data_files = {"dsI": dsI, "dsQ": dsQ, "dsU": dsU, "dsV": dsV}
+        self._data_files = deepcopy(data_files)
         old_chans = None
 
         # loop through files
@@ -445,7 +449,7 @@ class FRB:
         
 
         if name is None:
-            frbname = self.par.name
+            frbname = str(self.par.name)
             if frbname is None:
                 frbname = "FRBXXXXXX"
             name = os.path.join(os.getcwd(), frbname)
@@ -1090,9 +1094,14 @@ class FRB:
         """
         keys = kwargs.keys()
 
-        if self.crop_units not in ["physical", "phase"]:
-            log("Units for cropping must be one of: ['physical', 'phase'] ", stype = "err")
-            return
+        # if self.crop_units not in ["physical", "phase"]:
+        #     log("Units for cropping must be one of: ['physical', 'phase'] ", stype = "err")
+        #     return
+        
+        if self.crop_units != "physical":
+            self.crop_units = "physical"
+            log("Only 'physical' crop units, i.e. [ms and MHz] are supported now...", stype = "warn")
+
 
         def check_crop_for_str(crop, domain):
             """ Check for crop "min" and "max" specifiers"""
@@ -1665,7 +1674,8 @@ class FRB:
 
 
 
-    def zap_channels(self, chans: str = None, zapzeros: bool = False, zapzerosmargin: float = 1e-5, resetzap: bool = False):
+    def zap_channels(self, chans: str = None, zapzeros: bool = False, zapzerosmargin: float = 1e-5, resetzap: bool = False, interactive = False,
+                    **kwargs):
         """
         Zap channels (uses Stokes I freq spectrum)
 
@@ -1679,27 +1689,54 @@ class FRB:
             margin close to zero at which to zap channels, ratio of max channel flux
         resetzap : bool, optional
             reset channels zapped, by default False
+        interactive : bool, optional
+            Enable interactive zapping mode
+        **kwargs : dict
+            Standard frb parameters that can be overidden (zapchan cannot be overidden)
         """
+
+        if "zapchan" in kwargs.keys():
+            del kwargs['zapchan']
+        
+        # init pars
+        self._load_new_params(**kwargs)
 
         zapchan = self.metapar.zapchan
         if zapchan is None:
             zapchan = ""
 
         if resetzap:
-            data = self.get_data('fI', get = True, zapchan = "")
+            data = self.get_data('fI', get = True, zapchan = "", **kwargs)
             zapchan = get_zapstr(data['fI'], self.par.get_freqs())
         
         if chans is not None:
             zapchan += ("," + chans)
         
         if zapzeros:
-            data = self.get_data('fI', get = True, zapchan = zapchan)
+            data = self.get_data('fI', get = True, zapchan = zapchan, **kwargs)
             data['fI'][np.isnan(data['fI'])] = np.max(data['fI'][~np.isnan(data['fI'])])
             data['fI'][np.abs(data['fI']/np.max(np.abs(data['fI']))) < zapzerosmargin] = np.nan
             zapchan += ("," + get_zapstr(data['fI'], self.par.get_freqs()))
         
+    
+
+        # make sure there are no commas in illegal places
+        test_zapchan = zapchan.strip()
+        if len(test_zapchan) > 0:
+            if test_zapchan[0] == ",":
+                test_zapchan = test_zapchan[1:]
+        if len(test_zapchan) > 0:
+            if test_zapchan[-1] == ",":
+                test_zapchan = test_zapchan[:-1]
+            
+            
+        if interactive:
+            data = self.get_data('dsI', zapchan = test_zapchan, **kwargs, get = True)
+            data['dsI'][np.isnan(data['dsI'][:,0])] = 0.0
+            test_zapchan = ZapInteractive(data['dsI'], data['freq'], zapchan = test_zapchan)
+        
         # save
-        self.metapar.zapchan = zapchan
+        self.metapar.zapchan = test_zapchan
         return
 
 
@@ -2396,14 +2433,14 @@ class FRB:
 
 
         # function for plotting diagnostics
-        if method == "QUfit":
-            def rmquad(f, rm, pa0):
-                angs = pa0 + rm*c**2/(f*1e6)**2
-                return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
-        else:
-            def rmquad(f, rm, pa0):
-                angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
-                return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
+        # if method == "QUfit":
+        #     def rmquad(f, rm, pa0):
+        #         angs = pa0 + rm*c**2/(f*1e6)**2
+        #         return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
+        # else:
+        def rmquad(f, rm, pa0):
+            angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+            return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
 
 
         # put into pyfit structure
@@ -2789,7 +2826,34 @@ class FRB:
 
 
 
+    # def save_crop(self, buffer = 1.2, **kwargs):
+    #     """
+    #     Save just a crop of the data and a modified ilex config file with updated crop params
 
+    #     Parameters
+    #     ----------
+    #     buffer: float
+    #         Amount of padding to put on either side of on-pulse (+ off-pulse) window when
+    #         making new crop.
+
+    #     """
+
+    #     # proc KWARGS
+    #     self._load_new_params(**kwargs) 
+
+    #     stk = []
+    #     for s in "IQUV":
+    #         if self.ds[s] is not None:
+    #             stk += [f"ds{s}"]
+
+
+    #     # make larger crop by taking into account both on-pulse and off-pulse windows
+    #     t_width = 
+    #     t_crop_full = [self.this_metapar.t_crop[0]]
+
+    #     # get data
+    #     # force disable all processing other than cropping
+    #     data = self.get_data(stk, get = True, tN = 1, fN = 1, RM = None, zapchan = "", )
 
 
 

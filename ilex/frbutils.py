@@ -96,7 +96,7 @@ def save_frb_to_param_file(frb, file):
 
         tscatt_args = {}
         for key in frb.fitted_params['tscatt'].keys():
-            if key == "npulse":
+            if key in ["npulse", "sigma"]:
                 continue
             tscatt_args[key] = frb.fitted_params['tscatt'][key].val
         

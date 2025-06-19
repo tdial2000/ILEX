@@ -1,13 +1,13 @@
-Using the FRB.yaml config file
+Tutorial 3: ILEX config files
 ------------------------------
 
 Overview
 ========
 
-For ease of use users have the option of creating an FRB config file that holds all the parameter, metaparameter, hyperparameter and
-aditional plotting/fitting options that can easily be tweaked in one placed. These config files are also used in the 
-additional ILEX scripts provided. A config file can be made by either using the make_FRBconfig.py script or by directly copying the 
-``defaut.yaml`` file in ``ilex/files/``. An FRB config file looks something like the following:
+For ease of use users have the option of creating an FRB config file that holds all the parameters, metaparameters, hyperparameters as well
+as plotting/fitting options that can easily be tweaked in one placed. These config files are also used in the 
+additional ILEX scripts provided. A config file can be made by either using the ``make_config.py`` script or by directly copying the 
+``defaut.yaml`` file in ``ilex/files/`` directory. An FRB config file looks something like the following:
 
 .. code-block:: yaml
 
@@ -59,7 +59,8 @@ additional ILEX scripts provided. A config file can be made by either using the 
 Using the FRB config file
 =========================
 
-An FRB config file can be used when either creating an FRB instance or when using the ``frb.load_data()`` method.
+An FRB config file can be used when either creating an FRB instance or when using the ``frb.load_data()`` method. All 
+the FRB parameters will then be loaded in and ready to use!
 
 .. code-block:: python
 
@@ -67,11 +68,23 @@ An FRB config file can be used when either creating an FRB instance or when usin
     from ilex.frb import FRB
 
     # create FRB instance with config file
-    frb = FRB(yaml_file = "examples/220610.yaml")
+    frb = FRB(yaml_file = "examples/220610.yaml") # or frb = FRB("examples/220610.yaml")
 
 
 .. image:: 220610_dsI_crop.png
    :width: 720pt
 
 
+Saving the FRB instance as a config file
+========================================
+
+The ``.save_data()`` method allows the user to save an FRB instance as a .yaml file for quick use later. To do so,
+set ``save_yaml = True`` and provide a name for the yaml file using the ``yaml_file`` argument. If the FRB instance was 
+created by loading in a yaml file in the first place, that file will be overitten unless ``yaml_file`` is specified. If not, 
+then the .yaml file name will be set to ``<FRB.name>.yaml``. 
+
+.. code-block:: python
+
+    # save frb instance as a .yaml file
+    frb.save_data(save_yaml = True, yaml_file = "FRB220610.yaml")
 

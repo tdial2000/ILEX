@@ -1361,7 +1361,12 @@
 
             <span class="n">keys</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">func_wrap</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
             <span class="c1"># if yerr not specified, include sigma for sampling</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="s1">&#39;sigma&#39;</span> <span class="ow">in</span> <span class="n">statics</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Overiding &#39;yerr&#39; with static [sigma] value!&quot;</span><span class="p">)</span>
+                <span class="n">yerr</span> <span class="o">=</span> <span class="n">statics</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">keys</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">]</span>
             <span class="n">bil_priors</span> <span class="o">=</span> <span class="n">_dict_get</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">keys</span><span class="p">)</span>
 

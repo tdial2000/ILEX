@@ -2,7 +2,7 @@
 ##===============================================##
 ## Author: Tyson Dial
 ## Email: tdial@swin.edu.au
-## Last Updated: 27/05/2025 
+## Last Updated: 04/06/2025 
 ##
 ##
 ## 
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backend_bases import MouseButton
 import time
 from ilex.data import *
+import warnings
 
 RAPIDKEYTHRESHOLD = 0.6
 
@@ -138,9 +139,14 @@ class _MouseZapper:
         press "tab": revert previous zapping
     """
 
-    def __init__(self, fig, ax, ds, freqs, zapchan = None):
+    def __init__(self, fig, ax, ds, freqs, zapchan = None, xlim = None):
 
         self.print_info()
+
+        if xlim is None:
+            xlim = [0.0, 1.0]
+
+        self.xlim = xlim
 
         self.fig = fig
         self.ax = ax
@@ -170,6 +176,7 @@ class _MouseZapper:
         # artists
         self._artists = {'ds': None, 'zapatch': None, 
                          'LMline': None, "RMlines": []}
+        self._last_artist = None
                          
         self.key_press_event = self.fig.canvas.mpl_connect("key_press_event", self._press_key)
         self.xlim_change_event = self.ax.callbacks.connect('xlim_changed', self._xlim_changed)
@@ -190,9 +197,12 @@ class _MouseZapper:
         print("[z]: Enable/Disable zapping mode")
         print("[Left mouse click] (in zapping mode): choose single channel to zap")
         print("[Right mouse click] (in zapping mode): Choose region to zap (zap twice for lower and upper bounds)")
+        print("[up arrow key] (in zapping mode): Move the latest zapping line up 1 freq channel unit")
+        print("[down arrow key] (in zapping mode): Move the latest zapping line down 1 freq channel unit")
         print("[shift] (in zapping mode): Confirm zapping")
         print("[caps lock] (in zapping mode): Revert most recent zapping")
         print("[control] (in zapping mode): remove all zapping")
+        print("[a] (in zapping mode): Automated zapping [default = median method] (requires user input in console)")
         print("[c]: Apply zapping and exit interactive window (this is the only way to apply zapping)\n")
         print("NOTE: Any other way of closing the window beside pressing the [c] key will cancel any zapping!")
         print("#" + "="*100 + "#")
@@ -203,7 +213,7 @@ class _MouseZapper:
         # plot
         self.zap_ds, self.zap_idx = self._zap_ds()
         self._artists['ds'] = self.ax.imshow(self.zap_ds, aspect = 'auto', 
-                                extent = [0.0, 1.0, self.freqs[-1] - self.df/2, self.freqs[0] + self.df/2],
+                                extent = [*self.xlim, self.freqs[-1] - self.df/2, self.freqs[0] + self.df/2],
                                 animated = True, interpolation = "none")
 
         patch_data = np.ones(self.zap_ds.shape[0], dtype = float) * np.nan
@@ -213,7 +223,7 @@ class _MouseZapper:
                                         aspect = 'auto', cmap = 'OrRd', vmax = 1, vmin = 0,
                                         extent = [0.0, 0.02, self.freqs[-1]-self.df/2, self.freqs[0]+self.df/2],
                                         animated = True)
-        self.ax.set_xlim([0.0, 1.0])
+        self.ax.set_xlim(self.xlim)
 
 
 
@@ -248,13 +258,15 @@ class _MouseZapper:
         xlim = self.ax.get_xlim()
         if self._artists['LMline'] is None:
             self._artists['LMline'], = self.ax.plot(xlim, [event.ydata]*2,
-                        linestyle = "--", color = "k", linewidth = 1.0)
+                        linestyle = "--", color = "k", linewidth = 1.0, label = "LMline")
         else:
             self._artists['LMline'].set_ydata([event.ydata]*2)
 
-        self.ax.set_xlim(xlim)
+        # set last artist
+        self._last_artist = self._artists['LMline']
 
         # update figure
+        self.ax.set_xlim(xlim)
         self.fig.canvas.draw()
 
         return
@@ -272,10 +284,13 @@ class _MouseZapper:
         xlim = self.ax.get_xlim()
         
         # get line data?
-        if len(self._artists['RMlines']) < 2:
+        nlines = len(self._artists['RMlines'])
+        if nlines < 2:
             line, = self.ax.plot(xlim, [event.ydata]*2,
-                    linestyle = '--', color = "r", linewidth = 1.0)
+                    linestyle = '--', color = "r", linewidth = 1.0, label = f'RMline_{int(nlines+1)}')
             self._artists['RMlines'].append(line)
+
+            self._last_artist = line
         
             
         
@@ -289,9 +304,11 @@ class _MouseZapper:
             # re-draw line with new height
             self._artists['RMlines'][redraw_idx].set_ydata([event.ydata]*2)
 
-        
-        self.ax.set_xlim(xlim)
+            self._last_artist = self._artists['RMlines'][redraw_idx]
 
+        
+        # update figure
+        self.ax.set_xlim(xlim)
         self.fig.canvas.draw()
 
 
@@ -343,7 +360,6 @@ class _MouseZapper:
         ----------
         event : event.key_press
         """
-
         
         if time.time() - self.last_key_press < RAPIDKEYTHRESHOLD:
             self.last_key_press = time.time()
@@ -374,6 +390,7 @@ class _MouseZapper:
                     self._artists['RMlines'][0].remove()
                     del self._artists['RMlines'][0]
                 
+                self._last_artist = None
                 self.fig.canvas.draw()
             
             self.keys_pressed.add(event.key)
@@ -400,6 +417,8 @@ class _MouseZapper:
                 for i in range(len(self._artists['RMlines'])):
                     self._artists['RMlines'][0].remove()
                     del self._artists['RMlines'][0]
+
+                self._last_artist = None
 
                 # update figure
                 self._update_ax()
@@ -441,10 +460,96 @@ class _MouseZapper:
     
         if event.key == "a":
             # do auto flagging
-            pass
+            print("hi")
+            if not self.zapmode:
+                return
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                zap_threshold = input("-[Input]: Sigma threshold for automated Frequency zapping-\n")
+            try:
+                zap_threshold = float(zap_threshold)
+                print(f"Zapping with a sigma threshold of {zap_threshold}")
+            except:
+                print(f"{zap_threshold} is not a valid floating point number!!!")
+                return
+            
+            zaps = self._auto_flag(zap_threshold)
+
+            if zaps is None:
+                return
+
+            self.zaps.append(zaps)
+
+            # update figure
+            self._update_ax()
+
+            
+            return
+
+        if (event.key in ['up', 'down']) and (self._last_artist is not None) and (self.zapmode):
+            if event.key == 'up':
+                dif = self.df
+            else:
+                dif = -self.df
+            
+            # add dif to line y position
+            self._last_artist.set_ydata([self._last_artist.get_ydata()[0] + dif]*2)
+
+            # update figure
+            self.ax.set_xlim(self.ax.get_xlim())      # this is only here to make sure the figure updates properly
+            self.fig.canvas.draw()
+
 
         
         return
+    
+
+
+    def _auto_flag(self, zap_threshold):
+        """
+        Automated algorithm for zapping frequency channels
+
+        """
+
+        xlim = list(self.ax.get_xlim())
+        ylim = list(self.ax.get_ylim())
+
+        # transform ylim
+        ybounds = [self.freqs[-1] - self.df/2, self.freqs[0] + self.df/2]
+        bw = ybounds[1] - ybounds[0]
+        ylim[0] = 1.0 - (ylim[0] - ybounds[0])/bw
+        ylim[1] = 1.0 - (ylim[1] - ybounds[0])/bw
+
+        ylim = ylim[::-1]
+
+        ds_crop = self.zap_ds.copy()
+        ds_crop[self.zap_idx] = np.nan
+
+        ds_crop = pslice(ds_crop, *xlim, axis = 1)
+        ds_crop = pslice(ds_crop, *ylim, axis = 0)
+        freq_crop = pslice(self.freqs, *ylim)
+
+        # with cropped data, apply zapping algorithm
+        # f_std = np.nanstd(ds_crop, axis = 1)
+        # med_rms = np.nanmedian(f_std)
+        # mad_rms = 1.48 * np.nanmedian(np.abs(f_std - med_rms))
+
+        # zaps = np.where(f_std > (med_rms + zap_threshold * mad_rms))[0]
+
+        mask = np.mean(ds_crop, axis = 1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            mask /= np.nanmedian(mask)
+        zaps = np.where((mask > zap_threshold) & (~np.isnan(mask)))[0]
+
+        if len(zaps) < 1:
+            return None
+
+        mask = np.ones(freq_crop.size)
+        mask[zaps] = np.nan
+
+        return get_zapstr(mask, freq_crop)
 
 
     def _update_ax(self):
@@ -519,7 +624,7 @@ class _Zoom:
 
 
 
-def ZapInteractive(ds, freqs, zapchan = None):
+def ZapInteractive(ds, freqs, times = None, zapchan = None):
     """
     Interactive dynamic spectrum for channel flagging
     
@@ -529,6 +634,10 @@ def ZapInteractive(ds, freqs, zapchan = None):
         dynamic spectrum
     freqs : np.ndarray or array-like
         frequency array
+    times : np.ndarray or array-like
+        time array, optional
+    zapchan : str
+        initial zapchan string (if there is prior zapping applicable)
     
     Returns
     -------
@@ -541,12 +650,15 @@ def ZapInteractive(ds, freqs, zapchan = None):
             if (self.new_X is None) or (self.new_Y is None):
                 return
             
-            Xphase = self.new_X
+            Xphase = list(self.new_X)
             Yphase = [0.0, 1.0]
-            bw = freqs[0] - freqs[-1]
+            bw = freqs[0] - freqs[-1]            
+            tw = mouse_zap.xlim[1] - mouse_zap.xlim[0]
             for i in range(2):
                 Yphase[i] = 1.0 - (self.new_Y[i] - freqs[-1])/bw
+                Xphase[i] = (Xphase[i] - mouse_zap.xlim[0])/tw
             Yphase = Yphase[::-1]
+
             
             # with new phases, 
             zap_ds_crop = pslice(mouse_zap.zap_ds, *Xphase, axis = 1)
@@ -556,14 +668,14 @@ def ZapInteractive(ds, freqs, zapchan = None):
             zap_ds_crop = pslice(zap_ds_crop, *Yphase, axis = 0)
             fs_data = np.mean(zap_ds_crop, axis = 1)
 
-            ts.set_xdata(pslice(np.linspace(0.0, 1.0, mouse_zap.zap_ds.shape[1]), *Xphase))
+            ts.set_xdata(pslice(np.linspace(*mouse_zap.xlim, mouse_zap.zap_ds.shape[1]), *Xphase))
             ts.set_ydata(ts_data)
-            ax_ts.set_xlim(self.new_X)
+            # ax_ts.set_xlim(self.new_X)
             ts_dif = np.nanmax(ts_data) - np.nanmin(ts_data)
             ax_ts.set_ylim([np.nanmin(ts_data) - 0.05*ts_dif, np.nanmax(ts_data) + 0.05*ts_dif])
 
             fs.set_data(fs_data, pslice(freqs, *Yphase))
-            ax_fs.set_ylim(self.new_Y)
+            # ax_fs.set_ylim(self.new_Y)
             fs_dif = np.nanmax(fs_data) - np.nanmin(fs_data)
             ax_fs.set_xlim([np.nanmin(fs_data) - 0.05*fs_dif, np.nanmax(fs_data) + 0.05*fs_dif])
 
@@ -586,9 +698,48 @@ def ZapInteractive(ds, freqs, zapchan = None):
             # replot time and freq series
             zapzoom.update_zoom()
 
+    def _draw_freq_lines(event):
+
+        freq_lines = {}
+        freq_line_labels = []
+        for line in ax_fs.get_lines():
+            line_label = line.get_label()
+            if line_label != "freq":
+                freq_line_labels += [line_label]
+                freq_lines[line_label] = line
+        
+
+        # get any lines from ax_ds
+        for line in ax_ds.get_lines():
+            line_label = line.get_label()
+            if line_label not in freq_lines.keys():
+                freq_lines[line_label], = ax_fs.plot(ax_fs.get_xlim(), line.get_ydata(),
+                                            color = line.get_color(), linestyle = line.get_linestyle(),
+                                            linewidth = line.get_linewidth(), label = line_label)
+                freq_line_labels += [line_label]
+                # freq_lines[line_label].set_xdata(list(ax_fs.get_xlim()))
+            
+            else:
+                if freq_lines[line_label].get_ydata()[0] != line.get_ydata()[0]:
+                    # update y line data
+                    freq_lines[line_label].set_ydata(line.get_ydata())
+        
+        ax_ds_lines = []
+        for line in ax_ds.get_lines():
+            ax_ds_lines += [line.get_label()]
+        
+        if len(freq_line_labels) < 1:
+            return 
+
+        for i in range(len(freq_lines)):
+            if freq_line_labels[i] not in ax_ds_lines:
+                freq_lines[freq_line_labels[i]].remove()
+                del freq_lines[freq_line_labels[i]]
+
+
     
 
-    fig, ax = plt.subplots(2, 2, figsize = (12,12), 
+    fig, ax = plt.subplots(2, 2, figsize = (10,10), 
                 gridspec_kw = {'height_ratios':[1,5],"width_ratios":[6,1]})
     
     ax = ax.flatten()
@@ -603,17 +754,29 @@ def ZapInteractive(ds, freqs, zapchan = None):
     ax_fs.get_xaxis().set_visible(False)
     ax_fs.get_yaxis().set_visible(False)
 
-    mouse_zap = _MouseZapper(fig, ax_ds, ds, freqs, zapchan = zapchan)
+    ax_ts.sharex(ax_ds)
+    ax_fs.sharey(ax_ds)
+
+    if times is None:
+        dynspec_xlim = None
+    else:
+        dt = times[1] - times[0]
+        dynspec_xlim = [times[0] - dt/2, times[-1] + dt/2]
+    print(dynspec_xlim)
+
+    mouse_zap = _MouseZapper(fig, ax_ds, ds, freqs, zapchan = zapchan, xlim = dynspec_xlim)
     fig.canvas.mpl_connect("key_press_event", _key_press)
+    fig.canvas.mpl_connect("draw_event", _draw_freq_lines)
 
     zapzoom = ZapZoom(ax_ds)
     
     # plot time and freq series
     ts, = ax_ts.plot([],[], color = 'k', linewidth = 1.5)
-    fs, = ax_fs.plot([],[], color = 'k', linewidth = 1.5)
-    # ax_ts.set_xlim([0.0, 1.0])
-    # ax_fs.set_ylim([freqs[-1] - mouse_zap.df/2, freqs[0] + mouse_zap.df/2])
+    fs, = ax_fs.plot([],[], color = 'k', linewidth = 1.5, label = "freq")
+
     ax_ds.set_ylabel("Freq [MHz]", fontsize = 16)
+    if times is not None:
+        ax_ds.set_xlabel("Time [ms]", fontsize = 16)
 
     zapzoom.update_zoom()
 

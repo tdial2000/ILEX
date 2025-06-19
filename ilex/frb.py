@@ -369,6 +369,9 @@ class FRB:
 
         ## dict. of files that will be loaded in
         data_files = {"dsI": dsI, "dsQ": dsQ, "dsU": dsU, "dsV": dsV}
+        for dkey in data_files.keys():
+            if data_files[dkey] is not None:
+                data_files[dkey] = os.path.abspath(data_files[dkey])
         self._data_files = deepcopy(data_files)
         old_chans = None
 
@@ -1733,7 +1736,7 @@ class FRB:
         if interactive:
             data = self.get_data('dsI', zapchan = test_zapchan, **kwargs, get = True)
             data['dsI'][np.isnan(data['dsI'][:,0])] = 0.0
-            test_zapchan = ZapInteractive(data['dsI'], data['freq'], zapchan = test_zapchan)
+            test_zapchan = ZapInteractive(data['dsI'], data['freq'], data['time'], zapchan = test_zapchan)
         
         # save
         self.metapar.zapchan = test_zapchan

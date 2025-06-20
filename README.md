@@ -19,6 +19,14 @@ Once the git repo is cloned, cd into the folder and run the following command in
 
 `source install_ilex.sh`
 
+To start using the new venv, source the `activate` script:
+
+`source <venv_filepath>/<venv_name>/bin/activate`
+
+and to exit the venv:
+
+`deactivate`
+
 If using a Conda enviroment and the above script is not used, you will need to set the `ILEX_PATH`enviromental variable in the 
 `ilex/__init__.py` file.
 

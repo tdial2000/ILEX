@@ -105,9 +105,9 @@ FRB.</p>
 </pre></div>
 </div>
 <p>Then we will load in our FRB data. Example data can be found in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>. For now we will load in
-the Stokes Power dynamic spectrum, i.e. <code class="docutils literal notranslate"><span class="pre">ds_I</span></code></p>
+the Stokes Power dynamic spectrum, i.e. <code class="docutils literal notranslate"><span class="pre">dsI</span></code></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRB220610&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_I</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">dsI</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the above code, we initialised an instance of the FRB class and named the instance <code class="docutils literal notranslate"><span class="pre">FRB220610</span></code>. FRB220610 has a

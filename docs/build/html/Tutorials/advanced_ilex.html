@@ -102,7 +102,7 @@
 <span class="c1"># initialise FRB instance and load data</span>
 <span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRB220610&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span>
             <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1103.5</span><span class="p">,</span> <span class="mi">1200</span><span class="p">])</span>
-<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_I</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">dsI</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We can fit the time series burst as a sum of Gaussian pulses convolved with a common one-sided exponential</p>
@@ -165,14 +165,14 @@ statistics</p>
 <p>where <span class="math notranslate nohighlight">\(\nu_{0}\)</span> is the reference frequency. If this is not set, the central frequency <code class="docutils literal notranslate"><span class="pre">cfreq</span></code>
 will be used instead.</p>
 <ol class="arabic simple" start="2">
-<li><p>Faraday Depth fitting through RM synthesis using the <code class="docutils literal notranslate"><span class="pre">RMtools</span></code> package <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">RMsynth</span></code></p></li>
+<li><p>Faraday Depth fitting through RM synthesis using the <code class="docutils literal notranslate"><span class="pre">RMtools</span></code> package <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">&quot;RMsynth&quot;</span></code></p></li>
 </ol>
 <p><a class="reference external" href="https://github.com/CIRADA-Tools/RM-Tools">https://github.com/CIRADA-Tools/RM-Tools</a></p>
 <ol class="arabic simple" start="3">
 <li><p>QU-fitting using methods described in the following papers <code class="docutils literal notranslate"><span class="pre">method</span> <span class="pre">=</span> <span class="pre">&quot;QUfit&quot;</span></code></p></li>
 </ol>
-<p><a class="reference external" href="https://www.science.org/doi/abs/10.1126/science.aaw5903">https://www.science.org/doi/abs/10.1126/science.aaw5903</a>
-<a class="reference external" href="https://arxiv.org/abs/2505.17497">https://arxiv.org/abs/2505.17497</a></p>
+<p><a class="reference external" href="https://www.science.org/doi/abs/10.1126/science.aaw5903">https://www.science.org/doi/abs/10.1126/science.aaw5903</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/2505.17497">https://arxiv.org/abs/2505.17497</a></p>
 <p>First we load in the stokes <code class="docutils literal notranslate"><span class="pre">Q</span></code> and <code class="docutils literal notranslate"><span class="pre">U</span></code> dynamic spectrum and use the <code class="docutils literal notranslate"><span class="pre">.fit_RM()</span></code> method,
 here we will use RM synthesis</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load in data</span>
@@ -208,7 +208,7 @@ is show below of how a user may fit for it.</p>
 <p>in the code above, we use the least squares algorithm to fit for scintillation. A unique feature of this method is that we can subtract out
 the broad spectral features of the FRB before fitting for scintillation, thus only fitting through the residuals. This is done by fitting the
 broad spectral features using a polynomial of order <code class="docutils literal notranslate"><span class="pre">n</span></code>, which the user must specify as an argument to the ILEX method. (<strong>NOTE: subtracting out
-the broad spectral features of the FRB can bias the decorrelation bandwdith that is fitting is some cases, know exactly what you are fitting and why
+the broad spectral features of the FRB can bias the decorrelation bandwdith that is fitted in some cases. Know exactly what you are fitting and why
 before doing so!</strong>)</p>
 </section>
 </section>

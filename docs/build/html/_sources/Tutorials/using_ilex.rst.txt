@@ -18,12 +18,12 @@ FRB.
     import matplotlib.pyplot as plt     # for external plotting
 
 Then we will load in our FRB data. Example data can be found in ``examples/``. For now we will load in
-the Stokes Power dynamic spectrum, i.e. ``ds_I``
+the Stokes Power dynamic spectrum, i.e. ``dsI``
 
 .. code-block:: python
 
     frb = FRB(name = "FRB220610", cfreq = 1271.5, bw = 336, dt = 50e-3, df = 4)
-    frb.load_data(ds_I = "examples/220610_dsI.npy")
+    frb.load_data(dsI = "examples/220610_dsI.npy")
 
 In the above code, we initialised an instance of the FRB class and named the instance ``FRB220610``. FRB220610 has a 
 *central frequency* and *bandwidth* of  ``1271.5 MHz`` and ``336 MHz`` respectively, hence we set ``cfreq = 1271.5`` and

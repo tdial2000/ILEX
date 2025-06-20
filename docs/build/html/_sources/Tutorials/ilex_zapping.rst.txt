@@ -90,9 +90,11 @@ The ``.zap_channels()`` method also provides an interactive mode that allows the
     frb.zap_channels(interactive = True)
 
 
-.. image:: interactive_zapping.png
+.. figure:: interactive_zapping.png
    :width: 720pt
-   :alt: Interactive zapping GUI. Orange patches on LHS of dynamic spectra show flagged channels, red lines show user defined region ready to zap.
+   
+   Interactive zapping GUI. Orange patches on LHS of dynamic spectra show 
+   flagged channels, red lines show user defined region ready to zap.
 
 **NOTE: The interactive zapping utility will automatically load in any prior zapping that has been applied.**
 
@@ -101,7 +103,7 @@ Loading in data with prior zapping
 ==================================
 
 If any data that is loaded in, already has zapping applied, ILEX will detect these channels and update ``zapchan`` accordingly. ILEX does this 
-by checking whiic frequency channels in the dynamic spectrum are set to ``np.nan``.
+by checking which frequency channels in the dynamic spectrum are set to ``np.nan``.
 
 
 

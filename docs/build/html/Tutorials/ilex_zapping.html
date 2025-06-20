@@ -155,13 +155,19 @@ string with additional frequency channels</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="n">interactive</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="Tutorials/interactive_zapping.png"><img alt="Interactive zapping GUI. Orange patches on LHS of dynamic spectra show flagged channels, red lines show user defined region ready to zap." src="Tutorials/interactive_zapping.png" style="width: 720pt;" /></a>
+<figure class="align-default" id="id1">
+<a class="reference internal image-reference" href="../_images/interactive_zapping.png"><img alt="../_images/interactive_zapping.png" src="../_images/interactive_zapping.png" style="width: 720pt;" /></a>
+<figcaption>
+<p><span class="caption-text">Interactive zapping GUI. Orange patches on LHS of dynamic spectra show
+flagged channels, red lines show user defined region ready to zap.</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
 <p><strong>NOTE: The interactive zapping utility will automatically load in any prior zapping that has been applied.</strong></p>
 </section>
 <section id="loading-in-data-with-prior-zapping">
 <h2>Loading in data with prior zapping<a class="headerlink" href="#loading-in-data-with-prior-zapping" title="Link to this heading"></a></h2>
 <p>If any data that is loaded in, already has zapping applied, ILEX will detect these channels and update <code class="docutils literal notranslate"><span class="pre">zapchan</span></code> accordingly. ILEX does this
-by checking whiic frequency channels in the dynamic spectrum are set to <code class="docutils literal notranslate"><span class="pre">np.nan</span></code>.</p>
+by checking which frequency channels in the dynamic spectrum are set to <code class="docutils literal notranslate"><span class="pre">np.nan</span></code>.</p>
 </section>
 </section>
 

@@ -15,7 +15,7 @@ Following the last tutorial, load in the Power dynamic spectra data of 220610 an
     # initialise FRB instance and load data
     frb = FRB(name = "FRB220610", cfreq = 1271.5, bw = 336, dt = 50e-3, df = 4, t_crop = [20.9, 23.8],
                 f_crop = [1103.5, 1200])
-    frb.load_data(ds_I = "examples/220610_dsI.npy")  
+    frb.load_data(dsI = "examples/220610_dsI.npy")  
 
 We can fit the time series burst as a sum of Gaussian pulses convolved with a common one-sided exponential
 
@@ -92,13 +92,14 @@ We can easily fit for the rotation measure (RM). Ilex provides 3 different metho
 where :math:`\nu_{0}` is the reference frequency. If this is not set, the central frequency ``cfreq``
 will be used instead. 
 
-2. Faraday Depth fitting through RM synthesis using the ``RMtools`` package ``method = RMsynth``
+2. Faraday Depth fitting through RM synthesis using the ``RMtools`` package ``method = "RMsynth"``
 
 https://github.com/CIRADA-Tools/RM-Tools
 
 3. QU-fitting using methods described in the following papers ``method = "QUfit"``
 
 https://www.science.org/doi/abs/10.1126/science.aaw5903
+
 https://arxiv.org/abs/2505.17497
 
 
@@ -152,6 +153,6 @@ is show below of how a user may fit for it.
 in the code above, we use the least squares algorithm to fit for scintillation. A unique feature of this method is that we can subtract out 
 the broad spectral features of the FRB before fitting for scintillation, thus only fitting through the residuals. This is done by fitting the
 broad spectral features using a polynomial of order ``n``, which the user must specify as an argument to the ILEX method. (**NOTE: subtracting out
-the broad spectral features of the FRB can bias the decorrelation bandwdith that is fitting is some cases, know exactly what you are fitting and why
+the broad spectral features of the FRB can bias the decorrelation bandwdith that is fitted in some cases. Know exactly what you are fitting and why
 before doing so!**)
 

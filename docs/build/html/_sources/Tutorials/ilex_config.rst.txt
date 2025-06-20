@@ -4,7 +4,7 @@ Tutorial 3: ILEX config files
 Overview
 ========
 
-For ease of use users have the option of creating an FRB config file that holds all the parameters, metaparameters, hyperparameters as well
+For ease of use, users have the option of creating an FRB config file that holds all the parameters, metaparameters, hyperparameters as well
 as plotting/fitting options that can easily be tweaked in one placed. These config files are also used in the 
 additional ILEX scripts provided. A config file can be made by either using the ``make_config.py`` script or by directly copying the 
 ``defaut.yaml`` file in ``ilex/files/`` directory. An FRB config file looks something like the following:
@@ -80,7 +80,7 @@ Saving the FRB instance as a config file
 
 The ``.save_data()`` method allows the user to save an FRB instance as a .yaml file for quick use later. To do so,
 set ``save_yaml = True`` and provide a name for the yaml file using the ``yaml_file`` argument. If the FRB instance was 
-created by loading in a yaml file in the first place, that file will be overitten unless ``yaml_file`` is specified. If not, 
+created by loading in a yaml file in the first place, that file will be overwritten unless ``yaml_file`` is specified. If not, 
 then the .yaml file name will be set to ``<FRB.name>.yaml``. 
 
 .. code-block:: python

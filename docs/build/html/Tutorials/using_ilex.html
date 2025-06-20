@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using ILEX &mdash; ILEX 1.0.0 documentation</title>
+  <title>Tutorial 1: Loading and plotting data &mdash; ILEX 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Advanced functions" href="advanced_ilex.html" />
+    <link rel="next" title="Tutorial 2: Fitting methods" href="advanced_ilex.html" />
     <link rel="prev" title="How does ILEX work?" href="how_ilex_works.html" /> 
 </head>
 
@@ -49,15 +49,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="how_ilex_works.html">How ILEX works</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Using ILEX</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 1: Loading and plotting data</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#loading-data">Loading data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cropping-and-plotting-data">Cropping and plotting data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#processing-data-and-the-get-data-function">processing data and the get_data() function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#saving-data">Saving data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Advanced ILEX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">ILEX config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 2: Fitting methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 3: ILEX config files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 4: Weighting data in time/freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_zapping.html">Tutorial 5: Channel zapping</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex_scripts.html">ILEX scripts</a></li>
 </ul>
 </li>
@@ -79,7 +81,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
-      <li class="breadcrumb-item active">Using ILEX</li>
+      <li class="breadcrumb-item active">Tutorial 1: Loading and plotting data</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/Tutorials/using_ilex.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -89,8 +91,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="using-ilex">
-<h1>Using ILEX<a class="headerlink" href="#using-ilex" title="Link to this heading"></a></h1>
+  <section id="tutorial-1-loading-and-plotting-data">
+<h1>Tutorial 1: Loading and plotting data<a class="headerlink" href="#tutorial-1-loading-and-plotting-data" title="Link to this heading"></a></h1>
 <p>This brief tutorial will go through an example of using ILEX. The example data being used is an ASKAP observation
 of the FRB 20220610A, details of the FRB can be found in the following paper:</p>
 <p><a class="reference external" href="https://www.science.org/doi/abs/10.1126/science.adf2678">https://www.science.org/doi/abs/10.1126/science.adf2678</a></p>
@@ -102,30 +104,30 @@ FRB.</p>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>     <span class="c1"># for external plotting</span>
 </pre></div>
 </div>
-<p>Then we will load in our FRB data. Example VELA data can be found in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>. For now we will load in
-the Stokes Power dynamic spectrum, i.e. <code class="docutils literal notranslate"><span class="pre">ds_I</span></code></p>
+<p>Then we will load in our FRB data. Example data can be found in <code class="docutils literal notranslate"><span class="pre">examples/</span></code>. For now we will load in
+the Stokes Power dynamic spectrum, i.e. <code class="docutils literal notranslate"><span class="pre">dsI</span></code></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FRB220610&quot;</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="mf">1271.5</span><span class="p">,</span> <span class="n">bw</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="mf">50e-3</span><span class="p">,</span> <span class="n">df</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">ds_I</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
+<span class="n">frb</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">dsI</span> <span class="o">=</span> <span class="s2">&quot;examples/220610_dsI.npy&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the above code, we initialised an instance of the FRB class. We named the instance <code class="docutils literal notranslate"><span class="pre">FRB220610</span></code> and set the
-<em>central frequency</em> and <em>bandwidth</em> of the observation to <code class="docutils literal notranslate"><span class="pre">cfreq</span> <span class="pre">=</span> <span class="pre">1271.5</span> <span class="pre">MHz</span></code> and <code class="docutils literal notranslate"><span class="pre">bw</span> <span class="pre">=</span> <span class="pre">336</span> <span class="pre">MHZ</span></code> respectively.
-The FRB Dynamic spectra example data has a time resolution of <code class="docutils literal notranslate"><span class="pre">50us</span></code> and frequency resolution of <code class="docutils literal notranslate"><span class="pre">4MHz</span></code>.</p>
+<p>In the above code, we initialised an instance of the FRB class and named the instance <code class="docutils literal notranslate"><span class="pre">FRB220610</span></code>. FRB220610 has a
+<em>central frequency</em> and <em>bandwidth</em> of  <code class="docutils literal notranslate"><span class="pre">1271.5</span> <span class="pre">MHz</span></code> and <code class="docutils literal notranslate"><span class="pre">336</span> <span class="pre">MHz</span></code> respectively, hence we set <code class="docutils literal notranslate"><span class="pre">cfreq</span> <span class="pre">=</span> <span class="pre">1271.5</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bw</span> <span class="pre">=</span> <span class="pre">336</span></code>. The data we are loading in has an intrinsic time and frequency resolution of <code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">us</span></code> and <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">MHz</span></code> respectively,
+so we also need to set <code class="docutils literal notranslate"><span class="pre">dt</span> <span class="pre">=</span> <span class="pre">0.050</span></code> and <code class="docutils literal notranslate"><span class="pre">df</span> <span class="pre">=</span> <span class="pre">4</span></code>. <strong>It is important to note that time and frequency are in units of milliseconds (ms)
+and MHz respectively</strong>.</p>
 </section>
 <section id="cropping-and-plotting-data">
 <h2>Cropping and plotting data<a class="headerlink" href="#cropping-and-plotting-data" title="Link to this heading"></a></h2>
 <p>Now that the data is loaded in, we want to plot it. We can do so by simply calling the <code class="docutils literal notranslate"><span class="pre">.plot_data()</span></code> method.
 Here we are going to plot the full Stokes I dynamic spectrum. Make sure to set either <code class="docutils literal notranslate"><span class="pre">show_plots</span></code> or <code class="docutils literal notranslate"><span class="pre">save_plots</span></code>
-to <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+to <code class="docutils literal notranslate"><span class="pre">True</span></code> (<code class="docutils literal notranslate"><span class="pre">show_plots</span></code> enables interactive windows, <code class="docutils literal notranslate"><span class="pre">save_plots</span></code> saves png files of the plots)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">show_plots</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/220610_dsI.png"><img alt="../_images/220610_dsI.png" src="../_images/220610_dsI.png" style="width: 720pt;" /></a>
-<p>Everytime ILEX uses data for plotting etc. a crop is used, since FRBs are very narrow. To define a crop the <code class="docutils literal notranslate"><span class="pre">t_crop</span></code>
+<p>Everytime ILEX uses data for plotting, fitting etc. a crop is used, since FRBs are very narrow. To define a crop the <code class="docutils literal notranslate"><span class="pre">t_crop</span></code>
 and <code class="docutils literal notranslate"><span class="pre">f_crop</span></code> parameters must be specified. By default they are <code class="docutils literal notranslate"><span class="pre">[&quot;min&quot;,</span> <span class="pre">&quot;max&quot;]</span></code> which denotes the entire
-dynamic spectrum. You can either specify a crop in terms of phase units, or in units of <code class="docutils literal notranslate"><span class="pre">ms</span> <span class="pre">for</span> <span class="pre">t_crop</span></code> and
-<code class="docutils literal notranslate"><span class="pre">MHz</span> <span class="pre">for</span> <span class="pre">f_crop</span></code> which can be done by changing <code class="docutils literal notranslate"><span class="pre">crop_units</span></code>. We can crop the above FRB burst which gives us
-the following plot</p>
+dynamic spectrum.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;dsI&quot;</span><span class="p">,</span> <span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1103.5</span><span class="p">,</span> <span class="mi">1200</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -135,8 +137,8 @@ there own plots. In which case, ILEX can act more like a data container to retri
 </section>
 <section id="processing-data-and-the-get-data-function">
 <h2>processing data and the get_data() function<a class="headerlink" href="#processing-data-and-the-get-data-function" title="Link to this heading"></a></h2>
-<p>Perhaps the most powerful class method in ILEX is the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> function. See the documentation for
-more avanced usage. As a simple excersise we will retrieve a crop of the above FRB and plot the time series burst profile.</p>
+<p>Perhaps the most powerful class method in ILEX is the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method.
+As a simple excersise we will retrieve a crop of the above FRB and plot the stokes I time series profile.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># get time series profile</span>
 <span class="n">frb</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">t_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">20.9</span><span class="p">,</span> <span class="mf">23.8</span><span class="p">],</span> <span class="n">f_crop</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1103.5</span><span class="p">,</span> <span class="mi">1200</span><span class="p">])</span>     <span class="c1"># set crop params, can also just pass these in the .get_data() method</span>
 <span class="n">tI</span> <span class="o">=</span> <span class="n">frb</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;tI&quot;</span><span class="p">],</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)[</span><span class="s1">&#39;tI&#39;</span><span class="p">]</span>     <span class="c1"># get data</span>
@@ -156,11 +158,13 @@ more avanced usage. As a simple excersise we will retrieve a crop of the above F
 </section>
 <section id="saving-data">
 <h2>Saving data<a class="headerlink" href="#saving-data" title="Link to this heading"></a></h2>
-<p>Data crops can be saved to file. Note: you do not need to call the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> since this will be done when
+<p>Data crops can be saved to file. Note: you do not need to call the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method since this will be done when
 <code class="docutils literal notranslate"><span class="pre">.save_data()</span></code> is called.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">save_data</span><span class="p">(</span><span class="n">data_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tI&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
+<p>This will save a .npy file called <code class="docutils literal notranslate"><span class="pre">FRB220610_tI.npy</span></code>. Multiple files will be saved depending on the list of data products
+provided to the <code class="docutils literal notranslate"><span class="pre">.get_data()</span></code> method.</p>
 </section>
 </section>
 
@@ -169,7 +173,7 @@ more avanced usage. As a simple excersise we will retrieve a crop of the above F
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="how_ilex_works.html" class="btn btn-neutral float-left" title="How does ILEX work?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="advanced_ilex.html" class="btn btn-neutral float-right" title="Advanced functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="advanced_ilex.html" class="btn btn-neutral float-right" title="Tutorial 2: Fitting methods" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

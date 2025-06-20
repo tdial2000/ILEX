@@ -1,8 +1,8 @@
 data:  # file paths for stokes dynamic spectra
-  dsI: "examples/220610_dsI.npy"
-  dsQ: "examples/220610_dsQ.npy"
-  dsU: "examples/220610_dsU.npy"
-  dsV: "examples/220610_dsV.npy"
+  dsI: "../examples/220610_dsI.npy"
+  dsQ: "../examples/220610_dsQ.npy"
+  dsU: "../examples/220610_dsU.npy"
+  dsV: "../examples/220610_dsV.npy"
 
 par:   # parameters
   name:   "FRB220610"

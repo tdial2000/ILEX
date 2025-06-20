@@ -128,6 +128,9 @@
 <span class="kn">from</span> <span class="nn">.master_proc</span> <span class="kn">import</span> <span class="n">master_proc_data</span>
 <span class="kn">from</span> <span class="nn">.widths</span> <span class="kn">import</span> <span class="o">*</span>
 
+<span class="c1"># interactive module</span>
+<span class="kn">from</span> <span class="nn">.interactive</span> <span class="kn">import</span> <span class="n">ZapInteractive</span>
+
 
     
 
@@ -445,6 +448,10 @@
 
         <span class="c1">## dict. of files that will be loaded in</span>
         <span class="n">data_files</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dsI&quot;</span><span class="p">:</span> <span class="n">dsI</span><span class="p">,</span> <span class="s2">&quot;dsQ&quot;</span><span class="p">:</span> <span class="n">dsQ</span><span class="p">,</span> <span class="s2">&quot;dsU&quot;</span><span class="p">:</span> <span class="n">dsU</span><span class="p">,</span> <span class="s2">&quot;dsV&quot;</span><span class="p">:</span> <span class="n">dsV</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">dkey</span> <span class="ow">in</span> <span class="n">data_files</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">data_files</span><span class="p">[</span><span class="n">dkey</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">data_files</span><span class="p">[</span><span class="n">dkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">data_files</span><span class="p">[</span><span class="n">dkey</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_files</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">data_files</span><span class="p">)</span>
         <span class="n">old_chans</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># loop through files</span>
@@ -527,7 +534,7 @@
         
 
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">frbname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">frbname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">frbname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">frbname</span> <span class="o">=</span> <span class="s2">&quot;FRBXXXXXX&quot;</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">frbname</span><span class="p">)</span>
@@ -1182,9 +1189,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_units</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;physical&quot;</span><span class="p">,</span> <span class="s2">&quot;phase&quot;</span><span class="p">]:</span>
-            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Units for cropping must be one of: [&#39;physical&#39;, &#39;phase&#39;] &quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;err&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
+        <span class="c1"># if self.crop_units not in [&quot;physical&quot;, &quot;phase&quot;]:</span>
+        <span class="c1">#     log(&quot;Units for cropping must be one of: [&#39;physical&#39;, &#39;phase&#39;] &quot;, stype = &quot;err&quot;)</span>
+        <span class="c1">#     return</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_units</span> <span class="o">!=</span> <span class="s2">&quot;physical&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crop_units</span> <span class="o">=</span> <span class="s2">&quot;physical&quot;</span>
+            <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Only &#39;physical&#39; crop units, i.e. [ms and MHz] are supported now...&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+
 
         <span class="k">def</span> <span class="nf">check_crop_for_str</span><span class="p">(</span><span class="n">crop</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot; Check for crop &quot;min&quot; and &quot;max&quot; specifiers&quot;&quot;&quot;</span>
@@ -1765,7 +1777,8 @@
 
 <div class="viewcode-block" id="FRB.zap_channels">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.zap_channels">[docs]</a>
-    <span class="k">def</span> <span class="nf">zap_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chans</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">zapzeros</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">zapzerosmargin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">resetzap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">zap_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chans</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">zapzeros</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">zapzerosmargin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">resetzap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">interactive</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Zap channels (uses Stokes I freq spectrum)</span>
 
@@ -1779,27 +1792,54 @@
 <span class="sd">            margin close to zero at which to zap channels, ratio of max channel flux</span>
 <span class="sd">        resetzap : bool, optional</span>
 <span class="sd">            reset channels zapped, by default False</span>
+<span class="sd">        interactive : bool, optional</span>
+<span class="sd">            Enable interactive zapping mode</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Standard frb parameters that can be overidden (zapchan cannot be overidden)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;zapchan&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;zapchan&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># init pars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_new_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="n">zapchan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span>
         <span class="k">if</span> <span class="n">zapchan</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">resetzap</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">zapchan</span> <span class="o">=</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">())</span>
         
         <span class="k">if</span> <span class="n">chans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">zapchan</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">chans</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">zapzeros</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;fI&#39;</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])])</span>
             <span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">])))</span> <span class="o">&lt;</span> <span class="n">zapzerosmargin</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">zapchan</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;,&quot;</span> <span class="o">+</span> <span class="n">get_zapstr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fI&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">get_freqs</span><span class="p">()))</span>
         
+    
+
+        <span class="c1"># make sure there are no commas in illegal places</span>
+        <span class="n">test_zapchan</span> <span class="o">=</span> <span class="n">zapchan</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_zapchan</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">test_zapchan</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;,&quot;</span><span class="p">:</span>
+                <span class="n">test_zapchan</span> <span class="o">=</span> <span class="n">test_zapchan</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_zapchan</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">test_zapchan</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;,&quot;</span><span class="p">:</span>
+                <span class="n">test_zapchan</span> <span class="o">=</span> <span class="n">test_zapchan</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            
+            
+        <span class="k">if</span> <span class="n">interactive</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="s1">&#39;dsI&#39;</span><span class="p">,</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">test_zapchan</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">get</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">test_zapchan</span> <span class="o">=</span> <span class="n">ZapInteractive</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;dsI&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">zapchan</span> <span class="o">=</span> <span class="n">test_zapchan</span><span class="p">)</span>
+        
         <span class="c1"># save</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">zapchan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metapar</span><span class="o">.</span><span class="n">zapchan</span> <span class="o">=</span> <span class="n">test_zapchan</span>
         <span class="k">return</span></div>
 
 
@@ -2419,7 +2459,7 @@
 <div class="viewcode-block" id="FRB.fit_RM">
 <a class="viewcode-back" href="../../_autosummary/ilex.frb.html#ilex.frb.FRB.fit_RM">[docs]</a>
     <span class="k">def</span> <span class="nf">fit_RM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;RMquad&quot;</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rm_prior</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> 
-                <span class="n">pa0_prior</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">pa0_prior</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">3.1415926</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">3.1415926</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span> <span class="n">fit_params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit Spectra for Rotation Measure</span>
 
@@ -2505,7 +2545,7 @@
             <span class="c1"># TODO: make reference frequency same as FDF?</span>
 
             <span class="c1"># run log-likelihood estimating for Q and U paramters</span>
-            <span class="n">f0</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">f0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">par</span><span class="o">.</span><span class="n">cfreq</span>
             <span class="n">Q</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">]</span>
             <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">]</span>
             <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span> <span class="o">=</span> <span class="n">RM_QUfit</span><span class="p">(</span><span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">U</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">Ierr</span> <span class="o">=</span> <span class="n">Ierr</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="n">Qerr</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> 
@@ -2514,14 +2554,14 @@
 
 
         <span class="c1"># function for plotting diagnostics</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;QUfit&quot;</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
-                <span class="n">angs</span> <span class="o">=</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">f</span><span class="o">*</span><span class="mf">1e6</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-                <span class="k">return</span> <span class="mi">90</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
-                <span class="n">angs</span> <span class="o">=</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">1e12</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-                <span class="k">return</span> <span class="mi">90</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">))</span>
+        <span class="c1"># if method == &quot;QUfit&quot;:</span>
+        <span class="c1">#     def rmquad(f, rm, pa0):</span>
+        <span class="c1">#         angs = pa0 + rm*c**2/(f*1e6)**2</span>
+        <span class="c1">#         return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))</span>
+        <span class="c1"># else:</span>
+        <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+            <span class="n">angs</span> <span class="o">=</span> <span class="n">pa0</span> <span class="o">+</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">1e12</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">90</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">angs</span><span class="p">))</span>
 
 
         <span class="c1"># put into pyfit structure</span>
@@ -2915,7 +2955,34 @@
 
 
 
+    <span class="c1"># def save_crop(self, buffer = 1.2, **kwargs):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Save just a crop of the data and a modified ilex config file with updated crop params</span>
 
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     buffer: float</span>
+    <span class="c1">#         Amount of padding to put on either side of on-pulse (+ off-pulse) window when</span>
+    <span class="c1">#         making new crop.</span>
+
+    <span class="c1">#     &quot;&quot;&quot;</span>
+
+    <span class="c1">#     # proc KWARGS</span>
+    <span class="c1">#     self._load_new_params(**kwargs) </span>
+
+    <span class="c1">#     stk = []</span>
+    <span class="c1">#     for s in &quot;IQUV&quot;:</span>
+    <span class="c1">#         if self.ds[s] is not None:</span>
+    <span class="c1">#             stk += [f&quot;ds{s}&quot;]</span>
+
+
+    <span class="c1">#     # make larger crop by taking into account both on-pulse and off-pulse windows</span>
+    <span class="c1">#     t_width = </span>
+    <span class="c1">#     t_crop_full = [self.this_metapar.t_crop[0]]</span>
+
+    <span class="c1">#     # get data</span>
+    <span class="c1">#     # force disable all processing other than cropping</span>
+    <span class="c1">#     data = self.get_data(stk, get = True, tN = 1, fN = 1, RM = None, zapchan = &quot;&quot;, )</span>
 
 
 

@@ -34,7 +34,7 @@ class weights:
     evaluated.
 
 
-    Attributes
+    Parameters
     ----------
     W: ndarray or array-like
         weights

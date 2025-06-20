@@ -21,9 +21,95 @@ import matplotlib.pyplot as plt
 import argparse, sys
 from os import path, mkdir
 import shutil
-from ilex.htr import stk_I, stk_Q, stk_U, stk_V
 from ilex.data import average
 
+
+
+
+##==================##
+## STOKES FUNCTIONS ##
+##==================##
+
+def stk_I(X, Y):
+    """
+    Claculate Stokes I from X and Y polarisations
+
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
+
+    Returns
+    -------
+    I : np.ndarray
+        Stokes I data
+    """
+
+    return np.abs(X)**2 + np.abs(Y)**2
+
+
+
+def stk_Q(X, Y):
+    """
+    Claculate Stokes Q from X and Y polarisations.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
+
+    Returns
+    -------
+    Q : np.ndarray
+        Stokes Q data
+    """
+
+    return np.abs(Y)**2 - np.abs(X)**2
+
+def stk_U(X, Y):
+    """
+    Claculate Stokes U from X and Y polarisations
+
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
+
+    Returns
+    -------
+    U : np.ndarray
+        Stokes U data
+    """
+
+    return 2 * np.real(np.conj(X) * Y)
+
+def stk_V(X, Y):
+    """
+    Claculate Stokes V from X and Y polarisations
+
+    Parameters
+    ----------
+    X : np.ndarray
+        X polarisation data
+    Y : np.ndarray
+        Y polarisation data
+
+    Returns
+    -------
+    V : np.ndarray
+        Stokes V data
+    """
+
+    return 2 * np.imag(np.conj(X) * Y)
+
+## array of stokes functions ##
+Stk_Func = {"I":stk_I, "Q":stk_Q, "U":stk_U, "V":stk_V}
 
 
 

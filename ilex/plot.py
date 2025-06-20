@@ -300,7 +300,9 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
         fname = "Freq [MHz]"
         df = abs(pdat['freq'][1] - pdat['freq'][0])
         flim = [np.min(pdat['freq']), np.max(pdat['freq'])] # for ds plotting
-        flim = fix_ds_freq_lims(flim, df)
+        fscat_lim = flim.copy()
+        flim[0] -= df/2
+        flim[1] += df/2
     
     # check if time array was given, else make phase array
     if "time" not in pdat.keys():
@@ -309,6 +311,10 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     else:
         tname = "Time [ms]"
         tlim = [pdat['time'][0], pdat['time'][-1]]
+        dt = pdat['time'][1] - pdat['time'][0]
+        tscat_lim = tlim.copy()
+        tlim[0] -= dt/2
+        tlim[-1] += dt/2
 
     
     # utility functions
@@ -326,14 +332,14 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     
     elif typ[0] == "t":
         # scrunch in freq
-        tx = np.linspace(*tlim, pdat[typ].size)
+        tx = np.linspace(*tscat_lim, pdat[typ].size)
         ax.set(xlabel = tname, ylabel = "Flux Density (arb.)")
         _PLOT(tx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)
 
     elif typ[0] == "f":
         # scrunch in time
-        fx = np.linspace(*flim, pdat[typ].size)[::-1]
+        fx = np.linspace(*fscat_lim, pdat[typ].size)[::-1]
         ax.set(xlabel = fname, ylabel = "Flux Density (arb.)")
         _PLOT(fx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)

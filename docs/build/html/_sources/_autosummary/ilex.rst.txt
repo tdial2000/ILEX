@@ -20,6 +20,7 @@
    frbutils
    globals
    htr
+   interactive
    logging
    master_proc
    par

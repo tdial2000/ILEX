@@ -22,7 +22,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Using ILEX" href="using_ilex.html" />
+    <link rel="next" title="Tutorial 1: Loading and plotting data" href="using_ilex.html" />
     <link rel="prev" title="ILEX Tutorials" href="../Tutorials.html" /> 
 </head>
 
@@ -74,9 +74,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#data-instances">data instances</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Using ILEX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Advanced ILEX</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">ILEX config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Tutorial 1: Loading and plotting data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 2: Fitting methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 3: ILEX config files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 4: Weighting data in time/freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_zapping.html">Tutorial 5: Channel zapping</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex_scripts.html">ILEX scripts</a></li>
 </ul>
 </li>
@@ -146,7 +148,7 @@ at the very least setting <code class="docutils literal notranslate"><span class
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span> <span class="o">=</span> <span class="n">FRB</span><span class="p">(</span><span class="n">yaml_file</span> <span class="o">=</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>see the tutorial on FRB config files for more details <a class="reference internal" href="ilex_config.html"><span class="doc">Using the FRB.yaml config file</span></a>.</p>
+<p>see the tutorial on FRB config files for more details <a class="reference internal" href="ilex_config.html"><span class="doc">Tutorial 3: ILEX config files</span></a>.</p>
 <p>To start using the <code class="docutils literal notranslate"><span class="pre">FRB</span></code> class, we need to load in data, there are 4 data products that can be loaded in,
 <code class="docutils literal notranslate"><span class="pre">dsI,</span> <span class="pre">dsQ,</span> <span class="pre">dsU</span></code> and <code class="docutils literal notranslate"><span class="pre">dsV</span></code>, these represent the Stokes I, Q, U and V dynamic spectum.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># loading in Stokes I dynamic spectrum</span>
@@ -307,7 +309,7 @@ interpolation will then work with your crop.</p>
 <h4>Define a weight function<a class="headerlink" href="#define-a-weight-function" title="Link to this heading"></a></h4>
 <p>We can also define a function that will when evaluated will produce weights that will be applied
 directly to the data. This allows us to be creative. See the advanced ILEX Tutorial for an example
-<a class="reference internal" href="advanced_ilex.html"><span class="doc">Advanced functions</span></a>.</p>
+<a class="reference internal" href="advanced_ilex.html"><span class="doc">Tutorial 2: Fitting methods</span></a>.</p>
 <p>NOTE: Weights are applied after averaging in time or frequency using <code class="docutils literal notranslate"><span class="pre">tN</span></code> or <code class="docutils literal notranslate"><span class="pre">fN</span></code>.</p>
 </section>
 </section>
@@ -413,7 +415,7 @@ parameters to explore the data without having to update a config file or the <co
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../Tutorials.html" class="btn btn-neutral float-left" title="ILEX Tutorials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="using_ilex.html" class="btn btn-neutral float-right" title="Using ILEX" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="using_ilex.html" class="btn btn-neutral float-right" title="Tutorial 1: Loading and plotting data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

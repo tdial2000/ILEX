@@ -23,7 +23,7 @@ import sys, inspect
 from .logging import log
 from math import ceil, floor
 import matplotlib.pyplot as plt
-import bilby
+
 
 # rm synthesis
 from RMtools_1D.do_RMsynth_1D import run_rmsynth
@@ -687,7 +687,7 @@ class QUfit_likelihood(bilby.Likelihood):
 
 
 
-def RM_QUfit(Q, U, Ierr, Qerr, Uerr, f, rm_priors = [-1000, 1000], pa0_priors = [-np.pi, 0], **kwargs):
+def RM_QUfit(Q, U, Ierr, Qerr, Uerr, f, rm_priors = [-1000, 1000], pa0_priors = [-3.1415926, 0], **kwargs):
     """
     Fit RM using QUfit method
 

@@ -40,6 +40,8 @@ jobs:
       - name: Build HTML
         run: | 
           cd docs/
+          rm source/_autosummary/ilex.*
+          sphinx-apidoc -P -o ./source ../ilex
           make html
       - name: Run ghp-import
         run: | 

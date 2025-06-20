@@ -1243,7 +1243,12 @@ class fit:
 
             keys = inspect.getfullargspec(func_wrap)[0][1:]
             # if yerr not specified, include sigma for sampling
-            if self.yerr is None:
+
+            if 'sigma' in statics.keys():
+                print("Overiding 'yerr' with static [sigma] value!")
+                yerr = statics['sigma']
+
+            if yerr is None:
                 keys += ['sigma']
             bil_priors = _dict_get(priors, keys)
 

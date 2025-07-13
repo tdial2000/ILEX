@@ -149,8 +149,8 @@ def _plot(args, figpar, flags):
 
 
     # create FRB instance
-    frb = FRB()
-    frb.load_data(yaml_file = args.parfile)
+    frb = FRB(args.parfile)
+    frb.set(show_plots = False, save_plots = False)
 
     # get data
     data_list = []
@@ -168,14 +168,26 @@ def _plot(args, figpar, flags):
     data = frb.get_data(data_list, get = True)
 
     pars = load_param_file(args.parfile)
+    print(data['tIerr'])
 
     if (args.model or flags['M']) and args.modelpar is None:
-        # run model
-        p = frb.fit_tscatt(method = pars['fits']['fitmethod'], npulse = pars['fits']['tscatt']['npulse'],
-            priors = pars['fits']['tscatt']['priors'], statics = pars['fits']['tscatt']['statics'],
-            fit_params = pars['fits']['tscatt']['fit_params'], redo = pars['fits']['redo'], 
-            filename = args.filename) 
-        NPULSES = pars['fits']['tscatt']['npulse']
+
+        if (pars['weights']['time']['func'] is not None) and (pars['weights']['time']['method'] == "func"):
+            NPULSES = (len(pars['weights']['time']['args'])-1) // 3
+            p = fit(x = data['time'], y = data['tI'], yerr = data['tIerr']*np.ones(data['tI'].size), 
+                    func = make_scatt_pulse_profile_func(NPULSES))
+            for key in pars['weights']['time']['args'].keys():
+                p.set_posterior(key, pars['weights']['time']['args'][key], 0.0, 0.0)
+            p._is_fit = True
+
+        else:
+
+            # run model
+            p = frb.fit_tscatt(method = pars['fits']['fitmethod'], npulse = pars['fits']['tscatt']['npulse'],
+                priors = pars['fits']['tscatt']['priors'], statics = pars['fits']['tscatt']['statics'],
+                fit_params = pars['fits']['tscatt']['fit_params'], redo = pars['fits']['redo'], 
+                filename = args.filename) 
+            NPULSES = pars['fits']['tscatt']['npulse']
     
     elif args.modelpar is not None:
         # create model
@@ -241,7 +253,7 @@ def _plot(args, figpar, flags):
         PA, PAerr = calc_PAdebiased(dict_get(data,["tU", "tQ", "tUerr", "tQerr", "tIerr"]), 
                         Ldebias_threshold = pars['plots']['Ldebias_threshold'])  
         plot_PA(data['time'], PA, PAerr, ax = AX['P'], flipPA = pars['plots']['flipPA'], 
-                plot_type = frb.plot_type)
+                plot_type = "scatter")
 
 
     # final figure adjustments

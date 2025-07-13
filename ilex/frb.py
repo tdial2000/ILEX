@@ -1504,6 +1504,7 @@ class FRB:
         ## check if data valid##
         ##====================## 
 
+        # if 't_crop' not in kwargs.keys():
         kwargs['t_crop'] = ["min", "max"]
         # kwargs['f_crop'] = ["min", "max"]  
         kwargs['terr_crop'] = None
@@ -1545,6 +1546,7 @@ class FRB:
         
 
         # now choose method of finding burst bounds
+        log(f"Searching for Width using: {method} method", lpf_col=self.pcol)
         if method == "sigma":
             ms2phase = lambda x : x / (tI.size * self.this_par.dt)
             ref_ind, lw, rw = find_optimal_sigma_width(tI = tI, sigma = sigma,
@@ -2341,7 +2343,7 @@ class FRB:
 
 
     def fit_RM(self, method = "RMquad", sigma: float = None, rm_prior: list = [-1000, 1000], 
-                pa0_prior: list = [-3.1415926/2, 3.1415926/2], fit_params: dict = None, filename: str = None, **kwargs):
+                pa0_prior: list = [-3.1415926/2, 3.1415926/2], unwrap: bool = False, fit_params: dict = None, filename: str = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
 
@@ -2444,6 +2446,10 @@ class FRB:
         def rmquad(f, rm, pa0):
             angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
             return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
+        
+        def rmquad_unwrapped(f, rm, pa0):
+            angs = pa0 + rm*c**2/1e12*(1/f**2)
+            return 180/np.pi * angs
 
 
         # put into pyfit structure
@@ -2466,8 +2472,23 @@ class FRB:
 
         # plot
         if self.save_plots or self.show_plots:
+
+            pa_ylim = [-90, 90]
+            if unwrap:
+                y_wrap = p.y.copy()
+                func_wrap = p.func
+                y_unwrap, _, _ = unwrap_pa(p.x, p.y, rm, pa0)
+                p.set(y = y_unwrap, func = rmquad_unwrapped)
+                y_height = np.max(y_unwrap) - np.min(y_unwrap)
+                pa_ylim = [np.min(y_unwrap) - 0.15*y_height, np.max(y_unwrap) + 0.15*y_height]
             
-            p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = [-90, 90], show = False)
+            fig = p.plot(xlabel = "Frequency [MHz]", ylabel = "PA [deg]", ylim = pa_ylim, show = False)
+
+            if unwrap:
+                p.set(y = y_wrap, func = func_wrap)
+                if self.residuals:
+                    fig.axes[1].set(ylim = [-360, 360])
+
 
             if self.save_plots:
                 if filename is None:
@@ -2825,38 +2846,6 @@ class FRB:
         
 
         return fracS
-
-
-
-
-    # def save_crop(self, buffer = 1.2, **kwargs):
-    #     """
-    #     Save just a crop of the data and a modified ilex config file with updated crop params
-
-    #     Parameters
-    #     ----------
-    #     buffer: float
-    #         Amount of padding to put on either side of on-pulse (+ off-pulse) window when
-    #         making new crop.
-
-    #     """
-
-    #     # proc KWARGS
-    #     self._load_new_params(**kwargs) 
-
-    #     stk = []
-    #     for s in "IQUV":
-    #         if self.ds[s] is not None:
-    #             stk += [f"ds{s}"]
-
-
-    #     # make larger crop by taking into account both on-pulse and off-pulse windows
-    #     t_width = 
-    #     t_crop_full = [self.this_metapar.t_crop[0]]
-
-    #     # get data
-    #     # force disable all processing other than cropping
-    #     data = self.get_data(stk, get = True, tN = 1, fN = 1, RM = None, zapchan = "", )
 
 
 

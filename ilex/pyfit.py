@@ -430,6 +430,7 @@ class fit:
         self._is_fit = False
         self.residuals = True
         self.plotPosterior = True
+        self.modelNpoints = 20000
 
 
 
@@ -1449,15 +1450,29 @@ class fit:
         AX[0].scatter(self.x, self.y, c = 'k', s = 10)
 
         # plot model
+        Mx = x = np.linspace(self.x[0], self.x[-1], self.modelNpoints)
+        _, Mline = self.get_model(x = Mx)
         _, y_fit = self.get_model()
         if y_fit is None:
             return
-        AX[0].plot(self.x, y_fit, color = [0.9098, 0.364, 0.3961], linewidth = 2.5)
+        AX[0].plot(Mx, Mline, color = [0.9098, 0.364, 0.3961], linewidth = 2.5)
 
         # plot errorbars if specified
+        # axxerr, axyerr = self.xerr, self.yerr
         if (self.yerr is not None) or (self.xerr is not None):
             AX[0].errorbar(x = self.x, y = self.y, xerr = self.xerr, yerr = self.yerr, color = 'k', 
                         alpha = 0.4, linestyle = '')
+        
+        # if axxerr is None:
+        #     axxerr = 0
+        # if axyerr is None:
+        #     axyerr = 0
+            
+        # # set x, y limits
+        # ylimw = (np.max(self.y + axyerr) - np.min(self.y - axyerr))
+        # xlimw = (np.max(self.x + axxerr) - np.min(self.x - axxerr))
+        # AX[0].set_xlim([np.min(self.x - axxerr) - 0.1*xlimw, np.max(self.x + axxerr) + 0.1*xlimw])
+        # AX[0].set_ylim([np.min(self.y - axyerr) - 0.15*ylimw, np.max(self.y + axyerr) + 0.15*ylimw])
 
         # plot residuals
         if self.residuals:

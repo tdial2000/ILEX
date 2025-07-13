@@ -2,6 +2,7 @@
 from .data import *
 from .logging import log, get_verbose
 from .utils import get_stk_from_datalist
+from .frbutils import dynspec_smart_loader
 from .globals import _G
 from time import time
 import matplotlib.pyplot as plt
@@ -134,25 +135,39 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
     ##         RUN PROCESSING         ##
     ## ============================== ##
     # log("Processing data", lpf = False)
+    # also crop/average freq array
+    freq = pslice(freq, *par['f_crop'])    
+
+
+    # # check if zap_chan flag exists
+    # seg_idx = zap_chan(freq, par['zapchan'])
+    # if len(seg_idx) == 0:
+    #     zap_flag = False
 
 
     ## crop ##    
     log(f"Applying On-Pulse Time Crop = {par['t_crop']}", lpf = False)
     log(f"Applying Off-Pulse Time crop = {par['terr_crop']}", lpf = False)
     log(f"Applying Freq Crop = {par['f_crop']}", lpf = False)
-    stk_ds = _crop(stk = stk, stk_ds = stk_ds, stk_list = stk_list, 
-                    par = par, err = err_flag)
+    log(f"Applying Time Averaging = {par['tN']}", lpf = False)
+    # stk_ds = _crop(stk = stk, stk_ds = stk_ds, stk_list = stk_list, 
+    #                 par = par, err = err_flag)
 
-    # also crop freq array
-    freq = pslice(freq, *par['f_crop'])
+    fN = par['fN']
+    par['fN'] = 1
+    stk_ds = _master_dynspec_smart_load(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
+                par = par, err = err_flag)
+    par['fN'] = fN
 
 
 
     ## Channel Zap ##
+    freqscrunchw = np.ones(freq.size, dtype = float)
     if zap_flag:
         log(f"Applying channel zapping", lpf = False)
-        stk_ds, zap_flag = _zap_chan(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
+        stk_ds, zap_flag, flagchans = _zap_chan(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
                                 freq = freq, par = par, err = err_flag)
+        freqscrunchw[flagchans] = np.nan
         
         if not zap_flag:
             log("All channel zapping lies outside the known bandwidth, will skip channel zapping", lpf = False, stype = "warn")
@@ -171,16 +186,20 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
 
     
     # ## average ##
-    log(f"Applying Time Averaging = {par['tN']}", lpf = False)
     log(f"Applying Freq Averaging = {par['fN']}", lpf = False)
+    tN = par['tN']
+    par['tN'] = 1    
     stk_ds = _average(stk = stk, stk_ds = stk_ds, stk_list = stk_list,
                     par = par, err = err_flag, zap = zap_flag)
+    par['tN'] = tN
 
+    freq = average(freq, N = par['fN'])  
 
-
-    # also average freq array
-    freq = average(freq, N = par['fN'], nan = zap_flag)
-
+    # create set of freq weights to apply when scrunching to properly scale the noise when channels
+    # are zapped
+    freqscrunchw = downsample(freqscrunchw, N = par['fN'], nan = zap_flag, mode = "sum")
+    freqscrunchw = np.sqrt(freqscrunchw) 
+    freqscrunchw /= np.max(freqscrunchw) 
 
     ## ========================= ##
     ## SAVING DATA TO CONTAINERS ##
@@ -213,7 +232,14 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
 
         #------- time series -------#
         if S in t_list:
-            _t[S] = _scrunch(stk_ds[S], xtype = "t", W = _average_weight(par['fW'], par['fN']), nan = zap_flag)
+            fweights = _average_weight(par['fW'], par['fN'])
+            if par['fN'] > 1:
+                if fweights is not None:
+                    fweights *= freqscrunchw
+                else:
+                    fweights = freqscrunchw
+
+            _t[S] = _scrunch(stk_ds[S], xtype = "t", W = fweights, nan = zap_flag)
             if err_flag:
                 _t[f"{S}err"] = _time_err(stk_ds[f"{S}err"], nan = zap_flag)
 
@@ -254,6 +280,20 @@ def master_proc_data(stk, freq, base_data_list, par: dict = {}, debias = False, 
 
 
 
+
+def _master_dynspec_smart_load(stk, stk_ds, stk_list, par, err):
+
+    for S in stk_list:
+        print("SMART LOADING STK: "+S)
+        stk_ds[S] = dynspec_smart_loader(stk[S], par['t_crop'], par['f_crop'],
+                                         par['tN'], 1)
+        if err:
+            stk_ds[f"{S}err"] = dynspec_smart_loader(stk[S], par['terr_crop'], par['f_crop'],
+                                         par['tN'], 1)
+    
+    return stk_ds
+
+        
 
 
 
@@ -362,7 +402,7 @@ def _crop(stk, stk_ds, stk_list, par, err = False):
         Full crop in Time and Frequency
 
     Args:
-        See Master _proc
+        See master_proc
     """
 
     for S in stk_list:
@@ -603,76 +643,10 @@ def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
     """
     seg_idx = zap_chan(freq, par['zapchan'])
 
-    # # vals
-    # df = freq[1] - freq[0]
-    # f_min = np.min(freq)
-    # f_max = np.max(freq)
-
-    # if df < 0:
-    #     # upperside band
-    #     fi = f_max
-    #     df_step = -1
-
-    # else:
-    #     # lowerside band
-    #     fi = f_min
-    #     df_step = 1
-
-    # df = abs(df)
-    
-    # # split segments
-    # zap_segments = par['zapchan'].split(',')
-    # seg_idx = []
-
-    # # for each segment, check for delimiter :, else float cast
-    # for _, zap_seg in enumerate(zap_segments):
-
-    #     # if segment is a range of frequencies
-    #     if ":" in zap_seg:
-    #         zap_range = zap_seg.strip().split(':')
-    #         zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)
-    #         zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
-
-
-    #         # check if completely outside bounds
-    #         if (zap_0 < 0 and zap_1 < 0) or (zap_0 > freq.size -1 and zap_1 > freq.size -1):
-    #             log(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
-    #             continue            
-            
-    #         # check bounds
-    #         crop_zap = False
-
-    #         if zap_0 < 0:
-    #             crop_zap = True
-    #             zap_0 = 0
-    #         elif zap_0 > freq.size - 1:
-    #             crop_zap = True
-    #             zap_0 = freq.size - 1
-
-    #         if zap_1 < 0:
-    #             crop_zap = True
-    #             zap_1 = 0
-    #         elif zap_1 > freq.size - 1:
-    #             crop_zap = True
-    #             zap_1 = freq.size - 1
-
-    #         if crop_zap:
-    #             log(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{freq[zap_0]}, {freq[zap_1]}] MHz", lpf = False, stype = "warn")
-
-    #         seg_idx += list(range(zap_0,zap_1+df_step,df_step))[::df_step]
-        
-    #     # if segment is just a single frequency
-    #     else:
-    #         _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
-    #         if (_idx < 0) or (_idx > freq.size - 1):
-    #             log(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz", lpf = False, stype = "warn")
-    #         else:
-    #             seg_idx += [_idx]
-
 
     # check if seg_idx is empty, i.e. if there is no channel zapping.
     if len(seg_idx) == 0:
-        return stk_ds, False
+        return stk_ds, False, seg_idx
 
 
     # mask out zapped channels
@@ -682,7 +656,7 @@ def _zap_chan(stk, stk_ds, stk_list, freq, par, err = False):
         if err:
             stk_ds[f"{S}err"][seg_idx] = np.nan
 
-    return stk_ds, True
+    return stk_ds, True, seg_idx
 
 
 

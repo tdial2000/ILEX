@@ -51,6 +51,7 @@ def _plot_stokes(args):
     # load in parfile
     frb = FRB()
     frb.load_data(yaml_file = args.parfile)
+    frb.set(show_plots = False, save_plots = False)
 
     # get data
     data = frb.get_data(["tI", "tQ", "tU", "tV", "dsI", "dsQ", "dsU", "dsV"], get = True)

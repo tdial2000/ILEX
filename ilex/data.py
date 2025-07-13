@@ -145,6 +145,75 @@ def scrunch(x: np.ndarray, axis: int = 0, weights = None, nan = False):
 
 
 
+def downsample(x: np.ndarray, axis: int = -1, N: int = 1, nan = False, 
+                mode = "mean"):
+    """
+    Downsample in either frequency or time
+
+    Parameters
+    ----------
+    x: ndarray
+       data to average over
+    axis: int 
+        axis to average over
+    N: int
+        donwsampling factor
+    nan : bool, optional
+        If True, using nanmean to ignore NaN values in array 'x', by default False
+    mode : str
+        Method of downsampling, ["mean", "sum"]
+
+    Returns
+    -------
+    x: ndarray 
+       Averaged data
+    
+    """
+
+    # if nan if true, will use numpy function that ignores nans in array x
+    if mode == "mean":
+        func = np.mean
+        if nan:
+            func = np.nanmean
+    elif mode == "sum":
+        func = np.sum
+        if nan:
+            func = np.nansum
+    else:
+        ValueError(f"Downsampling mode must be either ['mean', 'sum']")
+
+
+    if N == 1:
+        return x
+    
+
+    # either dynamic spectra or time series
+    ndims = x.ndim
+    if ndims == 1:
+        N_new = int(x.size / N) * N
+        return func(x[:N_new].reshape(int(N_new / N), N),axis = 1).flatten()
+    
+    elif ndims == 2:
+        if axis == 0:
+            #frequency scrunching
+            N_new = int(x.shape[0] / N) * N
+            return func(x[:N_new].T.reshape(x.shape[1],int(N_new / N), N),axis = 2).T
+        
+        elif axis == 1 or axis == -1:
+            #time scrunching
+            N_new = int(x.shape[1] / N) * N
+            return func(x[:,:N_new].reshape(x.shape[0],int(N_new / N), N),axis = 2)
+        
+        else:
+            print("axis must be 1[-1] or 0")
+            return x
+        
+    else:
+        print("ndims must equal 1 or 2..")
+        return x
+
+
+
 
 ##  function to index in phase  ##
 def pslice(x: np.ndarray, start: float, end: float, axis: int = 0):
@@ -640,7 +709,7 @@ def combine_zapchan(chan1, chan2):
 ##===============================================##
 
 
-def calc_PA(Q, U, Qerr, Uerr, rad2deg = False):
+def calc_PA(Q, U, Qerr = None, Uerr = None, rad2deg = False):
     """
     Calculate Position Angle (PA) and PA angle
 
@@ -665,15 +734,22 @@ def calc_PA(Q, U, Qerr, Uerr, rad2deg = False):
         Position Angle err  
     """
 
+    errflag = True
+    PAerr = None
+    if (Qerr is None) or (Uerr is None):
+        errflag = False
+
     # calculate PA and error
     PA = 0.5 * np.arctan2(U, Q)
-    PAerr = 0.5 * np.sqrt((Q**2*Uerr**2 + Q**2*Qerr**2)/
+    if errflag:
+        PAerr = 0.5 * np.sqrt((Q**2*Uerr**2 + Q**2*Qerr**2)/
                            (Q**2 + Q**2)**2)
     
     # convert to degrees if requested
     if rad2deg:
         PA *= 180/np.pi
-        PAerr *= 180/np.pi
+        if errflag:
+            PAerr *= 180/np.pi
 
 
     return PA, PAerr
@@ -1188,3 +1264,48 @@ def ccf(x, y, outs = "unique"):
 
     else:
         return None
+
+
+
+def unwrap_pa(f, pa, rm, pa0):
+    """
+    Unwrap polarisation position angle (PA) with a given RM 
+    
+    """
+    if rm == 0.0:
+        ValueError("RM is 0, cannot unwrap...")
+    def rmquad(f, rm, pa0):
+        angs = rm*c**2/1e12*(1/f**2)
+        return 180/np.pi*angs
+    
+    # calculate number of points needed for PA model
+    f1 = f[-1]
+    rmconst1 = 180 * rm * c**2 / (np.pi * 1e12) - f1**2
+    rmconst2 = 2 * f1 * 180 * rm * c**2 / (np.pi * 1e12) - 2*f1**3
+    rmconst3 = f1**4
+
+    rmsgn = rm/abs(rm)
+
+    eps = (-rmconst2 + rmsgn * np.sqrt(rmconst2**2 + 4*rmconst1*rmconst3)) / (2 * rmconst1)
+    df = abs(f[-1] - f[-2])
+    bw = (f[0] - f[-1] + df)
+    N = int(bw / abs(eps))
+
+    # get model data
+    fmodel = np.linspace(f[0] + df/2, f[-1] - df/2, N)
+    pamodel = rmquad(fmodel, rm, pa0)
+    pamodel_wrapped = pamodel % 180
+    wrap_points = np.where(np.abs(np.diff(pamodel_wrapped)) > 10)[0] + 1
+    
+    wrap_points = (wrap_points / (pamodel.size - 1) * (f.size - 1)).astype(int)
+    pa_unwrapped = pa.copy()
+    idx = 0 
+    i = 0
+    for i in range(wrap_points.size):
+        pa_unwrapped[idx:wrap_points[i]] += float(rmsgn * i * 180.0)
+        idx = wrap_points[i]
+    pa_unwrapped[idx:] += float(rmsgn * (i+1)*180)
+    pa_unwrapped -= (pa_unwrapped[-1] - rmquad(f, rm, pa0)[-1])
+    
+
+    return pa_unwrapped, fmodel, pamodel

@@ -96,6 +96,11 @@ def _data_from_dict(dic, keys):
 
 
 
+# wrapper for better function definition
+def plot(x, y, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5, **kwargs):
+    _PLOT(x = x, y = y, yerr = yerr, ax = ax, plot_type = plot_type, color = color,
+            alpha = alpha, **kwargs)
+    return
 
 
 
@@ -351,7 +356,7 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     return fig
 
 
-
+# def plot_RM_fit(f, pa, rm, pa0, f0, residual = False):
 
 
 def plot_RM(f, Q, U, Qerr = None, Uerr = None, rm = 0.0, pa0 = 0.0, f0 = 0.0,
@@ -522,11 +527,14 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
     # ax.scatter(x, PA * 180/np.pi, c = 'k', s = 2)
     _PLOT(x = x, y = PA * 180/np.pi, yerr = PA_err * 180/np.pi,
              plot_type = plot_type, ax = ax, **kwargs)
+    
+    paw = np.nanmax(PA * 180/np.pi) - np.nanmin(PA * 180/np.pi)
+    ax.set_ylim([np.nanmin((PA - PA_err) * 180/np.pi) - 0.1*paw, np.nanmax((PA + PA_err) * 180/np.pi) + 0.1*paw])
 
-    if flipPA:
-        ax.set_ylim([0, 180])
-    else:
-        ax.set_ylim([-90, 90])
+    # if flipPA:
+    #     ax.set_ylim([0, 180])
+    # else:
+    #     ax.set_ylim([-90, 90])
 
 
     return fig

@@ -172,6 +172,9 @@ class _MouseZapper:
         self.last_key_event = None
         self.last_key_press = time.time()
 
+        self._list_of_auto_alg = ["median", "abs"]
+        self._auto_alg = "median"
+
 
         # artists
         self._artists = {'ds': None, 'zapatch': None, 
@@ -460,16 +463,17 @@ class _MouseZapper:
     
         if event.key == "a":
             # do auto flagging
-            print("hi")
             if not self.zapmode:
                 return
+            
+            print("automated flagging using method: " + self._auto_alg)
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                zap_threshold = input("-[Input]: Sigma threshold for automated Frequency zapping-\n")
+                zap_threshold = input("-[Input]: Value for automated Frequency zapping-\n")
             try:
                 zap_threshold = float(zap_threshold)
-                print(f"Zapping with a sigma threshold of {zap_threshold}")
+                print(f"Zapping with a value of {zap_threshold}")
             except:
                 print(f"{zap_threshold} is not a valid floating point number!!!")
                 return
@@ -481,11 +485,33 @@ class _MouseZapper:
 
             self.zaps.append(zaps)
 
+            # update time series and freq axes
+
             # update figure
             self._update_ax()
-
+            self.ax.set_xlim(self.ax.get_xlim())
             
             return
+        
+
+        if event.key == "x":
+            if not self.zapmode:
+                return
+            
+            # change automatic flagging method
+            idx = self._list_of_auto_alg.index(self._auto_alg)
+            if idx == len(self._list_of_auto_alg) - 1:
+                idx = 0
+            else:
+                idx += 1
+            
+            self._auto_alg = self._list_of_auto_alg[idx]
+
+            print("Changed automated flagging method to: " + self._auto_alg)
+
+            return
+
+
 
         if (event.key in ['up', 'down']) and (self._last_artist is not None) and (self.zapmode):
             if event.key == 'up':
@@ -500,7 +526,7 @@ class _MouseZapper:
             self.ax.set_xlim(self.ax.get_xlim())      # this is only here to make sure the figure updates properly
             self.fig.canvas.draw()
 
-
+            return
         
         return
     
@@ -521,6 +547,10 @@ class _MouseZapper:
         ylim[0] = 1.0 - (ylim[0] - ybounds[0])/bw
         ylim[1] = 1.0 - (ylim[1] - ybounds[0])/bw
 
+        tw = self.xlim[1] - self.xlim[0]
+        xlim[0] = (xlim[0] - self.xlim[0])/tw
+        xlim[1] = (xlim[1] - self.xlim[0])/tw
+
         ylim = ylim[::-1]
 
         ds_crop = self.zap_ds.copy()
@@ -530,18 +560,20 @@ class _MouseZapper:
         ds_crop = pslice(ds_crop, *ylim, axis = 0)
         freq_crop = pslice(self.freqs, *ylim)
 
-        # with cropped data, apply zapping algorithm
-        # f_std = np.nanstd(ds_crop, axis = 1)
-        # med_rms = np.nanmedian(f_std)
-        # mad_rms = 1.48 * np.nanmedian(np.abs(f_std - med_rms))
-
-        # zaps = np.where(f_std > (med_rms + zap_threshold * mad_rms))[0]
-
+        # do automated flagging
         mask = np.mean(ds_crop, axis = 1)
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            mask /= np.nanmedian(mask)
-        zaps = np.where((mask > zap_threshold) & (~np.isnan(mask)))[0]
+            if self._auto_alg == "median":
+                median = np.nanmedian(mask)
+                mask /= median
+                print(f"Median: {median:.2f}")
+                zaps = np.where((mask > zap_threshold) & (~np.isnan(mask)))[0]
+
+
+            elif self._auto_alg == "abs":
+                zaps = np.where(mask > zap_threshold)[0]
 
         if len(zaps) < 1:
             return None
@@ -558,6 +590,15 @@ class _MouseZapper:
         to display zapped regions
         
         """
+        # if xlim and ylim change callbacks are defined!
+        # if hasattr(self.ax, 'callbacks'):
+        #     _callbacks = self.ax.callbacks.callbacks
+        #     if "xlim_changed" in _callbacks.keys():
+        #         self.ax.set_xlim(self.ax.get_xlim())
+        #     if "ylim_changed" in _callbacks.keys():
+        #         self.ax.set_ylim(self.ax.get_ylim())
+
+
         self.zap_ds, self.zap_idx = self._zap_ds()
         mask = np.ones(self.zap_ds.shape[0], dtype = bool)
         mask[self.zap_idx] = False
@@ -699,6 +740,7 @@ def ZapInteractive(ds, freqs, times = None, zapchan = None):
             zapzoom.update_zoom()
 
     def _draw_freq_lines(event):
+
 
         freq_lines = {}
         freq_line_labels = []

@@ -22,6 +22,7 @@ import inspect
 from .pyfit import fit, _posterior
 import yaml
 from .frbutils import set_dynspec_plot_properties, save_frb_to_param_file
+# import time 
 
 ## import utils ##
 from .utils import (load_data, save_data, dict_get,
@@ -377,8 +378,9 @@ class FRB:
 
         # loop through files
         load_zapchan = ""
-        for key in data_files.keys():
 
+        for key in data_files.keys():
+            
             file = data_files[key]
             init_key = None
             if file is not None:
@@ -402,7 +404,6 @@ class FRB:
                         if not np.all(old_chans == chans):
                             log("Channels being zapped are different for each Stokes Dynamic spectra!!", stype = "warn")
                     old_chans = chans.copy()
-
         self.metapar.zapchan = combine_zapchan(self.metapar.zapchan, load_zapchan)
 
 
@@ -416,7 +417,7 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, debias = False, ratio = False, **kwargs):
+    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, stk_debias = False, stk_ratio = False, **kwargs):
         """
         Save current instance data
 
@@ -426,7 +427,11 @@ class FRB:
             List of data to save, by default None
         name : str, optional
             Common Pre-fix for saved data, by default None, if None the name parameter of the
-            FRB class will be used.
+            FRB class will be used.        
+        stk_debias: bool
+            Debias Stokes data before saving
+        stk_ratio: bool
+            Save stokes ratios
         """
 
         log_title("Saving Stokes data, the data is saved as .npy files. ", col = "lblue")
@@ -446,7 +451,7 @@ class FRB:
             print(f"[{data}]")
 
         # get data
-        pdat = self.get_data(data_list, debias = debias, ratio = ratio, get = True)
+        pdat = self.get_data(data_list, stk_debias = stk_debias, stk_ratio = stk_ratio, get = True)
         if not self._isdata():
             return 
         
@@ -504,8 +509,8 @@ class FRB:
         
     # implement FRB_params struct  
     ## [ GET DATA ] ##
-    def get_data(self, data_list = "dsI", get = False, ignore_nans = False, debias = False, 
-                    ratio = False, ratio_rms_threshold = None, **kwargs):
+    def get_data(self, data_list = "dsI", get = False, ignore_nans = False, stk_debias = False, 
+                    stk_ratio = False, stk_sigma = None, **kwargs):
         """
         Make new instance of loaded data. This will take a crop of the 
         loaded mmap-ed stokes data, pass it through the back-end processing
@@ -521,11 +526,11 @@ class FRB:
             instances to class container attributes
         ignore_nans : bool, optional
             If true, if nans exist in data, they will be removed before saving the data instance
-        debias, bool, optional
+        stk_debias, bool, optional
             If true, tL/fL and tP/fP will be debiased 
-        ratio, bool, optional
+        stk_ratio, bool, optional
             If true, calculate X/I for t and f products
-        ratio_rms_threshold : float, optional
+        stk_sigma : float, optional
             Mask X/I data by ratio_rms_threshold * rms
 
         Returns
@@ -550,7 +555,7 @@ class FRB:
         log(f"Retrieving the following data: {data_list}", lpf_col = self.pcol)
 
         # get all data products needed
-        data_products = self._init_proc(data_list, debias = debias, ratio = ratio)
+        data_products = self._init_proc(data_list, stk_debias = stk_debias, stk_ratio = stk_ratio)
 
         ## first check if there is data to use
         if not self._isvalid(data_products):
@@ -560,8 +565,8 @@ class FRB:
             return 
 
         ## make new instances
-        self._make_instance(data_list = data_list, ignore_nans = ignore_nans, debias = debias, ratio = ratio,
-                            ratio_rms_threshold = ratio_rms_threshold)
+        self._make_instance(data_list = data_list, ignore_nans = ignore_nans, stk_debias = stk_debias, stk_ratio = stk_ratio,
+                            stk_sigma = stk_sigma)
 
 
         ## set new instance param 
@@ -655,8 +660,8 @@ class FRB:
 
 
 
-    def _make_instance(self, data_list = None, ignore_nans = False, debias = False, ratio = False,
-                        ratio_rms_threshold = None):
+    def _make_instance(self, data_list = None, ignore_nans = False, stk_debias = False, stk_ratio = False,
+                        stk_sigma = None):
         """
         Make New data crops for current instance
 
@@ -712,7 +717,7 @@ class FRB:
 
         # pass through to backend processing script
         _ds, _t, _f, self._freq, _flags = master_proc_data(self.ds, freqs, 
-                                            data_list, full_par, debias, ratio, ratio_rms_threshold)
+                                            data_list, full_par, stk_debias, stk_ratio, stk_sigma)
 
         # process flags
         self.zap = _flags['zap_flag']
@@ -828,7 +833,7 @@ class FRB:
 
 
     
-    def _init_proc(self, data_list, debias = False, ratio = False):
+    def _init_proc(self, data_list, stk_debias = False, stk_ratio = False):
         """
         Check if all requested data products and their
         dependencies are being requested. 
@@ -878,7 +883,7 @@ class FRB:
         add_stokes_I = False
         for s in ["tL", "fL", "tP", "fP"]:
             if s in data_list:
-                if debias:
+                if stk_debias:
                     add_stokes_I = True
         if add_stokes_I:
             log("Added stokes I to process for debiasing L and/or P polarisations", lpf = False)
@@ -886,7 +891,7 @@ class FRB:
                 stk += "I"
         
         # if calculating ratios
-        if ratio:
+        if stk_ratio:
             log("Added stokes I to process for calculating stokes ratios", lpf = False)
             if "I" not in stk:
                 stk += "I"
@@ -1624,7 +1629,7 @@ class FRB:
     ##===============================================##
     ##                Plotting Methods               ##
     ##===============================================##
-    def plot_data(self, data = "dsI", ax = None, debias = False, ratio = False, ratio_rms_threshold = None,
+    def plot_data(self, data = "dsI", ax = None, stk_debias = False, stk_ratio = False, stk_sigma = None,
                      filename: str = None, **kwargs):
         """
         General Plotting function, choose to plot either dynamic spectrum or time series 
@@ -1636,11 +1641,11 @@ class FRB:
             type of data to plot, by default "dsI"
         ax : axes, optional
             Axes object to plot data into
-        debias : bool, optional
+        stk_debias : bool, optional
             If True, Any L or P data plotted will be debiased
-        ratio : bool, optional
+        stk_ratio : bool, optional
             If True, any t or f data will be converted to X/I and plotted
-        ratio_rms_threshold, optional
+        stk_sigma, optional
             Mask Stokes ratios by ratio_rms_threshold * rms
         filename : str, optional
             filename to save figure to, by default None
@@ -1654,8 +1659,8 @@ class FRB:
         log_title(f"plotting [{data}] product.", col = "lblue")
 
         # get data
-        pdat = self.get_data(data_list = data, get = True, debias = debias, 
-                                ratio = ratio, ratio_rms_threshold=ratio_rms_threshold,
+        pdat = self.get_data(data_list = data, get = True, stk_debias = stk_debias, 
+                                stk_ratio = stk_ratio, stk_sigma = stk_sigma,
                                 **kwargs)
         if not self._isdata():
             return None
@@ -1751,7 +1756,7 @@ class FRB:
 
 
 
-    def plot_stokes(self, ax = None, Ldebias = False, sigma = 2.0, 
+    def plot_stokes(self, ax = None, stk_debias = False, stk_sigma = 2.0, 
             stk_type = "f", stk2plot = "IQUV", stk_ratio = False, filename: str = None, **kwargs):
         """
         Plot Stokes data, by default stokes I, Q, U and V data is plotted
@@ -1760,9 +1765,9 @@ class FRB:
         ----------
         ax: _axes_
             matplotlib.pyplot.axes object to plot to, default is None
-        Ldebias : bool, optional
-            Plot stokes L debias, by default False
-        sigma : float, optional
+        stk_debias : bool, optional
+            Plot stokes L and/or P debias, by default False
+        stk_sigma : float, optional
             sigma threshold for error masking, data that is I < sigma * Ierr, mask it out or
             else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
         stk_type : str, optional
@@ -1797,7 +1802,7 @@ class FRB:
         if not err_flag:
             log("Off-pulse crop required for plotting Ldebias", lpf_col = self.pcol,
                 stype = "warn")
-            Ldebias = False
+            stk_debias = False
 
         # data container for plotting
         pstk = {}
@@ -1806,8 +1811,8 @@ class FRB:
             log("stk_type can only be t or f", lpf_col = self.pcol, stype = "err")
 
         # plot
-        fig = plot_stokes(data, Ldebias = Ldebias, stk_type = stk_type,
-                    sigma = sigma, stk2plot = stk2plot, stk_ratio = stk_ratio,
+        fig = plot_stokes(data, Ldebias = stk_debias, stk_type = stk_type,
+                    sigma = stk_sigma, stk2plot = stk2plot, stk_ratio = stk_ratio,
                     plot_type = self.plot_type, ax = ax) 
 
         
@@ -2216,10 +2221,78 @@ class FRB:
 
 
 
+    def plot_periodgram(self, plot_log = False, filename = None, **kwargs):
+        """
+        Plot ACF of time series
+
+        plot_log: bool
+            Also plot log y-axis 
+
+        """
+
+        log_title(f"plotting periodgram [ACF]", col = "lblue")
+
+        dat = self.get_data("tI", get = True, **kwargs)
+
+        # get acf
+        tIacf = acf(dat['tI'])
+
+        # get time lag, but only from first non-zero time lag sample
+        dt = dat['time'][1] - dat['time'][0]
+        tlags = np.linspace(dt, dt * tIacf.size, tIacf.size)
+
+        cols = 1
+        if plot_log:
+            cols = 2
+
+        fig, ax = plt.subplots(1, cols, figsize = (6 * cols, 6))
+
+        if plot_log:
+            ax = ax.flatten()
+        else:
+            ax = [ax]
+        
+        # plot linear periodgram
+        ax[0].plot(tlags, tIacf, 'k', linewidth = 1.5)
+        ax[0].set_xlabel("Time lag [ms]", fontsize = 16)
+        ax[0].set_ylabel("ACF power (arb.)", fontsize = 16)
+
+        if plot_log:
+            ax[1].plot(tlags, tIacf, 'k', linewidth = 1.5)
+            ax[1].set_xlabel("Time lag [ms]", fontsize = 16)
+            ax[1].set_yscale('log')
+
+        fig.subplots_adjust(hspace = 0, wspace = 0)
+        fig.tight_layout()
+
+
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_periodgram.png"
+            else:
+                filename += "_periodgram.png"
+            
+            plt.savefig(filename)
+            
+        
+        if self.show_plots:
+            plt.show()
+
+        self._save_new_params()
+
+
+        return fig
 
 
 
-    def plot_poincare(self, stk_type = "f", sigma = 2.0, plot_data = True,
+
+
+
+
+
+
+
+    def plot_poincare(self, stk_type = "f", stk_sigma = 2.0, plot_data = True,
                         plot_model = False, n = 5, normalise = True, plot_1D_stokes = False, filename = None, **kwargs):
         """
         Plot Stokes data on a Poincare Sphere.
@@ -2232,7 +2305,7 @@ class FRB:
             types of stokes data to plot, by default "f" \n
             [f] - Plot as a function of frequency \n
             [t] - Plot as a function of time 
-        sigma : float, optional
+        stk_sigma : float, optional
             Error threshold used for masking stokes data in the case that stokes/I is being calculated \n
             this avoids deviding by potentially small numbers and getting weird results,by default 2.0
         plot_data : bool, optional
@@ -2286,7 +2359,7 @@ class FRB:
         # plot poincare sphere
         fig, ax = create_poincare_sphere(cbar_lims = cbar_lims, cbar_label = cbar_label)
 
-        stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = sigma,
+        stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = stk_sigma,
                     plot_data = plot_data, plot_model = plot_model, normalise = normalise,
                     n = n)
                     
@@ -2634,7 +2707,7 @@ class FRB:
 
 
 
-    def calc_polfracs(self, debias = False, peak_sigma = 3.0, peak_average_factor = 1, **kwargs):
+    def calc_polfracs(self, stk_debias = False, peak_sigma = 3.0, peak_average_factor = 1, **kwargs):
         """
         Calculate polarisation fractions using a number of different methods.
 
@@ -2664,13 +2737,13 @@ class FRB:
         self._load_new_params(**kwargs) 
 
         # get data
-        S = self.get_data(["tI", "tQ", "tU", "tV", "tL", "tP"], get = True, debias = debias, **kwargs)
+        S = self.get_data(["tI", "tQ", "tU", "tV", "tL", "tP"], get = True, stk_debias = stk_debias, **kwargs)
         nsamp = S['tI'].size
 
         # check if error was given, else turn off debias
         err = True
         if self.this_metapar.terr_crop is None:
-            debias = False
+            stk_debias = False
             err = False
             log("No off-pulse crop given to calculate dibased L, P and/or |U/Q/V|, specify [terr_crop]...", stype = "warn")
             log("No peak fractions we be calculatedm specify [terr_crop]...", stype = "warn")
@@ -2767,7 +2840,7 @@ class FRB:
 
         # Now we can print everything out
         debias_flag = "FALSE\n"
-        if debias:
+        if stk_debias:
             debias_flag = "TRUE\n"
         print("\nStokes fractions:")
         print("="*50)

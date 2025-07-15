@@ -215,8 +215,8 @@ def _plot(args, figpar, flags):
 
     # plot Stokes spectra
     if flags['S']:
-        frb.plot_stokes(ax = AX['S'], stk_type = "t", Ldebias = pars['plots']['Ldebias'],
-                        sigma = pars['plots']['sigma'], stk_ratio = pars['plots']['stk_ratio'],
+        frb.plot_stokes(ax = AX['S'], stk_type = "t", Ldebias = pars['plots']['stk_debias'],
+                        sigma = pars['plots']['stk_sigma'], stk_ratio = pars['plots']['stk_ratio'],
                         stk2plot = pars['plots']['stk2plot'])
         AX['S'].set(ylabel = "Flux Density (arb.)")
 

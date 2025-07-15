@@ -11,7 +11,7 @@ def get_args():
 
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("-d", help = "filepath to .yaml config file", type = str, required = True)
-    parser.add_argument("--buffer", help = "Amount of padding to put on either side of on-pulse (+ off-pulse) window when making new crop.", type = float, default = 0.2)
+    parser.add_argument("--buffer", help = "Amount of padding to put on either side of on-pulse (+ off-pulse) window when making new crop [multiplier +X*width].", type = float, default = 0.2)
     parser.add_argument("-f", help = "filename prefix for data and modified ilex config file", type = str, default = None)
 
     args = parser.parse_args()

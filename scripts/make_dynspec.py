@@ -268,8 +268,11 @@ def make_ds(xpol, ypol, S = "I", nFFT = 336):
     for i, b in enumerate(b_arr): # b is bounds of block in nFFT windows
         sb = b * nFFT
         wind_w = b[1] - b[0]
-        ds[:,b[0]:b[1]] = Stk_Func[S](fft(xpol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho"),
-                                 fft(ypol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho")).T
+        if nFFT == 1:
+            ds[:,b[0]:b[1]] = Stk_Func[S](xpol[sb[0]:sb[1]], ypol[sb[0]:sb[1]])
+        else:
+            ds[:,b[0]:b[1]] = Stk_Func[S](fft(xpol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho"),
+                                     fft(ypol[sb[0]:sb[1]].copy().reshape(wind_w, nFFT), axis = 1, norm = "ortho")).T
         
         # print progress
         print(f"[MAKING DYNSPEC]:    [Progress] = {(i+1)/(nblock+1)*100:3.3f}%:    " + prog_str,

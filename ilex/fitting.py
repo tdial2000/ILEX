@@ -34,10 +34,12 @@ from .utils import struct_
 
 from .data import *
 
-from .pyfit import fit, _clean_bilby_run, _priorUniform
+from .pyfit import fit, _clean_bilby_run, _priorUniform, PyfitLikelihood
 
 from .globals import *
 
+class _empty:
+    pass
 
 
 ##===============================================##
@@ -213,7 +215,7 @@ def specindex(x, a, alpha):
 ##===============================================##
 ##          Advanced fitting functions           ##
 ##===============================================##
-def scatt_pulse_profile(x, p):
+def scatt_pulse_profile(x, **p):
     """
     Scattering time series profile with n pulses. Numerical convolution if done incorrectly
     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window
@@ -294,102 +296,12 @@ def scatt_pulse_profile(x, p):
         y[xs:xe+1] += p[f"a{i+1}"] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)
 
     return y
-# def scatt_pulse_profile(x, p):
-#     """
-#     Scattering time series profile with n pulses. Numerical convolution if done incorrectly
-#     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window
-#     around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.
-#     This of course isn't realistic when taking a crop of data whose bounds cut through potential signal. 
-
-#     To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until 
-#     symmetrical, this avoids any potential shifting due to improper convolution. 
-
-#     Parameters
-#     ----------
-#     x: np.ndarray
-#         X data array
-#     p: Dict(float)
-#         dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n
-#         [a[n]] - Pulse amplitude \n
-#         [mu[n]] - Pulse position \n
-#         [sig[n]] - Pulse width \n
-#         [tau] - scattering timescale
-
-#     Returns
-#     -------
-#     y: np.ndarray
-#         Y data array
-#     """
-#     # create empty output array
-#     y = np.zeros(x.size)
-#     print(x)
-    
-#     # create scattering tail 
-#     dt = x[1] - x[0]
-#     npulses = (len(p) - 1)//3
-#     stail = scat(dt,p['tau'], sig = 3)
-#     print(stail.size)
-#     # plt.plot(np.linspace(0.0, 1.0, stail.size), stail)
-
-#     # Each gaussian will be isolated and convolved seperatley with enough padding for a complete
-#     # uniform convolution with zero shifting due to numerical error.
-#     for i in range(npulses):
-
-#         # make gaussian with sigma 5
-#         xe = int(floor((p[f"mu{i+1}"] + p[f"sig{i+1}"]*5)/dt))  #assuming starts at zero, at increments of 
-#         xs = int(floor((p[f"mu{i+1}"] - p[f"sig{i+1}"]*5)/dt))
-    
-#         # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve
-#         # if x.size < stail.size:
-#         #     # expand to same size as stail
-#         #     lendif = (stail.size - (x.size))
-#         #     xe += lendif
-#         #     xs -= lendif
-            
-            
-#         x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)
-#         print(x_i)
-
-#         # crop bounded signal
-#         ps = int(floor(x[0]/dt))
-#         xs -= ps
-#         xe -= ps
-
-#         # handle edge cases
-#         if xs >= x.size:
-#             continue
-
-#         if xe <= 0:
-#             continue
-
-#         # make pulse
-#         pulse_i = gaussian(x, 1, p[f"mu{i+1}"], p[f"sig{i+1}"])
-#         print(pulse_i.size)
-#         print(x.size)
-#         print(stail.size)
-#         # print(pulse_i.size)
-#         # plt.plot(x_i, pulse_i)
-
-#         # convolve
-#         conv = np.convolve(pulse_i, stail, mode = "same")
-#         # plt.plot(np.linspace(0,1.0, stail.size),stail)
-#         plt.plot(x, conv/np.max(conv)*p[f"a{i+1}"], label = f"{1/dt}")
-#         pulse_ind = [0, conv.size]
-        
-#         if xs < 0:
-#             pulse_ind[0] = 0 - xs
-#             xs = 0
-#         if xe + 1 > x.size:
-#             pulse_ind[1] -= (xe+1 - x.size)
-#             xe = x.size
-
-#         # y[xs:xe+1] += p[f"a{i+1}"] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)
-#     return y
 
 
 
 
-
+# def _scatt_pulse_profile_func():
+#     pass
 
 def make_scatt_pulse_profile_func(n = 1):
     """
@@ -399,27 +311,84 @@ def make_scatt_pulse_profile_func(n = 1):
     ----------
     n: int
         number of pulses in scatter profile
-
     Returns
     -------
     func: __func__
-        lambda function for scatter pulse profile with n pulses
+        lambda function for scatter pulse profile with n pulses, only if return_definition == False
+
     """
 
     args_str = "lambda x"
-    func_str = "scatt_pulse_profile(x,{"
+    func_str = "scatt_pulse_profile(x,"
 
     for i in range(1, n+1):
         # loop through components
         for p in ["a", "mu", "sig"]:
-            func_str += f"'{p}{i}':{p}{i},"
+            func_str += f"{p}{i} = {p}{i},"
             args_str += f",{p}{i}"
 
     # add tau
-    func_str += "'tau':tau"
+    func_str += "tau = tau"
     args_str += ",tau"
 
-    return (eval(args_str + ":" + func_str + "})"))
+    return (eval(args_str + ":" + func_str + ")"))
+
+
+
+
+class tscattLikelihood(PyfitLikelihood):
+    def __init__(self, x, y, yerr, npulse):
+        """
+        Likelihood function for fitting N pulses with a common scattering
+        exponential to FRB data.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Time [ms]
+        y : np.ndarray
+            FRB data
+        yerr : np.ndarray
+            error in y
+        npulse : np.ndarray
+            Number of gaussian pulses to model FRB
+        """
+        # set data attributes
+        self.npulse = npulse
+
+        # construct parameters, we aren't going to retrieve them from the 
+        # function because we need the function to accept a dictionary of parameters
+        # of variable length given self.npulse. So we will construct the parameters here
+        parameters = ['tau']
+        for n in range(1, npulse+1):
+            parameters += [f'a{n}', f'mu{n}', f'sig{n}']
+        bilby.Likelihood.__init__(self, parameters = dict.fromkeys(parameters))
+        self.parameters = dict.fromkeys(parameters)
+        self.func_keys = list(self.parameters.keys())
+
+        self._superinit(x = x, y = y, func = scatt_pulse_profile, yerr = yerr)
+
+
+    def log_likelihood(self):
+        """
+        Evaluate the log likelihood function using a dictionary to pass to scatt_pulse_profile()
+        
+        """
+
+        sigma = self.sigma
+        y_model = self.func(self.x, **self.model_parameters)
+
+        # for a gaussian log likelihood
+        return -0.5 * np.sum(((self.y - y_model)/sigma)**2 + np.log(2 * np.pi * sigma**2))
+
+
+
+
+
+
+
+
+
 
 
 
@@ -435,6 +404,7 @@ def make_scatt_pulse_profile_func(n = 1):
 
 ## RM fitting functions ##
 def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
+
     """
     Use RM synthesis to calculate RM, pa0 and f0,
     f0 is the weighted midband frequency and pa0 the
@@ -463,17 +433,17 @@ def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
 
     Returns
     -------
-    rm: float 
-        rotation measure
-    rm_err: float 
-        error in rotation measure
-    f0: float 
-        reference frequency at weighted mid-band
-    pa0: float 
-        position angle at f0 
+    out : dict
+        dictionary of results \n
+        rm [float]: rotation measure \n 
+        rm_err [float] error in rotation measure \n
+        f0 [float] reference frequency at weighted mid-band \n
+        pa0 [float] position angle at f0 \n
+        phiArr [np.ndarray] Array of phi values values \n
+        fdfArr [np.ndarray] Array of faraday depth values
     """
 
-    defkwargs = {"polyOrd":3, "phiMax_radm2":1.0e3, "dPhi_radm2":1.0, "nSamples":100.0}
+    defkwargs = {"polyOrd":3, "phiMax_radm2":1.0e3, "dPhi_radm2":1.0, "nSamples":100.0, 'showPlots':False}
 
     ## process kwargs keys
     keys = kwargs.keys()
@@ -500,20 +470,28 @@ def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
     rm_sum, rm_data = run_rmsynth(rmsyn_data, **kwargs)
 
     # apply RM cleaning
-    rmc = run_rmclean(rm_sum, rm_data, clean_cutoff)
+    rmc, rm_data = run_rmclean(rm_sum, rm_data, clean_cutoff, showPlots = kwargs['showPlots'])
 
     # get estimated parameters
-    rm = rmc[0]['phiPeakPIfit_rm2']                                             # RM
-    rm_err = rmc[0]['dPhiPeakPIfit_rm2']                                        # RM err
+    rm = rmc['phiPeakPIfit_rm2']                                             # RM
+    rm_err = rmc['dPhiPeakPIfit_rm2']                                        # RM err
     f0 = rm_sum['freq0_Hz'] / 1e6                                               # f0 (MHz)
-    pa0 = 0.5 * np.arctan2(rmc[0]['peakFDFimagFit'],rmc[0]['peakFDFrealFit'])   # pa0 (at f0)
+    pa0 = 0.5 * np.arctan2(rmc['peakFDFimagFit'],rmc['peakFDFrealFit'])   # pa0 (at f0)
 
     # print
     log(f"RM: {rm:.4f}  +/-  {rm_err:.4f}     (rad/m2)", lpf = False)
     log(f"f0: {f0}    (MHz)", lpf = False)
     log(f"pa0:  {pa0}     (rad)", lpf = False)
 
-    return rm, rm_err, f0, pa0
+    out = {}
+    out['rm'] = rm 
+    out['rm_err'] = rm_err
+    out['f0'] = f0
+    out['pa0'] = pa0
+    out['phiArr'] = rm_data['phiArr_radm2'].copy()
+    out['fdfArr'] = np.abs(rm_data['cleanFDF'])
+
+    return out
 
 
 
@@ -552,14 +530,12 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
 
     Returns
     -------
-    rm: float 
-        rotation measure
-    rm_err: float 
-        error in rotation measure
-    pa0: float 
-        position angle at f0 
-    pa0_err: float
-        position angle err
+    out : dict
+        Dictionary of results
+        rm [float] rotation measure \n
+        rm_err [float] error in rotation measure \n
+        pa0 [float] position angle at f0 \n
+        pa0_err [float] position angle err
     """
 
     log("Fitting using RM quadratic function", lpf = False)
@@ -586,7 +562,13 @@ def fit_RMquad(Q, U, Qerr, Uerr, f, f0, **kwargs):
     log(f"f0: {f0}    (MHz)", lpf = False)
     log(f"pa0:  {pa0}  +/-  {pa0_err:.4f}     (rad)", lpf = False)
 
-    return rm, rm_err, pa0, pa0_err
+    out = {}
+    out['rm'] = rm
+    out['rm_err'] = rm_err
+    out['pa0'] = pa0
+    out['pa0_err'] = pa0_err
+
+    return out
 
 
 
@@ -705,6 +687,15 @@ def RM_QUfit(Q, U, Ierr, Qerr, Uerr, f, rm_priors = [-1000, 1000], pa0_priors = 
         Stokes Q parameter noise
     Uerr : np.ndarray
         Stokes U parameter noise
+
+    Returns
+    -------
+    out : dict
+        Dictionary of results \n
+        rm [float] rotation measure \n
+        rm_err [float] error in rotation measure \n
+        pa0 [float] position angle at f0 \n
+        pa0_err [float] position angle err
     """
 
     outdir = "outdir"
@@ -736,6 +727,12 @@ def RM_QUfit(Q, U, Ierr, Qerr, Uerr, f, rm_priors = [-1000, 1000], pa0_priors = 
     # plots 
     result.plot_corner()
 
-    return rm, rm_err, pa0, pa0_err
+    out = {}
+    out['rm'] = rm
+    out['rm_err'] = rm_err
+    out['pa0'] = pa0
+    out['pa0_err'] = pa0_err
+
+    return out
 
     

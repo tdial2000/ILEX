@@ -34,7 +34,7 @@ from .data import *
 
 ## import FRB stats ##
 from .fitting import (fit_RMquad, fit_RMsynth, RM_QUfit, lorentz,
-                     make_scatt_pulse_profile_func)
+                     make_scatt_pulse_profile_func, tscattLikelihood ,scatt_pulse_profile)
 
 ## import FRB params ##
 from .par import FRB_params, FRB_metaparams
@@ -1971,6 +1971,7 @@ class FRB:
         -------
         p: pyfit.fit
             pyfit class structure
+        
         """
         
         log_title(f"Fitting for Scintillation bandwidth using [{method}] method.", col = "lblue")
@@ -2167,7 +2168,13 @@ class FRB:
         # create instance of fitting
         # the implemented convolution algorithm requires that we snap to integer samples
         # check if priors given or not
-        p = fit(x = x, y = y, yerr = err, func = make_scatt_pulse_profile_func(npulse),
+        # this will be used to pass the function and data to fit even if "least squares"
+        # is being used and the likelihood obj itself is not used
+        likelihood = None
+        if method == "bayesian":
+            likelihood = tscattLikelihood(x = x, y = y, yerr = err, npulse = npulse)
+
+        p = fit(x = x, y = y, yerr = err, likelihood = likelihood, func = scatt_pulse_profile,
                 prior = priors, static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior) 
 
@@ -2177,7 +2184,6 @@ class FRB:
                 if key == "sigma":
                     continue
                 if key not in priors.keys():
-                    print("KEYKEY")
                     if ("sig" in key) or ("tau" in key) or (key[0] == "a"):
                         p.bounds[key] = [0.0001, math.inf]
 
@@ -2445,6 +2451,17 @@ class FRB:
         -------
         p : pyfit.fit
             pyfit class fitting structure
+        rmDict: dict
+            Dictionary of fitted values and data \n
+            rm [float] rotation measure \n
+            rm_err [float] error in rotation measure \n
+            pa0 [float] position angle at f0 \n
+            pa0_err [float] position angle err \n
+            f0 [float] reference frequency at weighted mid-band \n
+            phiArr [np.ndarray] Array of phi values (If RMsynth enabled) \n
+            rmArr [np.ndarray] Array of faraday depth values (If RMsynth enabled) \n
+            pa [np.ndarray] Array of Polarisation angles [Rad] \n
+            pa_err [np.ndarray] Array of Polarisation angle errors [Rad]
         """
         log_title(f"Fitting for RM using [{method}] method.", col = "lblue")
 
@@ -2457,17 +2474,17 @@ class FRB:
         
         else:
             log("Invalid method for estimating RM", stype = "err", lpf_col = self.pcol)
-            return None
+            return None, None
             
         if self.this_metapar.terr_crop is None:
             log("Must specify 'terr_crop' for rms crop if you want to use RMsynth or RMquad", stype = "err",
                 lpf_col = self.pcol)
-            return (None, ) * 5
+            return None, None
         
         ## get data ##
         self.get_data(data_list, ignore_nans = True, **kwargs)
         if not self._isdata():
-            return None
+            return None, None
 
         ## mask data based on S/N threshold given
         if sigma is not None:
@@ -2484,8 +2501,9 @@ class FRB:
 
             f0 = self.this_par.f0
             # run fitting
-            rm, rm_err, pa0, pa0_err = fit_RMquad(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask],
+            rmDict = fit_RMquad(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask],
                                                   self._f['Uerr'][mask], self._freq[mask], f0, **fit_params)
+            rmDict['f0'] = f0
 
 
         elif method == "RMsynth":
@@ -2493,8 +2511,9 @@ class FRB:
             pa0_err = 0.0       # do this for now, TODO
             I, Q, U = self._f['I'], self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr'] 
-            rm, rm_err, f0, pa0 = fit_RMsynth(I[mask], Q[mask], U[mask], Ierr[mask], 
+            rmDict = fit_RMsynth(I[mask], Q[mask], U[mask], Ierr[mask], 
                                 Qerr[mask], Uerr[mask], self._freq[mask], **fit_params)
+            rmDict['pa0_err'] = pa0_err
 
         
         elif method == "QUfit":
@@ -2505,9 +2524,10 @@ class FRB:
             f0 = self.par.cfreq
             Q, U = self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr']
-            rm, rm_err, pa0, pa0_err = RM_QUfit(Q = Q[mask], U = U[mask], Ierr = Ierr[mask], Qerr = Qerr[mask], 
+            rmDict = RM_QUfit(Q = Q[mask], U = U[mask], Ierr = Ierr[mask], Qerr = Qerr[mask], 
                                                 Uerr = Uerr[mask], f = self._freq[mask], rm_priors = rm_prior, 
                                                 pa0_priors = pa0_prior, **fit_params)
+            rmDict['f0'] = f0
 
 
         # function for plotting diagnostics
@@ -2517,7 +2537,7 @@ class FRB:
         #         return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
         # else:
         def rmquad(f, rm, pa0):
-            angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/f0**2)
+            angs = pa0 + rm*c**2/1e12*(1/f**2 - 1/rmDict['f0']**2)
             return 90/np.pi*np.arctan2(np.sin(2*angs), np.cos(2*angs))
         
         def rmquad_unwrapped(f, rm, pa0):
@@ -2529,15 +2549,18 @@ class FRB:
         PA, PA_err = calc_PA(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask], self._f['Uerr'][mask])
         print(self._freq[mask].size, PA.size)
 
+        rmDict['pa'] = PA.copy()
+        rmDict['pa_err'] = PA_err.copy()
+
         p = fit(x = self._freq[mask], y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
                  residuals = self.residuals)
-        p.set_posterior('rm', rm, rm_err, rm_err)
-        p.set_posterior('pa0', pa0, pa0_err, pa0_err)
-        p.set_posterior('f0', f0, 0.0, 0.0)
+        p.set_posterior('rm', rmDict['rm'], rmDict['rm_err'], rmDict['rm_err'])
+        p.set_posterior('pa0', rmDict['pa0'], rmDict['pa0_err'], rmDict['pa0_err'])
+        p.set_posterior('f0', rmDict['f0'], 0.0, 0.0)
 
         # set values to fitted_params 
         self.fitted_params['RM'] = p.get_posteriors()
-        self.fitted_params['RM']['f0'] = _posterior(f0, 0, 0)
+        self.fitted_params['RM']['f0'] = _posterior(rmDict['f0'], 0, 0)
         p._is_fit = True
         p._is_stats = True
         p._get_stats()
@@ -2550,7 +2573,7 @@ class FRB:
             if unwrap:
                 y_wrap = p.y.copy()
                 func_wrap = p.func
-                y_unwrap, _, _ = unwrap_pa(p.x, p.y, rm, pa0)
+                y_unwrap, _, _ = unwrap_pa(p.x, p.y, rmDict['rm'], rmDict['pa0'])
                 p.set(y = y_unwrap, func = rmquad_unwrapped)
                 y_height = np.max(y_unwrap) - np.min(y_unwrap)
                 pa_ylim = [np.min(y_unwrap) - 0.15*y_height, np.max(y_unwrap) + 0.15*y_height]
@@ -2576,7 +2599,7 @@ class FRB:
         self._save_new_params()
 
 
-        return p
+        return p, rmDict
 
 
 

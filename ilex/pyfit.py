@@ -119,6 +119,27 @@ def _priorUniform(p):
     return priors
 
 
+def _staticDelta(p):
+    """
+    Convert Dictionary of statics to Bilby Delta prior instance
+
+    Parameters
+    ----------
+    p : Dict[List(float)]
+        Dictionary of priors for Bilby.run_sampler
+
+    Returns
+    -------
+    Bilby.DeltaPrior
+        Bilby delta priors
+    """
+    priors = {}
+    for _,key in enumerate(p.keys()):
+        priors[key] = bilby.core.prior.analytical.DeltaFunction(p[key],key)
+    
+    return priors
+
+
 
 
 def _clean_bilby_run(outdir, label):
@@ -147,6 +168,22 @@ class PyfitLikelihood(bilby.Likelihood):
         This class is a basis class the user should use when the user wants to estimate 
         the max likelihood using both x and y errors.
 
+        To create a child class of PyfitLikelihood:
+            class childLikelihood(PyfitLikelihood):
+                def __init__(self, x, y, func, xerr, yerr):
+                    # code to run prior to setting up attributes
+
+                    # set self.parameters attribute
+                    
+                    # set self.func_keys attribute
+
+                    # this line must be at the end
+                    self._superinit(x, y, func, xerr, yerr)
+
+                def log_likelihood(self, ):
+                    # if it is nessesary to write specific code to calculate the log_likelihood
+                    # function, put it here, otherwise omit this definition.
+
         Parameters
         ----------
         x : np.ndarray or array-like
@@ -168,6 +205,12 @@ class PyfitLikelihood(bilby.Likelihood):
         self.parameters = dict.fromkeys(parameters)
         
         self.func_keys = list(self.parameters.keys())      
+
+        self._superinit(x, y, func, xerr, yerr)
+
+
+    def _superinit(self, x, y, func, xerr = None, yerr = None):
+
         #---------- Set data -----------#
         self.x = x
         self.y = y
@@ -224,7 +267,7 @@ class PyfitLikelihood(bilby.Likelihood):
 
     def log_likelihood(self):
         """
-        Evaluate the log liklihood of function
+        Evaluate the log likelihood of function
     
         """
 
@@ -371,7 +414,12 @@ class fit:
         if true, plot residuals when .plot() is called
     plotPosterior : bool
         if true, save image of posterior corner plot
-
+    plot_model_kwargs : dict
+        ax.plot kwarg dict for model fit 
+    plot_data_kwargs : dict
+        ax.scatter kwarg dict for data 
+    plot_err_kwargs : dict
+        ax.errorbar kwarg dict for error bars
     """
 
     def __init__(self, **kwargs):
@@ -425,6 +473,7 @@ class fit:
         self.log_noise_evidence = 0.0
 
         # other
+        self._lh_is_instance = False
         self._is_sigma_sampled = False
         self._is_stats = False
         self._is_fit = False
@@ -432,7 +481,9 @@ class fit:
         self.plotPosterior = True
         self.modelNpoints = 20000
 
-
+        self.plot_model_kwargs = {'color': [0.9098, 0.364, 0.3961], 'linewidth': 2.5}
+        self.plot_data_kwargs = {'c':'k', 's':10}
+        self.plot_err_kwargs = {'color': 'k', 'alpha': 0.4, 'linestyle': ''}
 
         # run set function for initalised attributes
         self.set(**kwargs)
@@ -466,6 +517,40 @@ class fit:
     @sigma.setter
     def sigma(self, sigma):
         self._sigma = sigma
+
+
+
+
+    def set_plot_vars(self, **kwargs):
+        """
+        Set the plot parameters for things like model line, data points and 
+        errorbars any dict items passed will be "ADDED/MODIFIED" to the 
+        existing plot param dictionaries.
+
+        Parameters
+        ----------
+        plot_model_kwargs : dict
+            Parameters for model line
+        
+        """
+        plot_keys = ["plot_model_kwargs", "plot_data_kwargs", "plot_err_kwargs"]
+
+        keys = kwargs.keys()
+        for key in keys:
+            if key not in plot_keys:
+                del kwargs[key]
+        
+        for pkey in plot_keys:
+            if pkey in kwargs.keys():
+                if type(kwargs[pkey]) != dict:
+                    TypeError(f"{pkey} must be a dictionary of values!")
+                plot_dict = getattr(self, pkey)
+                for key in kwargs[pkey].keys():
+                    plot_dict[key] = kwargs[pkey][key]
+                print(f"Dict for [{pkey}]: {plot_dict}")
+                setattr(self, pkey, plot_dict)
+        
+        return 
 
     
 
@@ -528,13 +613,37 @@ class fit:
 
         # likelihood
         if "likelihood" in kwargs.keys():
-            if issubclass(kwargs['likelihood'], PyfitLikelihood):
-                self.likelihood = kwargs['likelihood']
-            else:
-                raise ValueError("Likelihood Class must be a sub-class of PyfitLikelihood")
+            self._lh_is_instance = False
+            print(kwargs['likelihood'])
+            if kwargs['likelihood'] is not None:
+                if type(kwargs['likelihood']) != type:
+                    if isinstance(kwargs['likelihood'], PyfitLikelihood):
+                        print("Loaded instance of a Likelihood class!")
+                        self.likelihood = kwargs['likelihood']
+                        self._lh_is_instance = True
+                        self._SetFromLikelihood()
+                    else:
+                        raise ValueError("Likelihood arg must be instance or sub-class of [PyfitLikelihood]")
+                else:
+                    if issubclass(kwargs['likelihood'], PyfitLikelihood):
+                        self.likelihood = kwargs['likelihood']
+
+                    else:
+                        raise ValueError("Likelihood arg must be instance or sub-class of [PyfitLikelihood]")
 
                 
-    
+    def _SetFromLikelihood(self):
+        """
+        If a likelihood instance is already passed through and is a child of
+        the PyfitLikehood class with the right parameters set, then set up the fit class 
+        
+        """
+
+        for key in ["func", "x", "y", "xerr", "yerr"]:
+            setattr(self, key, getattr(self.likelihood, key))
+
+        self.keys = self.likelihood.func_keys
+        return
 
 
     def _check_attr(self):
@@ -588,8 +697,13 @@ class fit:
                     raise ValueError(f"[{pkey}] must be array-like or a float/int value!")
 
         # check likelihood
-        if not issubclass(self.likelihood, PyfitLikelihood):
-            raise ValueError("Likelihood Class must be a sub-class of PyfitLikelihood")
+        if self.likelihood is not None:
+            if type(self.likelihood) == type:
+                if not issubclass(self.likelihood, PyfitLikelihood):
+                    raise ValueError("Likelihood Class must be a sub-class of PyfitLikelihood")
+            else:
+                if not isinstance(self.likelihood, PyfitLikelihood):
+                    raise ValueError("Likelihood instance must be a child of PyfitLikelihood")
 
         
         # only if all passed
@@ -826,6 +940,10 @@ class fit:
         """
         get fitting function arguments
         """
+        if self._lh_is_instance:
+            if (self.method == "bayesian") and isinstance(self.likelihood, PyfitLikelihood):
+                return self.likelihood.func_keys
+
         if callable(self.func):
             return inspect.getfullargspec(self.func)[0][1:]
         else:
@@ -1228,7 +1346,8 @@ class fit:
             self.sigma = yerr
 
 
-        # fit using bilby bayesian inference
+        # fit using bilby bayesian inference, for statics we will use injection parameters
+        # of BILBY
         elif self.method == "bayesian":
 
             # clean previous sampling, if any
@@ -1242,7 +1361,7 @@ class fit:
                 _clean_bilby_run(outdir, label)
 
 
-            keys = inspect.getfullargspec(func_wrap)[0][1:]
+            keys = self._get_func_args()
             # if yerr not specified, include sigma for sampling
 
             if 'sigma' in statics.keys():
@@ -1253,13 +1372,20 @@ class fit:
                 keys += ['sigma']
             bil_priors = _dict_get(priors, keys)
 
+            if not self._lh_is_instance:
+                likelihood = self.likelihood(x = x, y = y,
+                                        func = self.func, xerr = xerr, yerr = yerr)
+            else:
+                likelihood = self.likelihood
             
-            likelihood = self.likelihood(x = x, y = y,
-                                        func = func_wrap, xerr = xerr, yerr = yerr)
+            priors = _priorUniform(bil_priors)
+            statics_wrap = _staticDelta(statics_wrap)
+            for key in statics_wrap.keys():
+                priors[key] = statics_wrap[key]
             
             # run sampler
-            result_ = bilby.run_sampler(likelihood = likelihood, priors = _priorUniform(bil_priors),
-                                    **self.fit_keywords)
+            result_ = bilby.run_sampler(likelihood = likelihood, priors = priors, 
+                                        **self.fit_keywords)
 
             # get posteriors
             self._results2posterior(result_)
@@ -1270,9 +1396,9 @@ class fit:
 
             # plot bilby outputs for diagnostic purposes
             if self.plotPosterior:
-                result_.plot_with_data(func_wrap, x, y)
+                # result_.plot_with_data(self.func, x, y)   # MAKE OVERIDE FUNCTION FOR LATER
                 result_.plot_corner()
-
+                pass
 
         # last stats to save 
         self.nfitpar = len(priors_wrap)
@@ -1447,39 +1573,28 @@ class fit:
             AX[0].get_xaxis().set_visible(False)
 
         # plot data
-        AX[0].scatter(self.x, self.y, c = 'k', s = 10)
+        AX[0].scatter(self.x, self.y, **self.plot_data_kwargs)
 
         # plot model
-        Mx = x = np.linspace(self.x[0], self.x[-1], self.modelNpoints)
+        Mx = np.linspace(self.x[0], self.x[-1], self.modelNpoints)
         _, Mline = self.get_model(x = Mx)
         _, y_fit = self.get_model()
         if y_fit is None:
             return
-        AX[0].plot(Mx, Mline, color = [0.9098, 0.364, 0.3961], linewidth = 2.5)
+        AX[0].plot(Mx, Mline, **self.plot_model_kwargs)
 
         # plot errorbars if specified
         # axxerr, axyerr = self.xerr, self.yerr
         if (self.yerr is not None) or (self.xerr is not None):
-            AX[0].errorbar(x = self.x, y = self.y, xerr = self.xerr, yerr = self.yerr, color = 'k', 
-                        alpha = 0.4, linestyle = '')
-        
-        # if axxerr is None:
-        #     axxerr = 0
-        # if axyerr is None:
-        #     axyerr = 0
-            
-        # # set x, y limits
-        # ylimw = (np.max(self.y + axyerr) - np.min(self.y - axyerr))
-        # xlimw = (np.max(self.x + axxerr) - np.min(self.x - axxerr))
-        # AX[0].set_xlim([np.min(self.x - axxerr) - 0.1*xlimw, np.max(self.x + axxerr) + 0.1*xlimw])
-        # AX[0].set_ylim([np.min(self.y - axyerr) - 0.15*ylimw, np.max(self.y + axyerr) + 0.15*ylimw])
-
+            AX[0].errorbar(x = self.x, y = self.y, xerr = self.xerr, yerr = self.yerr, 
+                           **self.plot_err_kwargs)
+    
         # plot residuals
         if self.residuals:
-            AX[1].scatter(self.x, self.y - y_fit, c = 'k', s = 10)
+            AX[1].scatter(self.x, self.y - y_fit, **self.plot_data_kwargs)
             if (self.yerr is not None) or (self.xerr is not None):
                 AX[1].errorbar(x = self.x, y = self.y - y_fit, xerr = self.xerr,
-                                 yerr = self.yerr, color = 'k', alpha = 0.4, linestyle = '')
+                                 yerr = self.yerr, **self.plot_err_kwargs)
 
         # last figure changes
         fig.tight_layout()        
@@ -1497,9 +1612,44 @@ class fit:
 
 
         
+    def plot_model_on_ax(self, ax):
+        """
+        Plot model on given axis
 
+        Parameters
+        ----------
+        ax : Axes
+            Axes handle to plot model on
+        **kwargs
+            Model lineplot keyword arguments
+        """
 
+        if not self._is_fit:
+            print("[fit.plot_model_on_ax]: No Model fit found, fit to data before plotting")
+            return
+        
+        if ax is None:
+            print("[fit.plot_model_on_ax]: No axes handle given!")
+            return
+        
 
+        # plot data
+        ax.scatter(self.x, self.y, **self.plot_data_kwargs)
+
+        # plot model
+        Mx = np.linspace(self.x[0], self.x[-1], self.modelNpoints)
+        _, Mline = self.get_model(x = Mx)
+        _, y_fit = self.get_model()
+        if y_fit is None:
+            return
+        ax.plot(Mx, Mline, **self.plot_model_kwargs)
+
+        # plot errorbars 
+        if (self.yerr is not None) or (self.xerr is not None):
+            ax.errorbar(x = self.x, y = self.y, xerr = self.xerr, yerr = self.yerr, 
+                        **self.plot_err_kwargs)
+            
+        return
 
 
 

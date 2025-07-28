@@ -139,7 +139,7 @@ class weights:
             if not isinstance(args, dict):
                 log("args must be in dict format", stype = "err")
             if self.func is not None:
-                func_keys = inspect.getargspec(self.func)[0][1:]
+                func_keys = inspect.getfullargspec(self.func)[0][1:]
                 if_flag = False
                 missing_args = []
                 new_args = {}
@@ -310,7 +310,7 @@ class weights:
             return 0
         
         # check if all args are there
-        for key in inspect.getargspec(self.func)[0][1:]:
+        for key in inspect.getfullargspec(self.func)[0][1:]:
             if key not in self.args.keys():
                 log(f"argument [{key}] not specified, cannot evaulate function", stype = "err")
                 return 0

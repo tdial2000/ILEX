@@ -1,0 +1,11 @@
+# .bashrc
+
+# variables
+export PS1="\e[0;35m[ILEX: \W]\\$ \e[m"
+
+# paths
+PATH=$PATH:/src/ILEX/scripts
+PYTHONPATH=$PYTHONPATH:/src/ILEX/scripts
+
+# aliases
+alias vi=vim

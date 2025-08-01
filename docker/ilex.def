@@ -1,0 +1,23 @@
+BootStrap: docker
+From: python:3.9
+
+%labels
+    Author tysondial2000@hotmail.com
+    MyLabel ILEX
+
+%files
+    docker/requirements.txt /app/requirements.txt
+    docker/rootbashrc /root/.bashrc
+    ../ILEX /src/ILEX
+
+%post
+    apt-get update -y
+    apt install -y vim
+    cd /app
+    pip install --no-cache-dir -r requirements.txt
+    cd /src/ILEX
+    bash install_ilex.sh
+
+%runscript
+    source /root/.bashrc
+

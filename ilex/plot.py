@@ -951,13 +951,12 @@ def plot_poincare_track(dat, ax, sigma = 2.0, plot_data = True, plot_model = Fal
         stk_i[S][stk_mask] = pdat[S][stk_mask]/P[stk_mask]
         stk_i[S][~stk_mask] = np.nan
     stk_o = deepcopy(stk_i)
-
+    stk_m = {}
     # model stokes data
     if plot_model:
-        stk_m = {}
         stk_mo = {}
         for S in "QUV":
-            stk_m[S] = model_curve(stk_i[S], n = n, samp = 1000)
+            stk_m[S] = model_curve(stk_i[S], n = n)
             # stk_mo[S] = model_curve(stk_o[S], n = n, samp = 1000)
 
     # plot stokes data

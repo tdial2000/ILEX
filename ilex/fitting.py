@@ -49,7 +49,7 @@ class _empty:
 
 def model_curve(y, n: int = 5, samp: int = None):
     """
-    Fit Polynomial model to data
+    Fit Polynomial model to data.
 
     Parameters
     ----------
@@ -58,7 +58,7 @@ def model_curve(y, n: int = 5, samp: int = None):
     n : int, optional
         Polynomial order, by default 5
     samp : int, optional
-        number of samples to sample modelled data, by default None
+        number of samples to sample modelled data, if None, then any NaN values will be preserved, else NaN values are removed, by default None
 
     Returns
     -------
@@ -74,7 +74,11 @@ def model_curve(y, n: int = 5, samp: int = None):
     xnew = np.linspace(0, 1.0, samp)
     
     y_fit = np.poly1d(np.polyfit(x,ytemp,n))
-    yout[~np.isnan(y)] = y_fit(xnew)
+
+    if samp != x.size:
+        yout[~np.isnan(y)] = y_fit(xnew)
+    else:
+        yout = y_fit(xnew)
 
     return yout
 

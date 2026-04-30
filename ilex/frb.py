@@ -2115,8 +2115,8 @@ class FRB:
                         figlayout[i][j] = item_replace
 
 
-        valid_data = ['tI', 'tQ', 'tU', 'tV', 'fI', 'fQ', 'fU', 'fV',
-                      'dsI', 'dsQ', 'dsU', 'dsV', 'fL', 'fP', 'tL', 'tP']
+        valid_data = ['tI', 'tQ', 'tU', 'tL', 'tV', 'fI', 'fQ', 'fU', 'fL', 'fV',
+                      'dsI', 'dsQ', 'dsU', 'dsV', 'fP', 'tP']
 
         ds_sizes = [6, 4, 3, 2.5]
         tf_sizes = [2.5, 2.0, 1.5, 1.25]
@@ -2502,8 +2502,20 @@ class FRB:
 
         if self.save_plots:
             if filename is None:
-                filename = f"{self.par.name}_{data}.png"
-            plt.savefig(filename)
+                file_suffix = ""
+                label_comps = {'f':"", 't':"", "ds":""}
+
+                # construst filename
+                for d in valid_data:
+                    if d in full_data:
+                        label_comps[d[:-1]] += d[-1]
+                
+                for prt in ['f','t','ds']:
+                    if len(label_comps[prt]) > 0:
+                        file_suffix += prt + label_comps[prt] + "_"
+
+                filename = f"{self.par.name}_{file_suffix[:-1]}.png"
+            fig.savefig(filename)
 
         if self.show_plots:
             plt.show()
@@ -3311,7 +3323,7 @@ class FRB:
 
 
 
-    def plot_subbands(self, N = 2, stk = "I", **kwargs):
+    def plot_subbands(self, N = 2, stk = "I", filename = None, **kwargs):
         """
         Plot multiple time series subbands
 
@@ -3438,6 +3450,9 @@ class FRB:
         stk_i, stk_m = plot_poincare_track(pdat, ax, sigma = stk_sigma,
                     plot_data = plot_data, plot_model = plot_model, normalise = normalise,
                     n = n)
+                
+        # enlarge figure
+        fig.tight_layout()
                     
         if self.save_plots:
             if filename is None:
@@ -3470,6 +3485,7 @@ class FRB:
                     filename += "_poincare_spectra_fit.png"
                 
                 plt.savefig(filename)
+
             
         
         if self.show_plots:
@@ -3477,7 +3493,7 @@ class FRB:
 
         self._save_new_params()
 
-        return fig, fig2
+        return fig
 
 
 

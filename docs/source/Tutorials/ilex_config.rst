@@ -1,4 +1,4 @@
-Tutorial 3: ILEX config files
+Tutorial 4: ILEX config files
 ------------------------------
 
 Overview
@@ -46,13 +46,23 @@ additional ILEX scripts provided. A config file can be made by either using the 
       norm:       "None"
 
     hyperpar:   # hyperparameters
-      verbose:        False
-      force:          False
-      show_plots:     False
-      save_plots:     True
-      plot_type:  "regions"
-      residuals:      True
-      plotPosterior:  True
+      verbose: false
+      show_plots: true
+      save_plots: false
+      plot_type: lines
+      residuals: true
+      plotPosterior: true
+      apply_tW: true
+      apply_fW: true
+      crop_units: physical
+      dynspec_cmap: arctic
+      plot_tpad: 30.0
+      show_dynzaps: true
+      dynspec_satlvl: 0
+      dynspec_cnorm: linear
+      dynspec_cmap_alpha: 0.5
+      mplstyle: /fred/oz002/tdial/ILEX/files/default.mplstyle
+      zap: true
 
 
 

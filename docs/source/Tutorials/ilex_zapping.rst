@@ -1,4 +1,4 @@
-Tutorial 5: Channel zapping
+Tutorial 6: Channel zapping
 ---------------------------
 
 This tutorial demonstrates how to flag/zap frequency channels in ILEX.
@@ -65,25 +65,32 @@ You can also zap single channels
 **NOTE: The** ``zapchan`` **string does not need to be in any particular order!**.
 
 The ``.zap_channels()`` method allows for more utility in zapping channels. The simplest use case is appending the current ``zapchan`` 
-string with additional frequency channels
+string with additional frequency channels.
 
 .. code-block:: python
 
     frb.zap_channels("1250:1300")
 
-you can also zap frequency channels that are close to zero by toggling ``zapzeros = True`` and specifying a tolerance threshold ``zapzerosmargin``
+You can also zap frequency channels that are close to zero by toggling ``zapzeros = True`` and specifying a tolerance threshold ``zapzerosmargin``.
 
 .. code-block:: python
 
     frb.zap_channels(zapzeros = True, zapzerosmargin = 1e-5)
 
-you can also reset any additional channel zapping that was added after loading in the FRB data
+You can also reset any additional channel zapping that was added after loading in the FRB data.
 
 .. code-block:: python
 
     frb.zap_channels(resetzap = True)
 
-The ``.zap_channels()`` method also provides an interactive mode that allows the user to zap channels using an interactive GUI
+You can also perform an automated statistical based zapping process by toggling ``auto = True`` and specifying ``zapsigma`` for the threshold, ``auto_tN``
+for the downsampling and ``auto_iter`` for the number of iterations to perform. The default values should work in general.
+
+.. code-block:: python
+
+    frb.zap_channels(auto = True)
+
+The ``.zap_channels()`` method also provides an interactive mode that allows the user to zap channels using an interactive GUI.
 
 .. code-block:: python
 

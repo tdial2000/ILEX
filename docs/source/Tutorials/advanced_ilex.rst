@@ -1,4 +1,4 @@
-Tutorial 2: Fitting methods
+Tutorial 3: Fitting methods
 ------------------
 
 In the second tutorial, we will breifly explore the methods we can use to fit various FRB parameters.

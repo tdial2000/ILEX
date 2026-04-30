@@ -11,7 +11,7 @@
 ## imports
 from ..frb import FRB
 from ..data import *
-from ..utils import load_param_file, dict_get, fix_ds_freq_lims
+from ..io import load_param_file, dict_get, fix_ds_freq_lims
 from ..plot import _PLOT, plot_PA, plot_dynspec
 from ..pyfit import fit
 from ..fitting import make_scatt_pulse_profile_func

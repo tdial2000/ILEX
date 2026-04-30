@@ -417,7 +417,24 @@ def norm(x, method = "abs_max", nan = False):
 
 
 
+def gaussian_smooth(y, stDev: int = 3):
+    """
+    Apply a gaussian as a smoothing function to [y]
 
+    Parameters
+    ----------
+    y : np.ndarray or array-like
+        Data to smooth
+    stDev : int
+        Standard deviation of gaussian in number of samples
+    """
+    if stDev <= 0:
+        return y
+
+    x = np.linspace(-6*stDev, 6*stDev, 12*stDev + 1)
+    gaussian = np.exp(-x**2/(2*stDev**2))
+
+    return np.convolve(y, gaussian/np.sum(gaussian), mode = "same")
 
 
 
@@ -548,9 +565,9 @@ def zap_chan(f, zap_str):
             zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)
 
             # check if completely outside bounds
-            if (zap_0 < 0 and zap_1 < 0) or (zap_0 > f.size -1 and zap_1 > f.size -1):
-                print(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz")
-                continue            
+            # if (zap_0 < 0 and zap_1 < 0) or (zap_0 > f.size -1 and zap_1 > f.size -1):
+            #     print(f"zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz")
+            #     continue            
             
             # check bounds
             crop_zap = False
@@ -569,8 +586,8 @@ def zap_chan(f, zap_str):
                 crop_zap = True
                 zap_1 = f.size - 1
 
-            if crop_zap:
-                print(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{f[zap_0]}, {f[zap_1]}] MHz")
+            # if crop_zap:
+                # print(f"zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -> [{f[zap_0]}, {f[zap_1]}] MHz")
 
             seg_idx += list(range(zap_0,zap_1+(1*df_step),df_step))[::df_step]
 
@@ -579,7 +596,8 @@ def zap_chan(f, zap_str):
         else:
             _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)
             if (_idx < 0) or (_idx > f.size - 1):
-                print(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz")
+                # print(f"zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz")
+                pass
             else:
                 seg_idx += [_idx]
 
@@ -1107,7 +1125,27 @@ def calc_freqs(cfreq, bw = 336.0, df = 1.0, upper = True):
 
 
 
+def get_centroid(x, y):
+    """
+    Get Center of cumalative sum of y in terms of x.
 
+    Parameters
+    ----------
+    x : np.ndarray
+        X values
+    y : np.ndarray
+        Y values, it is assumed that there are no NaN values
+
+    Returns
+    -------
+    c : float
+        Center of cumalative sum of y in terms of x
+    
+    """
+
+    total = np.sum(y)
+    mid_cumsum = np.cumsum(y) - total/2
+    return x[np.argmin(np.abs(mid_cumsum))]
 
 
 

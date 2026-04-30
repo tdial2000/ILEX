@@ -1,2 +1,4 @@
-cmap: arctic
-interpolation: none
+cmap: viridis
+cmap_alpha: 0.5
+cnorm: linear
+satlvl: 0

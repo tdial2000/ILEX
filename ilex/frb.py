@@ -2,7 +2,7 @@
 ##===============================================##
 ## Author: Tyson Dial
 ## Email: tdial@swin.edu.au
-## Last Updated: 25/09/2023 
+## Last Updated: 30/04/2026 
 ##
 ##
 ## 
@@ -21,20 +21,22 @@ from copy import deepcopy
 import inspect
 from .pyfit import fit, _posterior
 import yaml
-from .frbutils import set_dynspec_plot_properties, save_frb_to_param_file
-# import time 
+from .frbutils import set_dynspec_plot_properties
+from .utilmethods import *
 
 ## import utils ##
-from .utils import (load_data, save_data, dict_get,
+from .utils import (dict_get, dict_edit_and_copy,
                     dict_init, dict_isall,
-                    merge_dicts, dict_null, get_stk_from_datalist, load_param_file, 
-                    set_plotstyle, fix_ds_freq_lims)
+                    merge_dicts, dict_null, get_stk_from_datalist, 
+                    set_plotstyle, fix_ds_freq_lims, sort_legend)
+from .io import ilexIO, load_data, save_data
 
 from .data import *
 
 ## import FRB stats ##
 from .fitting import (fit_RMquad, fit_RMsynth, RM_QUfit, lorentz,
-                     make_scatt_pulse_profile_func, tscattLikelihood ,scatt_pulse_profile)
+                     make_scatt_pulse_profile_func, tscattLikelihood ,scatt_pulse_profile,
+                     scatt_pulse_profile_relative)
 
 ## import FRB params ##
 from .par import FRB_params, FRB_metaparams
@@ -47,15 +49,15 @@ from .globals import _G, c
 
 ## import plot functions ##
 from .plot import (plot_RM, plot_PA, plot_stokes,      
-                  plot_poincare_track, create_poincare_sphere, plot_data, _PLOT, plot_dynspec)
+                  plot_poincare_track, create_poincare_sphere, plot_data, _PLOT, plot_dynspec, plot)
 
 ## import processing functions ##
-from .logging import log, get_verbose, set_verbose, log_title
+from .logging import log, get_verbose, set_verbose, log_title, strcol
 from .master_proc import master_proc_data
 from .widths import *
 
 # interactive module
-from .interactive import ZapInteractive
+from .interactive import ZapInteractive, medrms_chanflag
 
 
     
@@ -168,6 +170,10 @@ class FRB:
         If true, shows plots
     save_plots: bool
         If true, saves plots to file
+    show_dynzaps: bool
+        If true, show zapped channels in dynspec as Patches
+    plot_tpad: float
+        Additional width in [ms] to pad in time when plotting data, this is only for visual purposes and will not affect processing, by default 30.0 
     residuals: bool
         if true, a residual panel will appear when plotting a fit using pyfit, default is True
     plotPosterior: bool
@@ -178,6 +184,8 @@ class FRB:
         if true, apply freq dependant weights when scrunching in freq, i.e. making time profiles, default is True
     fitted_params: dict
         dictionary of fitted values, i.e. RM
+    IOconfig: ilex.io.ilexIO
+        ilex IO instance
 
     """
 
@@ -191,8 +199,8 @@ class FRB:
                        fN: int = 1,                 t_lim_base = _G.p['t_lim_base'],   f_lim_base = _G.p['f_lim_base'],
                        RM: float = _G.p['RM'],      f0: float = _G.p['f0'],  pa0: float = _G.p['pa0'],
                        verbose: bool = _G.hp['verbose'], norm = _G.mp['norm'], dt: float = _G.p['dt'], 
-                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref']      
-                       ):
+                       df: float = _G.p['df'],      zapchan: str = _G.mp['zapchan'], terr_crop = None, t_ref = _G.p['t_ref'],      
+                       plot_tpad: float = _G.hp['plot_tpad']):
         """
         Create FRB instance
         """
@@ -256,6 +264,8 @@ class FRB:
         self.plotPosterior = True      # plot posterior corner plot when plotting fits
         self.save_plots = False
         self.show_plots = True
+        self.plot_tpad = plot_tpad
+        self.show_dynzaps = True
         self.crop_units = "physical"
         self.zap = False                # if True, will treat arrays as zapped
 
@@ -268,6 +278,13 @@ class FRB:
 
         # plotting stuff
         self.dynspec_cmap = "viridis"
+        self.dynspec_satlvl = 0
+        self.dynspec_cnorm = "linear"
+        self.dynspec_cmap_alpha = 0.5
+        self.mplstyle = None
+
+        # IO 
+        self.ilexIO = ilexIO(frb = self)
 
 
         # quick load yaml file
@@ -294,6 +311,61 @@ class FRB:
         self._dynspec_cmap = cmap
 
         set_dynspec_plot_properties(cmap = cmap)
+
+
+    @property
+    def dynspec_satlvl(self):
+        return self._dynspec_satlvl
+    
+    @dynspec_satlvl.setter
+    def dynspec_satlvl(self, satlvl):
+
+        self._dynspec_satlvl = satlvl
+
+        set_dynspec_plot_properties(satlvl = satlvl)
+
+
+    @property
+    def dynspec_cnorm(self):
+        return self._dynspec_cnorm
+
+    @dynspec_cnorm.setter
+    def dynspec_cnorm(self, cnorm):
+
+        if cnorm not in ["linear", "exp", "power"]:
+            print(f"cnorm: {cnorm} not valid, setting to 'linear'...")
+            cnorm = 'linear'
+
+        self._dynspec_cnorm = cnorm
+
+        set_dynspec_plot_properties(cnorm = cnorm)
+
+
+    @property
+    def dynspec_cmap_alpha(self):
+        return self._dynspec_cmap_alpha
+    
+    @dynspec_cmap_alpha.setter
+    def dynspec_cmap_alpha(self, cmap_alpha):
+
+        self._dynspec_cmap_alpha = cmap_alpha
+
+        set_dynspec_plot_properties(cmap_alpha = cmap_alpha)
+
+    @property
+    def mplstyle(self):
+        return self._mplstyle
+    
+    @mplstyle.setter
+    def mplstyle(self, mplstyle):
+
+        self._mplstyle = mplstyle
+
+        if mplstyle is None:    # set as default
+            self._mplstyle = os.path.join(os.environ['ILEX_PATH'], 
+                                          "files/default.mplstyle")
+        print(self._mplstyle)
+        plt.style.use(self._mplstyle)
 
 
 
@@ -335,7 +407,9 @@ class FRB:
             log("Loading from yaml file", lpf_col = self.pcol)
 
             # load pars
-            yaml_pars = load_param_file(yaml_file)
+            self.ilexIO.set(filepath = yaml_file)
+            yaml_pars = self.ilexIO.load_pars()
+            # yaml_pars = load_param_file(yaml_file)
 
             # extract pars
             pars = merge_dicts(yaml_pars['par'], yaml_pars['metapar'], yaml_pars['hyperpar'])
@@ -350,11 +424,11 @@ class FRB:
             dsU, dsV = yaml_pars['data']['dsU'], yaml_pars['data']['dsV']
 
             # check if plotstyle file is given
-            set_plotstyle(yaml_pars['plots']['plotstyle_file'])
-            if yaml_pars['plots']['plotstyle_file'] is None:
-                log("Setting plotting style: Default")
-            else:
-                log(f"setting plotting style: {yaml_pars['plots']['plotstyle_file']}")
+            # set_plotstyle(yaml_pars['plots']['plotstyle_file'])
+            # if yaml_pars['plots']['plotstyle_file'] is None:
+            #     log("Setting plotting style: Default")
+            # else:
+            #     log(f"setting plotting style: {yaml_pars['plots']['plotstyle_file']}")
 
 
         def init_par_from_load(x):
@@ -363,9 +437,8 @@ class FRB:
             """
 
             self.par.nchan = x.shape[0]                     # assumed that dyn spec is [freq,time]
-            self.par.nsamp = x.shape[1]       
+            self.par.nsamp = x.shape[1]    
             self.par.t_lim_base  = [0.0, self.par.dt * self.par.nsamp]
-
 
 
         ## dict. of files that will be loaded in
@@ -417,7 +490,8 @@ class FRB:
 
         
     ## [ SAVING FUNCTION - SAVE CROP OF DATA ] ##
-    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, stk_debias = False, stk_ratio = False, **kwargs):
+    def save_data(self, data_list = None, name = None, save_yaml = False, yaml_file = None, stk_debias = False, stk_ratio = False,
+                 proc = False, overwrite = False, **kwargs):
         """
         Save current instance data
 
@@ -432,13 +506,24 @@ class FRB:
             Debias Stokes data before saving
         stk_ratio: bool
             Save stokes ratios
+        proc: bool
+            save copy of processed data to new config file, by default False
+        overwrite: bool
+            Overwrite yaml file, by default False
         """
 
         log_title("Saving Stokes data, the data is saved as .npy files. ", col = "lblue")
 
+        if (yaml_file is None) and (not proc):
+            overwrite = True
+
         if save_yaml:
             log("Saving fitted parameters to yaml file...", lpf_col = "green")
-            save_frb_to_param_file(self, yaml_file)
+            self.ilexIO.set(proc = proc,
+                           overwrite = overwrite,
+                           filepath = yaml_file)
+            self.ilexIO.save()
+            # save_frb_to_param_file(self, yaml_file)
 
 
         if data_list is None:
@@ -1225,9 +1310,6 @@ class FRB:
                         log(f"Phase error crop in time was out-of-bounds of [0.0, 1.0], setting: [{prev_t[0]}, {prev_t[1]}] -> [{kwargs['terr_crop'][0]},{kwargs['terr_crop'][1]}]")
         
             
-
-
-
     
 
 
@@ -1249,7 +1331,6 @@ class FRB:
         """
 
         data_shape = []
-        print(data_products)
         for key in data_products:
             # check if none
             if self.ds[key] is None:
@@ -1282,6 +1363,125 @@ class FRB:
         return self._isinstance
 
 
+    def get_crop(self, units = "physical", **kwargs):
+        """
+        Auxillary function to return tcrop and fcrop in desired units 
+
+        Parameters
+        ----------
+        units: str
+            physical -> returns crop in units of ms and MHz for tcrop and fcrop \n
+            phase -> returns crop in units of phase of full array in time and freq \n
+            index -> returns crops in index format 
+        **kwargs
+
+        Returns
+        -------
+        tcrop : list[float]
+            on-pulse time crop
+        fcrop : list[float]
+            freq crop
+        terr_crop : list[float]
+            off-pulse time crop
+        """
+
+        if units not in ["physical", "phase", "index"]:
+            print("Units type is invalid for get_crop")
+            return
+
+        self._load_new_params(**kwargs)
+        terr_crop = None
+        
+        if units == "phase":
+            t_crop, f_crop = self.this_metapar.t_crop.copy(), self.this_metapar.f_crop.copy()
+            if self._iserr():
+                terr_crop = self.this_metapar.terr_crop.copy()
+        
+        elif units == "physical":
+            t_crop, f_crop = self.par.phase2lim(t_crop = self.this_metapar.t_crop,
+                                           f_crop = self.this_metapar.f_crop)
+            if self._iserr():
+                terr_crop, _ = self.par.phase2lim(t_crop = self.this_metapar.terr_crop)
+        
+        else:
+            t_crop = self.this_metapar.t_crop.copy()
+            f_crop = self.this_metapar.f_crop.copy()
+            t_crop = [int(t_crop[0]*self.this_par.nsamp), int(t_crop[1]*self.this_par.nsamp)]
+            f_crop = [int(f_crop[0]*self.this_par.nchan), int(f_crop[1]*self.this_par.nchan)]
+            if self._iserr():
+                terr_crop = self.thispar.terr_crop.copy()
+                terr_crop = [int(terr_crop[0]*self.this_par.nsamp), int(terr_crop[1]*self.this_par.nsamp)]
+        print(t_crop, terr_crop, self.this_metapar.t_crop)
+        return t_crop, f_crop, terr_crop
+
+
+    def get_ptcrop(self, tcrop = None):
+
+        # get plot crop, this is t_crop with plot_tpad
+        if tcrop is None:
+            t_crop = self.metapar.t_crop.copy()
+        else:
+           t_crop = tcrop.copy() 
+        if type(t_crop[0]) == str:
+            if t_crop[0] == "min":
+                t_crop[0] = self.par.t_lim[0]
+            else:
+                ValueError(f"t_crop[0] = {t_crop[0]} incorrect! either provide a value or use 'min'...")
+        if type(t_crop[1]) == str:
+            if t_crop[1] == "max":
+                t_crop[1] = self.par.t_lim[1]
+            else:
+                ValueError(f"t_crop[1] = {t_crop[1]} incorrect! either provide a value or use 'max'...")
+
+        if self.plot_tpad <= 0.0:
+            return t_crop
+        
+        pt_crop =  [t_crop[0] - self.plot_tpad/2,
+                t_crop[1] + self.plot_tpad/2]
+
+        # check bounds
+        if pt_crop[0] < self.par.t_lim[0]:
+            pt_crop[0] = self.par.t_lim[0]
+        if pt_crop[1] > self.par.t_lim[1]:
+            pt_crop[1] = self.par.t_lim[1]
+
+        return pt_crop.copy()
+
+
+
+    def set_zeropoint(self, x = 0.0, method = "val", **kwargs):
+
+        if method not in ["val", "max", "centroid"]:
+            print("Method for setting zeropoint in time must be either 'val', 'max' or 'centroid'")
+            return
+        
+        if method == "val":
+            if type(t_ref) != float:
+                print("t_ref must be a floating point using method = 'val'")
+                return
+            t_ref = x
+        
+        elif method == "max":
+            self._load_new_params(**kwargs)
+            data = self.get_data('tI', get = True, **kwargs)
+            t_ref = data['time'][np.argmax(data['tI'])]
+        
+        else:
+            self._load_new_params(**kwargs)
+            data = self.get_data('tI', get = True, **kwargs)
+            t_ref = get_centroid(data['time'], data['tI'])
+
+
+        # get offset time based crops
+        t_crop, _, terr_crop = self.get_crop()
+        t_crop = [t_crop[0] - t_ref,t_crop[1] - t_ref]
+        if self._iserr():
+            terr_crop = [terr_crop[0] - t_ref, terr_crop[1] - t_ref]
+
+        # set new crops 
+        self.set(t_ref = t_ref, t_crop = t_crop, terr_crop = terr_crop)
+    
+        return
 
 
 
@@ -1297,119 +1497,117 @@ class FRB:
             Print info about FRB class
 
         """
+
+        strpad = 20
+
+        def center_str(_str, totlen):
+            strlen = len(_str)
+            remlen = totlen - strlen
+            if remlen <= 0:
+                return _str
+            lrem = remlen // 2
+            rrem = remlen - lrem
+            return "".ljust(lrem) + _str + "".ljust(rrem)
+
+        def print_val(val, totlen):
+
+            if val is None:
+                return center_str("None", totlen)
+            else:
+                if hasattr(val, "__len__"):
+                    if type(val) == str:
+                        if len(val) > totlen:
+                            return center_str(val[:totlen-3] + "...", totlen)
+                    if len(val) == 2:
+                        if type(val[0]) == str:
+                            lstr = val[0]
+                        else:
+                            lstr = f"{val[0]:.3f}"
+                        if type(val[1]) == str:
+                            rstr = val[1]
+                        else:
+                            rstr = f"{val[1]:.3f}"
+                        return center_str(f"[{lstr}, {rstr}]", totlen)
+                    else:
+                        return center_str(str(val), totlen)
+                else:
+                    if type(val) == float:
+                        return center_str(f"{val:.4f}", totlen)
+                    elif type(val) == int:
+                        return center_str(str(val), totlen)
+                    elif type(val) == str:
+                        if len(val) > totlen:
+                            return center_str(val[:totlen-4] + "...", totlen)
+                        return center_str(val, totlen)
+                    elif type(val) == bool:
+                        if val:
+                            return center_str("TRUE", totlen)
+                        else:
+                            return center_str("FALSE", totlen)
+                    else:
+                        return center_str(str(val), totlen)
+
+        def _print_fitted_params(pstr, pars):
+            for i, key in enumerate(pars.keys()):
+                if type(pars[key]) == ilex.pyfit._posterior:
+                    pstr += center_str(key, strpad) + center_str(f"{pars[key].val:.4f}", strpad) + center_str(f"+{pars[key].p:.4f}/-{pars[key].m:.4f}", strpad) + "\n"
+                else:
+                    pstr += center_str(key, strpad) + center_str(pars[key], strpad)
+
+            return pstr
+                
+
         
         #create string outlining parameters
 
-        outstr = ""
-        outstr += "="*80 + "\n"
-        outstr += " "*32 + " Crop Parameters " + ""*32 + "\n"
-        outstr += "="*80 + "\n\n"
-        outstr += "PARAMETERS:".ljust(25) + "SAVED:".ljust(25) + "INST:".ljust(25) + "\n"
-        outstr += "="*80 + "\n\n"
+        outstr = "\n-> FRB parameters:\n\n"
+        outstr += strcol(center_str("## Pars ##", strpad), 'cyan') + center_str("default", strpad) + center_str("latest", strpad) + "\n"
+        outstr += "-"*(3*strpad) + "\n"
+        for key in _G.p.keys():
+            defval = getattr(self.par, key)
+            instval = getattr(self.this_par, key)
+            outstr += center_str(key, strpad) + print_val(defval, strpad) + print_val(instval, strpad) + "\n"
+        
+        outstr += "\n"
+        outstr += strcol(center_str("## MetaPars ##", strpad), 'magenta') + center_str("default", strpad) + center_str("latest", strpad) + "\n"
+        outstr += "-"*(3*strpad) + "\n"
+        for key in _G.mp.keys():
+            defval = getattr(self.metapar, key)
+            instval = getattr(self.this_metapar, key)
+            outstr += center_str(key, strpad) + print_val(defval, strpad) + print_val(instval, strpad) + "\n"
 
-        for _,key in enumerate(_G.mp.keys()):
-            val = getattr(self.metapar, key)
-            val2 = getattr(self.prev_metapar, key)
-            
-            outstr += f"{key}:".ljust(25) + f"{val}".ljust(25) + f"{val2}".ljust(25) + "\n"
-
+        if not self.verbose:
+            return outstr
 
         outstr += "\n"
-        outstr += "="*80 + "\n"
-        outstr += " "*32 + " Data Parameters " + " "*32 + "\n"
-        outstr += "="*80 + "\n\n"
-        outstr += "PARAMETERS:".ljust(25) + "SAVED:".ljust(25) + "INST:".ljust(25) + "\n"
-        outstr += "="*80 + "\n\n"
-
-        for _,key in enumerate(_G.p.keys()):
-            val = getattr(self.par, key)
-            val2 = getattr(self.prev_par, key)
-
-            outstr += f"{key}:".ljust(25) + f"{val}".ljust(25) + f"{val2}".ljust(25) + "\n"
-
+        outstr += strcol(center_str("## HyperPars ##", strpad), 'yellow') + center_str("values", strpad) + "\n"
+        outstr += "-"*(2*strpad) + "\n"
+        for key in _G.hp.keys():
+            hval = getattr(self, key)
+            outstr += center_str(key, strpad) + print_val(hval, strpad) + "\n"
         
-        # outline loaded data
-        outstr += "\n"
-        outstr += "="*80 + "\n"
-        outstr += " "*30 + "    DATA products   " + " "*30 + "\n"
-        outstr += "="*80 + "\n\n"
-        outstr += "TYPE:".ljust(25) + "SHAPE:".ljust(25) + "\n"
-        outstr += "="*80 + "\n\n"
-        
-        for S in "IQUV":
-            if self.ds[S] is not None:
-                outstr += f"{S}:".ljust(25) + f"{list(self.ds[S].shape)}".ljust(25) + "\n"
-        
-        #now print data instance
-        outstr += "\n"
-        outstr += "="*80 + "\n"
-        outstr += " "*30 + "    DATA instance   " + " "*30 + "\n"
-        outstr += "="*80 + "\n\n"
-        outstr += "TYPE:".ljust(25) + "SHAPE/VAL:".ljust(25) + "\n"
-        outstr += "="*80 + "\n\n"
-        ds_str = ""
-        t_str = "\n"
-        f_str = "\n"
-        for S in "IQUV":
-            if self._ds[S] is not None:
-                ds_str += f"ds{S}:".ljust(25) + f"{list(self._ds[S].shape)}".ljust(25) + "\n"
-        
-        for S in "IQUVLP":
-            
-            if self._t[S] is not None:
-                t_str += f"t{S}:".ljust(25) + f"{list(self._t[S].shape)}".ljust(25) + "\n"
-            if self._t[f"{S}err"] is not None:
-                Serr = f"{S}err"
-                t_str += f"t{S}err:".ljust(25) + f"{self._t[Serr]}".ljust(25) + "\n"
-            
-            if self._f[S] is not None:
-                f_str += f"f{S}:".ljust(25) + f"{list(self._f[S].shape)}".ljust(25) + "\n"
-            if self._f[f"{S}err"] is not None:
-                Serr = f"{S}err"
-                f_str += f"f{S}err:".ljust(25) + f"{list(self._f[Serr].shape)}".ljust(25) + "\n"
-        
-        outstr += ds_str + t_str + f_str
-
-        if self._freq is not None and len(self._freq) > 0:
-            outstr += f"freqs:".ljust(25) + f"top:{self._freq[0]}, bottom:{self._freq[-1]}" + "\n\n"
-
-        
-        def _print_fitted_params(pstr, pars):
-
-            for i, key in enumerate(pars.keys()):
-                pstr += f"{key}:".ljust(25) + f"{pars[key].val}".ljust(25) + f"+{pars[key].p}".ljust(20) + f"-{pars[key].m}".ljust(20) + "\n"
-
-            return pstr
-
-
         # print fitted params 
         if len(self.fitted_params) > 0:
             
-            outstr += "\n"
-            outstr += "="*80 + "\n"
-            outstr += " "*31 + " Fitted Parameters " + " "*31 + "\n"
-            outstr += "="*80 + "\n\n"
-            outstr += "PARAMETERS:".ljust(25) + "VALUES:".ljust(25) + "+ ERR:".ljust(20) + "- ERR:".ljust(20) + "\n"
-            outstr += "="*80 + "\n\n"
 
             keys = self.fitted_params.keys()
 
             if "RM" in keys:
-                outstr += "#"*20 + "\n"
-                outstr += "      Fitted RM      \n"
-                outstr += "#"*20 + "\n"
+                outstr += "\n"
+                outstr += strcol(center_str("## RM Pars ##", strpad), 'lgreen') + center_str("values", strpad) + center_str("errors", strpad) + "\n"
+                outstr += "-"*(3*strpad) + "\n"
                 outstr = _print_fitted_params(outstr, self.fitted_params['RM'])
 
             if "tscatt" in keys:
-                outstr += "#"*20 + "\n"
-                outstr += "    Fitted tscatt    \n"
-                outstr += "#"*20 + "\n"
+                outstr += "\n"
+                outstr += strcol(center_str("## tscatt Pars ##", strpad), 'lred') + center_str("values", strpad) + center_str("errors", strpad) + "\n"
+                outstr += "-"*(3*strpad) + "\n"
                 outstr = _print_fitted_params(outstr, self.fitted_params['tscatt']) 
 
             if "scintband" in keys:
-                outstr += "#"*20 + "\n"
-                outstr += "   Fitted scintband  \n"
-                outstr += "#"*20 + "\n"
+                outstr += "\n"
+                outstr += strcol(center_str("## scintband Pars ##", strpad), 'lyellow') + center_str("values", strpad) + center_str("errors", strpad) + "\n"
+                outstr += "-"*(3*strpad) + "\n"
                 outstr = _print_fitted_params(outstr, self.fitted_params['scintband']) 
 
 
@@ -1418,27 +1616,71 @@ class FRB:
 
 
 
+
+
+    def __deepcopy__(self, memo):
+        """
+        deepcopy instance of class
+
+        [Does copy]
+        Parameters, weights, filenames, fitted results and memory maps
+
+        [Does not copy]
+        data products such as _t, _f, _ds etc.
+
+        """
+
+        # create new instance
+        frb = FRB()
+
+        # add to memo to avoid recursion
+        memo[id(self)] = frb
+
+        # copy attributes
+        for key, val in self.__dict__.items():
+            if key not in _G.dc_exclude:
+                setattr(frb, key, deepcopy(val, memo))
+            else:
+                setattr(frb, key, val)
+
+
+        return frb
+
+
+
+
+
+
+
+
+
+
+
+    def get_filepaths(self, stk = None):
+        """
+        Return filepath of stokes dynamic spectrum
+        """
+
+        if stk is None:
+            return self._data_files
+        else:
+            return self._data_files[f"ds{stk}"]
+
+    def get_hyperpars(self):
+        """
+        Returns list of hyperparams
+        
+        """
+        hyperpar = {}
+
+        for key in _G.hp:
+            hyperpar[key] = getattr(self, key)
+        
+        return hyperpar
+
+
+
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1448,9 +1690,88 @@ class FRB:
     ##===============================================##
 
 
+
+
+    def burstinfo(self, **kwargs):
+        """
+        Measure properties of burst, including S/N, burst W, bandwidth and Fluence
+        
+
+        Returns
+        -------
+        prop : dict
+            dictionary of burst properties \n
+            [snr]: integrated S/N \n
+            [pnsr]: peak S/N \n
+            [w]: effective burst width (calculated from t_crop) \n
+            [bw]: effectove bandwidth (calculated from f_crop) \n
+            [fluence]: fluence of burst \n
+            [centroid]: Centroid of burst
+        """
+ 
+        # init pars
+        self._load_new_params(**kwargs)
+
+        if not self._iserr():
+            print("'terr_crop' must be specified to calculate S/N")
+            return None
+        
+        data = self.get_data(['tI', 'dsI'], get = True, **kwargs)
+
+        prop = {}
+
+        # calculate SNR
+        prop['snr'] = np.sum(data['tI']) / (data['tIerr'] * data['tI'].size**0.5)
+
+        # calculate peak SNR
+        prop['psnr'] = np.max(data['tI']) / data['tIerr']
+        
+        # width
+        dt = data['time'][1] - data['time'][0]
+        prop['w'] = data['time'][-1] - data['time'][0] + dt 
+
+        prop['bw'] = self.this_par.bw
+        prop['bw_eff'] = self.this_par.bw * float(np.where(~np.isnan(data['dsI'][:,0]))[0].size)/float(data['dsI'].shape[0])
+        prop['cfreq'] = self.this_par.cfreq
+
+        # fluence 
+        # prop['fluence'] = self.this_metapar.tN * self.this_metapar.fN * np.nansum(data['dsI']) * prop['w']
+        prop['fluence'] = np.sum(data['tI']) * prop['w']
+
+        scal_fluence = np.sum(data['tI'])
+        cent_cumsum = np.cumsum(data['tI']) - scal_fluence/2
+        cent_samp = np.argmin(np.abs(cent_cumsum))
+        prop['centroid'] = data['time'][cent_samp]
+
+        prop['int_flux'] = scal_fluence
+
+        units = {'snr': None, 'psnr': None, 'w': '[ms]', 'bw': '[MHz]', 'bw_eff': '[MHz] (w/o flagged chans)', 'cfreq': '[MHz]', 
+                    'fluence': '[arbitrary]', 'centroid': '[ms]', 'int_flux': '[arbitrary]'}
+
+        # print out info
+        print("\n ---- Burst Properties ---- \n")
+        for key in prop.keys():
+            unit = units[key]
+            if unit is None:
+                unit = ""
+            print(f"{key}".ljust(10) + ": " + f"{prop[key]:.4f}".ljust(15) + f"{unit}")
+        print("\n")
+
+
+        return prop
+
+
+
+
+
+
+
+
+
+
     ## [ FIND FRB PEAK AND TAKE REGION AROUND IT ] ##
-    def find_frb(self, method = "sigma", mode = "median", sigma: int = 5, rms_guard: float = 10, rms_width: float = 50, 
-                    rms_offset: float = 60, yfrac: float = 0.95, buffer: float = None, 
+    def find_frb(self, method = "fluence", mode = "min", sigma: int = 5, rms_guard: float = 10, rms_width: float = 50, 
+                    rms_offset: float = 60, yfrac: float = 0.95, w: float = 30.0, stDev: int = 0,
                     padding: float = None, dt_from_peak_sigma: float = None, **kwargs):
         """
         This function uses a number of method of finding the bounds of a burst.
@@ -1484,9 +1805,11 @@ class FRB:
         yfrac: float
             fraction of total fluence on either side of FRB effective centroid to take
             as FRB bounds
-        buffer: float
+        w: float
             initial width of data in [ms] centered at the peak that will be used to estimate 
             FRB bounds
+        stDev: int
+            HWFM [stDev * dt (ms)] of gaussian smoothing kernel to apply in time, if stDev = 0 will be skipped, by default 0
         pading: float
             Add additional padding to measured bounds, as a fraction of the width of the burst
         dt_from_peak_sigma: float
@@ -1511,8 +1834,8 @@ class FRB:
 
         # if 't_crop' not in kwargs.keys():
         kwargs['t_crop'] = ["min", "max"]
-        # kwargs['f_crop'] = ["min", "max"]  
         kwargs['terr_crop'] = None
+        f_crop = None
         
         tN = None
         if dt_from_peak_sigma is not None:
@@ -1529,24 +1852,35 @@ class FRB:
 
             tN = kwargs['tN']
             
+        # init pars
+        self._load_new_params(**kwargs)
+
         # get data   
         self.get_data("tI", **kwargs)
         if not self._isdata():
             return None
 
-        
         # make smaller buffer of data
-        if buffer is not None:
-            log(f"Searching Buffer [{buffer}] ms around peak of burst", lpf_col = self.pcol)
-            buffer = int(buffer / self.this_par.dt)
+        if w is not None:
+            log(f"Searching w [{w}] ms around peak of burst", lpf_col = self.pcol)
             peak = np.argmax(self._t['I'])
+            itcrop = [peak * self.this_par.dt - w/2, peak * self.this_par.dt + w/2]
 
-            tI = self._t['I'][peak - buffer//2 : peak + buffer//2]
-            buffer_ref = peak - buffer//2
+            # guard to catch boundaries
+            w = int(w / self.this_par.dt)
+            tIstart = peak - w//2
+            if tIstart < 0:
+                tIstart = 0
+            tIend = peak + w//2
+            if tIend == self._t['I'].size:
+                tIend = self._t['I'].size - 1
+
+            tI = self._t['I'][tIstart:tIend]
+            w_ref = tIstart
         else:
             log(f"Searching full time series", lpf_col = self.pcol)
             tI = self._t['I']
-            buffer_ref = 0
+            w_ref = 0
 
         
 
@@ -1559,20 +1893,43 @@ class FRB:
                                 rms_width = ms2phase(rms_width),
                                 rms_offset = ms2phase(rms_offset))
             
+            if ref_ind is None:
+                return (None,) * 4
+            
             log("Setting zero point reference [t_ref] to PEAK of burst", lpf_col = self.pcol)
         
         elif method == "fluence":
-            ref_ind, lw, rw = find_optimal_fluence_width(tI = tI, yfrac = yfrac, mode = mode)
+
+            # create copy of instance
+            temp_frb = deepcopy(self)
+            temp_frb.set(**kwargs)
+
+            # ref_ind, lw, rw = find_optimal_fluence_width(tI = tI, yfrac = yfrac, mode = mode)
+            _, f_crop, ref_ind, lw, rw = findfrb_fluence(temp_frb, yfrac = yfrac, stDev = stDev,
+                                            itcrop = itcrop, ifcrop = self.this_par.f_lim, mode = mode, _iter = 0)
+
+            # add buffer to f_crop 
+            fbuff = (1.0-yfrac) * (f_crop[1] - f_crop[0])
+            f_crop[0] -= fbuff
+            f_crop[1] += fbuff
+            if f_crop[0] < temp_frb.par.f_lim[0]:
+                f_crop[0] = temp_frb.par.f_lim[0]
+            if f_crop[1] > temp_frb.par.f_lim[1]:
+                f_crop[1] = temp_frb.par.f_lim[1]
+
+            # iterate with refine initial crops
+            _, f_crop, ref_ind, lw, rw = findfrb_fluence(temp_frb, yfrac = yfrac, stDev = stDev,
+                                            itcrop = itcrop, ifcrop = f_crop, mode = mode, _iter = 1)
 
             log("Setting zero point reference [t_ref] to EFFECTIVE CENTROID of burst", lpf_col = self.pcol)
         
         else:
             log(f"Undefined method [{method}].. Aborting!", lpf_col = self.pcol, stype = "err")
-            return (None)*2
+            return (None,)*4
 
 
         # Calculate new t_crop and t_ref relative to full time series dataset
-        t_ref = (buffer_ref + ref_ind) * self.this_par.dt
+        t_ref = (w_ref + ref_ind) * self.this_par.dt
         t_crop = [-lw * self.this_par.dt, rw * self.this_par.dt]
 
 
@@ -1593,13 +1950,16 @@ class FRB:
             t_crop,_ = self.par.lim2phase(t_lim = t_crop)
 
         self.metapar.set_metapar(t_crop = t_crop)
-        self.metapar.set_metapar(terr_crop = [-rms_offset - rms_width, -rms_offset])
+        # self.metapar.set_metapar(terr_crop = [-rms_offset - rms_width, -rms_offset])
         if dt_from_peak_sigma is not None:
             self.metapar.set_metapar(tN = kwargs['tN'])
         self.par.set_par(t_ref = t_ref)
+        if f_crop is not None:
+            self.metapar.set_metapar(f_crop = f_crop)
 
         print("New t_crop: [{:.4f}, {:.4f}]".format(t_crop[0],t_crop[1]))
-        print(f"Setting terr_crop: [{-rms_offset - rms_width:.4f}, {-rms_offset:.4f}]")
+        print("New f_crop: [{:.4f}, {:.4f}]".format(*f_crop))
+        # print(f"Setting terr_crop: [{-rms_offset - rms_width:.4f}, {-rms_offset:.4f}]")
         print(f"New time series 0-point: [{t_ref:.4f}]")        
         if dt_from_peak_sigma is not None:
             print(f"time resolution for peak S/N [{dt_from_peak_sigma:.4f}]: {self.this_par.dt:.4f} ms (tN = {kwargs['tN']})")
@@ -1614,9 +1974,8 @@ class FRB:
         # clear dsI
         self._clear_instance(data_list = ["dsI"])
 
-        return t_crop, t_ref, tN
+        return t_crop, t_ref, tN, f_crop
     
-
 
 
 
@@ -1629,11 +1988,10 @@ class FRB:
     ##===============================================##
     ##                Plotting Methods               ##
     ##===============================================##
-    def plot_data(self, data = "dsI", ax = None, stk_debias = False, stk_ratio = False, stk_sigma = None,
+    def plot_data_on_axes(self, data = "dsI", ax = None, stk_debias = False, stk_ratio = False, stk_sigma = None,
                      filename: str = None, **kwargs):
         """
-        General Plotting function, choose to plot either dynamic spectrum or time series 
-        data for all stokes parameters
+        Plot data onto a given axes, if ax is not specified, will make a seperate figure.
 
         Parameters
         ----------
@@ -1666,7 +2024,7 @@ class FRB:
             return None
 
         # plot 
-        fig = plot_data(pdat, data, ax = ax, plot_type = self.plot_type)
+        fig = plot_data(pdat, data, ax = ax, plot_type = self.plot_type, showzaps = self.show_dynzaps)
 
         if self.save_plots:
             if filename is None:
@@ -1684,8 +2042,544 @@ class FRB:
 
 
 
-    def zap_channels(self, chans: str = None, zapzeros: bool = False, zapzerosmargin: float = 1e-5, resetzap: bool = False, interactive = False,
-                    **kwargs):
+
+    
+
+    def plot_data(self, data = ['tI', 'dsI'], layout = "vertical", stk_debias = False, stk_ratio = False, 
+                        stk_sigma = None, plot_weights = False, plot_labels = True, figure_scale = (1.5, 1.5), filename = None, **kwargs):
+        """
+        Master function for ploting basic Stokes I, Q, U, V, L and P products.
+        The ''fig'', ''ax'' instances can be returned in-case further alterations to the plot are nessessary.
+        
+        Parameters
+        ----------
+        data: list[str]
+            list of products to plot, this includes \n
+            ['tI', 'tQ', 'tU', 'tV', 'tL', 'tP'] for the Stokes time-series products \n
+            ['fI', 'fQ', 'fU', 'fV', 'fL', 'fP'] for the Stokes spectrum products \n
+            ['dsI', 'dsQ', 'dsU', 'dsV'] for the Stokes dynamic spectrum products \n\n
+            Additionally, you can specify combinations of products \n
+            ['dsI', 'tI'] will plot both the Stokes I dynamic spectrum and time-series \n
+            ['tIQ'] will plot both the Stokes I and Q time-series \n\n
+            You can specify sets of products as well \n
+            ['ds'] will plot all Stokes dynamic spectra ['IQUV'], ['t', 'f'] will plot all the Stokes time-series/spectra ['IQUVLP']\n
+            ['I'] will plot all Stokes I products ['dsI', 'tI', 'fI']\n\n
+            Any combination of the above products can be used to make whatever plot you like. Finally\n
+            ['all'] will plot all Stokes products.
+        layout: str
+            layout can be either ['vertical', 'horizontal'] \n
+            'vertical' will plot all avaliable dynamic spectrum stacked vertically, all time-series products will be plotted above this stack\n
+            in the same axes. Each spectrum product will be plotted seperately in an axes adjacent to the corrosponding stokes dynamic spectrum.\n
+            'horizontal' will plot all avaliable dynamic spectrum in a row, all spectrum products will be plotted on the far-right beside the dynspec row\n
+            in the same axes. Each time-series product will be plotted seperately in an axes above the corrosponding stokes dynamic spectrum.\n\n
+            In the case where only Stokes time-series/spectrum are plotted (no 'ds'), all time-series/spectrum products are plotted on the same axes.\n
+            The 'layout' argument will not affect the resulting plot.
+        stk_debias: bool
+            debias Stokes L and P products, by default False
+        stk_ratio: bool
+            plot Stokes fractions, by default False
+        stk_sigma: float
+            If stk_ratio = True, any time/freq sample that does not meet the stk_ratio threshold will be masked, by default None
+        plot_weights: bool
+            If true, The time/freq weights will be normalized and plotted with their respective Stokes products, by default False
+        plot_labels: bool
+            add labels/legends to the axes to denote each product, by default True
+        filename: str
+            save the figure as a .png file, by default None
+        **kwargs:
+            ILEX parameters
+        
+        Returns
+        -------
+        fig: matplotlib.pyplot.Figure
+            Figure instance of plot
+        ax: dict[matplotlib.pyplot.Axes]
+            Dictionary of key:axes, key is the stokes product plotted on the specific axes, 't0', 'f0'\n
+            denote axes where multiple time/freq products have been plotted
+        """
+
+        def remove_item_from_list(_list, item):
+            if item in _list:
+                _list.pop(_list.index(item))
+            return
+
+        def get_ax_from_layout(figlayout, _type):
+
+            return [figcol for figrow in figlayout for figcol in figrow if _type in figcol]
+
+        def figlayout_replace(figlayout, item, item_replace):
+
+            for i in range(len(figlayout)):
+                for j in range(len(figlayout[0])):
+                    if figlayout[i][j] == item:
+                        figlayout[i][j] = item_replace
+
+
+        valid_data = ['tI', 'tQ', 'tU', 'tV', 'fI', 'fQ', 'fU', 'fV',
+                      'dsI', 'dsQ', 'dsU', 'dsV', 'fL', 'fP', 'tL', 'tP']
+
+        ds_sizes = [6, 4, 3, 2.5]
+        tf_sizes = [2.5, 2.0, 1.5, 1.25]
+        legend_loc = "upper right"
+        # figure_scale = 1.5
+
+        if layout == "vertical":
+            figlayout = [['t0', '.'], ['dsI', 'fI'], ['dsQ', 'fQ'], ['dsU', 'fU'], ['dsV', 'fV']]
+        elif layout == "horizontal":
+            figlayout = [['tI', 'tQ', 'tU', 'tV', '.'], ['dsI', 'dsQ', 'dsU', 'dsV', 'f0']]
+        else:
+            print(f"layout = {layout} is not a valid layout!, must be [vertical, horizontal]!")
+            sys.exit()
+
+        # check if dat is str, if so convert to list 
+        if type(data) == str:
+            data = [data]
+
+        # process data product list
+        full_data = []
+        for dat in data:
+            if dat in ['I', 'Q', 'U', 'V']:
+                full_data += [f"t{dat}", f"f{dat}", f"ds{dat}"]
+                continue
+            if dat in ['t', 'f']:
+                full_data += [f"{dat}I", f"{dat}L", f"{dat}Q", f"{dat}U", f"{dat}V", f"{dat}P"]
+                continue
+            if dat == "ds":
+                full_data += ["dsI", "dsQ", "dsU", "dsV"]
+                continue
+            if dat == "all":
+                full_data += valid_data
+                continue
+            if (dat[0] in ['t', 'f']) and (len(dat) > 2):
+                for s in dat[1:]:
+                    if s in "ILQUVP":
+                        full_data += [f"{dat[0]}{s}"]
+                continue
+            if (dat[0:2] == "ds") and (len(dat) > 3):
+                for s in dat[2:]:
+                    if s in "IQUV":
+                        full_data += [f"{dat[0:2]}{s}"]
+                continue
+            if dat not in valid_data:
+                print(f"[{dat}] is not a valid data product to plot!")
+                return
+            full_data += [dat]
+        full_data = list(set(full_data))
+
+        flags = {'t': False, 'f': False, 'ds': 0}   
+        flags['ds'] = len([dat for dat in full_data if "ds" in dat]) 
+
+        # alter figlayout according to data products the user wants to plot
+        if layout == "vertical":
+            idpop = 1
+            for s in "IQUV":
+                if not f"ds{s}" in full_data:
+                    # remove row in figure
+                    figlayout.pop(idpop)    # always in order
+
+                    # remove data products
+                    remove_item_from_list(full_data, f"ds{s}")
+                    if flags['ds'] > 1:
+                        remove_item_from_list(full_data, f"f{s}")
+                else:
+                    idpop += 1
+
+            # remove L and P products
+            if flags['ds'] > 1:
+                for dat in ['fL', 'fP']:
+                    remove_item_from_list(full_data, dat)    
+                
+
+        elif layout == "horizontal":
+            idpop = 0
+            for s in "IQUV":
+                if not f"ds{s}" in full_data:
+                    # remove column in figure
+                    for i in range(len(figlayout)):
+                        figlayout[i].pop(idpop) # again, always in order
+
+                    # remove data products
+                    remove_item_from_list(full_data, f"ds{s}")
+                    if flags['ds'] > 1:
+                        remove_item_from_list(full_data, f"t{s}")
+                else:
+                    idpop += 1
+            
+            # remove L and P products
+            if flags['ds'] > 1:
+                for dat in ['tL', 'tP']:
+                    remove_item_from_list(full_data, dat)    
+        
+        # normalising 
+        if stk_ratio:
+            if layout == "vertical":
+                remove_item_from_list(full_data, 'tI')
+            else:
+                remove_item_from_list(full_data, 'fI')
+
+
+        # check if t or f items in full_data, also split time and freq products 
+        # and count number of dynspec
+        time_data = []
+        freq_data = []
+        for dat in full_data:
+            if dat[0] == "t":
+                flags['t'] = True
+                time_data += [dat]
+            if dat[0] == "f":
+                flags['f'] = True
+                freq_data += [dat]
+            if dat[0:2] == "ds":
+                time_data += [dat]
+
+        # edge case, if no dynamic spectra are avaliable
+        if flags['ds'] == 0:
+            figlayout = []
+            if flags['t']:
+                figlayout += [['t0']]
+            if flags['f']:
+                figlayout += [['f0']]
+
+
+        # further update figlayout incase t and or f products are absent
+        if flags['ds'] > 0:
+            if not flags['t']:
+                figlayout.pop(0)
+            if not flags['f']:
+                for i in range(len(figlayout)):
+                    figlayout[i].pop(-1)
+
+        # check if only 1 t/f axes remains, if so rename
+        tax = get_ax_from_layout(figlayout, "t")
+        if len(tax) == 1:
+            figlayout_replace(figlayout, tax[0], "t0")
+            tax[0] = "t0"
+
+        fax = get_ax_from_layout(figlayout, "f")
+        if len(fax) == 1:
+            figlayout_replace(figlayout, fax[0], "f0")
+            fax[0] = "f0"
+
+    
+        # Get data
+        if 't_crop' not in kwargs.keys():
+            kwargs['t_crop'] = self.metapar.t_crop.copy()
+        tcrop = kwargs['t_crop'].copy()
+        kwargs['t_crop'] = self.get_ptcrop(tcrop)
+
+        stk = self.get_data(time_data, stk_debias = stk_debias, 
+                            stk_ratio = stk_ratio, stk_sigma = stk_sigma, get = True, **kwargs)
+        kwargs['t_crop'] = tcrop.copy()
+        tcrop = self.this_par.t_lim.copy()
+        fstk = self.get_data(freq_data, stk_debias = stk_debias, stk_ratio = stk_ratio, 
+                             stk_sigma = stk_sigma, get = True, **kwargs)
+        fcrop = self.this_par.f_lim.copy()
+        otcrop = self.this_par.t_lim.copy() 
+
+        # combine data
+        for key in fstk.keys():
+            if key not in ['time']:
+                if fstk[key] is None:
+                    stk[key] = None
+                else:
+                    stk[key] = fstk[key].copy()
+        del fstk
+
+
+        # update additional figure paramters including figsize according to data products
+        if flags['ds'] > 0:
+            n = flags['ds'] - 1
+            # assume vertical first
+            figsize = [ds_sizes[n], (n + 1)*ds_sizes[n]]
+            width_ratios = [ds_sizes[n]]
+            height_ratios = [ds_sizes[n]] * (n + 1)
+            
+            if layout == "horizontal":
+                figsize = figsize[::-1]
+                width_ratios, height_ratios = height_ratios.copy(), width_ratios.copy()            
+                
+            if flags['t']:
+                height_ratios += [tf_sizes[n]]
+                figsize[1] += tf_sizes[n]
+            if flags['f']:
+                width_ratios += [tf_sizes[n]]
+                figsize[0] += tf_sizes[n]
+        
+        else:
+            tfnum = int(flags['t'] + flags['f'])
+            figsize = [10, tfnum * 5]
+            width_ratios = [1]
+            height_ratios = [1] * tfnum
+
+
+        # create figure
+        fig, ax = plt.subplot_mosaic(figlayout, figsize = (figsize[0] * figure_scale[0], figsize[1] * figure_scale[1]), 
+                        gridspec_kw = {'width_ratios':width_ratios, 'height_ratios':height_ratios[::-1]})
+
+        # axes sharing
+        axdims = [len(figlayout), len(figlayout[0])]
+        if flags['ds'] > 0:
+            if flags['ds'] > 1:
+                dsax = get_ax_from_layout(figlayout, "ds")
+                for d in dsax[1:]:
+                        ax[d].sharex(ax[dsax[0]])
+                        ax[d].sharey(ax[dsax[0]])
+            if flags['t']:
+                if layout == "vertical":
+                    ax['t0'].sharex(ax[figlayout[-1][0]])
+                else:
+                    tax = get_ax_from_layout(figlayout, "t")
+                    ax[tax[0]].sharex(ax[figlayout[-1][0]])
+                    for d in tax[1:]:
+                        ax[d].sharex(ax[tax[0]])
+                        ax[d].sharey(ax[tax[0]])
+            if flags['f']:
+                if layout == "horizontal":
+                    ax['f0'].sharey(ax[figlayout[-1][0]])
+                else:
+                    fax = get_ax_from_layout(figlayout, "f")
+                    ax[fax[0]].sharey(ax[figlayout[-1][0]])
+                    for d in fax[1:]:
+                        ax[d].sharey(ax[fax[0]])
+                        ax[d].sharex(ax[fax[0]])
+        
+
+        # axes labeling
+        for i in range(axdims[0]):
+            for j in range(axdims[1]):
+                # label
+                figax = figlayout[i][j]
+                if figax == ".":
+                    continue
+                if "t" in figax:
+                    ax[figax].set_xlabel("Time [ms]")
+                    ax[figax].set_ylabel("Flux [a.u]")
+                
+                if "f" in figax:
+                    fxlab = "Freq [MHz]"
+                    fylab = "Flux [a.u]"
+                    if flags['ds'] > 0:
+                        fxlab, fylab = fylab, fxlab
+                    ax[figax].set_xlabel(fxlab)
+                    ax[figax].set_ylabel(fylab)
+                
+                if "ds" in figax:
+                    ax[figax].set_xlabel("Time [ms]")
+                    ax[figax].set_ylabel("Freq [MHz]")
+
+                # label x axis
+                if (i != axdims[0]-1) and (flags['ds'] > 0):
+                    ax[figax].get_xaxis().set_visible(False)
+                
+                if j != 0:
+                    ax[figax].get_yaxis().set_visible(False)
+
+        # plot data
+        for dat in full_data:
+            activate_legend = False # in case seperate axes are used for each product, make sure legend is made
+            
+            # plot time data
+            if "t" in dat:
+                if (layout == "horizontal") and (flags['ds'] > 1):
+                    activate_legend = True
+                    axi = ax[dat]
+                else:
+                    axi = ax['t0']
+                plot(x = stk['time'], y = stk[dat], yerr = stk[f"{dat}err"],
+                    ax = axi, plot_type = self.plot_type, color = _G.stk_colors[dat[-1]], 
+                    label = dat[-1])
+
+                # plot used time weights if applicable
+                if plot_weights and (dat == "tI"):
+                    xw = np.linspace(stk['time'][0], stk['time'][-1], 10000)
+                    tW = self.par.tW.get_weights(x = xw)
+                    if tW is not None:
+                        tW = tW / np.max(tW) * np.nanmax(stk['tI'])
+                        axi.plot(xw, tW, color = 'peru', linestyle = "--", linewidth = 1.0,
+                                label = "tI weights")
+
+            # plot freq data
+            if "f" in dat:
+                if (layout == "vertical") and (flags['ds'] > 1):
+                    activate_legend = True
+                    axi = ax[dat]
+                    axfhandle = ax[dat]     # This handle is used later to get ylim of avaliable f axes
+                else:
+                    axi = ax['f0']
+                    axfhandle = ax['f0']
+                fx, fxerr = stk['freq'], None
+                fy, fyerr = stk[dat], stk[f"{dat}err"]
+
+                # freq weights
+                weight_flag = False
+                if plot_weights and (dat == "fI"):
+                    fW = self.par.fW.get_weights(x = stk['freq'])
+                    if fW is not None:
+                        weight_flag = True
+                        fwx, fwy = fx, stk[dat]
+ 
+                if flags['ds'] > 0:
+                    fx, fy = fy, fx
+                    fxerr, fyerr = fyerr, fxerr
+                    if weight_flag:
+                        fwx, fwy = fwy, fwx
+                plot(x = fx, y = fy, xerr = fxerr, yerr = fyerr, ax = axi,
+                    plot_type = self.plot_type, color = _G.stk_colors[dat[-1]], label = dat[-1])
+                if weight_flag:
+                    axi.plot(fwx, fwy, color = 'peru', linestyle = "--", linewidth = 1.0,
+                            label = "fI weights")
+
+            if activate_legend and plot_labels:
+                axi.legend(loc = legend_loc)
+
+            # plot dynamic spectra
+            if "ds" in dat:
+                plot_dynspec(stk[dat], ax = ax[dat], extent = [*tcrop, *fcrop],
+                    aspect = 'auto', interpolation = "none", showzaps = self.show_dynzaps)
+
+                if plot_labels:
+                    ax[dat].plot([], [], color = _G.stk_colors[dat[-1]], label = dat[-1])
+                    ax[dat].legend(loc = legend_loc)
+
+
+        # add last legends to combined t/f axes
+        if plot_labels:
+            if len(tax) == 1:
+                ax['t0'].legend(*sort_legend(ax['t0']), loc = legend_loc)
+            if len(fax) == 1:
+                ax['f0'].legend(*sort_legend(ax['f0']), loc = legend_loc)
+
+
+        # plot bounds of t_crop
+        if otcrop != tcrop:
+            if flags['t']:
+                ylim = None
+                for key in ax.keys():
+                    if key[0] == 't':
+                        if ylim is None:
+                            ylim = ax[key].get_ylim()
+                        ax[key].fill_between(otcrop, *ylim, color = "coral", 
+                                            zorder = 0, alpha = 0.15)
+                        ax[key].set_ylim(ylim)
+
+        
+        # fix xlims of spectra axes
+        fmaxs, fmins = [], []
+        for dat in full_data:
+            if "f" in dat:
+                fmaxs += [np.nanmax(stk[dat])]
+                fmins += [np.nanmin(stk[dat])]
+        if (len(fmaxs) > 0) and (len(fmins) > 0):
+            w = max(fmaxs) - min(fmins)
+            lims = [min(fmins) - 0.1*w, max(fmaxs) + 0.1*w]
+            if flags['ds'] > 0:
+                axfhandle.set_xlim(lims)
+            else:
+                axfhandle.set_ylim(lims)
+
+        
+        # remove empty axes
+        for key in ax.keys():
+            if flags['ds'] > 0:
+                if ("t" in key) and (key[-1] in "IQUV"):
+                    if (layout == "horizontal") and (f"ds{key[-1]}" in full_data):
+                        if key not in full_data:
+                            ax[key].clear()
+                            ax[key].set_axis_off()
+                    continue 
+                if ("f" in key) and (key[-1] in "IQUV"):
+                    if (layout == "vertical") and (f"ds{key[-1]}" in full_data):
+                        if key not in full_data:
+                            ax[key].clear()
+                            ax[key].set_axis_off()
+                    continue
+
+        # Render plot
+        fig.tight_layout()
+        if flags['ds'] > 0:
+            fig.subplots_adjust(hspace = 0, wspace = 0)
+        
+
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_{data}.png"
+            plt.savefig(filename)
+
+        if self.show_plots:
+            plt.show()
+
+        self._save_new_params()
+
+        return fig, ax
+
+
+
+    def get_PA(self, Ldebias = 0.0, rad2deg = True, **kwargs):
+        """
+        Get PAs for FRB crop in time
+
+        Parameters
+        ----------
+        Ldebias : float
+            if non-zero, will debias the PA results
+        rad2deg : bool
+            if True, convert PA units from "rad" to "deg", by default True
+        kwargs : dict
+            FRB parameters
+        
+        Returns
+        -------
+        PA : np.ndarray 
+            Polarization position angle 1D numpy array
+        PAerr : np.ndarray
+            Polarisation position angle 1D numpy array errors
+        t : np.ndarray
+            time values
+        """
+
+        # init pars
+        self._load_new_params(**kwargs)
+    
+
+        ##====================##
+        ##     do fitting     ##
+        ##====================##
+
+        # get data 
+        data = self.get_data(['tI', 'tQ', 'tU'], get = True, **kwargs)
+
+        Ldebias_flag = False
+        if (Ldebias_flag > 0.0) and self._iserr():
+            Ldebias_flag = True
+        
+        # Get PAs
+        if Ldebias_flag:
+            PA, PAerr = calc_PAdebiased(data, Ldebias_threshold = Ldebias, 
+                                        rad2deg = rad2deg)
+        
+        else:
+            PA, PAerr = calc_PA(Q = data['tQ'], U = data['tU'], 
+                                Qerr = data['tQerr'], Uerr = data['tUerr'], 
+                                rad2deg = rad2deg)
+        
+        return PA, PAerr, data['time']
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+    def zap_channels(self, chans: str = None, zapzeros: bool = False, zapzerosmargin: float = 1e-5, 
+                    zapsigma: float = None, stDev: int = 0, auto: bool = False, auto_tN: int = 1000,
+                    auto_iter: int = 1, resetzap: bool = False, interactive = False, overwrite: bool = True, **kwargs):
         """
         Zap channels (uses Stokes I freq spectrum)
 
@@ -1697,10 +2591,24 @@ class FRB:
             zap channels at or close to zero, by default False
         zapzerosmargin : float
             margin close to zero at which to zap channels, ratio of max channel flux
+        zapsigma : float
+            zap channels above a SNR threshold
+        stDev : int
+            Standard deviation in integer samples for gaussian smoothing, used to smooth data
+            when using zapsigma as a SNR threshold
         resetzap : bool, optional
             reset channels zapped, by default False
         interactive : bool, optional
             Enable interactive zapping mode
+        overwrite : bool, optional
+            Overwrite string of zapped channels with new set of zapped channels, by default True
+        auto : bool, optional
+            Toggle automatic channel zapping using a statistical median approach [see Dial et al, 2026a]. zapsigma is used as the threshold parameter
+            if not specified a value of zapsigma = 3.0 will be used by default.
+        auto_tN : int
+            Downsampling performed on data in time before statistical automatic channel zapping
+        auto_iter : int
+            Number of iterations to perform statistical median channel zapping
         **kwargs : dict
             Standard frb parameters that can be overidden (zapchan cannot be overidden)
         """
@@ -1716,8 +2624,13 @@ class FRB:
             zapchan = ""
 
         if resetzap:
+            fcrop = self.metapar.f_crop
+            if 'f_crop' in kwargs.keys():
+                fcrop = kwargs['f_crop'].copy()
+            kwargs['f_crop'] = ['min', 'max']
             data = self.get_data('fI', get = True, zapchan = "", **kwargs)
             zapchan = get_zapstr(data['fI'], self.par.get_freqs())
+            kwargs['f_crop'] = fcrop.copy()
         
         if chans is not None:
             zapchan += ("," + chans)
@@ -1727,8 +2640,47 @@ class FRB:
             data['fI'][np.isnan(data['fI'])] = np.max(data['fI'][~np.isnan(data['fI'])])
             data['fI'][np.abs(data['fI']/np.max(np.abs(data['fI']))) < zapzerosmargin] = np.nan
             zapchan += ("," + get_zapstr(data['fI'], self.par.get_freqs()))
-        
-    
+
+        if zapsigma is not None:
+            # zap to a SNR threshold, this requires errors 
+            if not self._iserr():
+                ValueError("Must specify [terr_crop] before applying a SNR threshold!")
+            data = self.get_data('fI', get = True, zapchan = zapchan, **kwargs)
+            fIsmooth = gaussian_smooth(data['fI'], stDev)
+            mask = fIsmooth < data['fIerr'] * zapsigma 
+            nanchans = np.ones(data['fI'].size)
+            nanchans[mask] = np.nan 
+            zapchan += ("," + get_zapstr(nanchans, data['freq'])) 
+
+            # make plot
+            if self.save_plots or self.show_plots:
+                fig_smth, ax_smth = plt.subplots(1, 1, figsize = (10, 7))
+                plot(x = data['freq'], y = data['fI'], yerr = data['fIerr'], ax = ax_smth, plot_type = "scatter",
+                     color = 'k', label = "Stokes I")
+                fIsmooth[mask] = np.nan
+                ax_smth.plot(data['freq'], fIsmooth, color = 'r', label = "Smooted I")
+                ax_smth.set_xlabel("Freq [MHz]", fontsize = 16)
+                ax_smth.set_ylabel("Flux Density (arb.)", fontsize = 16)
+                ax_smth.set_title(f"Channel zapping with threshold: {zapsigma} and stDev: {stDev}")
+
+                if self.save_plots:
+                    fname = self.this_par.name + "_zapsigma.png"
+                    log(f"Saving plot of zapping using gaussian smoothing on spectra saved as: {fname}")
+                    plt.savefig(fname)
+
+                if self.show_plots:
+                    plt.show()
+
+        if auto: 
+            # zap using a statistical approach
+            data = self.get_data("dsI", zapchan = zapchan, **dict_edit_and_copy(kwargs, {'tN':auto_tN}), 
+                                get = True)
+            if zapsigma is None:
+                zapsigma = 3.0
+            flagchan = medrms_chanflag(data['dsI'], threshold = zapsigma, tN = 1, iter = auto_iter)
+            nanchans = np.ones(data['dsI'].shape[0])
+            nanchans[flagchan] = np.nan
+            zapchan += ("," + get_zapstr(nanchans, data['freq']))
 
         # make sure there are no commas in illegal places
         test_zapchan = zapchan.strip()
@@ -1746,8 +2698,10 @@ class FRB:
             test_zapchan = ZapInteractive(data['dsI'], data['freq'], data['time'], zapchan = test_zapchan)
         
         # save
-        self.metapar.zapchan = test_zapchan
-        return
+        if overwrite:
+            self.metapar.zapchan = test_zapchan
+
+        return test_zapchan
 
 
 
@@ -1850,23 +2804,24 @@ class FRB:
         # initialise
         self._load_new_params(**kwargs)
 
-
+        # check of off-pulse region has been given
+        err_flag = True
+        if self.this_metapar.terr_crop is None:    # this essentially ignores the off-pulse region when plotting
+            err_flag = False
+            terrcrop = tcrop.copy()
 
         # get crop in time and frequency, these will be used to draw the bounds of the crops in a larger
         # dynamic spectrum
         tcrop = self.this_metapar.t_crop.copy()
         fcrop = self.this_metapar.f_crop.copy()
-        terrcrop = self.this_metapar.terr_crop.copy()
+        if err_flag:
+            terrcrop = self.this_metapar.terr_crop.copy()
 
         # combine crops, these will be crops of the full dynamic spectrum  with bound markers
         fcrop_ds = [0.0, 1.0]       # by default take full bandwidth
         tpad = 50 / (self.par.t_lim[-1] - self.par.t_lim[0])   # by default we will pad time by 100ms
 
-        # check of off-pulse region has been given
-        err_flag = True
-        if terrcrop is None:    # this essentially ignores the off-pulse region when plotting
-            err_flag = False
-            terrcrop = tcrop.copy()
+        
 
         tcrop_ds = [0.0, 1.0]
         tcrop_ds[0] = min(tcrop[0], terrcrop[0]) - tpad
@@ -1896,12 +2851,15 @@ class FRB:
         # plot dynamic spectra
         fig = plt.figure(figsize = (12,12))
         plot_dynspec(self._ds[stk], aspect = 'auto', extent = [*self.this_par.t_lim, 
-                                                             *self.this_par.f_lim])
+                                                             *self.this_par.f_lim],
+                                                             showzaps = self.show_dynzaps)
         plt.xlabel("Time [ms]")
         plt.ylabel("Freq [MHz]")
 
         tcrop, fcrop = self.par.phase2lim(t_crop = tcrop, f_crop = fcrop)
-        terrcrop, _ = self.par.phase2lim(t_crop = terrcrop)
+
+        if err_flag:
+            terrcrop, _ = self.par.phase2lim(t_crop = terrcrop)
 
 
         # plot on-pulse time region
@@ -1917,7 +2875,9 @@ class FRB:
             plt.plot([terrcrop[0]]*2, self.this_par.f_lim, color = 'm', linestyle = "--", label = "Off-pulse time crop")
             plt.plot([terrcrop[1]]*2, self.this_par.f_lim, color = 'm', linestyle = "--")
 
-
+        # plot peak of crop
+        peak = np.argmax(np.nanmean(self._ds[stk], axis = 0))
+        plt.plot([self._time[peak]]*2, self.this_par.f_lim, color = "springgreen", linestyle = "--", label = "peak")
 
 
         plt.legend()
@@ -2048,7 +3008,6 @@ class FRB:
         
 
             print(f"RMS in poly-n = {n} fitting (sum in square of residuals):")
-            print(yrms)
         print(p)
 
 
@@ -2103,7 +3062,7 @@ class FRB:
 
 
     ## [ FIT SCATTERING TIMESCALE ] ##
-    def fit_tscatt(self, method = "bayesian", npulse = 1, priors: dict = None, statics: dict = None, 
+    def fit_tscatt(self, method = "bayesian", npulse = 1, fitmode = "abs", priors: dict = None, statics: dict = None, 
                    fit_params: dict = None, redo = False, filename: str = None, **kwargs):
         """
         Fit a series of gaussian's convolved with a one-sided exponential scattering tai using BILB
@@ -2118,6 +3077,11 @@ class FRB:
             Number of gaussian to fit, by default 1
         priors : dict, optional
             Priors for sampling, by default None
+        fitmode : str
+            Mode for fitting Multiple gaussians \n
+            [abs]: The position [mu] of each gaussian pulse is an absolute position \n
+            [relative]: The position of the first gaussian pulse is an absolute position whilst all other gaussin positions are \n
+                        relative to [mu1].
         statics : dict, optional
             Priors to keep constant during fitting, by default None
         fit_params : dict, optional
@@ -2143,6 +3107,14 @@ class FRB:
         # init par
         self._load_new_params(**kwargs)
 
+
+        ## fitmode ##
+        if fitmode == "abs":
+            tscattfunc = scatt_pulse_profile
+        elif fitmode == "relative":
+            tscattfunc = scatt_pulse_profile_relative
+        else:
+            ValueError(f"fitmode = {fitmode} is not supported!")
 
         ##====================##
         ##  proc data to fit  ##
@@ -2172,9 +3144,10 @@ class FRB:
         # is being used and the likelihood obj itself is not used
         likelihood = None
         if method == "bayesian":
-            likelihood = tscattLikelihood(x = x, y = y, yerr = err, npulse = npulse)
+            likelihood = tscattLikelihood(x = x, y = y, yerr = err, npulse = npulse, 
+                                            fitmode = fitmode)
 
-        p = fit(x = x, y = y, yerr = err, likelihood = likelihood, func = scatt_pulse_profile,
+        p = fit(x = x, y = y, yerr = err, likelihood = likelihood, func = tscattfunc,
                 prior = priors, static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior) 
 
@@ -2193,15 +3166,40 @@ class FRB:
         # set to fitted params
         self.fitted_params['tscatt'] = p.get_posteriors()
         self.fitted_params['tscatt']['npulse'] = npulse
+        self.fitted_params['tscatt']['fitmode'] = fitmode
         
         # print best fit parameters
         if self.verbose:
             p.stats()
         print(p)
 
+        # extra printing
+        print("Additional info:")
+        print(f"cfreq: {self.this_par.cfreq} [MHz]")
+        print(f"bw: {self.this_par.bw} [MHz]")
+        fcorrected = 0.5 * np.sqrt(self.this_par.bw**2 + 4*self.this_par.cfreq**2)
+
+        # https://academic.oup.com/mnras/article/462/3/2587/2589386
+        print(f"Corrected f (Geyer. M & Karastergiou. A., 2016): {fcorrected} [MHz]")
+
         # plot
         if self.show_plots or self.save_plots:
-            p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)", show = False)
+            fig = p.plot(xlabel = "Time [ms]", ylabel = "Flux Density (arb.)", show = False)
+            ax = fig.axes[0]
+
+            if self.plot_type == "lines":
+                ax.plot(p.x, p.y, 'k--', zorder = 0, alpha = 0.4)
+
+            # plot seperate gaussians
+            tau = p.get_post_val()['tau']
+            xmodl = np.linspace(p.x[0], p.x[-1], p.modelNpoints)
+            for i in range(npulse):
+                ai = p.get_post_val()[f'a{i+1}']
+                sigi = p.get_post_val()[f'sig{i+1}']
+                mui = p.get_post_val()[f'mu{i+1}']
+                ax.plot(xmodl, scatt_pulse_profile(xmodl, a1 = ai, sig1 = sigi, mu1 = mui, tau = tau),
+                        label = f"p{i+1}")
+            ax.legend()
 
             if self.save_plots:
                 if filename is None:
@@ -2222,8 +3220,29 @@ class FRB:
 
 
 
+    def calc_periodgram(self, **kwargs):
+        """
+        Calculate and return ACF of time series
 
+        returns
+        -------
+        tIacf : 1D np.ndarray
+            Time profile auto correlations
+        tlabs : 1D np.ndarray
+            Time lags [ms]
+        
+        """
 
+        dat = self.get_data("tI", get = True, **kwargs)
+
+        # get acf
+        tIacf = acf(dat['tI'])
+
+        # get time lag, but only from first non-zero time lag sample
+        dt = dat['time'][1] - dat['time'][0]
+        tlags = np.linspace(dt, dt * tIacf.size, tIacf.size)
+
+        return tIacf, tlags
 
 
 
@@ -2292,9 +3311,60 @@ class FRB:
 
 
 
+    def plot_subbands(self, N = 2, stk = "I", **kwargs):
+        """
+        Plot multiple time series subbands
 
+        Parameters
+        ----------
+        N : int
+            Number of subbands to split up, by default 2
+        stk : str
+            Stokes parameter to plot, by default 'I'
+        
+        """
 
+        log_title(f"Plotting stokes [{stk}] subbands", col = "lblue")
 
+        self._load_new_params(**kwargs)
+
+        if stk not in "IQUV":
+            ValueError(f"stk = {stk}, is not a valid stokes parameter to plot")
+
+        
+        # TODO: plot in different axes for now, figure out way to plot on pulsetrain later
+        fig, ax = plt.subplots(N, 1, figsize = (10, 2*N), sharex = True)
+        ax = ax.flatten()
+
+        # split into subbands
+        freq_c = np.linspace(self.this_par.f_lim[0] + self.this_par.bw/2/N,           # freq centers
+                         self.this_par.f_lim[1] - self.this_par.bw/2/N, N)
+        freq_bins = np.linspace(*self.this_par.f_lim, N+1) 
+
+        # get data
+        for i in range(N):
+            kwargs['f_crop'] = [freq_bins[i], freq_bins[i+1]]
+            data = self.get_data("tI", get = True, **kwargs)
+            plot_data(data, "tI", ax = ax[i], plot_type = self.plot_type)
+            if i < N-1:
+                ax[i].get_xaxis().set_visible(False)
+            ax[i].scatter([],[], label = f"[{freq_bins[i]:.2f} - {freq_bins[i+1]:.2f}] MHz")
+            ax[i].legend()
+        
+        fig.tight_layout()
+        fig.subplots_adjust(hspace = 0, wspace = 0)
+
+        if self.save_plots:
+            if filename is None:
+                filename = f"{self.par.name}_subbands.png"
+            plt.savefig(filename)
+
+        if self.show_plots:
+            plt.show()
+
+        self._save_new_params()
+
+        return fig
 
 
 
@@ -2421,8 +3491,9 @@ class FRB:
 
 
 
-    def fit_RM(self, method = "RMquad", sigma: float = None, rm_prior: list = [-1000, 1000], 
-                pa0_prior: list = [-3.1415926/2, 3.1415926/2], unwrap: bool = False, fit_params: dict = None, filename: str = None, **kwargs):
+    def fit_RM(self, method = "RMquad", rm_prior: list = [-1000, 1000], 
+                pa0_prior: list = [-3.1415926/2, 3.1415926/2], Inorm: bool = True, unwrap: bool = False, fit_params: dict = None, filename: str = None, 
+                sigma: float = None, **kwargs):
         """
         Fit Spectra for Rotation Measure
 
@@ -2433,17 +3504,19 @@ class FRB:
             [RMquad] - Fit for the Rotation Measure using the standard quadratic method \n
             [RMsynth] - Use the RM-tools RM-Synthesis method \n
             [QUfit] - Fit log-likelihood model of Stokes Q and U parameters (see bannister et al 2019 - supplementary)
-        sigma : float, optional
-            Apply masking based on S/N threshold given, used in [RMquad, RMsynth, QUfit]
         rm_prior : list
             priors for rotation measure, used in [QUfit], by default [-1000, 1000]
         pa0_prior : list
             priors for PA0, used in [QUfit], by default [-pi/2, pi/2] (Shouldn't need to change)
+        Inorm: bool
+            If True, will Normalize Stokes parameters by Stokes I when performing RMsynthesis ("RMsynth"), mainly used to bypass poor Stokes I modelling in RMTools library, by default True
         fit_params : dict, optional
             keyword parameters for fitting method, by default None \n
             [RMquad] - Scipy.optimise.curve_fit keyword params \n
             [RMsynth] - RMtools_1D.run_synth keyword params \n
             [QUfit] - bilby.run_sampler keyword params
+        sigma : float, optional
+            apply a sigma threshold to frequency data and mask before fitting RM, by default None
         filename : str, optional
             filename to save figure to, by default None
 
@@ -2480,17 +3553,23 @@ class FRB:
             log("Must specify 'terr_crop' for rms crop if you want to use RMsynth or RMquad", stype = "err",
                 lpf_col = self.pcol)
             return None, None
+
+        if sigma is not None:
+            # zap
+            log("rewriting kwargs[zapchan] using sigma threshold only for RM fitting", lpf_col = self.pcol)
+            zapstr = self.zap_channels(zapsigma = sigma, stDev = 0, overwrite = False)
+            kwargs['zapchan'] = zapstr
         
         ## get data ##
         self.get_data(data_list, ignore_nans = True, **kwargs)
         if not self._isdata():
             return None, None
 
-        ## mask data based on S/N threshold given
-        if sigma is not None:
-            mask = self._f["I"] > self._f['Ierr'] * sigma
-        else:
-            mask = np.ones(self._f['I'].size, dtype = bool)
+        # ## mask data based on S/N threshold given
+        # if sigma is not None:
+        #     mask = self._f["I"] > self._f['Ierr'] * sigma
+        # else:
+        #     mask = np.ones(self._f['I'].size, dtype = bool)
 
         ## run fitting for RM ##
         if method == "RMquad":
@@ -2501,8 +3580,8 @@ class FRB:
 
             f0 = self.this_par.f0
             # run fitting
-            rmDict = fit_RMquad(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask],
-                                                  self._f['Uerr'][mask], self._freq[mask], f0, **fit_params)
+            rmDict = fit_RMquad(self._f['Q'], self._f['U'], self._f['Qerr'],
+                                                  self._f['Uerr'], self._freq, f0, **fit_params)
             rmDict['f0'] = f0
 
 
@@ -2511,8 +3590,8 @@ class FRB:
             pa0_err = 0.0       # do this for now, TODO
             I, Q, U = self._f['I'], self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr'] 
-            rmDict = fit_RMsynth(I[mask], Q[mask], U[mask], Ierr[mask], 
-                                Qerr[mask], Uerr[mask], self._freq[mask], **fit_params)
+            rmDict = fit_RMsynth(I, Q, U, Ierr, 
+                                Qerr, Uerr, self._freq, Inorm = Inorm, **fit_params)
             rmDict['pa0_err'] = pa0_err
 
         
@@ -2524,8 +3603,8 @@ class FRB:
             f0 = self.par.cfreq
             Q, U = self._f['Q'], self._f['U']
             Ierr, Qerr, Uerr = self._f['Ierr'], self._f['Qerr'], self._f['Uerr']
-            rmDict = RM_QUfit(Q = Q[mask], U = U[mask], Ierr = Ierr[mask], Qerr = Qerr[mask], 
-                                                Uerr = Uerr[mask], f = self._freq[mask], rm_priors = rm_prior, 
+            rmDict = RM_QUfit(Q = Q, U = U, Ierr = Ierr, Qerr = Qerr, 
+                                                Uerr = Uerr, f = self._freq, rm_priors = rm_prior, 
                                                 pa0_priors = pa0_prior, **fit_params)
             rmDict['f0'] = f0
 
@@ -2546,13 +3625,12 @@ class FRB:
 
 
         # put into pyfit structure
-        PA, PA_err = calc_PA(self._f['Q'][mask], self._f['U'][mask], self._f['Qerr'][mask], self._f['Uerr'][mask])
-        print(self._freq[mask].size, PA.size)
+        PA, PA_err = calc_PA(self._f['Q'], self._f['U'], self._f['Qerr'], self._f['Uerr'])
 
         rmDict['pa'] = PA.copy()
         rmDict['pa_err'] = PA_err.copy()
 
-        p = fit(x = self._freq[mask], y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
+        p = fit(x = self._freq, y = 180/np.pi*PA, yerr = 180/np.pi*PA_err, func = rmquad,
                  residuals = self.residuals)
         p.set_posterior('rm', rmDict['rm'], rmDict['rm_err'], rmDict['rm_err'])
         p.set_posterior('pa0', rmDict['pa0'], rmDict['pa0_err'], rmDict['pa0_err'])
@@ -2614,7 +3692,8 @@ class FRB:
 
 
     def plot_PA(self, Ldebias_threshold = 2.0, stk2plot = "ILV", flipPA = False, stk_ratio = False,
-                fit_params: dict = None, filename: str = None, save_files = False, **kwargs):
+                stk_sigma = 3.0, stk_debias = False, fit_params: dict = None, filename: str = None, 
+                save_files = False, **kwargs):
         """
         Plot Figure with PA profile, Stokes Time series data, and Stokes I dyspec. If RM is not 
         specified, will be fitted first.
@@ -2630,6 +3709,11 @@ class FRB:
             Plot PA between [0, 180] degrees instead of [-90, 90], by default False
         stk_ratio: bool, optional
             Plot Stokes ratios in time series ax, by default False
+        stk_debias : bool, optional
+            Plot stokes L and/or P debias, by default False
+        stk_sigma : float, optional
+            sigma threshold for error masking, data that is I < sigma * Ierr, mask it out or
+            else weird overflow behavior might be present when calculating stokes ratios, by default 2.0
         fit_params : dict, optional
             keyword parameters for fitting method, by default None \n
             [RMquad] - Scipy.optimise.curve_fit keyword params \n
@@ -2664,9 +3748,18 @@ class FRB:
         data_list = ["dsI", "dsQ", "dsU", 
                        "tI",  "tQ",  "tU", 
                        "fQ",  "fU", "tV"]
+
+        # Get data
+        if 't_crop' not in kwargs.keys():
+            kwargs['t_crop'] = self.metapar.t_crop.copy()
+        tcrop = kwargs['t_crop'].copy()
+        kwargs['t_crop'] = self.get_ptcrop(tcrop)
+
         self.get_data(data_list, **kwargs)
         if not self._isdata():
             return None
+
+        kwargs['t_crop'] = tcrop.copy()
 
         ## calculate PA
         stk_data = {"tQ":self._t["Q"], "tU":self._t["U"], "tQerr":self._t["Qerr"],
@@ -2688,13 +3781,19 @@ class FRB:
             pdat[f"t{S}"] = self._t[S]
             pdat[f"t{S}err"] = self._t[f"{S}err"]
 
-        plot_stokes(pdat, ax = AX['S'], stk_type = "t", stk2plot = stk2plot, Ldebias = True, 
-                    plot_type = self.plot_type, stk_ratio = stk_ratio)
+        plot_stokes(pdat, ax = AX['S'], stk_type = "t", stk2plot = stk2plot, Ldebias = stk_debias, 
+                    plot_type = self.plot_type, stk_ratio = stk_ratio, sigma = stk_sigma)
+
+        # plot t_crop
+        ylim = AX['S'].get_ylim()
+        AX['S'].fill_between(tcrop, *ylim, color = "coral", 
+                                            zorder = 0, alpha = 0.15)
+        AX['S'].set_ylim(ylim)
 
         ## plot dynamic spectra
         ds_freq_lims = fix_ds_freq_lims(self.this_par.f_lim, self.this_par.df)
         plot_dynspec(self._ds['I'], ax = AX['D'], aspect = 'auto', 
-                       extent = [*self.this_par.t_lim,*ds_freq_lims])
+                       extent = [*self.this_par.t_lim,*ds_freq_lims], showzaps = self.show_dynzaps)
         AX['D'].set_ylabel("Frequency [MHz]", fontsize = 12)
         AX['D'].set_xlabel("Time [ms]", fontsize = 12)
 
@@ -2730,7 +3829,7 @@ class FRB:
 
 
 
-    def calc_polfracs(self, stk_debias = False, peak_sigma = 3.0, peak_average_factor = 1, **kwargs):
+    def calc_polfracs(self, stk_debias = False, peak_sigma = 3.0, peak_average_factor = 1, polprint = True, **kwargs):
         """
         Calculate polarisation fractions using a number of different methods.
 
@@ -2744,7 +3843,13 @@ class FRB:
             nessesary to filter out noisy data.
         peak_average_factor, float
             averaging (downsampling) factor to apply to X(t) stokes profiles to help estimate their peaks
+        print: bool
+            print polarisation fractions, by default True
         """
+
+        def pol_print(_str):
+            if polprint:
+                print(_str)
 
         log_title("Calculating Polarisation fractions", col = "lblue")
 
@@ -2817,9 +3922,6 @@ class FRB:
             stk_frac = {}
             S['time'] = average(S['time'], N = peak_average_factor)
 
-            print(S['tI'].size)
-            print(S['tQ'].size)
-
             for s in "QUVLP":
                 # get Stokes ratio
                 stk_frac[s.lower()], stk_frac[f'{s.lower()}err'] = calc_ratio(S['tI'], S[f't{s}'], S['tIerr'], S[f't{s}err'])
@@ -2839,25 +3941,26 @@ class FRB:
                 peaks_pos[s.lower()] = S['time'][peak_ind]
             
             # diagnostic plots
-            fig, ax = plt.subplots(1, 1, figsize = (12,8))
-            
-            for s in "quvlp":
-                _PLOT(S['time'], stk_frac[s], stk_frac[f'{s}err'], ax = ax, plot_type = self.plot_type, 
-                        color = _G.stk_colors[s.upper()])
-            ylim = ax.get_ylim()
-            for s in "quvlp":
-                # plot marker
-                ax.plot([peaks_pos[s]]*2, ylim, color = _G.stk_colors[s.upper()], linestyle = "--",
-                            label = f'${s}_{{peak}}$ at t = {peaks_pos[s]:.2f} ms')
-            
-            ax.set(ylim = ylim, xlabel = "Time [ms]", ylabel = "Stokes X/I fraction")
-            ax.legend()
+            if self.show_plots or self.save_plots:
+                fig, ax = plt.subplots(1, 1, figsize = (12,8))
+                
+                for s in "quvlp":
+                    _PLOT(S['time'], stk_frac[s], stk_frac[f'{s}err'], ax = ax, plot_type = self.plot_type, 
+                            color = _G.stk_colors[s.upper()])
+                ylim = ax.get_ylim()
+                for s in "quvlp":
+                    # plot marker
+                    ax.plot([peaks_pos[s]]*2, ylim, color = _G.stk_colors[s.upper()], linestyle = "--",
+                                label = f'${s}_{{peak}}$ at t = {peaks_pos[s]:.2f} ms')
+                
+                ax.set(ylim = ylim, xlabel = "Time [ms]", ylabel = "Stokes X/I fraction")
+                ax.legend()
 
-            # save figure
-            if self.save_plots:
-                filename = f"{self.par.name}_peak_polfracs.png"
-            
-                plt.savefig(filename)
+                # save figure
+                if self.save_plots:
+                    filename = f"{self.par.name}_peak_polfracs.png"
+                
+                    plt.savefig(filename)
 
 
 
@@ -2865,9 +3968,9 @@ class FRB:
         debias_flag = "FALSE\n"
         if stk_debias:
             debias_flag = "TRUE\n"
-        print("\nStokes fractions:")
-        print("="*50)
-        print(f"debiased = ", debias_flag)
+        pol_print("\nStokes fractions:")
+        pol_print("="*50)
+        pol_print(f"debiased = " + debias_flag)
 
         def _print_err(val):
             if err:
@@ -2876,60 +3979,65 @@ class FRB:
                 return "None"
 
 
-        print("=======  CONTINUUM-ADDED Stokes fractions  =======\n")
-        print("These fractions are calculated by first")
-        print("integrating over the debiased polarisation profile")
-        print("="*50, "\n")
-        print("Legend:")
-        print("l = sum(L(t))/sum(I(t))\n")
-        print("|q|".ljust(15), f"{fracS['|q|']:.4f} +/- {_print_err(fracS['|q|err'])}")
-        print("|u|".ljust(15), f"{fracS['|u|']:.4f} +/- {_print_err(fracS['|u|err'])}")
-        print("|v|".ljust(15), f"{fracS['|v|']:.4f} +/- {_print_err(fracS['|v|err'])}")
-        print("l".ljust(15), f"{fracS['l']:.4f} +/- {_print_err(fracS['lerr'])}")
-        print("p".ljust(15), f"{fracS['p']:.4f} +/- {_print_err(fracS['perr'])}\n")
+        pol_print("=======  CONTINUUM-ADDED Stokes fractions  =======\n")
+        pol_print("These fractions are calculated by first")
+        pol_print("integrating over the debiased polarisation profile")
+        pol_print("="*50 + "\n")
+        pol_print("Legend:")
+        pol_print("l = sum(L(t))/sum(I(t))\n")
+        pol_print("|q|".ljust(15) + f"{fracS['|q|']:.4f} +/- {_print_err(fracS['|q|err'])}")
+        pol_print("|u|".ljust(15) + f"{fracS['|u|']:.4f} +/- {_print_err(fracS['|u|err'])}")
+        pol_print("|v|".ljust(15) + f"{fracS['|v|']:.4f} +/- {_print_err(fracS['|v|err'])}")
+        pol_print("l".ljust(15) + f"{fracS['l']:.4f} +/- {_print_err(fracS['lerr'])}")
+        pol_print("p".ljust(15) + f"{fracS['p']:.4f} +/- {_print_err(fracS['perr'])}\n")
         
-        print("Integrated (Signed) Stokes Paramters")
-        print("q".ljust(15), f"{fracS['q']:.4f}".ljust(7) + f" +/- {_print_err(fracS['qerr'])}")
-        print("u".ljust(15), f"{fracS['u']:.4f}".ljust(7) + f" +/- {_print_err(fracS['uerr'])}")
-        print("v".ljust(15), f"{fracS['v']:.4f}".ljust(7) + f" +/- {_print_err(fracS['verr'])}\n")
+        pol_print("Integrated (Signed) Stokes Paramters")
+        pol_print("q".ljust(15) + f"{fracS['q']:.4f}".ljust(7) + f" +/- {_print_err(fracS['qerr'])}")
+        pol_print("u".ljust(15) + f"{fracS['u']:.4f}".ljust(7) + f" +/- {_print_err(fracS['uerr'])}")
+        pol_print("v".ljust(15) + f"{fracS['v']:.4f}".ljust(7) + f" +/- {_print_err(fracS['verr'])}\n")
 
-        print("====  Vector-addded Stokes L and P fractions  ====")
-        print("="*50, "\n")
+        pol_print("====  Vector-addded Stokes L and P fractions  ====")
+        pol_print("="*50 + "\n")
 
-        print("Legend:")
-        print("l* = sqrt(q^2 + u^2)")
-        print("|l|* = sqrt(|q|^2 + |u|^2)")
-        print("p* = sqrt(q^2 + u^2 + v^2)")
-        print("|p|* = sqrt(|q|^2 + |u|^2 + |v|^2)\n")
+        pol_print("Legend:")
+        pol_print("l* = sqrt(q^2 + u^2)")
+        pol_print("|l|* = sqrt(|q|^2 + |u|^2)")
+        pol_print("p* = sqrt(q^2 + u^2 + v^2)")
+        pol_print("|p|* = sqrt(|q|^2 + |u|^2 + |v|^2)")
+        pol_print("p# = sqrt(l*^2 + |v|^2) = sqrt(q^2 + u^2 + |v|^2)\n")
 
 
         # calculate l* and p*
         fracS['l*'], fracS['l*err'] = calc_L(fracS['q'], fracS['u'], fracS['qerr'], fracS['uerr'])
         fracS['p*'], fracS['p*err'] = calc_P(fracS['q'], fracS['u'], fracS['v'], fracS['qerr'],
                                     fracS['uerr'], fracS['verr'])
-        print("l*".ljust(15), f"{fracS['l*']:.4f} +/- {_print_err(fracS['l*err'])}")
-        print("p*".ljust(15), f"{fracS['p*']:.4f} +/- {_print_err(fracS['p*err'])}")
+        pol_print("l*".ljust(15) +  f"{fracS['l*']:.4f} +/- {_print_err(fracS['l*err'])}")
+        pol_print("p*".ljust(15) + f"{fracS['p*']:.4f} +/- {_print_err(fracS['p*err'])}")
 
         # calculate |l|* and |p|*
         fracS['|l|*'], fracS['|l|*err'] = calc_L(fracS['|q|'], fracS['|u|'], fracS['|q|err'],
                                         fracS['|u|err'])
         fracS['|p|*'], fracS['|p|*err'] = calc_P(fracS['|q|'], fracS['|u|'], fracS['|v|'],
                                         fracS['|q|err'], fracS['|u|err'], fracS['|v|err'])
-        print("|l|*".ljust(15), f"{fracS['|l|*']:.4f} +/- {_print_err(fracS['|l|*err'])}")
-        print("|p|*".ljust(15), f"{fracS['|p|*']:.4f} +/- {_print_err(fracS['|p|*err'])}\n")
+        fracS['p#'], fracS['p#err'] = calc_P(fracS['q'], fracS['u'], fracS['|v|'],
+                                        fracS['qerr'], fracS['uerr'], fracS['|v|err'])
 
-        print("= Total polarisation fraction calculated L and V =")
-        print("="*50, "\n")
-        print("Legend:")
-        print("p^ = sqrt(l^2 + v^2)")
-        print("|p|^ = sqrt(l^2 + |v|^2)\n")
+        pol_print("|l|*".ljust(15) + f"{fracS['|l|*']:.4f} +/- {_print_err(fracS['|l|*err'])}")
+        pol_print("|p|*".ljust(15) + f"{fracS['|p|*']:.4f} +/- {_print_err(fracS['|p|*err'])}\n")
+        pol_print("p#".ljust(15) + f"{fracS['p#']:.4f} +/- {_print_err(fracS['p#err'])}\n")
+
+        pol_print("= Total polarisation fraction calculated L and V =")
+        pol_print("="*50 + "\n")
+        pol_print("Legend:")
+        pol_print("p^ = sqrt(l^2 + v^2)")
+        pol_print("|p|^ = sqrt(l^2 + |v|^2)\n")
 
         fracS['p^'], fracS['p^err'] = calc_L(fracS['l'], fracS['v'], fracS['lerr'], fracS['verr'])
         fracS['|p|^'], fracS['|p|^err'] = calc_L(fracS['l'], fracS['|v|'], fracS['lerr'], fracS['|v|err'])
-        print("p^".ljust(15), f"{fracS['p^']:.4f} +/- {_print_err(fracS['p^err'])}")
-        print("|p|^".ljust(15), f"{fracS['|p|^']:.4f} +/- {_print_err(fracS['|p|^err'])}\n")
+        pol_print("p^".ljust(15) + f"{fracS['p^']:.4f} +/- {_print_err(fracS['p^err'])}")
+        pol_print("|p|^".ljust(15) + f"{fracS['|p|^']:.4f} +/- {_print_err(fracS['|p|^err'])}\n")
 
-        if err:
+        if err and polprint:
             print(f"= Peak absolute polarisation fraction at dt = [{self.this_par.dt * 1000:.0f}] us =")
             print(f"="*50, "\n")
             for s in "quvlp":
@@ -2945,3 +4053,15 @@ class FRB:
 
 
 
+
+
+    def reset_crop(self):
+        """
+        Reset crop parameters
+        
+        """
+
+        self.set(t_ref = 0, t_crop = ['min', 'max'], terr_crop = None, 
+                f_crop = ['min', 'max'])
+
+        return

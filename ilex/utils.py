@@ -16,11 +16,7 @@ from .globals import _G
 from copy import deepcopy, copy
 from .logging import log
 import os
-from ruamel.yaml import YAML    # wrapper yaml class for preserving format in yaml files, i.e. comments, blocking etc. 
 import yaml as base_yaml        # default yaml class
-from ruamel.yaml.scalarfloat import ScalarFloat as ruamel_float
-from ruamel.yaml import comments
-from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 
 # empty structure
@@ -44,57 +40,6 @@ plt.ioff()
 # def interactive_off():
 #     log("Turning interactive OFF", lpf = False)
 #     plt.ioff()
-
-
-
-
-##===============================================##
-##              load/save functions              ##
-##===============================================##
-
-
-def load_data(datafile: str, mmap = True):
-    """
-    Load data to memory map
-
-    Parameters
-    ----------
-    datafile : str
-        filename or path
-    mmap : bool, optional
-        is memorymap?, by default True
-
-    Returns
-    -------
-    data : np.mmap or np.ndarray
-        loaded data
-    """
-    # option to enable memory mapping
-    data = None
-    m_mode = None
-    if mmap:
-        m_mode = "r"
-
-    #load in a .npy file
-    data = np.load(datafile,mmap_mode = m_mode)
-
-
-    return data
-
-
-def save_data(data, filename: str):
-    """
-    Save data to file
-
-    Parameters
-    ----------
-    data : np.ndarray
-        data to save to file
-    filename : str
-        filename to save data to
-    """
-    with open(filename,"wb") as f:
-        np.save(f,data)
 
 
 
@@ -247,6 +192,38 @@ def dict_null(dic):
 
     return new_dic
 
+def dict_edit_and_copy(dic, dic2):
+    """
+    Edit dic entries with select dic2 entries and return a copy of the edited dictionary. 
+    If an entry in dic2 exists in dic, that entry will be overwritten. If the entry doesn't exist in 
+    dic, the entry is added.
+
+    Be aware that this function will perform a deepcopy of dictiory entries, but only perform a shallow copy of objects!
+
+    Parameters
+    ----------
+    dic : Dict  
+        Dictionary to edit
+    dic2 : Dict
+        Dictionary to edit entries of dic
+
+    Returns
+    -------
+    dic : Dict
+        Dictionary with altered entries    
+    
+    """
+
+    new_dic = deepcopy(dic)
+
+    for key in dic2.keys():
+        if type(dic2[key]) in [list, dict]:
+            new_dic[key] = deepcopy(dic2[key])
+        else:
+            new_dic[key] = dic2[key]
+    
+    return new_dic
+
 
 def get_stk_from_datalist(data_list):
     """
@@ -352,179 +329,6 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
         return (None, ) * 2
     
     return grid_nrows, grid_ncols
-
-
-
-def _init_pars(p, d, ruamel2py = True):
-    """
-    p : pars
-    d : default pars
-    """
-
-    for key in d.keys():
-        if key not in p.keys():
-            if hasattr(d[key], '__len__'):
-                p[key] = deepcopy(d[key])
-            else:
-                p[key] = d[key]
-        
-        else:
-            # check if dict instance
-            # check if ruamel yaml input 
-            if ruamel2py:
-                p[key] = check_ruamel_input(p[key])
-
-            if isinstance(d[key], dict):
-                d[key].fa.set_flow_style()
-                _init_pars(p[key], d[key], ruamel2py=ruamel2py)
-
-
-    return p
-
-
-def load_param_file(param_file = None, return_yaml_obj = False, ruamel2py = True):
-    """
-    Load in param file and compare with default params file
-
-    Parameters
-    ----------
-    param_file : str
-        parameter file to load in, if None, will return default yaml file values
-    
-    Returns
-    -------
-    params : Dict
-        parameters, compared with defaults
-
-    """
-
-    yaml = YAML()
-
-    if param_file is not None:
-        # open param file
-        with open(param_file) as file:
-            pars = yaml.load(file)
-    else:
-        pars = {}
-
-    # open default param file
-    with open(os.path.join(os.environ['ILEX_PATH'], "files/default.yaml")) as deffile:
-        def_pars = yaml.load(deffile)
-    
-    if return_yaml_obj:
-        return _init_pars(pars, def_pars, ruamel2py=ruamel2py), yaml
-    else:
-        return _init_pars(pars, def_pars, ruamel2py=ruamel2py)
-
-
-
-def save_param_file(pars, filename, yaml_obj = None):
-    """
-    save to new parameter file
-
-    Parameters
-    ----------
-    pars : dict
-        dictionary of parameters in ilex.yaml format
-    filename : str
-        filename of saved yaml file
-    
-    """
-
-    # class MyDumper(yaml.SafeDumper):
-    # # HACK: insert blank lines between top-level objects
-    # # inspired by https://stackoverflow.com/a/44284819/3786245
-    #     def write_line_break(self, data=None):
-    #         super().write_line_break(data)
-
-    #         if len(self.indents) == 1:
-    #             super().write_line_break()
-
-    if yaml_obj is None:
-        yaml_obj = YAML() 
-
-
-    # save pars in pars
-    with open(filename, 'w') as file:
-        yaml_obj.dump(pars, file)
-
-
-
-def update_ruamel_CommentedSeq(commented_seq, val):
-    """
-    Updates the value of the CommentedSeq whilst preserving the flow
-    stype and comments
-
-    """
-
-    # copy comments
-    if commented_seq is not None:
-        comment = commented_seq.ca.comment
-    else:
-        comment = None
-
-    # create new Commented Sequence initialised to val
-    commented_seq = CommentedSeq(val)
-
-    # add comments and preserved flow style
-    commented_seq._yaml_add_comment(comment)
-    commented_seq.fa.set_flow_style()
-    
-    return commented_seq
-
-
-
-def update_ruamel_CommentedMap(commented_map, key, val):
-    """
-    Updated Commented map based on key, value pair
-    """
-
-    if key not in commented_map.keys():
-
-        if val is None:
-            commented_map[key] = None
-
-        # add to commented_map
-        if isinstance(val, list):
-            # create CommentedSeq
-            commented_map[key] = CommentedSeq(val)
-            commented_map[key].fa.set_flow_style()
-        elif isinstance(val, dict):
-            # create CommentedMap
-            commented_map[key] = CommentedMap(val)
-            commented_map[key].fa.set_flow_style()
-        elif isinstance(val, float) or isinstance(val, int) or isinstance(val, str) or isinstance(val, bool):
-            # add to map
-            commented_map[key] = val
-        else:
-            raise ValueError("Can only add list, dict, float, int, bool or str to CommentedMap yaml.")
-    
-        return    
-        
-        
-    commented_map.setdefault(key, {})
-
-    if isinstance(val, np.float64):
-        val = float(val)
-
-    if isinstance(val, list):
-        for i, _ in enumerate(val):
-            if isinstance(val[i], np.float64):
-                val[i] = float(val[i])
-        
-        commented_map[key] = update_ruamel_CommentedSeq(commented_map[key], val)
-    elif isinstance(val, dict):
-        for dict_key in val.keys():
-            if isinstance(val[dict_key], np.float64):
-                val[dict_key] = float(val[dict_key])
-        
-        commented_map[key] = val
-
-    else:
-        commented_map[key] = val
-        
-
-    return
 
 
 
@@ -636,41 +440,11 @@ def fix_ds_freq_lims(lims, df):
     return fixed_lims
 
 
+def sort_legend(ax):
 
-# #-----------------------------------------------#
-# # extra data utility functions                  #
-# #-----------------------------------------------#
+    handles, labels = ax.get_legend_handles_labels()
 
+    # sort
+    labels, handles = zip(*sorted(zip(labels, handles), key = lambda t: t[0]))
 
-def check_ruamel_input(inp):
-    """
-    Ruamel yaml is used in some cases, this will be used to process these inputs and make sure
-
-    Parameters
-    ----------
-    inp : _class_
-        Change ruamel class to python class
-    """
-
-    if type(inp) == comments.CommentedMap:
-        return dict(inp)
-    
-    if type(inp) == comments.CommentedSeq:
-        return list(inp)
-    
-    return inp
-
-
-def check_ruamel_output(out):
-    """
-    Check if outputs are in right types
-
-    
-    """
-
-    if type(out) == float:
-        return ruamel_float(out)
-    elif type(out) == list:
-        return comments.CommentedSeq(out)
-    
-    return out
+    return handles, labels

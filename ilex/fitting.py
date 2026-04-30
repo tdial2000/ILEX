@@ -65,15 +65,18 @@ def model_curve(y, n: int = 5, samp: int = None):
     np.ndarray
         Modelled data
     """    
+    yout = y.copy()
+    ytemp = y[~np.isnan(y)]
 
-    x = np.linspace(0, 1.0, y.size)    
+    x = np.linspace(0, 1.0, ytemp.size)    
     if samp is None:
         samp = x.size
     xnew = np.linspace(0, 1.0, samp)
     
-    y_fit = np.poly1d(np.polyfit(x,y,n))
+    y_fit = np.poly1d(np.polyfit(x,ytemp,n))
+    yout[~np.isnan(y)] = y_fit(xnew)
 
-    return y_fit(xnew)
+    return yout
 
 
 
@@ -209,6 +212,43 @@ def specindex(x, a, alpha):
 
 
 
+def specindex2(x, tau_c, alpha):
+    """
+    Method 2 of calculating tau and the spectral index power-law
+    function. Better for fitting.
+
+    tau(f) = tau_c * (f/f_c)**alpha
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Frequency [MHz]
+    tau_c : float
+        Scattering timescale at the central frequency f_c
+    alpha : float
+        Power-law index
+    
+    f_c is estimated using [x] -> f_c = (x[0] + x[-1])/2
+    """
+
+    f_c = (x[0] + x[-1])/2
+
+    return tau_c * (x / f_c)**alpha
+
+
+
+
+def burnslaw(x, p, sig_rm):
+    """
+    Calculate modified burns law
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Frequency [MHz]
+    """
+    # return np.exp(-2*sig_rm**2*(c/x*1e-6)**4)
+    return p * np.exp(-2*sig_rm**2*(c/x*1e-6)**4)
 
 
 
@@ -299,6 +339,24 @@ def scatt_pulse_profile(x, **p):
 
 
 
+def scatt_pulse_profile_relative(x, **p):
+    """
+    The functionality and inputs are the exact same to ilex.fitting.scatt_pulse_profile,
+    the difference is that [mu2, mu3, mu4, ..., muN] are treated as relative positions from 
+    mu1.
+    """
+
+    # convert relative positions to absolute positions
+    pnew = deepcopy(p)
+    npulses = (len(pnew) - 1)//3
+    if npulses > 1:
+        for i in range(2, npulses+1):
+            pnew[f'mu{i}'] += pnew['mu1']
+    return scatt_pulse_profile(x, **pnew)
+
+
+
+
 
 # def _scatt_pulse_profile_func():
 #     pass
@@ -336,8 +394,112 @@ def make_scatt_pulse_profile_func(n = 1):
 
 
 
+
+def make_scatt_pulse_profile_relative_func(n = 1):
+    """
+    Make scatter pulse profile wrapping function for fitting
+
+    Parameters
+    ----------
+    n: int
+        number of pulses in scatter profile
+    Returns
+    -------
+    func: __func__
+        lambda function for scatter pulse profile with n pulses, only if return_definition == False
+
+    """
+
+    args_str = "lambda x"
+    func_str = "scatt_pulse_profile_relative(x,"
+
+    for i in range(1, n+1):
+        # loop through components
+        for p in ["a", "mu", "sig"]:
+            func_str += f"{p}{i} = {p}{i},"
+            args_str += f",{p}{i}"
+
+    # add tau
+    func_str += "tau = tau"
+    args_str += ",tau"
+
+    return (eval(args_str + ":" + func_str + ")"))
+
+
+
+
+
+
+
+def make_scatt_pulse_profile_func_multi(n = 1):
+    """
+    Make scatter pulse profile wrapping function with the option of specifying more than 1
+    scattering timescales
+    
+    Parameters
+    ----------
+    n: int
+        number of scattering timescales
+    Returns
+    -------
+    func: __func__
+        lambda function of the form func(x, args1, tau1, args2, tau2...), where args are the set
+        of gaussian parameters args1 = {'mu1', 'sig1' ...}. Each set of args can have any number
+        of gaussian paramters and will be convolved with it's corrosponding tau1. The final result is the addition
+        of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, **args1) + scatt_pulse_profile(x, tau = tau2, **args2) + ...
+
+    """
+
+    args_str = "lambda x"
+    func_str = ""
+
+    for i in range(1, n+1):
+        args_str += f", args{i}, tau{i}"
+        func_str += f"scatt_pulse_profile(x, tau = tau{i}, **args{i}) + "
+    
+    return(eval(args_str + ":" + func_str[:-3]))
+
+
+
+
+
+
+def make_scatt_pulse_profile_func_relative_multi(n = 1):
+    """
+    Make scatter pulse profile wrapping function with the option of specifying more than 1
+    scattering timescales
+    
+    Parameters
+    ----------
+    n: int
+        number of scattering timescales
+    Returns
+    -------
+    func: __func__
+        lambda function of the form func(x, args1, tau1, args2, tau2...), where args are the set
+        of gaussian parameters args1 = {'mu1', 'sig1' ...}. Each set of args can have any number
+        of gaussian paramters and will be convolved with it's corrosponding tau1. The final result is the addition
+        of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, **args1) + scatt_pulse_profile(x, tau = tau2, **args2) + ...
+
+    """
+
+    args_str = "lambda x"
+    func_str = ""
+
+    for i in range(1, n+1):
+        args_str += f", args{i}, tau{i}"
+        func_str += f"scatt_pulse_profile_relative(x, tau = tau{i}, **args{i}) + "
+    
+    return(eval(args_str + ":" + func_str[:-3]))
+
+
+
+
+
+
+
 class tscattLikelihood(PyfitLikelihood):
-    def __init__(self, x, y, yerr, npulse):
+    def __init__(self, x, y, yerr, npulse, fitmode = "abs"):
         """
         Likelihood function for fitting N pulses with a common scattering
         exponential to FRB data.
@@ -366,7 +528,14 @@ class tscattLikelihood(PyfitLikelihood):
         self.parameters = dict.fromkeys(parameters)
         self.func_keys = list(self.parameters.keys())
 
-        self._superinit(x = x, y = y, func = scatt_pulse_profile, yerr = yerr)
+        if fitmode == "abs":
+            func = scatt_pulse_profile
+        elif fitmode == "relative":
+            func = scatt_pulse_profile_relative
+        else:
+            ValueError(f"fitmode = {fitmode} is not a valid method of fitting tscatt!")
+
+        self._superinit(x = x, y = y, func = func, yerr = yerr)
 
 
     def log_likelihood(self):
@@ -403,7 +572,7 @@ class tscattLikelihood(PyfitLikelihood):
 
 
 ## RM fitting functions ##
-def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
+def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, Inorm = True, clean_cutoff = 0.1, **kwargs):
 
     """
     Use RM synthesis to calculate RM, pa0 and f0,
@@ -426,6 +595,8 @@ def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
         stokes U rms spectra
     f: np.ndarray 
         frequencies [MHz]
+    lnorm: bool 
+        if True will normalize stokes parameters by Stokes I, by default True
     clean_cutoff: float 
         cutoff arg for run_rmclean()
     **kwargs: Dict 
@@ -443,7 +614,10 @@ def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
         fdfArr [np.ndarray] Array of faraday depth values
     """
 
-    defkwargs = {"polyOrd":3, "phiMax_radm2":1.0e3, "dPhi_radm2":1.0, "nSamples":100.0, 'showPlots':False}
+    print(Inorm)
+
+    defkwargs = {"polyOrd":3, "phiMax_radm2":1.0e3, "dPhi_radm2":1.0, "nSamples":100.0, 
+                 'showPlots':False}
 
     ## process kwargs keys
     keys = kwargs.keys()
@@ -452,19 +626,37 @@ def fit_RMsynth(I, Q, U, Ierr, Qerr, Uerr, f, clean_cutoff = 0.1, **kwargs):
             kwargs[key] = defkwargs[key]
 
 
+    # get stokes fractions
+    if Inorm:
+        print("Normalizing Stokes parameters by Stokes I, i.e. Q/I, U/I")
+        Qfr, QfrErr = calc_ratio(I, Q, Ierr, Qerr)
+        Ufr, UfrErr = calc_ratio(I, U, Ierr, Uerr)
+
+
     log("Fitting RM using RM synthesis", lpf = False)
-    # RM data array
-    rmsyn_data = np.array(
-        [
-        f * 1e6,     # freqs (Hz)  
-        I,           # I
-        Q,           # Q
-        U,           # U
-        Ierr,        # I rms
-        Qerr,        # Q rms
-        Uerr         # U rms
-        ]
-    )
+    if not Inorm:
+        #RM data array
+        rmsyn_data = np.array(
+            [
+            f * 1e6,     # freqs (Hz)  
+            I,           # I
+            Q,           # Q
+            U,           # U
+            Ierr,        # I rms
+            Qerr,        # Q rms
+            Uerr         # U rms
+            ]
+        )
+    else:
+        rmsyn_data = np.array(
+            [
+            f * 1e6,     # freqs (Hz)  
+            Qfr,           # Q fraction
+            Ufr,           # U fraction
+            QfrErr,        # Q rms fraction
+            UfrErr         # U rms fraction
+            ]
+        )
 
     # run RM synthesis
     rm_sum, rm_data = run_rmsynth(rmsyn_data, **kwargs)

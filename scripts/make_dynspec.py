@@ -135,11 +135,15 @@ def get_args():
     parser.add_argument("--nFFT", help = "Number of frequency channels for final dynspec", 
                         type = int, default = 336)
     parser.add_argument("--bline", help = "Apply baseline correction", action = "store_true")
+    parser.add_argument("--qbline", help = "Apply a quick baseline correction which does not remove the on-pulse burst region", action = "store_true")
     parser.add_argument("--QUV", help = "make full stokes dynamic spectra", action = "store_true")
 
     # chan flagging
     # parser.add_argument("--chanlists", help = "path to dir of files for static channel masking", type = str)
     parser.add_argument("--do_chanflag", help = "Do channel flagging based on channel noise", action = "store_true")
+    parser.add_argument("--flagthresh", help = "Threshold for automatic statistical based channel flagging", type = float, default = 3.0)
+    parser.add_argument("--flagtN", help = "Time downsample factor applied during automatic statistical based channel flagging", 
+                        type = int, default = 200)
 
 
     ## data reduction arguments
@@ -148,6 +152,7 @@ def get_args():
     parser.add_argument("--tN", help = "Time averaging factor, helps with S/N calculation", type = int, default = 50)
     parser.add_argument("--guard", help = "Time between rms crops and burst in [ms]",
                         type = float, default = 10.0)
+    parser.add_argument("--dt", help = "nyquist sampling time [ms]", type = float, default = 2.97619048e-6)
 
 
     ## Pulsar arguments (Polarisation calibration)
@@ -317,7 +322,7 @@ def pulse_fold(ds, DM, cfreq, bw, MJD0, MJD1, F0, F1, chanflag, sphase = None, )
     ## Calculate Period T in [s]
     T = 1/(F0 - F1 * (MJD1 - MJD0)*86400)
     print(f"with period T = {T}")
-    dt = 1e-6 * (ds.shape[0]/336) # get time resolution of dynspec
+    dt = args.dt * ds.shape[0]
 
     ## Fold dynamic spectra
     fold_w = int(T / dt)          # fold width in samples (assumed dt = 1 us)
@@ -390,6 +395,8 @@ def flag_chan(ds, flag_thresh, tN, args, rbounds = None):
         channel indicies flagged
     """
 
+    rfiter = 5  # number of flagging iterations
+
     # create boolean array
     chanmask = np.ones(ds.shape[0], dtype = bool)
     
@@ -443,17 +450,17 @@ def flag_chan(ds, flag_thresh, tN, args, rbounds = None):
         # average
         ds_avg = average(ds_avg, axis = 1, N = tN)
 
+    flagchan = np.array([], dtype = int)
 
     # calculate channel rms across buffer
-    f_std = np.nanstd(ds_avg, axis = 1)
-    med_rms = np.nanmedian(f_std)
-    mad_rms = 1.48 * np.nanmedian(np.abs(f_std - med_rms))
+    stdfI = np.nanstd(ds_avg, axis = 1)
+    for i in range(rfiter):
+        stdfIabs = np.abs(stdfI - np.nanmedian(stdfI))
+        flagchan_i = np.where(stdfIabs > (flag_thresh * np.nanmedian(stdfIabs)))[0]
+        stdfI[flagchan_i] = np.nan 
+        flagchan = np.concatenate((flagchan, flagchan_i))
 
-    # create boolean array
-    chanmask = np.ones(ds_avg.shape[0], dtype = bool)
-    
-    chan2flag = np.where(f_std > (med_rms + flag_thresh*mad_rms))[0]
-    chanmask[chan2flag] = False
+    chanmask[flagchan] = False
 
     
 
@@ -477,17 +484,32 @@ def plot_failed_bline(ds, tN, chanflag):
     ax = ax.flatten()
 
     ds[chanflag] = np.nan
+    ds[np.isinf(ds[:, 0])] = np.nan
+    ds[ds[:, 0] == 0.0] = np.nan
 
-    ax[0].plot(np.linspace(0, tN*(1e-3)*ds.shape[1], ds.shape[1]), 
+    ax[0].plot(np.linspace(0, tN*args.dt*ds.shape[0]*ds.shape[1], ds.shape[1]), 
                 np.nanmean(ds, axis = 0), 'k')
     ax[0].set_ylabel("Flux Density (arb.)")
     ax[0].get_xaxis().set_visible(False)
-    
-    ax[1].imshow(ds, aspect = 'auto', extent = [0, tN*(1e-3)*ds.shape[1], 0, 336])
-    ax[1].set_ylabel("norm bandwidth [MHz]")
-    ax[1].set_xlabel("Time [ms]")
 
-    ax[0].set_xlim([0, tN*(1e-3)*ds.shape[1]])
+    zaps = np.ones(ds[:, 0].size, dtype = float) * np.nan
+    zaps[np.isnan(ds[:, 0])] = 0.55
+
+    ds[np.isnan(ds[:, 0])] = 0.0    # set to zero for visual clarity
+    
+    ax[1].imshow(ds, aspect = 'auto', extent = [0, args.dt * ds.shape[0] * tN * ds.shape[1], 0, ds.shape[0]])
+    ax[1].set_ylabel("Channel", fontsize = 16)
+    ax[1].set_xlabel("Time [ms]", fontsize = 16)
+
+    ax[0].set_xlim([0, tN*args.dt*ds.shape[0]*ds.shape[1]])
+
+    # chanflag
+    xlim, ylim = ax[1].get_xlim(), ax[1].get_ylim()
+    xwidth = xlim[1] - xlim[0]
+    ax[1].imshow(zaps.reshape(zaps.size, 1), aspect = 'auto', cmap = "OrRd",
+                vmax = 1, vmin = 0, extent = [xlim[0], xlim[0] + 0.02 * xwidth, *ylim])
+    ax[1].set_xlim(xlim)
+    ax[1].set_ylim(ylim)
 
     # final figure adjustments
     fig.tight_layout()
@@ -533,7 +555,7 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
     rmsg = 0.5   # rms guard in phase difference from peak of burst
 
     ## calculate time resolution
-    dt = 1e-3 * (ds.shape[0]/336) 
+    dt = args.dt * ds.shape[0]
 
     ## ms -> ds time bin converters
     get_units_avg = lambda t : int(ceil(t/(dt * tN)))
@@ -541,13 +563,25 @@ def baseline_correction(ds, sigma: float = 5.0, guard: float = 1.0,
 
     ## find burst
     if rbounds is None:
+
         ## Rough normalize 
         ds_r = average(ds, axis = 1, N = tN)
         rmean = np.mean(ds_r, axis = 1)
         rstd = np.std(ds_r, axis = 1)
-
+        ds_rn = ds_r
         ds_rn = ds_r - rmean[:, None]
-        ds_rn /= rstd[:, None]
+        # ds_rn /= rstd[:, None]
+
+        fig = plt.figure(figsize = (12, 7))
+        plt.figure("Rough Baseline correction")
+        plt.plot(np.arange(rmean.size), rmean, label = "channel mean")
+        plt.plot(np.arange(rstd.size), rstd, label = "Channel STD")
+        plt.xlabel("Channel", fontsize = 16)
+        plt.ylabel("[a.u]", fontsize = 16)
+        plt.legend()
+
+        plt.savefig(args.ofile + "_rough_baseline_corrections.png")
+        plt.close()
 
         
         ## find burst bounds
@@ -603,7 +637,7 @@ def plot_bline_diagnostic(ds, rbounds, chanflag, args, label = ""):
     AX = AX.flatten()
     
     ## calculate time resolution
-    dt = 1e-3 * (ds.shape[0]/336) 
+    dt = args.dt * ds.shape[0]
 
     ## ms/ or 1000 x dt -> ds time bin converter
     get_units = lambda t : int(ceil(t/dt))
@@ -638,14 +672,16 @@ def plot_bline_diagnostic(ds, rbounds, chanflag, args, label = ""):
     AX[0].set_xlim([x_crop[0], x_crop[-1]])
     AX[0].set_ylim(ylim)
 
+    ds_crop[np.isnan(ds_crop[:, 0])] = 0.0  # set to zero for visual clarity
+
     # dynspec plot
-    AX[1].imshow(ds_crop, aspect = 'auto', extent = [0, x_crop[-1], 0, 336])
-    AX[1].plot([0.2*args.baseline, 0.2*args.baseline], [0,  336], 'r--')
-    AX[1].plot([1.2*args.baseline, 1.2*args.baseline], [0, 336], 'r--')
-    AX[1].plot([x_crop[-1] - 0.2*args.baseline, x_crop[-1] - 0.2*args.baseline], [0, 336], 'r--')
-    AX[1].plot([x_crop[-1] - 1.2*args.baseline, x_crop[-1] - 1.2*args.baseline], [0, 336], 'r--')
-    AX[1].set_xlabel("Time [ms]")
-    AX[1].set_ylabel("Bandwidth [MHz]")
+    AX[1].imshow(ds_crop, aspect = 'auto', extent = [0, x_crop[-1], 0, ds.shape[0]])
+    AX[1].plot([0.2*args.baseline, 0.2*args.baseline], [0,  ds.shape[0]], 'r--')
+    AX[1].plot([1.2*args.baseline, 1.2*args.baseline], [0, ds.shape[0]], 'r--')
+    AX[1].plot([x_crop[-1] - 0.2*args.baseline, x_crop[-1] - 0.2*args.baseline], [0, ds.shape[0]], 'r--')
+    AX[1].plot([x_crop[-1] - 1.2*args.baseline, x_crop[-1] - 1.2*args.baseline], [0, ds.shape[0]], 'r--')
+    AX[1].set_xlabel("Time [ms]", fontsize = 16)
+    AX[1].set_ylabel("Channels", fontsize= 16)
 
     fig.tight_layout()
     fig.subplots_adjust(hspace = 0)
@@ -692,7 +728,7 @@ def _proc(args, pol):
 
         # channel flagging
         if S == "I":
-            chanflag, chanflag_known = flag_chan(ds, 10, 1000, args, rbounds)
+            chanflag, chanflag_known = flag_chan(ds, args.flagthresh, args.flagtN, args, rbounds)
 
         ## fold if a pulsar has been inputted
         if args.pulsar:
@@ -703,7 +739,7 @@ def _proc(args, pol):
                 ds_raw, sphase = pulse_fold(ds_raw, args.DM, args.cfreq, args.bw, args.MJD0, args.MJD1, 
                                       args.F0, args.F1, chanflag_known, sphase)
             
-        if args.bline:
+        if args.bline and not args.qbline:
 
             ## get baseline corrections
             bs_mean, bs_std, rbounds = baseline_correction(ds, args.sigma, args.guard,
@@ -728,11 +764,20 @@ def _proc(args, pol):
                         
             # re-do channel flagging with proper baseline corrections, also plot bline diagnostics
             if S == "I":
-                chanflag, _ = flag_chan(ds, 10, 1000, args, rbounds)
+                chanflag, _ = flag_chan(ds, args.flagthresh, args.flagtN, args, rbounds)
                 plot_bline_diagnostic(ds, rbounds, chanflag, args)
 
                 if args.do_chanflag:
                     plot_bline_diagnostic(ds_raw, rbounds, chanflag_known, args, "_nochanflag")
+        
+        elif args.qbline:
+
+            ## Do rough/quick baseline correction
+            bs_mean = np.mean(ds, axis = 1)
+            bs_std = np.std(ds, axis = 1)
+
+            ds -= bs_mean[:, None]
+            ds /= bs_std[:, None]
 
         
         if S == "I":

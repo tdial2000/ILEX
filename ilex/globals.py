@@ -56,7 +56,10 @@ _G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
 # dict of hyper parameters``
 _G.hp = {'verbose': False, 'plot_type': 'lines',
          'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical",
-         'dynspec_cmap':'viridis'}
+         'dynspec_cmap':'viridis', 'plot_tpad': 30.0, 'show_dynzaps': True, 'dynspec_satlvl': 0, 'dynspec_cnorm': "linear", "dynspec_cmap_alpha": 0.5,
+         'mplstyle': None}
+
+_G.dc_exclude = ['_t', '_f', '_ds', '_time', '_freq', 'ds']
 
 _G.yaml_ignore = ["zap"]
 
@@ -123,4 +126,4 @@ _G.stk_colors = {"I":'k', "Q":_G.default_colors[1], "U":_G.default_colors[2], "V
 
 ## constants
 c = 2.997924538e8       # Speed of light [m/s]
-kDM = 4.14938e3         # DM constant
+kDM = 4.14938e3         # DM constants

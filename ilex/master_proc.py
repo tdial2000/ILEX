@@ -488,31 +488,34 @@ def _normalise(stk, stk_ds, stk_list, par, err = False, zap = False):
 
     # normalise by max of stokes I
     if par['norm'] == "maxI":
-        nconst = np.max(stk['I'])
+        nconst = np.nanmax(stk['I'])
 
     for S in stk_list:
         # normalise by max of stokes S
-        if norm == "max":
+        if par['norm'] == "max":
             if zap:
                 nconst = np.nanmax(stk[S])
             else:
                 nconst = np.max(stk[S])
             stk_ds[S] /= nconst
-            stk_ds[f"{S}err"] /= nconst
+            if err:
+                stk_ds[f"{S}err"] /= nconst
 
         # normalise by abs max of stokes S
-        elif norm == "absmax":
+        elif par['norm'] == "absmax":
             if zap:
                 nconst = np.nanmax(np.abs(stk[S]))
             else:
                 nconst = np.max(np.abs(stk[S]))
             stk_ds[S] /= nconst
-            stk_ds[f"{S}err"] /= nconst
+            if err:
+                stk_ds[f"{S}err"] /= nconst
 
         # normalise by max of stokes I
-        elif norm == "maxI":
+        elif par['norm'] == "maxI":
             stk_ds[S] /= nconst
-            stk_ds[f"{S}err"] /= nconst
+            if err:
+                stk_ds[f"{S}err"] /= nconst
 
         else:
             log("Invalid method of normalisation, skipping step...", stype = "warn",
@@ -698,9 +701,8 @@ def _retrieve_LP(_t, _f, data_list, debias = False):
             _f["P"], _f["Perr"] = calc_Pdebiased(_f['Q'], _f['U'], _f['V'], _f['Ierr'], 
                                                     _f['Qerr'], _f['Uerr'], _f['Verr'])
         else:
-            _f["P"], _f["PLerr"] = calc_P(_f['Q'], _f['U'],_f['V'], _f['Qerr'], _f['Uerr'],
+            _f["P"], _f["Perr"] = calc_P(_f['Q'], _f['U'],_f['V'], _f['Qerr'], _f['Uerr'],
                                           _f['Verr'])
-
 
     return
 

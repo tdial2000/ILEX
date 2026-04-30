@@ -1,6 +1,7 @@
 import shutil, argparse, os, sys
 from ilex.globals import c  # import to get ilex_path
-from ilex.utils import load_param_file, save_param_file, dict_get
+from ilex.io import load_param_file, save_param_file
+from ilex.utils import dict_get
 
 def get_args():
     """

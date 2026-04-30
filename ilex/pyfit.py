@@ -95,7 +95,16 @@ def _dict_get(dict, keys):
     return new_dict
 
 
-
+def center_str(_str, totlen):
+    strlen = len(_str)
+    remlen = totlen - strlen
+    if remlen == 0:
+        return _str
+    elif remlen < 0:
+        return _str[:totlen-4] + "..."
+    lrem = remlen // 2
+    rrem = remlen - lrem
+    return "".ljust(lrem) + _str + "".ljust(rrem)
 
 
 def _priorUniform(p):
@@ -353,7 +362,7 @@ class _posterior:
 
     def __str__(self):
 
-        return(f"{self.val:4f}  +{self.p:4f}  -{self.m:.4f}")
+        return(f"{self.val:.4f}  +{self.p:.4f}  -{self.m:.4f}")
 
 
 
@@ -466,7 +475,7 @@ class fit:
         self.max_log_likelihood = 0.0
         self.max_log_likelihood_err = 0.0
         self.bic = 0.0
-        self.bic_err = 0.0
+        self.aic = 0.0
         self.log_bayes_factor = 0.0
         self.log_evidence = 0.0
         self.log_evidence_err = 0.0
@@ -614,7 +623,6 @@ class fit:
         # likelihood
         if "likelihood" in kwargs.keys():
             self._lh_is_instance = False
-            print(kwargs['likelihood'])
             if kwargs['likelihood'] is not None:
                 if type(kwargs['likelihood']) != type:
                     if isinstance(kwargs['likelihood'], PyfitLikelihood):
@@ -1443,24 +1451,27 @@ class fit:
         
         
         x, y, _, _ = self._proc_data()
-        print(x.size, y.size)
-        print(self.get_model(x = x)[1].size)
-        print(sigma)
-        
 
         # degrees of freedom
         self.dof = y.size - self.nfitpar
 
         # calculate chi squared and reduced chi squared
         self.chi2 = np.sum((y - self.get_model(x = x)[1])**2/(sigma**2))
-        self.rchi2 = self.chi2/self.dof
 
         # calculate errors in chi squared and reduced chi squared
-        self.chi2err = (2*self.dof)**0.5
-        self.rchi2err = (2/self.dof)**0.5
+        if self.dof > 0:
+            self.rchi2 = self.chi2/self.dof
 
-        # calculate p value
-        self.p = chi2.sf(self.chi2, self.dof)
+            self.chi2err = (2*self.dof)**0.5
+            self.rchi2err = (2/self.dof)**0.5
+
+            # calculate p value
+            self.p = chi2.sf(self.chi2, self.dof)
+        else:
+            self.chi2err = np.nan
+            self.rchi2err = np.nan
+            self.p = np.nan
+            self.rchi2 = np.nan
 
         
 
@@ -1471,7 +1482,8 @@ class fit:
         if self.method == "bayesian":
             # bayesian Information Criterion
             self.bic = self.nfitpar*np.log(y.size) - 2*self.max_log_likelihood
-            self.bic_err = 2*self.max_log_likelihood_err
+            #self.bic_err = 2*self.max_log_likelihood_err
+            self.aic = 2 * (self.nfitpar - self.max_log_likelihood)
 
         
         self._is_stats = True
@@ -1508,7 +1520,9 @@ class fit:
         print("Max Log Likelihood:".ljust(30) + 
             f"{self.max_log_likelihood:.4f}".ljust(10) + f"+/- {self.max_log_likelihood_err:.4f}")
         print("Bayes Info Criterion (BIC):".ljust(30) + 
-            f"{self.bic:.4f}".ljust(10) + f"+/- {self.bic_err:.4f}")
+            f"{self.bic:.4f}".ljust(10))
+        print("Akaike Info Criterion (AIC):".ljust(30) + 
+            f"{self.aic:.4f}".ljust(10))
         print("Bayes Factor (log10):".ljust(30) + f"{self.log_bayes_factor:.4f}")
         print("Evidence (log10):".ljust(30) + 
             f"{self.log_evidence:.4f}".ljust(10) + f"+/- {self.log_evidence_err:.4f}")
@@ -1557,8 +1571,7 @@ class fit:
             rows = 2
 
         # now plot, create axis
-        fig, AX = plt.subplots(rows, 1, figsize = (12, 10), 
-                    num = f"Figure model: {self.func.__name__}", sharex = True)
+        fig, AX = plt.subplots(rows, 1, figsize = (12, 10), sharex = True)
 
         if self.residuals:
             AX = AX.flatten()
@@ -1620,8 +1633,6 @@ class fit:
         ----------
         ax : Axes
             Axes handle to plot model on
-        **kwargs
-            Model lineplot keyword arguments
         """
 
         if not self._is_fit:
@@ -1666,32 +1677,18 @@ class fit:
         func_name = None
         if self.func is not None:
             func_name = self.func.__name__
-        pstr += f"\nFitting data to [{func_name}] using [{self.method}]\n"
-        
-        # add data info to string
-        pstr += "\nDATA\n"
-        pstr += "--------\n"
-        for d in ["x", "y", "yerr"]:
-            attr = getattr(self, d)
-            if attr is not None:
-                if hasattr(attr, "__len__"):
-                    o = list(attr.shape)
-                elif isinstance(attr, float) or isinstance(attr, int):
-                    o = attr
-            else:
-                o = None
-            pstr += f"{d}:".ljust(10) + f"{o}\n"
+        pstr += f"\n-> Fitting data to [{func_name}] using [{self.method}]\n"
         
         # priors and posteriors
-        pstr += "\nParameter".ljust(25) + "Priors".ljust(26) + "Posteriors".ljust(30) + "\n"
-        pstr += "-"*81 + "\n"
+        pstr += center_str("Param", 15) + center_str("Prior", 15) + center_str("Posterior", 45) + "\n"
+        pstr += "-"*60 + "\n"
         for key in self.keys:
             name = key
             val = self.prior[key]
             if self.static[key] is not None:
                 name += "  (static)"
                 val = self.static[key]
-            pstr += f"{name}".ljust(25) + f"{val}".ljust(26) + f"{self.posterior[key]}".ljust(30) + "\n"
+            pstr += center_str(name, 15) + center_str(str(val), 15) + center_str(f"{self.posterior[key]}", 45) + "\n"
 
         return pstr
 

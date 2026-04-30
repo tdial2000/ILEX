@@ -84,7 +84,10 @@ class weights:
 
         for key in kwargs.keys():
             if key in ["W", "x", "func", "method", "args", "norm"]:
-                weights_kwargs[key] = deepcopy(kwargs[key])
+                if kwargs[key] is None:
+                    setattr(self, key, None)
+                else:
+                    weights_kwargs[key] = deepcopy(kwargs[key])
 
         self._set(**weights_kwargs)
         
@@ -93,6 +96,8 @@ class weights:
         
         # set normalisation parameter
         self.norm = norm
+
+        # could probably ignore the 'None' condition statements (15/12/2025)
 
         # set attributes
         if W is not None:
@@ -223,7 +228,7 @@ class weights:
             elif hasattr(self.W, "__len__"):
                 return self.W.copy()
         else:
-            log("No Weights specified, returning None object", stype = "err")
+            log("No Weights specified, returning None object", stype = "warn")
             return None
         
 
@@ -241,12 +246,12 @@ class weights:
         """
 
         if self.W is None:
-            log("No weights specified, returning None object", stype = "err")
+            log("No weights specified, returning None object", stype = "warn")
             return None
 
         if self.x is None:
-            log("No x array specified for interpolation, for interpolation a weights array [W] with ", stype = "err")
-            log("array [x] of same size must be defined in the weights class before interpolation is performed.", stype = "err")
+            log("No x array specified for interpolation, for interpolation a weights array [W] with ", stype = "warn")
+            log("array [x] of same size must be defined in the weights class before interpolation is performed.", stype = "warn")
             return None
 
         # check x

@@ -46,12 +46,17 @@ hyperpar: # parameters to control general use of ILEX
   apply_tW:       True
   apply_fW:       True
   crop_units:     "physical"   
-  dynspec_cmap:   "arctic"            
+  dynspec_cmap:   "arctic"   
+  plot_tpad:      30.0
+  show_dynzaps:   true
+  dynspec_satlvl: 0
+  dynspec_cnorm:  "linear"
+  dynspec_cmap_alpha: 0.5         
+  mplstyle: null
 
 
 plots: # Plotting options
   plot_type:           "lines"
-  plotstyle_file:      null
 
   # plotting stokes data
   stk2plot:             "ILV"
@@ -78,6 +83,7 @@ fits: # for all fitting methods
   # for Time scattering fitting
   tscatt:
     npulse:     1
+    fitmode:    "abs"
     priors:     {}
     statics:    {}
     fit_params: {}

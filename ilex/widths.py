@@ -60,7 +60,7 @@ def find_optimal_sigma_width(tI, sigma: int = 5, rms_guard: float = 0.033,
     # estimate rough rms and hence rough bounds of burst
     if (peak - rms_offset - rms_width < 0) or (peak + rms_offset + rms_width > tI.size - 1):
         print("[rms_offset] and/or [rms_width] out of bounds of [tI]!! Aborting")
-        return (None)*3
+        return (None,)*3
 
     rms_lhs = tI[peak - rms_offset - rms_width : peak - rms_offset]
     rms_rhs = tI[peak + rms_offset : peak + rms_offset + rms_width]
@@ -74,7 +74,7 @@ def find_optimal_sigma_width(tI, sigma: int = 5, rms_guard: float = 0.033,
     # recalculate optimal rms
     if (peak - rms_guard - rms_width < 0) or (peak + rms_guard + rms_width > tI.size - 1):
         print("[rms_guard] and/or [rms_width] out of bounds of [tI]!! Aborting")
-        return (None)*3
+        return (None,)*3
 
     rms_lhs = tI[rough_lowerbound - rms_guard - rms_width : rough_lowerbound - rms_guard]
     rms_rhs = tI[rough_upperbound + rms_guard : rough_upperbound + rms_guard + rms_width]
@@ -188,11 +188,9 @@ def _find_min_fluence_width(tI, yfrac = 0.95):
             p = np.where(corr >= yfrac)[0]
             if p.size > 0:
                 if N == 1:
-                    print("The window offset found was 1, there may be something wrong with the data or input data is too small?")
+                    print("[ilex.widths._find_min_fluence_width] The window offset found was 1, there may be something wrong with the data or input data is too small?")
                     return N, p
                 if Nstep == 1:
-                    if p.size > 1:
-                        print("There appears to be two centroids to a minimum width.")
                     return N, p
                 if Nstep > 1:
                     N, p = find_N_length(tI, N - Nstep, Nstep // 10)
@@ -206,8 +204,16 @@ def _find_min_fluence_width(tI, yfrac = 0.95):
     N, p = find_N_length(tI, N, 100)
     print(f"Found fluence threshold at N = {N}")
 
+    if p.size > 1:
+        print("Number of starting samples for min fluence width found, taking average...")
+        print(p)
+        print(f"average: {np.mean(p)}")
+        p = int(np.mean(p))
+    else:
+        p = p[0]
+
     # find centroid of burst
-    tI_burst = tI[p[0]:p[0] + N]
+    tI_burst = tI[p:p + N]
     burst_fluence = np.sum(tI_burst)
     cumsum = np.cumsum(tI_burst)
     centroid = np.argmin(np.abs(cumsum - burst_fluence/2))
@@ -215,7 +221,7 @@ def _find_min_fluence_width(tI, yfrac = 0.95):
     # output centroid in original time series frame and LHS RHS width w.r.t centroid
     lw = centroid 
     rw = N - centroid
-    centroid += p[0]
+    centroid += p
 
     return centroid, lw, rw
 

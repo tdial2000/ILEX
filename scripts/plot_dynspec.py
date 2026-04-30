@@ -31,6 +31,21 @@ def get_args():
     return args
 
 
+
+def plot_zaps(ax, zapbool):
+
+    zaps = np.ones(zapbool.size, dtype = float) * np.nan
+    zaps[zapbool] = 0.55
+
+    xlim, ylim = ax.get_xlim(), ax.get_ylim()
+    xwidth = xlim[1] - xlim[0]
+    ax.imshow(zaps.reshape(zaps.size, 1), aspect = 'auto', cmap = "OrRd",
+                vmax = 1, vmin = 0, extent = [xlim[0], xlim[0] + 0.02 * xwidth, *ylim])
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+
+
+
 if __name__ == "__main__":
 
     args = get_args()
@@ -53,7 +68,11 @@ if __name__ == "__main__":
     ax[0].get_yaxis().set_visible(False)
     ax[0].set_xlim([0, dynspec.shape[1]])
 
+    zapbool = np.isnan(dynspec[:, 0])
+    dynspec[zapbool] = 0.0
+
     ax[1].imshow(dynspec,aspect = 'auto')
+    plot_zaps(ax[1], zapbool)
     ax[1].set_xlabel("Time Bins", fontsize = 16)
     ax[1].set_ylabel("Freq Bins", fontsize = 16)
 

@@ -20,10 +20,48 @@ from matplotlib.backend_bases import MouseButton
 import time
 from ilex.data import *
 import warnings
+from ilex.logging import printcol
 
 RAPIDKEYTHRESHOLD = 0.6
 
 
+
+def medrms_chanflag(dsI, threshold = 3.0, tN = 1000, iter = 1):
+    """
+    Flag channels in dynamic spectrum by filtering out RFI that exceeds some threshold given by
+    threshold * np.median(np.abs(np.std(I))) where np.median(np.std(I)) is subtracted from np.std(I).
+
+    Parameters
+    ----------
+    dsI : 2D np.ndarray
+        Stokes I dynamic spectrum (f,t)
+    threshold : float
+        threshold value 
+    tN : int
+        Downsampling to apply to data before coarse RFI flagging
+    iter : int
+        Number of iterations
+
+    Returns
+    -------
+    flagchans : 1D np.ndarray
+        Array of channel indicies where RFI was detected
+    
+    """
+
+    # hard code rms calculation to always be calibrated to 2 seconds.
+    flagchan = np.array([], dtype = int)
+
+    # std and median calculations
+    stdfI = np.nanstd(average(dsI, axis = 1, N = tN), axis = 1)
+    stdfIcopy = stdfI.copy()
+    for i in range(iter):
+        stdfIabs = np.abs(stdfI - np.nanmedian(stdfI))
+        flagchan_i = np.where(stdfIabs > (threshold * np.nanmedian(stdfIabs)))[0]
+        stdfI[flagchan_i] = np.nan 
+        flagchan = np.concatenate((flagchan, flagchan_i))
+
+    return flagchan
 
 class _rect:
 
@@ -174,6 +212,11 @@ class _MouseZapper:
 
         self._list_of_auto_alg = ["median", "abs"]
         self._auto_alg = "median"
+        self._list_auto_vals = {'median':[3.0, 30], 'abs':1.0}
+
+        # plotting 
+        self._cmap_saturation = {'vmin':1.0, 'vmax':1.0}
+        self._current_clim = "vmin"
 
 
         # artists
@@ -205,8 +248,13 @@ class _MouseZapper:
         print("[shift] (in zapping mode): Confirm zapping")
         print("[caps lock] (in zapping mode): Revert most recent zapping")
         print("[control] (in zapping mode): remove all zapping")
-        print("[a] (in zapping mode): Automated zapping [default = median method] (requires user input in console)")
-        print("[c]: Apply zapping and exit interactive window (this is the only way to apply zapping)\n")
+        print("[a] (in zapping mode): Automated zapping [default = median] (requires user input in console)")
+        print("[x] Change mode for automatic zapping [median, abs]")
+        print("[v] Change paramters for automatic zapping through user input in the console")
+        print("[c]: Apply zapping and exit interactive window (this is the only way to apply zapping)")
+        print("[-/=]: decrease/increase cmap [vmin, vmax], by default vmin")
+        print("['[' (left square bracket)]: Change between 'vmin' and 'vmax' when saturating clims")
+        print("[']' (right square bracket)]: Reset cmap saturation\n")
         print("NOTE: Any other way of closing the window beside pressing the [c] key will cancel any zapping!")
         print("#" + "="*100 + "#")
 
@@ -327,6 +375,13 @@ class _MouseZapper:
             self._artists['zapatch'].set(extent = [new_xlim[0], new_xlim[0] + xlim_dif * 0.02, 
                                                    *self._artists['zapatch'].get_extent()[2:]])
             self.ax.draw_artist(self._artists['zapatch'])
+
+        # update line xlims
+        if self._artists['LMline'] is not None:
+            self._artists['LMline'].set(xdata = self.ax.get_xlim())
+
+        for i in range(len(self._artists['RMlines'])):
+            self._artists['RMlines'][i].set(xdata = self.ax.get_xlim())
         
         return
 
@@ -467,18 +522,9 @@ class _MouseZapper:
                 return
             
             print("automated flagging using method: " + self._auto_alg)
-
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                zap_threshold = input("-[Input]: Value for automated Frequency zapping-\n")
-            try:
-                zap_threshold = float(zap_threshold)
-                print(f"Zapping with a value of {zap_threshold}")
-            except:
-                print(f"{zap_threshold} is not a valid floating point number!!!")
-                return
+            print(f"with following parameters: {self._list_auto_vals[self._auto_alg]}")
             
-            zaps = self._auto_flag(zap_threshold)
+            zaps = self._auto_flag()
 
             if zaps is None:
                 return
@@ -493,6 +539,29 @@ class _MouseZapper:
             
             return
         
+
+        if event.key == "v":
+            # change auto flagging parameters
+            if not self.zapmode:
+                return
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if self._auto_alg == "abs":
+                    alg_input = input("-[Input]: Provide a single decimal number for Abs channel flagging [x]-\n")
+                elif self._auto_alg == "median":
+                    alg_input = input("-[Input]: Provide comma seperated pair of values for the S/N and time downsampling used for auto channel flagging 'x, y'-\n")
+            try:
+                if self._auto_alg == "abs":
+                    alg_input = float(alg_input)
+                    self._list_auto_vals['abs'] = alg_input
+                elif self._auto_alg == "median":
+                    self._list_auto_vals['median'] = [float(alg_input.split(',')[0].strip()), int(alg_input.split(',')[1].strip())]
+
+                print(f"[{self._auto_alg}] auto zapping with values: {alg_input}")
+            except:
+                print(f"{alg_input} is not a valid!!!")
+                return
 
         if event.key == "x":
             if not self.zapmode:
@@ -527,12 +596,53 @@ class _MouseZapper:
             self.fig.canvas.draw()
 
             return
-        
+
+
+        if event.key in ['-', '=']:
+
+            cmapping = {'vmin':0, 'vmax':1}
+
+            if event.key == "-":
+                scale = 0.5
+            else:
+                scale = 2.0
+            
+            self._cmap_saturation[self._current_clim] *= scale
+            old_clims = list(self._artists['ds'].get_clim())
+            old_clims[cmapping[self._current_clim]] *= scale
+            self._artists['ds'].set_clim(old_clims) 
+
+
+            self.fig.canvas.draw()
+            return
+
+        if event.key == "[":
+
+            if self._current_clim == "vmin":
+                self._current_clim = "vmax"
+            else:
+                self._current_clim = "vmin"
+            
+            return
+
+        if event.key == "]":
+
+            old_clims = list(self._artists['ds'].get_clim())
+            old_clims[0] /= self._cmap_saturation['vmin']
+            old_clims[1] /= self._cmap_saturation['vmax']
+            self._artists['ds'].set_clim(old_clims)
+
+            self._cmap_saturation['vmin'] = 1.0
+            self._cmap_saturation['vmax'] = 1.0
+
+            self.fig.canvas.draw()
+            return
+            
         return
     
 
 
-    def _auto_flag(self, zap_threshold):
+    def _auto_flag(self):
         """
         Automated algorithm for zapping frequency channels
 
@@ -566,14 +676,11 @@ class _MouseZapper:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             if self._auto_alg == "median":
-                median = np.nanmedian(mask)
-                mask /= median
-                print(f"Median: {median:.2f}")
-                zaps = np.where((mask > zap_threshold) & (~np.isnan(mask)))[0]
+                zaps = medrms_chanflag(ds_crop, *self._list_auto_vals['median'])
 
 
             elif self._auto_alg == "abs":
-                zaps = np.where(mask > zap_threshold)[0]
+                zaps = np.where(np.abs(mask) > np.abs(self._list_auto_vals['abs']))[0]
 
         if len(zaps) < 1:
             return None
@@ -602,7 +709,8 @@ class _MouseZapper:
         self.zap_ds, self.zap_idx = self._zap_ds()
         mask = np.ones(self.zap_ds.shape[0], dtype = bool)
         mask[self.zap_idx] = False
-        self._artists['ds'].set(data = self.zap_ds, clim = (np.min(self.zap_ds[mask]), np.max(self.zap_ds[mask])))
+        self._artists['ds'].set(data = self.zap_ds, clim = (np.min(self.zap_ds[mask]) * self._cmap_saturation['vmin'], 
+                                                            np.max(self.zap_ds[mask]) * self._cmap_saturation['vmax']))
         self.ax.draw_artist(self._artists['ds'])
 
         patch_data = np.ones(self.zap_ds.shape[0]) * np.nan
@@ -631,31 +739,33 @@ class _Zoom:
         ax.callbacks.connect('ylim_changed', self.on_zoom_Y)
 
         self.ax = ax
-        self.new_X = self.ax.get_xlim()
-        self.new_Y = self.ax.get_ylim()
+        self.new_X = list(self.ax.get_xlim())
+        self.new_Y = list(self.ax.get_ylim())
+        self.old_X = list(self.ax.get_xlim())
+        self.old_Y = list(self.ax.get_ylim())
 
     ## update xlims
-    def on_zoom_X(zooms,event):
-        zooms.flag_X = True
-        zooms._update_zoom(event)
+    def on_zoom_X(self,event):
+        self.flag_X = True
+        self._update_zoom(event)
 
     ## update ylims
-    def on_zoom_Y(zooms,event):
-        zooms.flag_Y = True
-        zooms._update_zoom(event)
+    def on_zoom_Y(self,event):
+        self.flag_Y = True
+        self._update_zoom(event)
 
     ## update profile plots
-    def _update_zoom(self_zoom,event):
-        if not self_zoom.flag_X or not self_zoom.flag_Y: # only update when both x and y lims have changed
+    def _update_zoom(self,event):
+        if not self.flag_X or not self.flag_Y: # only update when both x and y lims have changed
             return
         
-        self_zoom.flag_X, self_zoom.flag_Y = False, False
+        self.flag_X, self.flag_Y = False, False
 
 
-        self_zoom.new_X = event.get_xlim()        # get x lims
-        self_zoom.new_Y = event.get_ylim()        # get y lims
+        self.new_X = event.get_xlim()        # get x lims
+        self.new_Y = event.get_ylim()        # get y lims
 
-        self_zoom.update_zoom()
+        self.update_zoom()
 
 
     def update_zoom(self):
@@ -690,7 +800,59 @@ def ZapInteractive(ds, freqs, times = None, zapchan = None):
         def update_zoom(self):
             if (self.new_X is None) or (self.new_Y is None):
                 return
+
+            self.new_X = list(self.new_X)
+            self.new_Y = list(self.new_Y)
+
+            # self.new_X[0] = mouse_zap.xlim[0] if self.new_X[0] < mouse_zap.xlim[0] else self.new_X[0]
+            # self.new_X[1] = mouse_zap.xlim[1] if self.new_X[1] > mouse_zap.xlim[1] else self.new_X[1]
+            # self.new_Y[0] = freqs[-1] if self.new_Y[0] < freqs[-1] else self.new_Y[0]
+            # self.new_Y[1] = freqs[0] if self.new_Y[1] > freqs[0] else self.new_Y[1]
+
+            # if self.new_X[0] < mouse_zap.xlim[0]:
+            #     dif = mouse_zap.xlim[0] - self.new_X[0]
+            #     self.new_X[0] += dif 
+            #     self.new_X[1] += dif
+            # if self.new_X[1] > mouse_zap.xlim[1]:
+            #     dif = self.new_X[1] - mouse_zap.xlim[1]
+            #     self.new_X[0] -= dif
+            #     self.new_X[1] -= dif
+            # if self.new_Y[0] < freqs[-1]:
+            #     dif = freqs[-1] - self.new_Y[0]
+            #     self.new_Y[0] += dif
+            #     self.new_Y[1] += dif
+            # if self.new_Y[1] > freqs[0]:
+            #     dif = self.new_Y[1] - freqs[0]
+            #     self.new_Y[0] -= dif
+            #     self.new_Y[1] -= dif
+
+            # self.new_X[0] = mouse_zap.xlim[0] if self.new_X[0] < mouse_zap.xlim[0] else self.new_X[0]
+            # self.new_X[1] = mouse_zap.xlim[1] if self.new_X[1] > mouse_zap.xlim[1] else self.new_X[1]
+            # self.new_Y[0] = freqs[-1] if self.new_Y[0] < freqs[-1] else self.new_Y[0]
+            # self.new_Y[1] = freqs[0] if self.new_Y[1] > freqs[0] else self.new_Y[1]
+
+            # if self.new_X[0] < mouse_zap.xlim[0]:
+            # revert_zoom_X = False
+            # revert_zoom_Y = False
+            # if (self.new_X[0] < mouse_zap.xlim[0]) or (self.new_X[1] > mouse_zap.xlim[1]):
+            #     revert_zoom_X = True
+            # if (self.new_Y[0] < freqs[-1]) or (self.new_Y[1] > freqs[0]):
+            #     revert_zoom_Y = True
+
+            # disconnect y lim change event temporarily
+            # cid_list = list(ax_ds.callbacks.callbacks['ylim_changed'].keys())
+            # for cid in cid_list:
+            #     ax_ds.callbacks.disconnect(cid)
+
+            # ax_ds.set_xlim(self.new_X)
+            # ax_ds.set_ylim(self.new_Y)
+            # # ax_fs.set_ylim(self.new_Y)
             
+            # # self.old_X = self.new_X.copy()
+            # # self.old_Y = self.new_Y.copy()
+
+            # ax_ds.callbacks.connect('ylim_changed', self.on_zoom_Y)
+
             Xphase = list(self.new_X)
             Yphase = [0.0, 1.0]
             bw = freqs[0] - freqs[-1]            
@@ -700,26 +862,35 @@ def ZapInteractive(ds, freqs, times = None, zapchan = None):
                 Xphase[i] = (Xphase[i] - mouse_zap.xlim[0])/tw
             Yphase = Yphase[::-1]
 
-            
+            # # # set bounds
+            Xphase[0] = 0.0 if Xphase[0] < 0 else Xphase[0]
+            Xphase[1] = 1.0 if Xphase[1] > 1.0 else Xphase[1]
+            Yphase[0] = 0.0 if Yphase[0] < 0 else Yphase[0]
+            Yphase[1] = 1.0 if Yphase[1] > 1.0 else Yphase[1]
+
             # with new phases, 
             zap_ds_crop = pslice(mouse_zap.zap_ds, *Xphase, axis = 1)
             zap_ds_crop[mouse_zap.zap_idx] = np.nan
-            ts_data = np.nanmean(zap_ds_crop, axis = 0)
-
             zap_ds_crop = pslice(zap_ds_crop, *Yphase, axis = 0)
+            ts_data = np.nanmean(zap_ds_crop, axis = 0)
             fs_data = np.mean(zap_ds_crop, axis = 1)
 
-            ts.set_xdata(pslice(np.linspace(*mouse_zap.xlim, mouse_zap.zap_ds.shape[1]), *Xphase))
-            ts.set_ydata(ts_data)
-            # ax_ts.set_xlim(self.new_X)
-            ts_dif = np.nanmax(ts_data) - np.nanmin(ts_data)
-            ax_ts.set_ylim([np.nanmin(ts_data) - 0.05*ts_dif, np.nanmax(ts_data) + 0.05*ts_dif])
+            printcol(Xphase, "cyan")
+            printcol(Yphase, "cyan")
 
-            fs.set_data(fs_data, pslice(freqs, *Yphase))
-            # ax_fs.set_ylim(self.new_Y)
-            fs_dif = np.nanmax(fs_data) - np.nanmin(fs_data)
-            ax_fs.set_xlim([np.nanmin(fs_data) - 0.05*fs_dif, np.nanmax(fs_data) + 0.05*fs_dif])
+            if ts_data.size > 0:
+                ts.set_xdata(pslice(np.linspace(*mouse_zap.xlim, mouse_zap.zap_ds.shape[1]), *Xphase))
+                ts.set_ydata(ts_data)
+                # ax_ts.set_xlim(self.new_X)
+                ts_dif = np.nanmax(ts_data) - np.nanmin(ts_data)
+                ax_ts.set_ylim([np.nanmin(ts_data) - 0.05*ts_dif, np.nanmax(ts_data) + 0.05*ts_dif])
 
+            if fs_data.size > 0:
+                fs.set_xdata(fs_data)
+                fs.set_ydata(pslice(freqs, *Yphase))
+                # ax_fs.set_ylim(self.new_Y)
+                fs_dif = np.nanmax(fs_data) - np.nanmin(fs_data)
+                ax_fs.set_xlim([np.nanmin(fs_data) - 0.05*fs_dif, np.nanmax(fs_data) + 0.05*fs_dif])
             fig.canvas.draw()
     # addtional event functions for handeling time/freq series data
     # global variables
@@ -759,7 +930,6 @@ def ZapInteractive(ds, freqs, times = None, zapchan = None):
                                             color = line.get_color(), linestyle = line.get_linestyle(),
                                             linewidth = line.get_linewidth(), label = line_label)
                 freq_line_labels += [line_label]
-                # freq_lines[line_label].set_xdata(list(ax_fs.get_xlim()))
             
             else:
                 if freq_lines[line_label].get_ydata()[0] != line.get_ydata()[0]:
@@ -777,6 +947,13 @@ def ZapInteractive(ds, freqs, times = None, zapchan = None):
             if freq_line_labels[i] not in ax_ds_lines:
                 freq_lines[freq_line_labels[i]].remove()
                 del freq_lines[freq_line_labels[i]]
+
+        cid_list = list(fig.canvas.callbacks.callbacks['draw_event'].keys())
+        for cid in cid_list:
+            fig.canvas.callbacks.disconnect(cid)
+        
+        fig.canvas.draw()
+        fig.canvas.callbacks.connect("draw_event", _draw_freq_lines)
 
 
     

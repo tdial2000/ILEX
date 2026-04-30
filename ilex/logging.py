@@ -274,3 +274,8 @@ def strcol(string: str, col: str):
     """
 
     return TERMINAL_COLORS[col] + string + TERMINAL_COLORS['None']
+
+
+def printcol(string, col):
+
+    print(strcol(str(string), col))

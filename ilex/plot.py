@@ -15,6 +15,7 @@
 ##===============================================##
 # imports
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -96,9 +97,72 @@ def _data_from_dict(dic, keys):
 
 
 
+
+class CmapExpNorm(mcolors.Normalize):
+    def __init__(self, vmin = None, vmax = None, clip = False):
+        super().__init__(vmin = vmin, vmax = vmax, clip = clip)
+        if self.vmin is None or self.vmax is None:
+            raise ValueError("vmin and vmax must be specified for CmapExpNorm")
+
+        self.exp_vmin = np.exp(self.vmin)
+        self.exp_vmax = np.exp(self.vmax)
+        self.exp_range = self.exp_vmax - self.exp_vmin
+
+    def __call__(self, value, clip = None):
+        if clip is None:
+            clip = self.clip
+
+        # Convert value to numpy array for vectorized operations
+        value = np.asarray(value)
+
+        # Apply clipping if enabled
+        if clip:
+            value = np.clip(value, self.vmin, self.vmax)
+
+        exp_value = np.exp(value)
+
+        # normalize
+        norm_value = (exp_value - self.exp_vmin) / self.exp_range
+
+        return norm_value
+
+
+class CmapTranslatedPowerNorm(mcolors.Normalize):
+    def __init__(self, gamma = 1.0, vmin = None, vmax = None, clip = False):
+        super().__init__(vmin = vmin, vmax = vmax, clip = clip)
+        if self.vmin is None or self.vmax is None:
+            raise ValueError("vmin and vmax must be specified for CmapTranslatedPowerNorm")
+
+        self.gamma = gamma 
+        self.Tpower_vmin = 0.0
+        self.Tpower_vmax = (self.vmax - self.vmin) ** self.gamma 
+        self.Tpower_range = self.Tpower_vmax 
+
+    def __call__(self, value, clip = None):
+        if clip is None:
+            clip = self.clip
+
+        # Convert value to numpy array for vectorized operations
+        value = np.asarray(value)
+
+        # Apply clipping if enabled
+        if clip:
+            value = np.clip(value, self.vmin, self.vmax)
+
+        Tpower_value = (value - self.vmin) ** self.gamma
+
+        # Normalize
+        norm_value = (Tpower_value) / self.Tpower_range
+
+        return norm_value
+
+
+
+
+
 # wrapper for better function definition
-def plot(x, y, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5, **kwargs):
-    _PLOT(x = x, y = y, yerr = yerr, ax = ax, plot_type = plot_type, color = color,
+def plot(x, y, xerr = None, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5, **kwargs):
+    _PLOT(x = x, y = y, xerr = xerr, yerr = yerr, ax = ax, plot_type = plot_type, color = color,
             alpha = alpha, **kwargs)
     return
 
@@ -108,24 +172,24 @@ def plot(x, y, yerr = None, ax = None, plot_type = "lines", color = None, alpha 
 
 
 
-def _PLOT(x, y, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5,
+def _PLOT(x, y, xerr = None, yerr = None, ax = None, plot_type = "lines", color = None, alpha = 0.5,
             **kwargs):
     """
     General plotting function
     """
 
     if plot_type == "scatter":
-        _PLOT_SCATTER(x = x, y = y, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
+        _PLOT_SCATTER(x = x, y = y, xerr = xerr, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
 
     elif plot_type == "lines":
-        _PLOT_LINES(x = x, y = y, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
+        _PLOT_LINES(x = x, y = y, xerr = xerr, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
 
     else:
         print("Plot err style undefined/unsupported. ")
     
     return
 
-def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
+def _PLOT_SCATTER(x, y, xerr = None, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
     """
     Plot lines
     """
@@ -155,26 +219,26 @@ def _PLOT_SCATTER(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwa
     if ax is not None:
         sc = ax.scatter(x, y, c = color, facecolors = color, **plot_pars['scatter'])
 
-        if yerr is not None:
+        if (yerr is not None) or (xerr is not None):
             if color is None:
                 color = sc.get_facecolors()[0]
-            ax.errorbar(x = x, y = y, yerr = yerr, ecolor = color, 
+            ax.errorbar(x = x, y = y, yerr = yerr, xerr = xerr, ecolor = color, 
                     alpha = alpha, markerfacecolor = color,
                          **plot_pars['errorbar'])
 
     else:
         sc = plt.scatter(x = x, y = y, c = color, facecolors = color, **plot_pars['scatter'])
 
-        if yerr is not None:
+        if (yerr is not None) or (xerr is not None):
             if color is None:
                 color = sc.get_facecolors()[0]
-            plt.errorbar(x, y, yerr = yerr, ecolor = color,
+            plt.errorbar(x, y, yerr = yerr, xerr = xerr, ecolor = color,
                     alpha = alpha, markerfacecolor = color, **plot_pars['errorbar'])
 
     return
 
 
-def _PLOT_LINES(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
+def _PLOT_LINES(x, y, xerr = None, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
     """
     Plot lines
     """
@@ -192,23 +256,33 @@ def _PLOT_LINES(x, y, yerr = None, ax = None, color = None, alpha = 0.5, **kwarg
     if ax is not None:
         ln, = ax.plot(x, y, color = color, **plot_pars['plot'])
 
-        if yerr is not None:
+        if (yerr is not None) and (xerr is None):
             ax.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
                         edgecolor = None)
+        elif (yerr is None) and (xerr is not None):
+            ax.fill_betweenx(y, x-xerr, x+xerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None)
+        elif (xerr is not None) and (yerr is not None):
+            ValueError("ilexplotting: Cannot use plot_type = lines with both xerr and yerr!")
 
     else:
         ln, = plt.plot(x, y, color = color, **plot_pars['plot'])
 
-        if yerr is not None:
+        if (yerr is not None) and (xerr is None):
             plt.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
                         edgecolor = None)
+        elif (yerr is None) and (xerr is not None):
+            plt.fill_betweenx(y, x-xerr, x+xerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None)
+        elif (xerr is not None) and (yerr is not None):
+            ValueError("ilexplotting: Cannot use plot_type = lines with both xerr and yerr!")
     
     return
 
 
 
 
-def plot_dynspec(ds, ax = None, **kwargs):
+def plot_dynspec(ds, ax = None, showzaps = False, **kwargs):
     """
     Plot dynamic spectrum
 
@@ -218,9 +292,9 @@ def plot_dynspec(ds, ax = None, **kwargs):
         dynamic spectrum
     ax : axes, optional
         axes to plot dynspec, by default None
+    showzaps : bool
+        Show channel zapping as patches on side of axes
     """
-
-    ds[np.isnan(ds[:,0])] = 0
 
     properties = get_dynspec_plot_properties()
 
@@ -236,12 +310,60 @@ def plot_dynspec(ds, ax = None, **kwargs):
         else:
             print("Colorbar not supported, either must be a known matplotlib colorbar or [artic] from cmasher")
             del properties['cmap']
+    
+    if showzaps:
+        # get zapped chans
+        zaps = np.ones(ds[:, 0].size, dtype = float) * np.nan
+        zaps[np.isnan(ds[:, 0])] = 0.55
+         
+    ds[np.isnan(ds[:,0])] = 0
+
+    properties['vmin'] = np.nanmin(ds)
+    properties['vmax'] = np.nanmax(ds)
+
+    if "satlvl" in properties.keys():
+        if properties["satlvl"]:
+            properties['vmin'] = np.nanmin(ds) * 2**properties['satlvl']
+            properties['vmax'] = np.nanmax(ds) * 2**properties['satlvl']
+        del properties['satlvl']
+
+    if "cnorm" in properties.keys():
+        if properties["cnorm"] == "linear":
+            properties['norm'] = mcolors.Normalize(vmin = properties['vmin'], vmax = properties['vmax'],
+                                            clip = True)
+        elif properties["cnorm"] == "power":
+            properties['norm'] = CmapTranslatedPowerNorm(gamma = properties['cmap_alpha'], vmin = np.nanmin(ds),
+                                            vmax = properties['vmax'], clip = True)
+        elif properties["cnorm"] == "exp":
+            properties['norm'] = CmapExpNorm(vmin = properties['vmin'], vmax = properties['vmax'])
+
+        else:
+            print(f"cnorm: {properties['cnorm']} not a valid color norm method!")
+        
+        del properties["cnorm"]
+    
+    if "norm" in properties.keys():
+        del properties['vmin']
+        del properties['vmax']
+
+    # remove unnesesary properties
+    if "cmap_alpha" in properties.keys():
+        del properties['cmap_alpha']
 
     
     if ax is not None:
         ax.imshow(ds, **properties)
     else:
         plt.imshow(ds, **properties)
+        ax = plt.gca()
+    
+    if showzaps:
+        xlim, ylim = ax.get_xlim(), ax.get_ylim()
+        xwidth = xlim[1] - xlim[0]
+        ax.imshow(zaps.reshape(zaps.size, 1), aspect = 'auto', cmap = "OrRd",
+                    vmax = 1, vmin = 0, extent = [xlim[0], xlim[0] + 0.02 * xwidth, *ylim])
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
     
 
     return
@@ -255,7 +377,7 @@ def plot_dynspec(ds, ax = None, **kwargs):
 
 
 
-def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
+def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter", showzaps = False):
     """
     Plot data
 
@@ -272,6 +394,8 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
         axes handle, by default None
     plot_type : str, optional
         type of plotting, by default "scatter"
+    showzaps : bool, optional
+        show zapped channels as patch region on dynamic spectrum
 
     Returns
     -------
@@ -325,28 +449,28 @@ def plot_data(dat, typ = "dsI", ax = None, plot_type = "scatter"):
     # utility functions
     def plot_freq(x, y):
         ax.plot(x, y, 'k')
-        ax.set(xlabel = fname, ylabel = "Flux Density")
+        ax.set(xlabel = fname, ylabel = "Flux [a.u]")
 
 
     # check type 
     if typ[0:2] == "ds":
         # plot dynspec
-        plot_dynspec(pdat[typ], ax = ax, aspect = 'auto', extent = [*tlim, *flim])
+        plot_dynspec(pdat[typ], ax = ax, aspect = 'auto', extent = [*tlim, *flim], showzaps=showzaps)
         # ax.imshow(pdat[typ], aspect = 'auto', )
         ax.set(xlabel = tname, ylabel = fname)
     
     elif typ[0] == "t":
         # scrunch in freq
         tx = np.linspace(*tscat_lim, pdat[typ].size)
-        ax.set(xlabel = tname, ylabel = "Flux Density (arb.)")
-        _PLOT(tx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
+        ax.set(xlabel = tname, ylabel = "Flux [a.u]")
+        _PLOT(x = tx, y = pdat[typ], yerr = pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)
 
     elif typ[0] == "f":
         # scrunch in time
         fx = np.linspace(*fscat_lim, pdat[typ].size)[::-1]
-        ax.set(xlabel = fname, ylabel = "Flux Density (arb.)")
-        _PLOT(fx, pdat[typ], pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
+        ax.set(xlabel = fname, ylabel = "Flux [a.u]")
+        _PLOT(x = fx, y = pdat[typ], yerr = pdat[f"{typ}err"], ax = ax, color = 'k', alpha = 0.5,
                         plot_type = plot_type)
 
     else:

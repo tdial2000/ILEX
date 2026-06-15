@@ -34,9 +34,9 @@ from .io import ilexIO, load_data, save_data
 from .data import *
 
 ## import FRB stats ##
-from .fitting import (fit_RMquad, fit_RMsynth, RM_QUfit, lorentz,
+from .fitting import (fit_RMquad, fit_RMsynth, RM_QUfit, lorentz, lorentz_yshifted,
                      make_scatt_pulse_profile_func, tscattLikelihood ,scatt_pulse_profile,
-                     scatt_pulse_profile_relative)
+                     scatt_pulse_profile_relative, burnslaw)
 
 ## import FRB params ##
 from .par import FRB_params, FRB_metaparams
@@ -282,6 +282,7 @@ class FRB:
         self.dynspec_cnorm = "linear"
         self.dynspec_cmap_alpha = 0.5
         self.mplstyle = None
+        self.dynspec_interp = 'none'
 
         # IO 
         self.ilexIO = ilexIO(frb = self)
@@ -351,6 +352,17 @@ class FRB:
         self._dynspec_cmap_alpha = cmap_alpha
 
         set_dynspec_plot_properties(cmap_alpha = cmap_alpha)
+
+    @property 
+    def dynspec_interp(self):
+        return self._dynspec_interp
+
+    @dynspec_interp.setter
+    def dynspec_interp(self, interp):
+        
+        self._dynspec_interp = interp
+
+        set_dynspec_plot_properties(interpolation = interp)
 
     @property
     def mplstyle(self):
@@ -2020,6 +2032,7 @@ class FRB:
         pdat = self.get_data(data_list = data, get = True, stk_debias = stk_debias, 
                                 stk_ratio = stk_ratio, stk_sigma = stk_sigma,
                                 **kwargs)
+
         if not self._isdata():
             return None
 
@@ -2046,7 +2059,7 @@ class FRB:
     
 
     def plot_data(self, data = ['tI', 'dsI'], layout = "vertical", stk_debias = False, stk_ratio = False, 
-                        stk_sigma = None, plot_weights = False, plot_labels = True, figure_scale = (1.5, 1.5), filename = None, **kwargs):
+                        stk_sigma = None, plot_weights = False, plot_labels = True, figsize = None, filename = None, **kwargs):
         """
         Master function for ploting basic Stokes I, Q, U, V, L and P products.
         The ''fig'', ''ax'' instances can be returned in-case further alterations to the plot are nessessary.
@@ -2285,35 +2298,46 @@ class FRB:
                     stk[key] = fstk[key].copy()
         del fstk
 
+        update_figsize = False
+        if figsize is None:
+            update_figsize = True
+
+
 
         # update additional figure paramters including figsize according to data products
         if flags['ds'] > 0:
             n = flags['ds'] - 1
             # assume vertical first
-            figsize = [ds_sizes[n], (n + 1)*ds_sizes[n]]
+            if update_figsize:
+                figsize = [ds_sizes[n], (n + 1)*ds_sizes[n]]
             width_ratios = [ds_sizes[n]]
             height_ratios = [ds_sizes[n]] * (n + 1)
             
             if layout == "horizontal":
-                figsize = figsize[::-1]
+                if update_figsize:
+                    figsize = figsize[::-1]
                 width_ratios, height_ratios = height_ratios.copy(), width_ratios.copy()            
                 
             if flags['t']:
                 height_ratios += [tf_sizes[n]]
-                figsize[1] += tf_sizes[n]
+                if update_figsize:
+                    figsize[1] += tf_sizes[n]
             if flags['f']:
                 width_ratios += [tf_sizes[n]]
-                figsize[0] += tf_sizes[n]
+                if update_figsize:
+                    figsize[0] += tf_sizes[n]
         
         else:
             tfnum = int(flags['t'] + flags['f'])
-            figsize = [10, tfnum * 5]
+            if update_figsize:
+                figsize = [10, tfnum * 5]
             width_ratios = [1]
             height_ratios = [1] * tfnum
 
 
+
         # create figure
-        fig, ax = plt.subplot_mosaic(figlayout, figsize = (figsize[0] * figure_scale[0], figsize[1] * figure_scale[1]), 
+        fig, ax = plt.subplot_mosaic(figlayout, figsize = figsize, 
                         gridspec_kw = {'width_ratios':width_ratios, 'height_ratios':height_ratios[::-1]})
 
         # axes sharing
@@ -2526,7 +2550,7 @@ class FRB:
 
 
 
-    def get_PA(self, Ldebias = 0.0, rad2deg = True, **kwargs):
+    def get_PA(self, Ldebias = 0.0, rad2deg = False, **kwargs):
         """
         Get PAs for FRB crop in time
 
@@ -2561,7 +2585,7 @@ class FRB:
         data = self.get_data(['tI', 'tQ', 'tU'], get = True, **kwargs)
 
         Ldebias_flag = False
-        if (Ldebias_flag > 0.0) and self._iserr():
+        if (Ldebias > 0.0) and self._iserr():
             Ldebias_flag = True
         
         # Get PAs
@@ -2915,10 +2939,12 @@ class FRB:
 
 
     ## [ PLOT LORENTZ OF CROP ] ##
-    def fit_scintband(self, method = "bayesian",priors: dict = None, statics: dict = None, 
-                     fit_params: dict = None, redo = False, filename: str = None, n: int = None, **kwargs):
+    def fit_scintband(self, method = "bayesian", priors: dict = None, statics: dict = None, 
+                     fit_params: dict = None, redo = False, filename: str = None, n: int = None, 
+                     intrinsic_removal: str = None, maxlag: float = None, **kwargs):
         """
-        Fit for, Find and plot Scintillation bandwidth in FRB
+        Fit for, Find and plot Scintillation bandwidth in FRB. Optionally, normalize/subtract the intrinsic fitted burst structure
+        to retrieve only the scintillation features.
 
         Parameters
         ----------
@@ -2936,8 +2962,15 @@ class FRB:
             if True, will redo fitting in the case that results are cached, this is mainly for BILBY fitting, default is False
         filename : str, optional
             Save figure to file, by default None
+        intrinsic_removal : str, optional
+            Method for removing intrinsic broad-band burst structures from spectra, by default None \n
+            [None, 'none'] -> No removal \n
+            ['subtract'] -> Subtract off the fitted broadband burst features from the spectra \n
+            ['normalize'] -> Normalize spectra by the broaband fitted burst (divide) 
+        maxlag : float, optional
+            Maximum frequency [MHz] lag to fit for scintillation bandwidth, by default None i.e. full freq lag range
         n : float, optional
-            Polynomial order, by default None
+            Polynomial order, by default None, if not given then the intrinsic broad-band features will not be removed from the spectra
 
         Returns
         -------
@@ -2956,9 +2989,24 @@ class FRB:
 
         # init pars
         self._load_new_params(**kwargs)
-        
+
+        if intrinsic_removal is None:
+            intrinsic_removal = 'none'
+        if intrinsic_removal not in ['none', 'subtract', 'normalize']:
+            log(f"{intrinsic_removal} must be one of the following: ['none', 'subtract', 'normalize']", stype = 'err')
+            return None
+
+        def remove_intrinsic(I, method, n):
+
+            if method == 'none':
+                return I, None
+            if method == 'subtract':
+                return residuals(I, n = n)
+            if method == 'normalize':
+                return mean_normalize(I, n = n)
 
 
+            
         ##====================##
         ##     do fitting     ##
         ##====================##
@@ -2978,11 +3026,15 @@ class FRB:
         
         # caculate acf of residuals
         if n is not None:
-            y, yfit = residuals(self._f['I'], n = n)
+            y, yfit = remove_intrinsic(self._f['I'], 
+                            method = intrinsic_removal, n = n)
             yrms = sumfunc(y**2)
         else:
             y = self._f['I']
             yrms = None
+
+        # set nans to zero
+        
         y = acf(y)
 
         # in case zapping is involved
@@ -2992,10 +3044,13 @@ class FRB:
         x = np.linspace(self.this_par.df, self.this_par.bw - self.this_par.df,
                          y.size)
 
+        # maxlag
+        if maxlag is not None:
+            mask[np.abs(x) > maxlag] = True
 
         # create instance of fitting
         yerr = None
-        p = fit(x = x[~mask], y = y[~mask], yerr = None, func = lorentz, prior = priors,
+        p = fit(x = x[~mask], y = y[~mask], yerr = None, func = lorentz_yshifted, prior = priors,
                 static = statics, fit_keywords = fit_params, method = method,
                 residuals = self.residuals, plotPosterior = self.plotPosterior)
 
@@ -3030,7 +3085,7 @@ class FRB:
         if self.save_plots or self.show_plots:    
 
             if n is not None: 
-                plt.figure(figsize = (10,10))
+                plt.figure(figsize = (8, 6))
                 plt.plot(self._freq, self._f['I'], 'k', label = "STOKES I spectra")
                 plt.plot(self._freq, yfit(np.arange(self._f['I'].size)), 'r--', label = "STOKES I fit")
                 plt.xlabel("Freq [MHz]")
@@ -3048,6 +3103,11 @@ class FRB:
                 
 
             fig = p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", show = False)
+
+            if maxlag is not None:
+                if maxlag < np.max(x):
+                    for a in fig.get_axes():
+                        a.set_xlim([0, maxlag])
 
             if self.save_plots:
                 if filename is None:
@@ -3069,7 +3129,205 @@ class FRB:
 
 
 
+## [ PLOT LORENTZ OF CROP ] ##
+    def fit_scintband2(self, method = "bayesian", priors: dict = None, statics: dict = None, 
+                     fit_params: dict = None, redo = False, filename: str = None, n: int = None, 
+                     intrinsic_removal: str = None, maxlag: float = None, **kwargs):
+        """
+        Fit for, Find and plot Scintillation bandwidth in FRB. Optionally, normalize/subtract the intrinsic fitted burst structure
+        to retrieve only the scintillation features.
 
+        Parameters
+        ----------
+        method : str
+            method for fitting \n
+            [bayesian] - Use Bilby bayesian Statistics \n
+            [least squares] - Use Scipy.Curve_fit least squares 
+        priors : dict, optional
+            Priors for sampling, by default None
+        statics : dict, optional
+            priors to keep constant, by default None
+        fit_params : dict, optional
+            extra arguments for Bilby.run_sampler function, by default None
+        redo : bool, optional
+            if True, will redo fitting in the case that results are cached, this is mainly for BILBY fitting, default is False
+        filename : str, optional
+            Save figure to file, by default None
+        intrinsic_removal : str, optional
+            Method for removing intrinsic broad-band burst structures from spectra, by default None \n
+            [None, 'none'] -> No removal \n
+            ['subtract'] -> Subtract off the fitted broadband burst features from the spectra \n
+            ['normalize'] -> Normalize spectra by the broaband fitted burst (divide) 
+        maxlag : float, optional
+            Maximum frequency [MHz] lag to fit for scintillation bandwidth, by default None i.e. full freq lag range
+        n : float, optional
+            Polynomial order, by default None, if not given then the intrinsic broad-band features will not be removed from the spectra
+
+        Returns
+        -------
+        p: pyfit.fit
+            pyfit class structure
+        
+        """
+        
+        log_title(f"Fitting for Scintillation bandwidth using [{method}] method.", col = "lblue")
+        ##====================##
+        ##       get par      ##
+        ##====================##
+
+        # initilise dicts
+        priors, statics, fit_params = dict_init(priors, statics, fit_params)
+
+        # init pars
+        self._load_new_params(**kwargs)
+
+        if intrinsic_removal is None:
+            intrinsic_removal = 'none'
+        if intrinsic_removal not in ['none', 'subtract', 'normalize']:
+            log(f"{intrinsic_removal} must be one of the following: ['none', 'subtract', 'normalize']", stype = 'err')
+            return None
+
+        def remove_intrinsic(I, method, n):
+
+            if method == 'none':
+                return I, None
+            if method == 'subtract':
+                return residuals(I, n = n)
+            if method == 'normalize':
+                return mean_normalize(I, n = n)
+
+
+            
+        ##====================##
+        ##     do fitting     ##
+        ##====================##
+
+        # get data crop and spectrum
+        self.get_data("fI", **kwargs)
+        if not self._isdata():
+            return None
+
+        
+        # in the case channel zapping has been performed, first calc residuals of non.nan values
+        # then convert nans to zeros for acf.
+        if self.zap:
+            sumfunc = np.nansum
+        else:
+            sumfunc = np.sum
+        
+        # caculate acf of residuals
+        if n is not None:
+            y, yfit = remove_intrinsic(self._f['I'], 
+                            method = intrinsic_removal, n = n)
+            yrms = sumfunc(y**2)
+        else:
+            y = self._f['I']
+            yrms = None
+
+        # set nans to zero
+        
+        y = acf(y, outs = 'all')
+
+        # in case zapping is involved
+        mask = np.isnan(y)
+        mask[mask.size//2] = True
+
+        # lags
+        x = np.linspace(-self.this_par.bw + self.this_par.df, self.this_par.bw - self.this_par.df,
+                         y.size)
+
+        # maxlag
+        if maxlag is not None:
+            mask[np.abs(x) > maxlag] = True
+
+        # create instance of fitting
+        yerr = None
+        p = fit(x = x[~mask], y = y[~mask], yerr = None, func = lorentz_yshifted, prior = priors,
+                static = statics, fit_keywords = fit_params, method = method,
+                residuals = self.residuals, plotPosterior = self.plotPosterior)
+        p.set_plot_vars(plot_data_kwargs = {'alpha':0.5})
+
+        # fit
+        p.fit(redo = redo)
+
+        # calculate modulation index
+        # see (Macquart. j. P. et al, 2019) - [The spectral Properties of the bright FRB population]
+        m = p.posterior['a'].val**0.5
+
+        #  using error propogation and quick calculus to obtain error
+        temp_err = (abs(p.posterior['a'].p) + abs(p.posterior['a'].m))/2 
+        err = 0.5*temp_err/p.posterior['a'].val
+
+        p.set_posterior('m', m, err, err)
+
+        # set to fitted params
+        self.fitted_params['scintband'] = p.get_posteriors()
+        
+        if self.verbose:
+            p.stats()
+        
+
+            print(f"RMS in poly-n = {n} fitting (sum in square of residuals):")
+        print(p)
+
+
+
+        ##===================##
+        ##   do plotting     ##
+        ##===================##  
+        if self.save_plots or self.show_plots:    
+
+            if (n is not None) and (intrinsic_removal != 'none'): 
+                plt.figure(figsize = (8, 6))
+                plt.plot(self._freq, self._f['I'], 'k', label = "STOKES I spectra")
+                plt.plot(self._freq, yfit(np.arange(self._f['I'].size)), 'r--', label = "STOKES I fit")
+                plt.xlabel("Freq [MHz]")
+                plt.ylabel("Flux (arb.)")
+                plt.title(f"polyfit, n = {n}")
+                plt.legend()
+
+                if self.save_plots:
+                    if filename is None:
+                        filename_s = f"{self.par.name}_fit_scintband_broad_poly_model.png"
+                    else:
+                        filename_s = filename + "_broad_poly_model.png"
+                    
+                    plt.savefig(filename_s)
+                
+
+            fig = p.plot(xlabel = "Freq [MHz]", ylabel = "Norm acf", show = False)
+            xnans, ynans = x.copy(), y.copy()
+            xnans[mask] = np.nan
+            ynans[mask] = np.nan
+            axs = fig.get_axes()
+            if self.residuals:
+                axs[1].plot(xnans, ynans - p.get_model(xnans)[1], c = 'k', alpha = 0.5, zorder = 0)
+                axs[1].plot(x, y - p.get_model(x)[1], c = [0.6,0.6,0.6], alpha = 0.7, zorder = 0)
+            axs[0].plot(xnans, ynans, c = 'k', alpha = 0.5, zorder = 0)
+            axs[0].plot(x, y, c = [0.6,0.6,0.6], alpha = 0.7, zorder = 0)
+
+            if maxlag is not None:
+                if maxlag < np.max(x):
+                    for a in fig.get_axes():
+                        a.set_xlim([-maxlag, maxlag])
+
+            if self.save_plots:
+                if filename is None:
+                    filename_s= f"{self.par.name}_fit_scintband.png"
+                else:
+                    filename_s = filename + ".png"
+                
+                plt.savefig(filename_s)
+
+
+            if self.show_plots:
+                plt.show()
+
+
+        # update instance par
+        self._save_new_params()
+
+        return p
 
 
 
@@ -3226,6 +3484,105 @@ class FRB:
         self._save_new_params()
 
         return p
+
+
+
+
+
+
+    def fit_depol(self, modified: bool = True, sigrm_max: float = 100.0, redo: bool = False,
+                    fit_params: dict = None, filename: str = None, stk_sigma: float = 3.0,
+                    stk_debias: bool = True, **kwargs):
+        """
+        Fit sigma_rm and p using either the modified or un-modified burns law for spectral
+        depolarisation.
+
+        parameters
+        ----------
+        modified : bool
+            Use modified burns law (fit for sigma_rm and p). If set to False, the priors for p are set to [0.999, 1.0], by default true
+        sigrm_max : float
+            Maximum sigma_rm value to fit for, by default 100.0, 0.0 is the minimum. 
+        redo : bool
+            Reset fitting (remove cached files), by default false
+        fit_params : dict
+            Fitting parameters for (Bilby likelihood estimation only)
+        stk_sigma : float
+            Sigma threshold to use when calculating total polarisation fraction
+        stk_debias : bool
+            Debias Total polarisation fraction, by default true
+        filename : str
+            filename for saved figure image
+        
+        returns
+        -------
+        p : pyfit.fit
+            fitting class with posteriors/results
+        """
+
+        log_title(f"Fitting for depolarisation using Bayesian method.", col = "lblue")
+        ##====================##
+        ## check if data valid##
+        ##====================##
+
+        # initilaise dicts
+        fit_params = dict_init(fit_params)
+
+        # init par
+        self._load_new_params(**kwargs)
+
+        # get data
+        data = self.get_data(['fP'], get = True, stk_ratio = True, stk_sigma = stk_sigma, 
+                                stk_debias = stk_debias, **kwargs)
+
+        # pmin = 0.0
+        static = {}
+        if not modified:
+            # pmin = 0.999
+            static = {'p':1.0}
+
+
+        # fit 
+        p = fit(x = data['freq'], y = data['fP'], yerr = data['fPerr'], func = burnslaw, 
+                method = "bayesian", prior = {'sig_rm':[0.0, sigrm_max], 'p':[0.0, 1.0]},
+                static = static, fit_keywords = fit_params, residuals = self.residuals, 
+                plotPosterior = self.plotPosterior)
+
+        p.fit(redo = redo)
+
+        # print results
+        if self.verbose:
+            p.stats()
+        print(p)
+
+        # plot
+        if self.show_plots or self.save_plots:
+            fig, ax = plt.subplots(1, 1, figsize = (8, 8))
+            plot(x = p.x, y = p.y, yerr = p.yerr, ax = ax,
+                    plot_type = self.plot_type, color = 'k', alpha = 0.7)
+            wid = p.x[-1] - p.x[0]
+            ax.plot(*p.get_model(x = np.linspace(p.x[0] - wid, p.x[-1] + wid)),
+                    color = 'r', linestyle = '--', linewidth = 2.0, zorder = 0)
+            ax.set_xlabel("Frequency [MHz]")
+            ax.set_ylabel("p")
+            fig.tight_layout()
+
+            if self.save_plots:
+                if filename is None:
+                    filename = f"{self.par.name}_fit_depol.png"
+                
+                plt.savefig(filename)
+            
+            if self.show_plots:
+                plt.show()
+
+        # save instance parameters
+        self._save_new_params()
+
+        return p
+
+
+
 
     
 
@@ -3789,7 +4146,8 @@ class FRB:
         _x = np.linspace(*self.this_par.t_lim, PA.size)
 
         ## plot PA
-        plot_PA(_x, PA, PA_err, ax = AX['P'], flipPA = flipPA)
+        if np.any(~np.isnan(PA)) and np.any(~np.isnan(PA_err)):
+            plot_PA(_x, PA, PA_err, ax = AX['P'], flipPA = flipPA)
 
         ## plot Spectra
         pdat = {'time':_x}
@@ -3810,8 +4168,8 @@ class FRB:
         ds_freq_lims = fix_ds_freq_lims(self.this_par.f_lim, self.this_par.df)
         plot_dynspec(self._ds['I'], ax = AX['D'], aspect = 'auto', 
                        extent = [*self.this_par.t_lim,*ds_freq_lims], showzaps = self.show_dynzaps)
-        AX['D'].set_ylabel("Frequency [MHz]", fontsize = 12)
-        AX['D'].set_xlabel("Time [ms]", fontsize = 12)
+        AX['D'].set_ylabel("Frequency [MHz]")
+        AX['D'].set_xlabel("Time [ms]")
 
         # adjust figure
         fig.tight_layout()
@@ -3891,6 +4249,13 @@ class FRB:
             err = False
             log("No off-pulse crop given to calculate dibased L, P and/or |U/Q/V|, specify [terr_crop]...", stype = "warn")
             log("No peak fractions we be calculatedm specify [terr_crop]...", stype = "warn")
+        
+        # mask any '0.0' values for Debiasing
+        for d in ['tL', 'tP']:
+            mask = S[d] == 0.0
+            S[d][mask] = np.nan
+            if err:
+                S[f"{d}err"][mask] = np.nan
 
         
         # calculated integrated stokes
@@ -3956,27 +4321,27 @@ class FRB:
                 peaks[f"{s.lower()}err"] = stk_frac[f'{s.lower()}err'][peak_ind]
                 peaks_pos[s.lower()] = S['time'][peak_ind]
             
-            # diagnostic plots
-            if self.show_plots or self.save_plots:
-                fig, ax = plt.subplots(1, 1, figsize = (12,8))
+            # # diagnostic plots
+            # if self.show_plots or self.save_plots:
+            #     fig, ax = plt.subplots(1, 1, figsize = (12,8))
                 
-                for s in "quvlp":
-                    _PLOT(S['time'], stk_frac[s], stk_frac[f'{s}err'], ax = ax, plot_type = self.plot_type, 
-                            color = _G.stk_colors[s.upper()])
-                ylim = ax.get_ylim()
-                for s in "quvlp":
-                    # plot marker
-                    ax.plot([peaks_pos[s]]*2, ylim, color = _G.stk_colors[s.upper()], linestyle = "--",
-                                label = f'${s}_{{peak}}$ at t = {peaks_pos[s]:.2f} ms')
+            #     for s in "quvlp":
+            #         _PLOT(S['time'], stk_frac[s], stk_frac[f'{s}err'], ax = ax, plot_type = self.plot_type, 
+            #                 color = _G.stk_colors[s.upper()])
+            #     ylim = ax.get_ylim()
+            #     for s in "quvlp":
+            #         # plot marker
+            #         ax.plot([peaks_pos[s]]*2, ylim, color = _G.stk_colors[s.upper()], linestyle = "--",
+            #                     label = f'${s}_{{peak}}$ at t = {peaks_pos[s]:.2f} ms')
                 
-                ax.set(ylim = ylim, xlabel = "Time [ms]", ylabel = "Stokes X/I fraction")
-                ax.legend()
+            #     ax.set(ylim = ylim, xlabel = "Time [ms]", ylabel = "Stokes X/I fraction")
+            #     ax.legend()
 
-                # save figure
-                if self.save_plots:
-                    filename = f"{self.par.name}_peak_polfracs.png"
+                # # save figure
+                # if self.save_plots:
+                #     filename = f"{self.par.name}_peak_polfracs.png"
                 
-                    plt.savefig(filename)
+                #     plt.savefig(filename)
 
 
 
@@ -4061,8 +4426,8 @@ class FRB:
             if self.save_plots:
                 print(f"\nPrinting out diagnostic plot of stokes polarisation fractions as a function of time [{filename}]\n")
 
-        if self.show_plots and err:
-            plt.show()
+        # if self.show_plots and err:
+        #     plt.show()
         
 
         return fracS

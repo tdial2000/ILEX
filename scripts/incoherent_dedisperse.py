@@ -16,9 +16,11 @@ from ilex.data import average
 from scipy.optimize import curve_fit
 from ilex.frb import FRB
 from ilex.io import ilexIO
-from ilex.addons.shrine import get_structure_maximised_dm
 from scipy.signal import correlate
-import os
+import os, sys
+
+if os.path.isdir(os.path.join(os.environ['ILEX_PATH'], "src/SHRINE")):
+    from ilex.addons.shrine import get_structure_maximised_dm
 
 
 def get_args():
@@ -78,6 +80,11 @@ def get_args():
     parser.add_argument("--quadfit", help = "Fit sn vs dm to a quadratic and extract optimal DM, only for [simple] method", action = "store_true")
 
     args = parser.parse_args()
+
+    if args.method == "SMDM":
+        if not os.path.isdir(os.path.join(os.environ['ILEX_PATH'], "src/SHRINE")):
+            print("'SHRINE' has not been installed, install SHRINE in the src/ folder by git cloning from https://github.com/marcinglowacki/SHRINE...")
+            sys.exit()
 
     # add constants
     args.kdm = 4149.377593

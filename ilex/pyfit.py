@@ -1567,11 +1567,14 @@ class fit:
             return
         
         rows = 1
+        height_ratios = [4]
         if self.residuals:
             rows = 2
+            height_ratios = [4,1]
 
         # now plot, create axis
-        fig, AX = plt.subplots(rows, 1, figsize = (12, 10), sharex = True)
+        fig, AX = plt.subplots(rows, 1, figsize = (10, 8), 
+                sharex = True, gridspec_kw = {'height_ratios':height_ratios})
 
         if self.residuals:
             AX = AX.flatten()

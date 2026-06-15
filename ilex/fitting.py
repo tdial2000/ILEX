@@ -129,6 +129,28 @@ def lorentz(x,w,a):
 
     return a*w**2/(w**2+x**2)
 
+def lorentz_yshifted(x, w, a, h):
+    """
+    Lorentz function - Usually used to model scintillation bandwidth
+
+    Parameters
+    ----------
+    x : np.ndarray
+        X data - Usually Frequency array
+    w : float
+        width - Usually Scintillation Bandwidth
+    a : float
+        Amplitude - Usually m^2 where m is modulation index
+
+    Returns
+    -------
+    np.ndarray
+        Y data
+    """
+
+    return a*w**2/(w**2+x**2) + h
+
+
 
 ## [ GAUSSIAN FUNCTION ] ##
 def gaussian(x, a, mu, sig):

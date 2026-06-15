@@ -1,7 +1,7 @@
 scatter:
 
   # marker info
-  s:  8
+  s:  20
   marker: 'o'
   #edgecolors: 'k'
 
@@ -18,5 +18,6 @@ plot:
 
   # plotting
   markersize: null
-  linewidth: 0.8
+  linewidth: 1.4
+  alpha: 0.8
 

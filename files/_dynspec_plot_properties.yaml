@@ -1,4 +1,5 @@
-cmap: viridis
+cmap: inferno
 cmap_alpha: 0.5
 cnorm: linear
+interpolation: none
 satlvl: 0

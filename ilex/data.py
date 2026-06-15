@@ -859,9 +859,10 @@ def calc_L(Q, U, Qerr = None, Uerr = None):
     if (Qerr is not None) and (Uerr is not None):
         Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2) / L
         if hasattr(Q, '__len__') and hasattr(U, '__len__'):
-            Lmask = L != 0.0
-            Lerr[~Lmask] = np.nan
-            L[~Lmask] = np.nan
+            # Lmask = L != 0.0
+            # Lerr[~Lmask] = np.nan
+            # L[~Lmask] = np.nan
+            Lerr[np.isnan(Lerr)] = 0.0
 
     return L, Lerr
 
@@ -903,14 +904,17 @@ def calc_Ldebiased(Q, U, Ierr, Qerr = None, Uerr = None):
     L_meas = np.sqrt(Q**2 + U**2)
     L_debias = Ierr * np.sqrt((L_meas/Ierr)**2 - 1)
     L_debias[np.isnan(L_debias)] = 0
-    L_debias[L_meas/Ierr < 1.57] = 0
+
+    # updated (was K = 1.57, Median estimator)
+    L_debias[L_meas/Ierr < 1.57] = 0    
 
     Lerr = None
     if (Qerr is not None) and (Uerr is not None):
         Lerr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2) / L_debias
-        Lmask = L_debias != 0.0
-        Lerr[~Lmask] = np.nan
-        L_debias[~Lmask] = np.nan
+        # Lmask = L_debias != 0.0
+        # Lerr[~Lmask] = np.nan
+        # L_debias[~Lmask] = np.nan
+        Lerr[np.isnan(Lerr)] = 0.0
 
     return L_debias, Lerr
 
@@ -958,9 +962,10 @@ def calc_P(Q, U, V, Qerr = None, Uerr = None, Verr = None):
     if (Lerr is not None) and (Verr is not None):
         Perr = np.sqrt(L**2*Lerr**2 + V**2*Verr**2) / P
         if hasattr(L, '__len__') and hasattr(V, '__len__'):
-            Pmask = P != 0.0
-            Perr[~Pmask] = np.nan
-            P[~Pmask] = np.nan
+            # Pmask = P != 0.0
+            # Perr[~Pmask] = np.nan
+            # P[~Pmask] = np.nan
+            Perr[np.isnan(Perr)] = 0.0
 
     return P, Perr
 
@@ -1002,17 +1007,21 @@ def calc_Pdebiased(Q, U, V, Ierr, Qerr = None, Uerr = None, Verr = None):
     """
 
     # calc L debais
-    L_debias, Lerr = calc_Ldebiased(Q, U, Ierr, Qerr, Uerr)
+    # L_debias, Lerr = calc_Ldebiased(Q, U, Ierr, Qerr, Uerr)
     # calc P 
-    P_debias = np.sqrt(L_debias**2 + V**2)
+    P = np.sqrt(Q**2 + U**2 + V**2)
+    P_debias = Ierr * np.sqrt((P/Ierr)**2 - 1)
+    P_debias[np.isnan(P_debias)] = 0.0
+    P_debias[P / Ierr < 2] = 0.0
 
     # calc P err
     Perr = None
-    if (Lerr is not None) and (Verr is not None):
-        Perr = np.sqrt(L_debias**2*Lerr**2 + V**2*Verr**2) / P_debias
-        Pmask = P_debias != 0.0
-        Perr[~Pmask] = np.nan
-        P_debias[~Pmask] = np.nan
+    if (Qerr is not None) and (Uerr is not None) and (Verr is not None):
+        Perr = np.sqrt(Q**2*Qerr**2 + U**2*Uerr**2 + V**2*Verr**2) / P_debias
+        # Pmask = P_debias != 0.0
+        # Perr[~Pmask] = np.nan
+        # P_debias[~Pmask] = np.nan
+        Perr[np.isnan(Perr)] = 0.0
 
     return P_debias, Perr
 
@@ -1188,6 +1197,34 @@ def residuals(y,n=5):
     return y_out, y_fit
 
 
+def mean_normalize(y, n=5):
+    """
+    Normalize data array by dividing by the mean model. 
+    This function can handle NaN values
+
+    Parameters
+    ----------
+    y : np.ndarray
+        data array
+    n : int, optional
+        max order for polynomial to fit to mean model of y, by default 5
+
+    Returns
+    -------
+    np.ndarray
+        residuals of y
+    """
+
+    x = np.arange(y.size)
+
+    # set x vals to nans for corrosponding y values
+    mask = np.isnan(y)
+
+    y_fit = np.poly1d(np.polyfit(x[~mask],y[~mask],n))
+    y_out = y.copy()
+    y_out[~mask] /= y_fit(x[~mask])
+
+    return y_out, y_fit
 
 
 def _nanacf(x):

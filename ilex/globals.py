@@ -53,11 +53,11 @@ _G.p = {"name": "FRBXXXXXX", "RA": "00:00:00.0000", "DEC": "00:00:00.0000", "MJD
 _G.mp = {"t_crop": ["min", "max"], "f_crop":["min", "max"], "terr_crop":None,
          "tN": 1, "fN": 1, "norm": "None", "zapchan": ""}
 
-# dict of hyper parameters``
+# dict of hyper parameters
 _G.hp = {'verbose': False, 'plot_type': 'lines',
          'residuals': True, 'apply_tW': True, 'apply_fW': True, 'zap': False, 'show_plots': True, 'save_plots': False, 'crop_units': "physical",
          'dynspec_cmap':'viridis', 'plot_tpad': 30.0, 'show_dynzaps': True, 'dynspec_satlvl': 0, 'dynspec_cnorm': "linear", "dynspec_cmap_alpha": 0.5,
-         'mplstyle': None}
+         'mplstyle': None, 'dynspec_interp': 'none'}
 
 _G.dc_exclude = ['_t', '_f', '_ds', '_time', '_freq', 'ds']
 

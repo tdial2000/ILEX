@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -137,7 +136,7 @@
     <span class="c1"># estimate rough rms and hence rough bounds of burst</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">rms_offset</span> <span class="o">-</span> <span class="n">rms_width</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">peak</span> <span class="o">+</span> <span class="n">rms_offset</span> <span class="o">+</span> <span class="n">rms_width</span> <span class="o">&gt;</span> <span class="n">tI</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[rms_offset] and/or [rms_width] out of bounds of [tI]!! Aborting&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span><span class="o">*</span><span class="mi">3</span>
 
     <span class="n">rms_lhs</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">peak</span> <span class="o">-</span> <span class="n">rms_offset</span> <span class="o">-</span> <span class="n">rms_width</span> <span class="p">:</span> <span class="n">peak</span> <span class="o">-</span> <span class="n">rms_offset</span><span class="p">]</span>
     <span class="n">rms_rhs</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">peak</span> <span class="o">+</span> <span class="n">rms_offset</span> <span class="p">:</span> <span class="n">peak</span> <span class="o">+</span> <span class="n">rms_offset</span> <span class="o">+</span> <span class="n">rms_width</span><span class="p">]</span>
@@ -151,7 +150,7 @@
     <span class="c1"># recalculate optimal rms</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">rms_guard</span> <span class="o">-</span> <span class="n">rms_width</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">peak</span> <span class="o">+</span> <span class="n">rms_guard</span> <span class="o">+</span> <span class="n">rms_width</span> <span class="o">&gt;</span> <span class="n">tI</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[rms_guard] and/or [rms_width] out of bounds of [tI]!! Aborting&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,)</span><span class="o">*</span><span class="mi">3</span>
 
     <span class="n">rms_lhs</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">rough_lowerbound</span> <span class="o">-</span> <span class="n">rms_guard</span> <span class="o">-</span> <span class="n">rms_width</span> <span class="p">:</span> <span class="n">rough_lowerbound</span> <span class="o">-</span> <span class="n">rms_guard</span><span class="p">]</span>
     <span class="n">rms_rhs</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">rough_upperbound</span> <span class="o">+</span> <span class="n">rms_guard</span> <span class="p">:</span> <span class="n">rough_upperbound</span> <span class="o">+</span> <span class="n">rms_guard</span> <span class="o">+</span> <span class="n">rms_width</span><span class="p">]</span>
@@ -269,11 +268,9 @@
             <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">corr</span> <span class="o">&gt;=</span> <span class="n">yfrac</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The window offset found was 1, there may be something wrong with the data or input data is too small?&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[ilex.widths._find_min_fluence_width] The window offset found was 1, there may be something wrong with the data or input data is too small?&quot;</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span>
                 <span class="k">if</span> <span class="n">Nstep</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There appears to be two centroids to a minimum width.&quot;</span><span class="p">)</span>
                     <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span>
                 <span class="k">if</span> <span class="n">Nstep</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">N</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">find_N_length</span><span class="p">(</span><span class="n">tI</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">Nstep</span><span class="p">,</span> <span class="n">Nstep</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
@@ -287,8 +284,16 @@
     <span class="n">N</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">find_N_length</span><span class="p">(</span><span class="n">tI</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found fluence threshold at N = </span><span class="si">{</span><span class="n">N</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of starting samples for min fluence width found, taking average...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;average: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
     <span class="c1"># find centroid of burst</span>
-    <span class="n">tI_burst</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">N</span><span class="p">]</span>
+    <span class="n">tI_burst</span> <span class="o">=</span> <span class="n">tI</span><span class="p">[</span><span class="n">p</span><span class="p">:</span><span class="n">p</span> <span class="o">+</span> <span class="n">N</span><span class="p">]</span>
     <span class="n">burst_fluence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tI_burst</span><span class="p">)</span>
     <span class="n">cumsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">tI_burst</span><span class="p">)</span>
     <span class="n">centroid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cumsum</span> <span class="o">-</span> <span class="n">burst_fluence</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
@@ -296,7 +301,7 @@
     <span class="c1"># output centroid in original time series frame and LHS RHS width w.r.t centroid</span>
     <span class="n">lw</span> <span class="o">=</span> <span class="n">centroid</span> 
     <span class="n">rw</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="n">centroid</span>
-    <span class="n">centroid</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">centroid</span> <span class="o">+=</span> <span class="n">p</span>
 
     <span class="k">return</span> <span class="n">centroid</span><span class="p">,</span> <span class="n">lw</span><span class="p">,</span> <span class="n">rw</span>
 

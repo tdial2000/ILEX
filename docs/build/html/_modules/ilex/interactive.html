@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -95,9 +94,50 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">ilex.data</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">ilex.logging</span> <span class="kn">import</span> <span class="n">printcol</span>
 
 <span class="n">RAPIDKEYTHRESHOLD</span> <span class="o">=</span> <span class="mf">0.6</span>
 
+
+
+<div class="viewcode-block" id="medrms_chanflag">
+<a class="viewcode-back" href="../../_autosummary/ilex.interactive.html#ilex.interactive.medrms_chanflag">[docs]</a>
+<span class="k">def</span> <span class="nf">medrms_chanflag</span><span class="p">(</span><span class="n">dsI</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span> <span class="n">tN</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flag channels in dynamic spectrum by filtering out RFI that exceeds some threshold given by</span>
+<span class="sd">    threshold * np.median(np.abs(np.std(I))) where np.median(np.std(I)) is subtracted from np.std(I).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dsI : 2D np.ndarray</span>
+<span class="sd">        Stokes I dynamic spectrum (f,t)</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        threshold value </span>
+<span class="sd">    tN : int</span>
+<span class="sd">        Downsampling to apply to data before coarse RFI flagging</span>
+<span class="sd">    iter : int</span>
+<span class="sd">        Number of iterations</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flagchans : 1D np.ndarray</span>
+<span class="sd">        Array of channel indicies where RFI was detected</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># hard code rms calculation to always be calibrated to 2 seconds.</span>
+    <span class="n">flagchan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+
+    <span class="c1"># std and median calculations</span>
+    <span class="n">stdfI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">average</span><span class="p">(</span><span class="n">dsI</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">tN</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">stdfIcopy</span> <span class="o">=</span> <span class="n">stdfI</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+        <span class="n">stdfIabs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stdfI</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">stdfI</span><span class="p">))</span>
+        <span class="n">flagchan_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">stdfIabs</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">threshold</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">stdfIabs</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">stdfI</span><span class="p">[</span><span class="n">flagchan_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> 
+        <span class="n">flagchan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">flagchan</span><span class="p">,</span> <span class="n">flagchan_i</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">flagchan</span></div>
 
 
 <span class="k">class</span> <span class="nc">_rect</span><span class="p">:</span>
@@ -247,6 +287,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last_key_event</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_key_press</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_list_of_auto_alg</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">,</span> <span class="s2">&quot;abs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">=</span> <span class="s2">&quot;median&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;median&#39;</span><span class="p">:[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span> <span class="s1">&#39;abs&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">}</span>
+
+        <span class="c1"># plotting </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vmin&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;vmax&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span> <span class="o">=</span> <span class="s2">&quot;vmin&quot;</span>
+
 
         <span class="c1"># artists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ds&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;zapatch&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> 
@@ -277,8 +325,13 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[shift] (in zapping mode): Confirm zapping&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[caps lock] (in zapping mode): Revert most recent zapping&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[control] (in zapping mode): remove all zapping&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[a] (in zapping mode): Automated zapping [default = median method] (requires user input in console)&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[c]: Apply zapping and exit interactive window (this is the only way to apply zapping)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[a] (in zapping mode): Automated zapping [default = median] (requires user input in console)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[x] Change mode for automatic zapping [median, abs]&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[v] Change paramters for automatic zapping through user input in the console&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[c]: Apply zapping and exit interactive window (this is the only way to apply zapping)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[-/=]: decrease/increase cmap [vmin, vmax], by default vmin&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[&#39;[&#39; (left square bracket)]: Change between &#39;vmin&#39; and &#39;vmax&#39; when saturating clims&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[&#39;]&#39; (right square bracket)]: Reset cmap saturation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NOTE: Any other way of closing the window beside pressing the [c] key will cancel any zapping!&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span><span class="o">*</span><span class="mi">100</span> <span class="o">+</span> <span class="s2">&quot;#&quot;</span><span class="p">)</span>
 
@@ -399,6 +452,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;zapatch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">xlim_dif</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">,</span> 
                                                    <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;zapatch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_extent</span><span class="p">()[</span><span class="mi">2</span><span class="p">:]])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">draw_artist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;zapatch&#39;</span><span class="p">])</span>
+
+        <span class="c1"># update line xlims</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;LMline&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;LMline&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;RMlines&#39;</span><span class="p">])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;RMlines&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
         
         <span class="k">return</span>
 
@@ -535,32 +595,69 @@
     
         <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
             <span class="c1"># do auto flagging</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hi&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">zapmode</span><span class="p">:</span>
                 <span class="k">return</span>
-
-            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-                <span class="n">zap_threshold</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;-[Input]: Sigma threshold for automated Frequency zapping-</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">zap_threshold</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zap_threshold</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Zapping with a sigma threshold of </span><span class="si">{</span><span class="n">zap_threshold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zap_threshold</span><span class="si">}</span><span class="s2"> is not a valid floating point number!!!&quot;</span><span class="p">)</span>
-                <span class="k">return</span>
             
-            <span class="n">zaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_flag</span><span class="p">(</span><span class="n">zap_threshold</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;automated flagging using method: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;with following parameters: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">zaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_flag</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">zaps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">zaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zaps</span><span class="p">)</span>
 
+            <span class="c1"># update time series and freq axes</span>
+
             <span class="c1"># update figure</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_ax</span><span class="p">()</span>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
             
             <span class="k">return</span>
+        
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;v&quot;</span><span class="p">:</span>
+            <span class="c1"># change auto flagging parameters</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">zapmode</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span>
+                    <span class="n">alg_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;-[Input]: Provide a single decimal number for Abs channel flagging [x]-</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+                    <span class="n">alg_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;-[Input]: Provide comma seperated pair of values for the S/N and time downsampling used for auto channel flagging &#39;x, y&#39;-</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span>
+                    <span class="n">alg_input</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">alg_input</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span><span class="p">[</span><span class="s1">&#39;abs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">alg_input</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">alg_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="n">alg_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())]</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span><span class="si">}</span><span class="s2">] auto zapping with values: </span><span class="si">{</span><span class="n">alg_input</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">alg_input</span><span class="si">}</span><span class="s2"> is not a valid!!!&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">zapmode</span><span class="p">:</span>
+                <span class="k">return</span>
+            
+            <span class="c1"># change automatic flagging method</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_of_auto_alg</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_of_auto_alg</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_of_auto_alg</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Changed automated flagging method to: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span><span class="p">)</span>
+
+            <span class="k">return</span>
+
+
 
         <span class="k">if</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_artist</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zapmode</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;up&#39;</span><span class="p">:</span>
@@ -575,13 +672,54 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>      <span class="c1"># this is only here to make sure the figure updates properly</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 
+            <span class="k">return</span>
 
-        
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;=&#39;</span><span class="p">]:</span>
+
+            <span class="n">cmapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;vmin&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;vmax&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="mf">0.5</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="mf">2.0</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span><span class="p">]</span> <span class="o">*=</span> <span class="n">scale</span>
+            <span class="n">old_clims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_clim</span><span class="p">())</span>
+            <span class="n">old_clims</span><span class="p">[</span><span class="n">cmapping</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span><span class="p">]]</span> <span class="o">*=</span> <span class="n">scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">old_clims</span><span class="p">)</span> 
+
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span> <span class="o">==</span> <span class="s2">&quot;vmin&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span> <span class="o">=</span> <span class="s2">&quot;vmax&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_clim</span> <span class="o">=</span> <span class="s2">&quot;vmin&quot;</span>
+            
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+
+            <span class="n">old_clims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_clim</span><span class="p">())</span>
+            <span class="n">old_clims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmin&#39;</span><span class="p">]</span>
+            <span class="n">old_clims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmax&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">old_clims</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="k">return</span>
+            
         <span class="k">return</span>
     
 
 
-    <span class="k">def</span> <span class="nf">_auto_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zap_threshold</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_auto_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Automated algorithm for zapping frequency channels</span>
 
@@ -596,6 +734,10 @@
         <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ybounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">bw</span>
         <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ybounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">bw</span>
 
+        <span class="n">tw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">tw</span>
+        <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">tw</span>
+
         <span class="n">ylim</span> <span class="o">=</span> <span class="n">ylim</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="n">ds_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -605,18 +747,17 @@
         <span class="n">ds_crop</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="n">ds_crop</span><span class="p">,</span> <span class="o">*</span><span class="n">ylim</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">freq_crop</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">freqs</span><span class="p">,</span> <span class="o">*</span><span class="n">ylim</span><span class="p">)</span>
 
-        <span class="c1"># with cropped data, apply zapping algorithm</span>
-        <span class="c1"># f_std = np.nanstd(ds_crop, axis = 1)</span>
-        <span class="c1"># med_rms = np.nanmedian(f_std)</span>
-        <span class="c1"># mad_rms = 1.48 * np.nanmedian(np.abs(f_std - med_rms))</span>
-
-        <span class="c1"># zaps = np.where(f_std &gt; (med_rms + zap_threshold * mad_rms))[0]</span>
-
+        <span class="c1"># do automated flagging</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-            <span class="n">mask</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
-        <span class="n">zaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="n">zap_threshold</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mask</span><span class="p">)))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;median&quot;</span><span class="p">:</span>
+                <span class="n">zaps</span> <span class="o">=</span> <span class="n">medrms_chanflag</span><span class="p">(</span><span class="n">ds_crop</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">])</span>
+
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_auto_alg</span> <span class="o">==</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span>
+                <span class="n">zaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_auto_vals</span><span class="p">[</span><span class="s1">&#39;abs&#39;</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zaps</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -633,10 +774,20 @@
 <span class="sd">        to display zapped regions</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if xlim and ylim change callbacks are defined!</span>
+        <span class="c1"># if hasattr(self.ax, &#39;callbacks&#39;):</span>
+        <span class="c1">#     _callbacks = self.ax.callbacks.callbacks</span>
+        <span class="c1">#     if &quot;xlim_changed&quot; in _callbacks.keys():</span>
+        <span class="c1">#         self.ax.set_xlim(self.ax.get_xlim())</span>
+        <span class="c1">#     if &quot;ylim_changed&quot; in _callbacks.keys():</span>
+        <span class="c1">#         self.ax.set_ylim(self.ax.get_ylim())</span>
+
+
         <span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zap_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zap_ds</span><span class="p">()</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">)</span>
         <span class="n">mask</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">,</span> <span class="n">clim</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">[</span><span class="n">mask</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">[</span><span class="n">mask</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">,</span> <span class="n">clim</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmin&#39;</span><span class="p">],</span> 
+                                                            <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cmap_saturation</span><span class="p">[</span><span class="s1">&#39;vmax&#39;</span><span class="p">]))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">draw_artist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_artists</span><span class="p">[</span><span class="s1">&#39;ds&#39;</span><span class="p">])</span>
 
         <span class="n">patch_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zap_ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
@@ -665,31 +816,33 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;ylim_changed&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_zoom_Y</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="n">ax</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">new_X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">old_Y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
 
     <span class="c1">## update xlims</span>
-    <span class="k">def</span> <span class="nf">on_zoom_X</span><span class="p">(</span><span class="n">zooms</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
-        <span class="n">zooms</span><span class="o">.</span><span class="n">flag_X</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">zooms</span><span class="o">.</span><span class="n">_update_zoom</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">on_zoom_X</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_X</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_zoom</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
     <span class="c1">## update ylims</span>
-    <span class="k">def</span> <span class="nf">on_zoom_Y</span><span class="p">(</span><span class="n">zooms</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
-        <span class="n">zooms</span><span class="o">.</span><span class="n">flag_Y</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">zooms</span><span class="o">.</span><span class="n">_update_zoom</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">on_zoom_Y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_Y</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_zoom</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
 
     <span class="c1">## update profile plots</span>
-    <span class="k">def</span> <span class="nf">_update_zoom</span><span class="p">(</span><span class="n">self_zoom</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">self_zoom</span><span class="o">.</span><span class="n">flag_X</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">self_zoom</span><span class="o">.</span><span class="n">flag_Y</span><span class="p">:</span> <span class="c1"># only update when both x and y lims have changed</span>
+    <span class="k">def</span> <span class="nf">_update_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_X</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_Y</span><span class="p">:</span> <span class="c1"># only update when both x and y lims have changed</span>
             <span class="k">return</span>
         
-        <span class="n">self_zoom</span><span class="o">.</span><span class="n">flag_X</span><span class="p">,</span> <span class="n">self_zoom</span><span class="o">.</span><span class="n">flag_Y</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_Y</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span>
 
 
-        <span class="n">self_zoom</span><span class="o">.</span><span class="n">new_X</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>        <span class="c1"># get x lims</span>
-        <span class="n">self_zoom</span><span class="o">.</span><span class="n">new_Y</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>        <span class="c1"># get y lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_X</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>        <span class="c1"># get x lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>        <span class="c1"># get y lims</span>
 
-        <span class="n">self_zoom</span><span class="o">.</span><span class="n">update_zoom</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_zoom</span><span class="p">()</span>
 
 
     <span class="k">def</span> <span class="nf">update_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -726,7 +879,59 @@
         <span class="k">def</span> <span class="nf">update_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_X</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="k">return</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_X</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_X</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_Y</span><span class="p">)</span>
+
+            <span class="c1"># self.new_X[0] = mouse_zap.xlim[0] if self.new_X[0] &lt; mouse_zap.xlim[0] else self.new_X[0]</span>
+            <span class="c1"># self.new_X[1] = mouse_zap.xlim[1] if self.new_X[1] &gt; mouse_zap.xlim[1] else self.new_X[1]</span>
+            <span class="c1"># self.new_Y[0] = freqs[-1] if self.new_Y[0] &lt; freqs[-1] else self.new_Y[0]</span>
+            <span class="c1"># self.new_Y[1] = freqs[0] if self.new_Y[1] &gt; freqs[0] else self.new_Y[1]</span>
+
+            <span class="c1"># if self.new_X[0] &lt; mouse_zap.xlim[0]:</span>
+            <span class="c1">#     dif = mouse_zap.xlim[0] - self.new_X[0]</span>
+            <span class="c1">#     self.new_X[0] += dif </span>
+            <span class="c1">#     self.new_X[1] += dif</span>
+            <span class="c1"># if self.new_X[1] &gt; mouse_zap.xlim[1]:</span>
+            <span class="c1">#     dif = self.new_X[1] - mouse_zap.xlim[1]</span>
+            <span class="c1">#     self.new_X[0] -= dif</span>
+            <span class="c1">#     self.new_X[1] -= dif</span>
+            <span class="c1"># if self.new_Y[0] &lt; freqs[-1]:</span>
+            <span class="c1">#     dif = freqs[-1] - self.new_Y[0]</span>
+            <span class="c1">#     self.new_Y[0] += dif</span>
+            <span class="c1">#     self.new_Y[1] += dif</span>
+            <span class="c1"># if self.new_Y[1] &gt; freqs[0]:</span>
+            <span class="c1">#     dif = self.new_Y[1] - freqs[0]</span>
+            <span class="c1">#     self.new_Y[0] -= dif</span>
+            <span class="c1">#     self.new_Y[1] -= dif</span>
+
+            <span class="c1"># self.new_X[0] = mouse_zap.xlim[0] if self.new_X[0] &lt; mouse_zap.xlim[0] else self.new_X[0]</span>
+            <span class="c1"># self.new_X[1] = mouse_zap.xlim[1] if self.new_X[1] &gt; mouse_zap.xlim[1] else self.new_X[1]</span>
+            <span class="c1"># self.new_Y[0] = freqs[-1] if self.new_Y[0] &lt; freqs[-1] else self.new_Y[0]</span>
+            <span class="c1"># self.new_Y[1] = freqs[0] if self.new_Y[1] &gt; freqs[0] else self.new_Y[1]</span>
+
+            <span class="c1"># if self.new_X[0] &lt; mouse_zap.xlim[0]:</span>
+            <span class="c1"># revert_zoom_X = False</span>
+            <span class="c1"># revert_zoom_Y = False</span>
+            <span class="c1"># if (self.new_X[0] &lt; mouse_zap.xlim[0]) or (self.new_X[1] &gt; mouse_zap.xlim[1]):</span>
+            <span class="c1">#     revert_zoom_X = True</span>
+            <span class="c1"># if (self.new_Y[0] &lt; freqs[-1]) or (self.new_Y[1] &gt; freqs[0]):</span>
+            <span class="c1">#     revert_zoom_Y = True</span>
+
+            <span class="c1"># disconnect y lim change event temporarily</span>
+            <span class="c1"># cid_list = list(ax_ds.callbacks.callbacks[&#39;ylim_changed&#39;].keys())</span>
+            <span class="c1"># for cid in cid_list:</span>
+            <span class="c1">#     ax_ds.callbacks.disconnect(cid)</span>
+
+            <span class="c1"># ax_ds.set_xlim(self.new_X)</span>
+            <span class="c1"># ax_ds.set_ylim(self.new_Y)</span>
+            <span class="c1"># # ax_fs.set_ylim(self.new_Y)</span>
             
+            <span class="c1"># # self.old_X = self.new_X.copy()</span>
+            <span class="c1"># # self.old_Y = self.new_Y.copy()</span>
+
+            <span class="c1"># ax_ds.callbacks.connect(&#39;ylim_changed&#39;, self.on_zoom_Y)</span>
+
             <span class="n">Xphase</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_X</span><span class="p">)</span>
             <span class="n">Yphase</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
             <span class="n">bw</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">freqs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>            
@@ -736,26 +941,35 @@
                 <span class="n">Xphase</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Xphase</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mouse_zap</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">tw</span>
             <span class="n">Yphase</span> <span class="o">=</span> <span class="n">Yphase</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-            
+            <span class="c1"># # # set bounds</span>
+            <span class="n">Xphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">Xphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">Xphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">Xphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">Xphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="n">Xphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">Yphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">Yphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">Yphase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">Yphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">Yphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="n">Yphase</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
             <span class="c1"># with new phases, </span>
             <span class="n">zap_ds_crop</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="n">mouse_zap</span><span class="o">.</span><span class="n">zap_ds</span><span class="p">,</span> <span class="o">*</span><span class="n">Xphase</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">zap_ds_crop</span><span class="p">[</span><span class="n">mouse_zap</span><span class="o">.</span><span class="n">zap_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="n">ts_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">zap_ds_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-
             <span class="n">zap_ds_crop</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="n">zap_ds_crop</span><span class="p">,</span> <span class="o">*</span><span class="n">Yphase</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">ts_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">zap_ds_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">fs_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">zap_ds_crop</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
 
-            <span class="n">ts</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="n">pslice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">mouse_zap</span><span class="o">.</span><span class="n">xlim</span><span class="p">,</span> <span class="n">mouse_zap</span><span class="o">.</span><span class="n">zap_ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">*</span><span class="n">Xphase</span><span class="p">))</span>
-            <span class="n">ts</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span>
-            <span class="c1"># ax_ts.set_xlim(self.new_X)</span>
-            <span class="n">ts_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span>
-            <span class="n">ax_ts</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">ts_dif</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">ts_dif</span><span class="p">])</span>
+            <span class="n">printcol</span><span class="p">(</span><span class="n">Xphase</span><span class="p">,</span> <span class="s2">&quot;cyan&quot;</span><span class="p">)</span>
+            <span class="n">printcol</span><span class="p">(</span><span class="n">Yphase</span><span class="p">,</span> <span class="s2">&quot;cyan&quot;</span><span class="p">)</span>
 
-            <span class="n">fs</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">fs_data</span><span class="p">,</span> <span class="n">pslice</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="o">*</span><span class="n">Yphase</span><span class="p">))</span>
-            <span class="c1"># ax_fs.set_ylim(self.new_Y)</span>
-            <span class="n">fs_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span>
-            <span class="n">ax_fs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">fs_dif</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">fs_dif</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ts_data</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ts</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="n">pslice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">*</span><span class="n">mouse_zap</span><span class="o">.</span><span class="n">xlim</span><span class="p">,</span> <span class="n">mouse_zap</span><span class="o">.</span><span class="n">zap_ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="o">*</span><span class="n">Xphase</span><span class="p">))</span>
+                <span class="n">ts</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span>
+                <span class="c1"># ax_ts.set_xlim(self.new_X)</span>
+                <span class="n">ts_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span>
+                <span class="n">ax_ts</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">ts_dif</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">ts_data</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">ts_dif</span><span class="p">])</span>
 
+            <span class="k">if</span> <span class="n">fs_data</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">fs</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span>
+                <span class="n">fs</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="n">pslice</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="o">*</span><span class="n">Yphase</span><span class="p">))</span>
+                <span class="c1"># ax_fs.set_ylim(self.new_Y)</span>
+                <span class="n">fs_dif</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span>
+                <span class="n">ax_fs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">fs_dif</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">fs_data</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">fs_dif</span><span class="p">])</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
     <span class="c1"># addtional event functions for handeling time/freq series data</span>
     <span class="c1"># global variables</span>
@@ -777,6 +991,7 @@
 
     <span class="k">def</span> <span class="nf">_draw_freq_lines</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
 
+
         <span class="n">freq_lines</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">freq_line_labels</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">ax_fs</span><span class="o">.</span><span class="n">get_lines</span><span class="p">():</span>
@@ -794,7 +1009,6 @@
                                             <span class="n">color</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span> <span class="n">linestyle</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get_linestyle</span><span class="p">(),</span>
                                             <span class="n">linewidth</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get_linewidth</span><span class="p">(),</span> <span class="n">label</span> <span class="o">=</span> <span class="n">line_label</span><span class="p">)</span>
                 <span class="n">freq_line_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="n">line_label</span><span class="p">]</span>
-                <span class="c1"># freq_lines[line_label].set_xdata(list(ax_fs.get_xlim()))</span>
             
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">freq_lines</span><span class="p">[</span><span class="n">line_label</span><span class="p">]</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">line</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
@@ -812,6 +1026,13 @@
             <span class="k">if</span> <span class="n">freq_line_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ax_ds_lines</span><span class="p">:</span>
                 <span class="n">freq_lines</span><span class="p">[</span><span class="n">freq_line_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
                 <span class="k">del</span> <span class="n">freq_lines</span><span class="p">[</span><span class="n">freq_line_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+        <span class="n">cid_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">callbacks</span><span class="p">[</span><span class="s1">&#39;draw_event&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="n">cid_list</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">disconnect</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span>
+        
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;draw_event&quot;</span><span class="p">,</span> <span class="n">_draw_freq_lines</span><span class="p">)</span>
 
 
     

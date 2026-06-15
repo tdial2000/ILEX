@@ -83,19 +83,33 @@ Stokes dynamic spectrum.
 
     # options
     -i filename         # Stokes dynamic spectrum, reference frequency assumed bottom of the band.
+    --parfile filename  # ILEX .yaml file for pre-processing
 
     --dt 0.001          # Time resolution in [ms]
     --tN 1              # Time averaging factor
+    --rfi               # Flag coarse RFI channels 
+    --rfitN 1000        # Downsample factor to apply during RFI flagging 
+    --thresh 3.0        # Threshold for RFI flagging 
+
+    # DM arguments
     --DMmin -1.0        # Minimum of DM [pc/cm^3] range to search over
     --DMmax 1.0         # Maximum of DM [pc/cm^3] range to search over
     --DMstep 0.1        # Step size of DM [pc/cm^3]
+    --fref "min"        # reference point along bandwidth to use as reference frequency     
+    --method "simple"   # method to perform DM search 
+    --quadfit           # Fit a quadratic to better optomise DM peak if using method = 'simple'
+    --delDM             # Delta DM [pc/cm^3] to apply for dedispersion, if given will overide DM search 
+
+    # shrine arguments 
+    --force_kc None     # manually force k index cutoff for low pass filter, if not given, will estimate best value
+    --filter_order 3    # low pass filter spectral index
     
+    # bandwidth arguments
     --cfreq 919.5       # Central frequency [MHz] of Dynamic spectrum
     --bw 336            # Bandwidth [MHz] of Dynamic spectrum
-    --lower             # Use if first channel is bottom of the band
 
     -o filename         # Output filename, No output saved if not specified
-    --delDM             # Delta DM [pc/cm^3] to apply for dedispersion, if given will overide DM search 
+    --oparfile None     # Output ILEX file 
 
 
 
@@ -128,85 +142,6 @@ Make new FRB config file
     --celebi            # Make config file based on CELEBI output
 
 
-Make FRB panel plot
-===================
-
-Make plot of various panels of FRB data
-
-.. code-block:: console
-
-    python3 -m plot_master
-
-    # options
-    --parfile filepath    # filepath of FRB config file
-    --plot_panels "[S;D]" # panels to plot: P = PA profile, S = Stokes time profile, D = Dynamic spectrum, M = model of time series
-                          # R = residual plot of model time series
-    --model               # Model time series plot, if M panel given, will plot in seperate panel, else if S given, will plot in 
-                          # stokes panel
-    --modelpar filepath   # use sepereate yaml file to specify posteriors for plotting model time series
-    --modelpulses         # plot each individual convolved gaussian
-    --filename filepath   # Save figure in .png type format with given name
-
-Here is an example of plotting the stokes time series and dynamic spectrum: 
-.. code-block:: console
-
-    python3 -m plot_master --parfile examples/220610.yaml --plot_panels "[S;D]"
-
-.. image:: plot_panel_example.png
-   :width: 720pt
-
-Note: if you use a yaml file for the --modelpar option, the yaml file should look like the following:
-.. code-block:: yaml
-
-    posterior: {}       # where to put posterior of time series fit
-    npulse: 1           # number of convolved gaussian pulses making time series fit
-
-
-Plot stokes ds panels
-=====================
-
-Plot full panel of stokes dynamic spectrum with time series profilem, example uses the config file ``examples/220610.yaml``:
-
-.. code-block:: console
-
-    python3 -m plot_stokes_dynspec 
-
-    # options
-    --parfile filepath  # filepath of FRB config file
-    --filename          # Save figure in .png type format with given name
-
-.. image:: plot_dynspec_example.png
-   :width: 720pt
-
-
-Plot HTR mosaic
-===============
-
-Plot full mosaic of stokes dynamic spectrum with a variety of time resolutions.
-
-.. code-block:: console
-
-    python3 -m plot_dynspec_mosaic
-
-    # options
-    --parfile filepath                        # filepath of FRB config file
-    -t 1 3 10 30 100 300 1000                 # Intergration times, list type
-    --nsamp 100                               # halfwidth of crop to take around maximum point, in samples
-    --tN 10                                   # Averaging factor in time, help find maximum and align spectrum
-    --defaraday_ds                            # De-faraday rotate dynamic spectra, by default only the time series is rotated
-    --filename filepath                       # Save figure in .png type format with given name
-
-Here is an example plotting the intergration times 1, 10 and 50, these are actually time averaging factors, the true intergration
-time will be ``t * dt`` where ``dt`` is specified in the config file.
-
-.. code-block:: console
-
-    python3 -m plot_dynspec_mosaic --parfile examples/220610.yaml -t 1 10 50 --nsamp 20 --tN 1 
-
-.. image:: plot_mosaic_example.png
-   :width: 720pt
-
-
 Plot interactive Dynamic spectrum
 =================================
 
@@ -227,32 +162,81 @@ example uses the ``examples/220610.yaml`` config file:
    :width: 720pt
 
 
-Plot Multi-Component PA plot
-============================
+Pulse search
+============
 
-Plot multiple components, fit RM and plot PA profile along with stokes time series and dynamic spectrum. The following
-example uses the ``examples/220610.yaml`` config file:
+Search the Stokes total intensity data for the time/frequency bounds of the burst.
 
 .. code-block:: console
 
-    python3 -m plot_PA_multi
+    python3 -m findfrb
 
     # options
-    --parfile filepath      # filepath of FRB config file
-    --RMplots               # Show grid of RM fits of each component
-    --RMburst               # Plot varaiblility of RM across burst
-    --showbounds            # Show bounds of each component
-    --filename filepath     # Save figure in .png type format with given name
+    -i filepath                     # Path to Stokes I dynamic sperctrum .npy
+    --parfile filepath              # Optionally pass an ILEX config file path to set all these parameters
 
-Example shown below. Note, the results are not ideal, in this case it doesn't make sense to split a single pulse into 2 components, 
-this is only for demonstrative purposes.
+    # Coarse RFI flagging parameters
+    --tN 1000                       # Time downsampling when performing corse RFI removal using statistical approach
+    --thresh 3.0                    # Threshold for coarse RFI flagging
+    --rfiter 1                      # number of iterations to performing
+    --trop min,max                  # time crop to search for peak of burst
+
+    # fluence width parameter
+    --yfrac 0.95                    # Fraction of total fluence of burst for minimum width to encompass
+    -w 100.0                        # Width of window [milliseconds] to search for FRB burst centered on peak in dynamic spectrum
+
+    # spectrum flagging parameters 
+    --fsig 3.0                      # Sigma threshold to apply to spectrum to get bounds
+
+    --rmsw 10.0                     # RMS window length (For RFI subtraction)
+    --fcrop_method minfluence       # method used to determine crop of burst in frequency
+    --rfisub                        # Enable RFI subtraction
+    --stDev 1                       # standard deviation in sample number for gaussian kernel smoothing to apply to time data
+
+    # FRB parameters
+    --dt 1e-3                       # Time resolution in [milliseconds]
+    --cfreq 919.5                   # Central frequency in [MHz]
+    --bw 336                        # bandwidth in [MHz]
+    --Nband 0                       # Number of sub-bands to split up burst for sub-banded searching, set to 0 to disable this feature!
+
+    # plotting
+    -p                              # Plot results
+    -v                              # plot more results (verbose plotting)
+    --pw 200.0                      # Width of dynamic spectrum to plot (for diagnostic purposes only!)
+    --pfN 1                         # Downsampling factor in frequency to apply when plotting dynspec
+
+    # outputs
+    -o "findfrb"                    # Output prefix for files and images
+    --save_data                     # Save copy of cropped Stokes dynspec files with zapped RFI channels
+    --oparfile "findfrb.yaml"       # Output ILEX yaml file 
+    --cropds None                   # Crop full dynspec and only save a certain region [--cropds] centered on the located FRB [milliseconds]
+
+
+
+Fit scattering index
+====================
+
+Fit the scattering index using a sub-banded process.
 
 .. code-block:: console
 
-    python3 -m plot_PA_multi --parfile examples/220610.yaml --showbounds
+    python3 -m fit_scattindex 
 
-.. image:: plot_examplePA_plot.png
-   :width: 720pt
+    # option, data arguments
+    --parfile filepath      # ILEX config file (.yaml)
+    -N 1                    # Number of sub-bands to split to fit scattering index 
+    -v                      # Verbose mode, makes more diagnostic plots 
+    -p                      # Show plots 
+    -r                      # Redo sub-band fitting (removes cached files!)
+
+    # outputs
+    -o None                 # Output directory 
+    -f None                 # Filename prefix
+
+    # plotting arguments 
+    --pw 150.0              # Width of dynspec to plot (visual purposes only!)
+    --ptN 10                # Time downsampling of dynspec to plot (visual purposes only!)
+    --pfN 4                 # Freq downsampling of dybspec to plot (visual purposes only!)
 
 
 

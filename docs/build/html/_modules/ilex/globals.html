@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -131,10 +130,13 @@
 <span class="n">_G</span><span class="o">.</span><span class="n">mp</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t_crop&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">],</span> <span class="s2">&quot;f_crop&quot;</span><span class="p">:[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">],</span> <span class="s2">&quot;terr_crop&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span>
          <span class="s2">&quot;tN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;fN&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;norm&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="s2">&quot;zapchan&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
 
-<span class="c1"># dict of hyper parameters``</span>
+<span class="c1"># dict of hyper parameters</span>
 <span class="n">_G</span><span class="o">.</span><span class="n">hp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;verbose&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;plot_type&#39;</span><span class="p">:</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
          <span class="s1">&#39;residuals&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_tW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;apply_fW&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;zap&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;show_plots&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;save_plots&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;crop_units&#39;</span><span class="p">:</span> <span class="s2">&quot;physical&quot;</span><span class="p">,</span>
-         <span class="s1">&#39;dynspec_cmap&#39;</span><span class="p">:</span><span class="s1">&#39;viridis&#39;</span><span class="p">}</span>
+         <span class="s1">&#39;dynspec_cmap&#39;</span><span class="p">:</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="s1">&#39;plot_tpad&#39;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">,</span> <span class="s1">&#39;show_dynzaps&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;dynspec_satlvl&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;dynspec_cnorm&#39;</span><span class="p">:</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="s2">&quot;dynspec_cmap_alpha&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+         <span class="s1">&#39;mplstyle&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;dynspec_interp&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">}</span>
+
+<span class="n">_G</span><span class="o">.</span><span class="n">dc_exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_t&#39;</span><span class="p">,</span> <span class="s1">&#39;_f&#39;</span><span class="p">,</span> <span class="s1">&#39;_ds&#39;</span><span class="p">,</span> <span class="s1">&#39;_time&#39;</span><span class="p">,</span> <span class="s1">&#39;_freq&#39;</span><span class="p">,</span> <span class="s1">&#39;ds&#39;</span><span class="p">]</span>
 
 <span class="n">_G</span><span class="o">.</span><span class="n">yaml_ignore</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;zap&quot;</span><span class="p">]</span>
 
@@ -201,7 +203,7 @@
 
 <span class="c1">## constants</span>
 <span class="n">c</span> <span class="o">=</span> <span class="mf">2.997924538e8</span>       <span class="c1"># Speed of light [m/s]</span>
-<span class="n">kDM</span> <span class="o">=</span> <span class="mf">4.14938e3</span>         <span class="c1"># DM constant</span>
+<span class="n">kDM</span> <span class="o">=</span> <span class="mf">4.14938e3</span>         <span class="c1"># DM constants</span>
 </pre></div>
 
            </div>

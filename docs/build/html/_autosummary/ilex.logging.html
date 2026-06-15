@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ilex.master_proc" href="ilex.master_proc.html" />
-    <link rel="prev" title="ilex.interactive" href="ilex.interactive.html" /> 
+    <link rel="prev" title="ilex.io" href="ilex.io.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,10 +45,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.addons.html">ilex.addons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.classes.html">ilex.classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
@@ -56,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.interactive.html">ilex.interactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.io.html">ilex.io</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.logging</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.break_str"><code class="docutils literal notranslate"><span class="pre">break_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.check_verbosefile"><code class="docutils literal notranslate"><span class="pre">check_verbosefile()</span></code></a></li>
@@ -63,6 +65,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.get_verbose"><code class="docutils literal notranslate"><span class="pre">get_verbose()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.log"><code class="docutils literal notranslate"><span class="pre">log()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.log_title"><code class="docutils literal notranslate"><span class="pre">log_title()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.logging.printcol"><code class="docutils literal notranslate"><span class="pre">printcol()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.set_verbose"><code class="docutils literal notranslate"><span class="pre">set_verbose()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.show_terminal_cols"><code class="docutils literal notranslate"><span class="pre">show_terminal_cols()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.logging.strcol"><code class="docutils literal notranslate"><span class="pre">strcol()</span></code></a></li>
@@ -73,6 +76,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utilmethods.html">ilex.utilmethods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
@@ -174,6 +178,11 @@ with extra functionality for ILEX</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.logging.printcol">
+<span class="sig-name descname"><span class="pre">printcol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#printcol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.printcol" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.logging.set_verbose">
 <span class="sig-name descname"><span class="pre">set_verbose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/logging.html#set_verbose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.logging.set_verbose" title="Link to this definition"></a></dt>
 <dd><p>Set verbose parameter</p>
@@ -205,7 +214,7 @@ with extra functionality for ILEX</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.interactive.html" class="btn btn-neutral float-left" title="ilex.interactive" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.io.html" class="btn btn-neutral float-left" title="ilex.io" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ilex.master_proc.html" class="btn btn-neutral float-right" title="ilex.master_proc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -109,10 +108,12 @@
 
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">_clean_bilby_run</span><span class="p">,</span> <span class="n">_priorUniform</span>
+<span class="kn">from</span> <span class="nn">.pyfit</span> <span class="kn">import</span> <span class="n">fit</span><span class="p">,</span> <span class="n">_clean_bilby_run</span><span class="p">,</span> <span class="n">_priorUniform</span><span class="p">,</span> <span class="n">PyfitLikelihood</span>
 
 <span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="o">*</span>
 
+<span class="k">class</span> <span class="nc">_empty</span><span class="p">:</span>
+    <span class="k">pass</span>
 
 
 <span class="c1">##===============================================##</span>
@@ -124,7 +125,7 @@
 <a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.model_curve">[docs]</a>
 <span class="k">def</span> <span class="nf">model_curve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">samp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Fit Polynomial model to data</span>
+<span class="sd">    Fit Polynomial model to data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -133,22 +134,29 @@
 <span class="sd">    n : int, optional</span>
 <span class="sd">        Polynomial order, by default 5</span>
 <span class="sd">    samp : int, optional</span>
-<span class="sd">        number of samples to sample modelled data, by default None</span>
+<span class="sd">        number of samples to sample modelled data, if None, then any NaN values will be preserved, else NaN values are removed, by default None</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    np.ndarray</span>
 <span class="sd">        Modelled data</span>
 <span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">yout</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">ytemp</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span>
 
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>    
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">ytemp</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>    
     <span class="k">if</span> <span class="n">samp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">samp</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span>
     <span class="n">xnew</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">samp</span><span class="p">)</span>
     
-    <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">ytemp</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">xnew</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">samp</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="n">yout</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">xnew</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">yout</span> <span class="o">=</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">xnew</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">yout</span></div>
 
 
 
@@ -202,6 +210,31 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="lorentz_yshifted">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.lorentz_yshifted">[docs]</a>
+<span class="k">def</span> <span class="nf">lorentz_yshifted</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lorentz function - Usually used to model scintillation bandwidth</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X data - Usually Frequency array</span>
+<span class="sd">    w : float</span>
+<span class="sd">        width - Usually Scintillation Bandwidth</span>
+<span class="sd">    a : float</span>
+<span class="sd">        Amplitude - Usually m^2 where m is modulation index</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Y data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">w</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span></div>
+
 
 
 
@@ -300,6 +333,49 @@
 
 
 
+<div class="viewcode-block" id="specindex2">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.specindex2">[docs]</a>
+<span class="k">def</span> <span class="nf">specindex2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tau_c</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method 2 of calculating tau and the spectral index power-law</span>
+<span class="sd">    function. Better for fitting.</span>
+
+<span class="sd">    tau(f) = tau_c * (f/f_c)**alpha</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        Frequency [MHz]</span>
+<span class="sd">    tau_c : float</span>
+<span class="sd">        Scattering timescale at the central frequency f_c</span>
+<span class="sd">    alpha : float</span>
+<span class="sd">        Power-law index</span>
+<span class="sd">    </span>
+<span class="sd">    f_c is estimated using [x] -&gt; f_c = (x[0] + x[-1])/2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">f_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">tau_c</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">f_c</span><span class="p">)</span><span class="o">**</span><span class="n">alpha</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="burnslaw">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.burnslaw">[docs]</a>
+<span class="k">def</span> <span class="nf">burnslaw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">sig_rm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate modified burns law</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        Frequency [MHz]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># return np.exp(-2*sig_rm**2*(c/x*1e-6)**4)</span>
+    <span class="k">return</span> <span class="n">p</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">sig_rm</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">c</span><span class="o">/</span><span class="n">x</span><span class="o">*</span><span class="mf">1e-6</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span></div>
+
 
 
 
@@ -308,7 +384,7 @@
 <span class="c1">##===============================================##</span>
 <div class="viewcode-block" id="scatt_pulse_profile">
 <a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.scatt_pulse_profile">[docs]</a>
-<span class="k">def</span> <span class="nf">scatt_pulse_profile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">scatt_pulse_profile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">p</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Scattering time series profile with n pulses. Numerical convolution if done incorrectly</span>
 <span class="sd">    can shift the resultant data in an undesirable way. One way to avoid this is to take a large window</span>
@@ -390,102 +466,33 @@
 
     <span class="k">return</span> <span class="n">y</span></div>
 
-<span class="c1"># def scatt_pulse_profile(x, p):</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     Scattering time series profile with n pulses. Numerical convolution if done incorrectly</span>
-<span class="c1">#     can shift the resultant data in an undesirable way. One way to avoid this is to take a large window</span>
-<span class="c1">#     around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.</span>
-<span class="c1">#     This of course isn&#39;t realistic when taking a crop of data whose bounds cut through potential signal. </span>
 
-<span class="c1">#     To keep this function robust, the algorithm implemented here takes each gaussian profile and extends it until </span>
-<span class="c1">#     symmetrical, this avoids any potential shifting due to improper convolution. </span>
 
-<span class="c1">#     Parameters</span>
-<span class="c1">#     ----------</span>
-<span class="c1">#     x: np.ndarray</span>
-<span class="c1">#         X data array</span>
-<span class="c1">#     p: Dict(float)</span>
-<span class="c1">#         dictionary of parameters for scattered Gaussian pulses, for each pulse n: \n</span>
-<span class="c1">#         [a[n]] - Pulse amplitude \n</span>
-<span class="c1">#         [mu[n]] - Pulse position \n</span>
-<span class="c1">#         [sig[n]] - Pulse width \n</span>
-<span class="c1">#         [tau] - scattering timescale</span>
 
-<span class="c1">#     Returns</span>
-<span class="c1">#     -------</span>
-<span class="c1">#     y: np.ndarray</span>
-<span class="c1">#         Y data array</span>
-<span class="c1">#     &quot;&quot;&quot;</span>
-<span class="c1">#     # create empty output array</span>
-<span class="c1">#     y = np.zeros(x.size)</span>
-<span class="c1">#     print(x)</span>
-    
-<span class="c1">#     # create scattering tail </span>
-<span class="c1">#     dt = x[1] - x[0]</span>
-<span class="c1">#     npulses = (len(p) - 1)//3</span>
-<span class="c1">#     stail = scat(dt,p[&#39;tau&#39;], sig = 3)</span>
-<span class="c1">#     print(stail.size)</span>
-<span class="c1">#     # plt.plot(np.linspace(0.0, 1.0, stail.size), stail)</span>
+<div class="viewcode-block" id="scatt_pulse_profile_relative">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.scatt_pulse_profile_relative">[docs]</a>
+<span class="k">def</span> <span class="nf">scatt_pulse_profile_relative</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">p</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The functionality and inputs are the exact same to ilex.fitting.scatt_pulse_profile,</span>
+<span class="sd">    the difference is that [mu2, mu3, mu4, ..., muN] are treated as relative positions from </span>
+<span class="sd">    mu1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<span class="c1">#     # Each gaussian will be isolated and convolved seperatley with enough padding for a complete</span>
-<span class="c1">#     # uniform convolution with zero shifting due to numerical error.</span>
-<span class="c1">#     for i in range(npulses):</span>
-
-<span class="c1">#         # make gaussian with sigma 5</span>
-<span class="c1">#         xe = int(floor((p[f&quot;mu{i+1}&quot;] + p[f&quot;sig{i+1}&quot;]*5)/dt))  #assuming starts at zero, at increments of </span>
-<span class="c1">#         xs = int(floor((p[f&quot;mu{i+1}&quot;] - p[f&quot;sig{i+1}&quot;]*5)/dt))</span>
-    
-<span class="c1">#         # make sure the scattering tail is smaller or equal to the size of the gaussian to convolve</span>
-<span class="c1">#         # if x.size &lt; stail.size:</span>
-<span class="c1">#         #     # expand to same size as stail</span>
-<span class="c1">#         #     lendif = (stail.size - (x.size))</span>
-<span class="c1">#         #     xe += lendif</span>
-<span class="c1">#         #     xs -= lendif</span>
-            
-            
-<span class="c1">#         x_i = np.linspace(xs*dt, xe*dt, xe-xs + 1)</span>
-<span class="c1">#         print(x_i)</span>
-
-<span class="c1">#         # crop bounded signal</span>
-<span class="c1">#         ps = int(floor(x[0]/dt))</span>
-<span class="c1">#         xs -= ps</span>
-<span class="c1">#         xe -= ps</span>
-
-<span class="c1">#         # handle edge cases</span>
-<span class="c1">#         if xs &gt;= x.size:</span>
-<span class="c1">#             continue</span>
-
-<span class="c1">#         if xe &lt;= 0:</span>
-<span class="c1">#             continue</span>
-
-<span class="c1">#         # make pulse</span>
-<span class="c1">#         pulse_i = gaussian(x, 1, p[f&quot;mu{i+1}&quot;], p[f&quot;sig{i+1}&quot;])</span>
-<span class="c1">#         print(pulse_i.size)</span>
-<span class="c1">#         print(x.size)</span>
-<span class="c1">#         print(stail.size)</span>
-<span class="c1">#         # print(pulse_i.size)</span>
-<span class="c1">#         # plt.plot(x_i, pulse_i)</span>
-
-<span class="c1">#         # convolve</span>
-<span class="c1">#         conv = np.convolve(pulse_i, stail, mode = &quot;same&quot;)</span>
-<span class="c1">#         # plt.plot(np.linspace(0,1.0, stail.size),stail)</span>
-<span class="c1">#         plt.plot(x, conv/np.max(conv)*p[f&quot;a{i+1}&quot;], label = f&quot;{1/dt}&quot;)</span>
-<span class="c1">#         pulse_ind = [0, conv.size]</span>
-        
-<span class="c1">#         if xs &lt; 0:</span>
-<span class="c1">#             pulse_ind[0] = 0 - xs</span>
-<span class="c1">#             xs = 0</span>
-<span class="c1">#         if xe + 1 &gt; x.size:</span>
-<span class="c1">#             pulse_ind[1] -= (xe+1 - x.size)</span>
-<span class="c1">#             xe = x.size</span>
-
-<span class="c1">#         # y[xs:xe+1] += p[f&quot;a{i+1}&quot;] * conv[pulse_ind[0]:pulse_ind[1]]/np.max(conv)</span>
-<span class="c1">#     return y</span>
+    <span class="c1"># convert relative positions to absolute positions</span>
+    <span class="n">pnew</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">npulses</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pnew</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="mi">3</span>
+    <span class="k">if</span> <span class="n">npulses</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">npulses</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">pnew</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;mu</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pnew</span><span class="p">[</span><span class="s1">&#39;mu1&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">scatt_pulse_profile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">pnew</span><span class="p">)</span></div>
 
 
 
 
 
+
+<span class="c1"># def _scatt_pulse_profile_func():</span>
+<span class="c1">#     pass</span>
 
 <div class="viewcode-block" id="make_scatt_pulse_profile_func">
 <a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_scatt_pulse_profile_func">[docs]</a>
@@ -497,27 +504,210 @@
 <span class="sd">    ----------</span>
 <span class="sd">    n: int</span>
 <span class="sd">        number of pulses in scatter profile</span>
-
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    func: __func__</span>
-<span class="sd">        lambda function for scatter pulse profile with n pulses</span>
+<span class="sd">        lambda function for scatter pulse profile with n pulses, only if return_definition == False</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
-    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;scatt_pulse_profile(x,{&quot;</span>
+    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;scatt_pulse_profile(x,&quot;</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
         <span class="c1"># loop through components</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="s2">&quot;sig&quot;</span><span class="p">]:</span>
-            <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#39;:</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">,&quot;</span>
+            <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">,&quot;</span>
             <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="c1"># add tau</span>
-    <span class="n">func_str</span> <span class="o">+=</span> <span class="s2">&quot;&#39;tau&#39;:tau&quot;</span>
+    <span class="n">func_str</span> <span class="o">+=</span> <span class="s2">&quot;tau = tau&quot;</span>
     <span class="n">args_str</span> <span class="o">+=</span> <span class="s2">&quot;,tau&quot;</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span> <span class="o">+</span> <span class="s2">&quot;})&quot;</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">))</span></div>
+
+
+
+
+
+
+<div class="viewcode-block" id="make_scatt_pulse_profile_relative_func">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_scatt_pulse_profile_relative_func">[docs]</a>
+<span class="k">def</span> <span class="nf">make_scatt_pulse_profile_relative_func</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make scatter pulse profile wrapping function for fitting</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int</span>
+<span class="sd">        number of pulses in scatter profile</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    func: __func__</span>
+<span class="sd">        lambda function for scatter pulse profile with n pulses, only if return_definition == False</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;scatt_pulse_profile_relative(x,&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># loop through components</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span> <span class="s2">&quot;sig&quot;</span><span class="p">]:</span>
+            <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">,&quot;</span>
+            <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">p</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># add tau</span>
+    <span class="n">func_str</span> <span class="o">+=</span> <span class="s2">&quot;tau = tau&quot;</span>
+    <span class="n">args_str</span> <span class="o">+=</span> <span class="s2">&quot;,tau&quot;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">))</span></div>
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="make_scatt_pulse_profile_func_multi">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_scatt_pulse_profile_func_multi">[docs]</a>
+<span class="k">def</span> <span class="nf">make_scatt_pulse_profile_func_multi</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make scatter pulse profile wrapping function with the option of specifying more than 1</span>
+<span class="sd">    scattering timescales</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int</span>
+<span class="sd">        number of scattering timescales</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    func: __func__</span>
+<span class="sd">        lambda function of the form func(x, args1, tau1, args2, tau2...), where args are the set</span>
+<span class="sd">        of gaussian parameters args1 = {&#39;mu1&#39;, &#39;sig1&#39; ...}. Each set of args can have any number</span>
+<span class="sd">        of gaussian paramters and will be convolved with it&#39;s corrosponding tau1. The final result is the addition</span>
+<span class="sd">        of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, **args1) + scatt_pulse_profile(x, tau = tau2, **args2) + ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, args</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, tau</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;scatt_pulse_profile(x, tau = tau</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, **args</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">) + &quot;</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]))</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="make_scatt_pulse_profile_func_relative_multi">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.make_scatt_pulse_profile_func_relative_multi">[docs]</a>
+<span class="k">def</span> <span class="nf">make_scatt_pulse_profile_func_relative_multi</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make scatter pulse profile wrapping function with the option of specifying more than 1</span>
+<span class="sd">    scattering timescales</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int</span>
+<span class="sd">        number of scattering timescales</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    func: __func__</span>
+<span class="sd">        lambda function of the form func(x, args1, tau1, args2, tau2...), where args are the set</span>
+<span class="sd">        of gaussian parameters args1 = {&#39;mu1&#39;, &#39;sig1&#39; ...}. Each set of args can have any number</span>
+<span class="sd">        of gaussian paramters and will be convolved with it&#39;s corrosponding tau1. The final result is the addition</span>
+<span class="sd">        of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, **args1) + scatt_pulse_profile(x, tau = tau2, **args2) + ...</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">args_str</span> <span class="o">=</span> <span class="s2">&quot;lambda x&quot;</span>
+    <span class="n">func_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">args_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, args</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, tau</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">func_str</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;scatt_pulse_profile_relative(x, tau = tau</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, **args</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">) + &quot;</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">args_str</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">func_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]))</span></div>
+
+
+
+
+
+
+
+
+<div class="viewcode-block" id="tscattLikelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.tscattLikelihood">[docs]</a>
+<span class="k">class</span> <span class="nc">tscattLikelihood</span><span class="p">(</span><span class="n">PyfitLikelihood</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">yerr</span><span class="p">,</span> <span class="n">npulse</span><span class="p">,</span> <span class="n">fitmode</span> <span class="o">=</span> <span class="s2">&quot;abs&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Likelihood function for fitting N pulses with a common scattering</span>
+<span class="sd">        exponential to FRB data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : np.ndarray</span>
+<span class="sd">            Time [ms]</span>
+<span class="sd">        y : np.ndarray</span>
+<span class="sd">            FRB data</span>
+<span class="sd">        yerr : np.ndarray</span>
+<span class="sd">            error in y</span>
+<span class="sd">        npulse : np.ndarray</span>
+<span class="sd">            Number of gaussian pulses to model FRB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set data attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npulse</span> <span class="o">=</span> <span class="n">npulse</span>
+
+        <span class="c1"># construct parameters, we aren&#39;t going to retrieve them from the </span>
+        <span class="c1"># function because we need the function to accept a dictionary of parameters</span>
+        <span class="c1"># of variable length given self.npulse. So we will construct the parameters here</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tau&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">npulse</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">parameters</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;a</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;mu</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;sig</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+        <span class="n">bilby</span><span class="o">.</span><span class="n">Likelihood</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">fitmode</span> <span class="o">==</span> <span class="s2">&quot;abs&quot;</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">scatt_pulse_profile</span>
+        <span class="k">elif</span> <span class="n">fitmode</span> <span class="o">==</span> <span class="s2">&quot;relative&quot;</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">scatt_pulse_profile_relative</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitmode = </span><span class="si">{</span><span class="n">fitmode</span><span class="si">}</span><span class="s2"> is not a valid method of fitting tscatt!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_superinit</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">func</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">yerr</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="tscattLikelihood.log_likelihood">
+<a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.tscattLikelihood.log_likelihood">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the log likelihood function using a dictionary to pass to scatt_pulse_profile()</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span>
+        <span class="n">y_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">)</span>
+
+        <span class="c1"># for a gaussian log likelihood</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_model</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+</div>
+
+
+
+
+
+
+
+
+
 
 
 
@@ -535,7 +725,8 @@
 <span class="c1">## RM fitting functions ##</span>
 <div class="viewcode-block" id="fit_RMsynth">
 <a class="viewcode-back" href="../../_autosummary/ilex.fitting.html#ilex.fitting.fit_RMsynth">[docs]</a>
-<span class="k">def</span> <span class="nf">fit_RMsynth</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">clean_cutoff</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">fit_RMsynth</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">Inorm</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">clean_cutoff</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Use RM synthesis to calculate RM, pa0 and f0,</span>
 <span class="sd">    f0 is the weighted midband frequency and pa0 the</span>
@@ -557,6 +748,8 @@
 <span class="sd">        stokes U rms spectra</span>
 <span class="sd">    f: np.ndarray </span>
 <span class="sd">        frequencies [MHz]</span>
+<span class="sd">    lnorm: bool </span>
+<span class="sd">        if True will normalize stokes parameters by Stokes I, by default True</span>
 <span class="sd">    clean_cutoff: float </span>
 <span class="sd">        cutoff arg for run_rmclean()</span>
 <span class="sd">    **kwargs: Dict </span>
@@ -564,17 +757,20 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    rm: float </span>
-<span class="sd">        rotation measure</span>
-<span class="sd">    rm_err: float </span>
-<span class="sd">        error in rotation measure</span>
-<span class="sd">    f0: float </span>
-<span class="sd">        reference frequency at weighted mid-band</span>
-<span class="sd">    pa0: float </span>
-<span class="sd">        position angle at f0 </span>
+<span class="sd">    out : dict</span>
+<span class="sd">        dictionary of results \n</span>
+<span class="sd">        rm [float]: rotation measure \n </span>
+<span class="sd">        rm_err [float] error in rotation measure \n</span>
+<span class="sd">        f0 [float] reference frequency at weighted mid-band \n</span>
+<span class="sd">        pa0 [float] position angle at f0 \n</span>
+<span class="sd">        phiArr [np.ndarray] Array of phi values values \n</span>
+<span class="sd">        fdfArr [np.ndarray] Array of faraday depth values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">defkwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;polyOrd&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;phiMax_radm2&quot;</span><span class="p">:</span><span class="mf">1.0e3</span><span class="p">,</span> <span class="s2">&quot;dPhi_radm2&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;nSamples&quot;</span><span class="p">:</span><span class="mf">100.0</span><span class="p">}</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">Inorm</span><span class="p">)</span>
+
+    <span class="n">defkwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;polyOrd&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;phiMax_radm2&quot;</span><span class="p">:</span><span class="mf">1.0e3</span><span class="p">,</span> <span class="s2">&quot;dPhi_radm2&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;nSamples&quot;</span><span class="p">:</span><span class="mf">100.0</span><span class="p">,</span> 
+                 <span class="s1">&#39;showPlots&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
 
     <span class="c1">## process kwargs keys</span>
     <span class="n">keys</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
@@ -583,38 +779,64 @@
             <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">defkwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 
+    <span class="c1"># get stokes fractions</span>
+    <span class="k">if</span> <span class="n">Inorm</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Normalizing Stokes parameters by Stokes I, i.e. Q/I, U/I&quot;</span><span class="p">)</span>
+        <span class="n">Qfr</span><span class="p">,</span> <span class="n">QfrErr</span> <span class="o">=</span> <span class="n">calc_ratio</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">)</span>
+        <span class="n">Ufr</span><span class="p">,</span> <span class="n">UfrErr</span> <span class="o">=</span> <span class="n">calc_ratio</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">)</span>
+
+
     <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting RM using RM synthesis&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># RM data array</span>
-    <span class="n">rmsyn_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-        <span class="n">f</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span>     <span class="c1"># freqs (Hz)  </span>
-        <span class="n">I</span><span class="p">,</span>           <span class="c1"># I</span>
-        <span class="n">Q</span><span class="p">,</span>           <span class="c1"># Q</span>
-        <span class="n">U</span><span class="p">,</span>           <span class="c1"># U</span>
-        <span class="n">Ierr</span><span class="p">,</span>        <span class="c1"># I rms</span>
-        <span class="n">Qerr</span><span class="p">,</span>        <span class="c1"># Q rms</span>
-        <span class="n">Uerr</span>         <span class="c1"># U rms</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Inorm</span><span class="p">:</span>
+        <span class="c1">#RM data array</span>
+        <span class="n">rmsyn_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+            <span class="n">f</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span>     <span class="c1"># freqs (Hz)  </span>
+            <span class="n">I</span><span class="p">,</span>           <span class="c1"># I</span>
+            <span class="n">Q</span><span class="p">,</span>           <span class="c1"># Q</span>
+            <span class="n">U</span><span class="p">,</span>           <span class="c1"># U</span>
+            <span class="n">Ierr</span><span class="p">,</span>        <span class="c1"># I rms</span>
+            <span class="n">Qerr</span><span class="p">,</span>        <span class="c1"># Q rms</span>
+            <span class="n">Uerr</span>         <span class="c1"># U rms</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rmsyn_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+            <span class="n">f</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">,</span>     <span class="c1"># freqs (Hz)  </span>
+            <span class="n">Qfr</span><span class="p">,</span>           <span class="c1"># Q fraction</span>
+            <span class="n">Ufr</span><span class="p">,</span>           <span class="c1"># U fraction</span>
+            <span class="n">QfrErr</span><span class="p">,</span>        <span class="c1"># Q rms fraction</span>
+            <span class="n">UfrErr</span>         <span class="c1"># U rms fraction</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
 
     <span class="c1"># run RM synthesis</span>
     <span class="n">rm_sum</span><span class="p">,</span> <span class="n">rm_data</span> <span class="o">=</span> <span class="n">run_rmsynth</span><span class="p">(</span><span class="n">rmsyn_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1"># apply RM cleaning</span>
-    <span class="n">rmc</span> <span class="o">=</span> <span class="n">run_rmclean</span><span class="p">(</span><span class="n">rm_sum</span><span class="p">,</span> <span class="n">rm_data</span><span class="p">,</span> <span class="n">clean_cutoff</span><span class="p">)</span>
+    <span class="n">rmc</span><span class="p">,</span> <span class="n">rm_data</span> <span class="o">=</span> <span class="n">run_rmclean</span><span class="p">(</span><span class="n">rm_sum</span><span class="p">,</span> <span class="n">rm_data</span><span class="p">,</span> <span class="n">clean_cutoff</span><span class="p">,</span> <span class="n">showPlots</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;showPlots&#39;</span><span class="p">])</span>
 
     <span class="c1"># get estimated parameters</span>
-    <span class="n">rm</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;phiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                             <span class="c1"># RM</span>
-    <span class="n">rm_err</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;dPhiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                        <span class="c1"># RM err</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="s1">&#39;phiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                             <span class="c1"># RM</span>
+    <span class="n">rm_err</span> <span class="o">=</span> <span class="n">rmc</span><span class="p">[</span><span class="s1">&#39;dPhiPeakPIfit_rm2&#39;</span><span class="p">]</span>                                        <span class="c1"># RM err</span>
     <span class="n">f0</span> <span class="o">=</span> <span class="n">rm_sum</span><span class="p">[</span><span class="s1">&#39;freq0_Hz&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e6</span>                                               <span class="c1"># f0 (MHz)</span>
-    <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;peakFDFimagFit&#39;</span><span class="p">],</span><span class="n">rmc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;peakFDFrealFit&#39;</span><span class="p">])</span>   <span class="c1"># pa0 (at f0)</span>
+    <span class="n">pa0</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">rmc</span><span class="p">[</span><span class="s1">&#39;peakFDFimagFit&#39;</span><span class="p">],</span><span class="n">rmc</span><span class="p">[</span><span class="s1">&#39;peakFDFrealFit&#39;</span><span class="p">])</span>   <span class="c1"># pa0 (at f0)</span>
 
     <span class="c1"># print</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RM: </span><span class="si">{</span><span class="n">rm</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  +/-  </span><span class="si">{</span><span class="n">rm_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">     (rad/m2)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f0: </span><span class="si">{</span><span class="n">f0</span><span class="si">}</span><span class="s2">    (MHz)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pa0:  </span><span class="si">{</span><span class="n">pa0</span><span class="si">}</span><span class="s2">     (rad)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">pa0</span></div>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm</span> 
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm_err&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm_err</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;f0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f0</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa0</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;phiArr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm_data</span><span class="p">[</span><span class="s1">&#39;phiArr_radm2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;fdfArr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rm_data</span><span class="p">[</span><span class="s1">&#39;cleanFDF&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
 
@@ -656,14 +878,12 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    rm: float </span>
-<span class="sd">        rotation measure</span>
-<span class="sd">    rm_err: float </span>
-<span class="sd">        error in rotation measure</span>
-<span class="sd">    pa0: float </span>
-<span class="sd">        position angle at f0 </span>
-<span class="sd">    pa0_err: float</span>
-<span class="sd">        position angle err</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        Dictionary of results</span>
+<span class="sd">        rm [float] rotation measure \n</span>
+<span class="sd">        rm_err [float] error in rotation measure \n</span>
+<span class="sd">        pa0 [float] position angle at f0 \n</span>
+<span class="sd">        pa0_err [float] position angle err</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Fitting using RM quadratic function&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
@@ -690,7 +910,13 @@
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f0: </span><span class="si">{</span><span class="n">f0</span><span class="si">}</span><span class="s2">    (MHz)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pa0:  </span><span class="si">{</span><span class="n">pa0</span><span class="si">}</span><span class="s2">  +/-  </span><span class="si">{</span><span class="n">pa0_err</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">     (rad)&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span></div>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm_err&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm_err</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa0</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;pa0_err&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa0_err</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
 
@@ -821,6 +1047,15 @@
 <span class="sd">        Stokes Q parameter noise</span>
 <span class="sd">    Uerr : np.ndarray</span>
 <span class="sd">        Stokes U parameter noise</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        Dictionary of results \n</span>
+<span class="sd">        rm [float] rotation measure \n</span>
+<span class="sd">        rm_err [float] error in rotation measure \n</span>
+<span class="sd">        pa0 [float] position angle at f0 \n</span>
+<span class="sd">        pa0_err [float] position angle err</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">outdir</span> <span class="o">=</span> <span class="s2">&quot;outdir&quot;</span>
@@ -852,7 +1087,13 @@
     <span class="c1"># plots </span>
     <span class="n">result</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
 
-    <span class="k">return</span> <span class="n">rm</span><span class="p">,</span> <span class="n">rm_err</span><span class="p">,</span> <span class="n">pa0</span><span class="p">,</span> <span class="n">pa0_err</span></div>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;rm_err&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rm_err</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;pa0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa0</span>
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;pa0_err&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pa0_err</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
     

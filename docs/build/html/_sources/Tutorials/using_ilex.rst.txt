@@ -1,4 +1,4 @@
-Tutorial 1: Loading and plotting data
+Tutorial 1: Loading data and basic plotting
 ----------
 
 This brief tutorial will go through an example of using ILEX. The example data being used is an ASKAP observation

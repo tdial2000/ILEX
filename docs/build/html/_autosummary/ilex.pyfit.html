@@ -45,10 +45,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.addons.html">ilex.addons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.classes.html">ilex.classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
@@ -56,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.interactive.html">ilex.interactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.io.html">ilex.io</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
@@ -70,6 +72,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.PyfitLikelihood.sigma"><code class="docutils literal notranslate"><span class="pre">PyfitLikelihood.sigma</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.pyfit.center_str"><code class="docutils literal notranslate"><span class="pre">center_str()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.pyfit.fit"><code class="docutils literal notranslate"><span class="pre">fit</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.x"><code class="docutils literal notranslate"><span class="pre">fit.x</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.y"><code class="docutils literal notranslate"><span class="pre">fit.y</span></code></a></li>
@@ -94,6 +97,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.bic_err"><code class="docutils literal notranslate"><span class="pre">fit.bic_err</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.residuals"><code class="docutils literal notranslate"><span class="pre">fit.residuals</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plotPosterior"><code class="docutils literal notranslate"><span class="pre">fit.plotPosterior</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plot_model_kwargs"><code class="docutils literal notranslate"><span class="pre">fit.plot_model_kwargs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plot_data_kwargs"><code class="docutils literal notranslate"><span class="pre">fit.plot_data_kwargs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plot_err_kwargs"><code class="docutils literal notranslate"><span class="pre">fit.plot_err_kwargs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.fit"><code class="docutils literal notranslate"><span class="pre">fit.fit()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_mean_err"><code class="docutils literal notranslate"><span class="pre">fit.get_mean_err()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_model"><code class="docutils literal notranslate"><span class="pre">fit.get_model()</span></code></a></li>
@@ -101,7 +107,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_posteriors"><code class="docutils literal notranslate"><span class="pre">fit.get_posteriors()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.get_priors"><code class="docutils literal notranslate"><span class="pre">fit.get_priors()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plot"><code class="docutils literal notranslate"><span class="pre">fit.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.plot_model_on_ax"><code class="docutils literal notranslate"><span class="pre">fit.plot_model_on_ax()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.set"><code class="docutils literal notranslate"><span class="pre">fit.set()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.set_plot_vars"><code class="docutils literal notranslate"><span class="pre">fit.set_plot_vars()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.set_posterior"><code class="docutils literal notranslate"><span class="pre">fit.set_posterior()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.set_prior"><code class="docutils literal notranslate"><span class="pre">fit.set_prior()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ilex.pyfit.fit.sigma"><code class="docutils literal notranslate"><span class="pre">fit.sigma</span></code></a></li>
@@ -111,6 +119,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utilmethods.html">ilex.utilmethods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
@@ -160,7 +169,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.PyfitLikelihood.log_likelihood">
 <span class="sig-name descname"><span class="pre">log_likelihood</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#PyfitLikelihood.log_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.PyfitLikelihood.log_likelihood" title="Link to this definition"></a></dt>
-<dd><p>Evaluate the log liklihood of function</p>
+<dd><p>Evaluate the log likelihood of function</p>
 </dd></dl>
 
 <dl class="py property">
@@ -179,6 +188,11 @@
 <dd></dd></dl>
 
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.pyfit.center_str">
+<span class="sig-name descname"><span class="pre">center_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">totlen</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#center_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.center_str" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ilex.pyfit.fit">
@@ -441,6 +455,39 @@ including model plotting and statistics such as chi2.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.plot_model_kwargs">
+<span class="sig-name descname"><span class="pre">plot_model_kwargs</span></span><a class="headerlink" href="#ilex.pyfit.fit.plot_model_kwargs" title="Link to this definition"></a></dt>
+<dd><p>ax.plot kwarg dict for model fit</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.plot_data_kwargs">
+<span class="sig-name descname"><span class="pre">plot_data_kwargs</span></span><a class="headerlink" href="#ilex.pyfit.fit.plot_data_kwargs" title="Link to this definition"></a></dt>
+<dd><p>ax.scatter kwarg dict for data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.plot_err_kwargs">
+<span class="sig-name descname"><span class="pre">plot_err_kwargs</span></span><a class="headerlink" href="#ilex.pyfit.fit.plot_err_kwargs" title="Link to this definition"></a></dt>
+<dd><p>ax.errorbar kwarg dict for error bars</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.fit" title="Link to this definition"></a></dt>
@@ -543,9 +590,33 @@ including model plotting and statistics such as chi2.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.plot_model_on_ax">
+<span class="sig-name descname"><span class="pre">plot_model_on_ax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.plot_model_on_ax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.plot_model_on_ax" title="Link to this definition"></a></dt>
+<dd><p>Plot model on given axis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ax</strong> (<em>Axes</em>) – Axes handle to plot model on</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.set">
 <span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.set" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.pyfit.fit.set_plot_vars">
+<span class="sig-name descname"><span class="pre">set_plot_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/pyfit.html#fit.set_plot_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.pyfit.fit.set_plot_vars" title="Link to this definition"></a></dt>
+<dd><p>Set the plot parameters for things like model line, data points and
+errorbars any dict items passed will be “ADDED/MODIFIED” to the
+existing plot param dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>plot_model_kwargs</strong> (<em>dict</em>) – Parameters for model line</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ilex.pyfit.fit.set_posterior">

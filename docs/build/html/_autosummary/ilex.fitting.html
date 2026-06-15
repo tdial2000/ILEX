@@ -45,10 +45,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.addons.html">ilex.addons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.classes.html">ilex.classes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.fitting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.QUfit_likelihood"><code class="docutils literal notranslate"><span class="pre">QUfit_likelihood</span></code></a><ul>
@@ -58,16 +59,27 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.RM_QUfit"><code class="docutils literal notranslate"><span class="pre">RM_QUfit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.burnslaw"><code class="docutils literal notranslate"><span class="pre">burnslaw()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMquad"><code class="docutils literal notranslate"><span class="pre">fit_RMquad()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.fit_RMsynth"><code class="docutils literal notranslate"><span class="pre">fit_RMsynth()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.gaussian"><code class="docutils literal notranslate"><span class="pre">gaussian()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.lorentz"><code class="docutils literal notranslate"><span class="pre">lorentz()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.lorentz_yshifted"><code class="docutils literal notranslate"><span class="pre">lorentz_yshifted()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_polyfit"><code class="docutils literal notranslate"><span class="pre">make_polyfit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_scatt_pulse_profile_func"><code class="docutils literal notranslate"><span class="pre">make_scatt_pulse_profile_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_scatt_pulse_profile_func_multi"><code class="docutils literal notranslate"><span class="pre">make_scatt_pulse_profile_func_multi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_scatt_pulse_profile_func_relative_multi"><code class="docutils literal notranslate"><span class="pre">make_scatt_pulse_profile_func_relative_multi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.make_scatt_pulse_profile_relative_func"><code class="docutils literal notranslate"><span class="pre">make_scatt_pulse_profile_relative_func()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.model_curve"><code class="docutils literal notranslate"><span class="pre">model_curve()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.scat"><code class="docutils literal notranslate"><span class="pre">scat()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.scatt_pulse_profile"><code class="docutils literal notranslate"><span class="pre">scatt_pulse_profile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.scatt_pulse_profile_relative"><code class="docutils literal notranslate"><span class="pre">scatt_pulse_profile_relative()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.specindex"><code class="docutils literal notranslate"><span class="pre">specindex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.specindex2"><code class="docutils literal notranslate"><span class="pre">specindex2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.fitting.tscattLikelihood"><code class="docutils literal notranslate"><span class="pre">tscattLikelihood</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.fitting.tscattLikelihood.log_likelihood"><code class="docutils literal notranslate"><span class="pre">tscattLikelihood.log_likelihood()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
@@ -75,12 +87,14 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.interactive.html">ilex.interactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.io.html">ilex.io</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utilmethods.html">ilex.utilmethods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
@@ -159,6 +173,28 @@
 <li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – Stokes U parameter noise</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>out</strong> – Dictionary of results</p>
+<p>rm [float] rotation measure</p>
+<p>rm_err [float] error in rotation measure</p>
+<p>pa0 [float] position angle at f0</p>
+<p>pa0_err [float] position angle err</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.burnslaw">
+<span class="sig-name descname"><span class="pre">burnslaw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_rm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#burnslaw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.burnslaw" title="Link to this definition"></a></dt>
+<dd><p>Calculate modified burns law</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>np.ndarray</em>) – Frequency [MHz]</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -182,20 +218,22 @@
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>rm</strong> (<em>float</em>) – rotation measure</p></li>
-<li><p><strong>rm_err</strong> (<em>float</em>) – error in rotation measure</p></li>
-<li><p><strong>pa0</strong> (<em>float</em>) – position angle at f0</p></li>
-<li><p><strong>pa0_err</strong> (<em>float</em>) – position angle err</p></li>
-</ul>
+<dd class="field-even"><p><p><strong>out</strong> – Dictionary of results
+rm [float] rotation measure</p>
+<p>rm_err [float] error in rotation measure</p>
+<p>pa0 [float] position angle at f0</p>
+<p>pa0_err [float] position angle err</p>
 </p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.fit_RMsynth">
-<span class="sig-name descname"><span class="pre">fit_RMsynth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_RMsynth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_RMsynth" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fit_RMsynth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ierr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Inorm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clean_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#fit_RMsynth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.fit_RMsynth" title="Link to this definition"></a></dt>
 <dd><p>Use RM synthesis to calculate RM, pa0 and f0,
 f0 is the weighted midband frequency and pa0 the
 pa at f0.</p>
@@ -209,18 +247,23 @@ pa at f0.</p>
 <li><p><strong>Qerr</strong> (<em>np.ndarray</em>) – stokes Q rms spectra</p></li>
 <li><p><strong>Uerr</strong> (<em>np.ndarray</em>) – stokes U rms spectra</p></li>
 <li><p><strong>f</strong> (<em>np.ndarray</em>) – frequencies [MHz]</p></li>
+<li><p><strong>lnorm</strong> (<em>bool</em>) – if True will normalize stokes parameters by Stokes I, by default True</p></li>
 <li><p><strong>clean_cutoff</strong> (<em>float</em>) – cutoff arg for run_rmclean()</p></li>
 <li><p><strong>**kwargs</strong> (<em>Dict</em>) – keyword arguments for RM tools run_synthesis</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>rm</strong> (<em>float</em>) – rotation measure</p></li>
-<li><p><strong>rm_err</strong> (<em>float</em>) – error in rotation measure</p></li>
-<li><p><strong>f0</strong> (<em>float</em>) – reference frequency at weighted mid-band</p></li>
-<li><p><strong>pa0</strong> (<em>float</em>) – position angle at f0</p></li>
-</ul>
+<dd class="field-even"><p><p><strong>out</strong> – dictionary of results</p>
+<p>rm [float]: rotation measure</p>
+<p>rm_err [float] error in rotation measure</p>
+<p>f0 [float] reference frequency at weighted mid-band</p>
+<p>pa0 [float] position angle at f0</p>
+<p>phiArr [np.ndarray] Array of phi values values</p>
+<p>fdfArr [np.ndarray] Array of faraday depth values</p>
 </p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -269,6 +312,27 @@ pa at f0.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.lorentz_yshifted">
+<span class="sig-name descname"><span class="pre">lorentz_yshifted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#lorentz_yshifted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.lorentz_yshifted" title="Link to this definition"></a></dt>
+<dd><p>Lorentz function - Usually used to model scintillation bandwidth</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – X data - Usually Frequency array</p></li>
+<li><p><strong>w</strong> (<em>float</em>) – width - Usually Scintillation Bandwidth</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – Amplitude - Usually m^2 where m is modulation index</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Y data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.make_polyfit">
 <span class="sig-name descname"><span class="pre">make_polyfit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#make_polyfit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.make_polyfit" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -282,7 +346,66 @@ pa at f0.</p>
 <dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of pulses in scatter profile</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>func</strong> – lambda function for scatter pulse profile with n pulses</p>
+<dd class="field-even"><p><strong>func</strong> – lambda function for scatter pulse profile with n pulses, only if return_definition == False</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>__func__</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.make_scatt_pulse_profile_func_multi">
+<span class="sig-name descname"><span class="pre">make_scatt_pulse_profile_func_multi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#make_scatt_pulse_profile_func_multi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.make_scatt_pulse_profile_func_multi" title="Link to this definition"></a></dt>
+<dd><p>Make scatter pulse profile wrapping function with the option of specifying more than 1
+scattering timescales</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of scattering timescales</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>func</strong> – lambda function of the form func(x, args1, tau1, args2, tau2…), where args are the set
+of gaussian parameters args1 = {‘mu1’, ‘sig1’ …}. Each set of args can have any number
+of gaussian paramters and will be convolved with it’s corrosponding tau1. The final result is the addition
+of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, <a href="#id1"><span class="problematic" id="id2">**</span></a>args1) + scatt_pulse_profile(x, tau = tau2, <a href="#id3"><span class="problematic" id="id4">**</span></a>args2) + …</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>__func__</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.make_scatt_pulse_profile_func_relative_multi">
+<span class="sig-name descname"><span class="pre">make_scatt_pulse_profile_func_relative_multi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#make_scatt_pulse_profile_func_relative_multi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.make_scatt_pulse_profile_func_relative_multi" title="Link to this definition"></a></dt>
+<dd><p>Make scatter pulse profile wrapping function with the option of specifying more than 1
+scattering timescales</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of scattering timescales</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>func</strong> – lambda function of the form func(x, args1, tau1, args2, tau2…), where args are the set
+of gaussian parameters args1 = {‘mu1’, ‘sig1’ …}. Each set of args can have any number
+of gaussian paramters and will be convolved with it’s corrosponding tau1. The final result is the addition
+of these scatt pulse profiles, i.e. I = scatt_pulse_profile(x, tau = tau1, <a href="#id5"><span class="problematic" id="id6">**</span></a>args1) + scatt_pulse_profile(x, tau = tau2, <a href="#id7"><span class="problematic" id="id8">**</span></a>args2) + …</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>__func__</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.make_scatt_pulse_profile_relative_func">
+<span class="sig-name descname"><span class="pre">make_scatt_pulse_profile_relative_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#make_scatt_pulse_profile_relative_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.make_scatt_pulse_profile_relative_func" title="Link to this definition"></a></dt>
+<dd><p>Make scatter pulse profile wrapping function for fitting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of pulses in scatter profile</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>func</strong> – lambda function for scatter pulse profile with n pulses, only if return_definition == False</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>__func__</p>
@@ -293,13 +416,13 @@ pa at f0.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.model_curve">
 <span class="sig-name descname"><span class="pre">model_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#model_curve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.model_curve" title="Link to this definition"></a></dt>
-<dd><p>Fit Polynomial model to data</p>
+<dd><p>Fit Polynomial model to data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>y</strong> (<em>np.ndarray</em>) – data to model</p></li>
 <li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – Polynomial order, by default 5</p></li>
-<li><p><strong>samp</strong> (<em>int</em><em>, </em><em>optional</em>) – number of samples to sample modelled data, by default None</p></li>
+<li><p><strong>samp</strong> (<em>int</em><em>, </em><em>optional</em>) – number of samples to sample modelled data, if None, then any NaN values will be preserved, else NaN values are removed, by default None</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -334,7 +457,7 @@ pa at f0.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.scatt_pulse_profile">
-<span class="sig-name descname"><span class="pre">scatt_pulse_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#scatt_pulse_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.scatt_pulse_profile" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">scatt_pulse_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#scatt_pulse_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.scatt_pulse_profile" title="Link to this definition"></a></dt>
 <dd><p>Scattering time series profile with n pulses. Numerical convolution if done incorrectly
 can shift the resultant data in an undesirable way. One way to avoid this is to take a large window
 around the known signal to encompass the all pulses and convolve this with a symmetrical scattering tail.
@@ -363,6 +486,14 @@ symmetrical, this avoids any potential shifting due to improper convolution.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.scatt_pulse_profile_relative">
+<span class="sig-name descname"><span class="pre">scatt_pulse_profile_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#scatt_pulse_profile_relative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.scatt_pulse_profile_relative" title="Link to this definition"></a></dt>
+<dd><p>The functionality and inputs are the exact same to ilex.fitting.scatt_pulse_profile,
+the difference is that [mu2, mu3, mu4, …, muN] are treated as relative positions from
+mu1.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.fitting.specindex">
 <span class="sig-name descname"><span class="pre">specindex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#specindex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.specindex" title="Link to this definition"></a></dt>
 <dd><p>Spectral index power-law function</p>
@@ -381,6 +512,35 @@ symmetrical, this avoids any potential shifting due to improper convolution.</p>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.fitting.specindex2">
+<span class="sig-name descname"><span class="pre">specindex2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#specindex2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.specindex2" title="Link to this definition"></a></dt>
+<dd><p>Method 2 of calculating tau and the spectral index power-law
+function. Better for fitting.</p>
+<p>tau(f) = tau_c * (f/f_c)**alpha</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – Frequency [MHz]</p></li>
+<li><p><strong>tau_c</strong> (<em>float</em>) – Scattering timescale at the central frequency f_c</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Power-law index</p></li>
+<li><p><strong>x</strong><strong>[</strong><strong>-1</strong><strong>]</strong><strong>)</strong><strong>/2</strong> (<em>f_c is estimated using</em><em> [</em><em>x</em><em>] </em><em>-&gt; f_c =</em><em> (</em><em>x</em><em>[</em><em>0</em><em>] </em><em>+</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.fitting.tscattLikelihood">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tscattLikelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#tscattLikelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.tscattLikelihood" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="ilex.fitting.tscattLikelihood.log_likelihood">
+<span class="sig-name descname"><span class="pre">log_likelihood</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/fitting.html#tscattLikelihood.log_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.fitting.tscattLikelihood.log_likelihood" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the log likelihood function using a dictionary to pass to scatt_pulse_profile()</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>

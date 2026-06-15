@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.addons package &mdash; ILEX 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=8d563738"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ilex.addons package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ilex.addons.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ilex-addons-package">
+<h1>ilex.addons package<a class="headerlink" href="#ilex-addons-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-ilex.addons.shrine">
+<span id="ilex-addons-shrine-module"></span><h2>ilex.addons.shrine module<a class="headerlink" href="#module-ilex.addons.shrine" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.addons.shrine._args">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_args</span></span><a class="reference internal" href="_modules/ilex/addons/shrine.html#_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.addons.shrine._args" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.addons.shrine.generate_profiles">
+<span class="sig-name descname"><span class="pre">generate_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ilex/addons/shrine.html#generate_profiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.addons.shrine.generate_profiles" title="Link to this definition"></a></dt>
+<dd><p>Generate I matrix, a matrix of Stokes I time series for each trial DM.
+This function is an incoherent alternative to the native profile generation avaliable
+in SHRINE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds</strong> (<em>2D np.ndarray</em>) – Stokes I dynamic spectrum</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – sample resolution [ms]</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Downsampling factor in time</p></li>
+<li><p><strong>cfreq</strong> (<em>float</em>) – Central frequency [MHz]</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth [MHz]</p></li>
+<li><p><strong>f0</strong> (<em>float</em>) – Reference frequency</p></li>
+<li><p><strong>dms</strong> (<em>1D np.ndarray</em><em> or </em><em>array-like</em>) – List of trial DMs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>I</strong> – I matrix (dm, t)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2D np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.addons.shrine.get_structure_maximised_dm">
+<span class="sig-name descname"><span class="pre">get_structure_maximised_dm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">919.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">751.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMstep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ilex/addons/shrine.html#get_structure_maximised_dm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.addons.shrine.get_structure_maximised_dm" title="Link to this definition"></a></dt>
+<dd><p>Taken from the _main() function in SHRINE/python/maximise_structure.py
+and altered to be called as a function with the appropriate inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds</strong> (<em>2D np.ndarray</em>) – Stokes I dynamic spectrum</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Time resolution in [ms]</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Downsampling factor in time</p></li>
+<li><p><strong>cfreq</strong> (<em>float</em>) – Central frequency in [MHz], by default 919.5</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth in [MHz], by default 336</p></li>
+<li><p><strong>f0</strong> (<em>float</em>) – Reference frequency</p></li>
+<li><p><strong>DMmin</strong> (<em>float</em>) – Minimum in trial DM range, by default -1.0</p></li>
+<li><p><strong>DMmax</strong> (<em>float</em>) – Maximum in trial DM range, by default 1.0</p></li>
+<li><p><strong>DMstep</strong> (<em>float</em>) – Step size in trial DM range, by default 0.1</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label for outputs, including figures and files</p></li>
+<li><p><strong>outdir</strong> (<em>str</em>) – output directory for figures and files</p></li>
+<li><p><strong>filter_order</strong> (<em>int</em>) – low pass filter spectral index</p></li>
+<li><p><strong>force_kc</strong> (<em>int</em>) – <p>manually force the k index cutoff for low pass filter, if None will estimate</p>
+<p>the best value, by default None</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.addons.shrine.get_wmin_dm">
+<span class="sig-name descname"><span class="pre">get_wmin_dm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tN</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfreq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">919.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">336</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">751.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DMstep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_kc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ilex/addons/shrine.html#get_wmin_dm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.addons.shrine.get_wmin_dm" title="Link to this definition"></a></dt>
+<dd><p>Find the DM that minimises the burst width.</p>
+<p>Function to maximise the S/N fluence in the burst to estimate DM. If we assume the noise the same regardless of DM,
+then we can repoise the problem of S/N fluence maximization to burst width minimisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ds</strong> (<em>2D np.ndarray</em>) – Stokes I dynamic spectrum</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Time resolution in [ms]</p></li>
+<li><p><strong>tN</strong> (<em>int</em>) – Downsampling factor in time</p></li>
+<li><p><strong>cfreq</strong> (<em>float</em>) – Central frequency in [MHz], by default 919.5</p></li>
+<li><p><strong>bw</strong> (<em>float</em>) – Bandwidth in [MHz], by default 336</p></li>
+<li><p><strong>f0</strong> (<em>float</em>) – Reference frequency</p></li>
+<li><p><strong>DMmin</strong> (<em>float</em>) – Minimum in trial DM range, by default -1.0</p></li>
+<li><p><strong>DMmax</strong> (<em>float</em>) – Maximum in trial DM range, by default 1.0</p></li>
+<li><p><strong>DMstep</strong> (<em>float</em>) – Step size in trial DM range, by default 0.1</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label for outputs, including figures and files</p></li>
+<li><p><strong>outdir</strong> (<em>str</em>) – output directory for figures and files</p></li>
+<li><p><strong>filter_order</strong> (<em>int</em>) – low pass filter spectral index</p></li>
+<li><p><strong>force_kc</strong> (<em>int</em>) – <p>manually force the k index cutoff for low pass filter, if None will estimate</p>
+<p>the best value, by default None</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ilex.addons">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ilex.addons" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

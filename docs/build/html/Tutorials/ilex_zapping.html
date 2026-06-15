@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial 5: Channel zapping &mdash; ILEX 1.0.0 documentation</title>
+  <title>Tutorial 6: Channel zapping &mdash; ILEX 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ILEX scripts" href="ilex_scripts.html" />
-    <link rel="prev" title="Tutorial 4: Weighting data in time/freq" href="ilex_weighting.html" /> 
+    <link rel="prev" title="Tutorial 5: Weighting data in time/freq" href="ilex_weighting.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,15 +45,15 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="how_ilex_works.html">How ILEX works</a></li>
-<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Tutorial 1: Loading and plotting data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 2: Fitting methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 3: ILEX config files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 4: Weighting data in time/freq</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 5: Channel zapping</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="using_ilex.html">Tutorial 1: Loading data and basic plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting_methods.html">Tutorial 2: Different types of plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 3: Fitting methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 4: ILEX config files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 5: Weighting data in time/freq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 6: Channel zapping</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#channel-zapping">Channel zapping</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#zapchan">zapchan</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#loading-in-data-with-prior-zapping">Loading in data with prior zapping</a></li>
@@ -80,7 +80,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
-      <li class="breadcrumb-item active">Tutorial 5: Channel zapping</li>
+      <li class="breadcrumb-item active">Tutorial 6: Channel zapping</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/Tutorials/ilex_zapping.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,8 +90,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="tutorial-5-channel-zapping">
-<h1>Tutorial 5: Channel zapping<a class="headerlink" href="#tutorial-5-channel-zapping" title="Link to this heading"></a></h1>
+  <section id="tutorial-6-channel-zapping">
+<h1>Tutorial 6: Channel zapping<a class="headerlink" href="#tutorial-6-channel-zapping" title="Link to this heading"></a></h1>
 <p>This tutorial demonstrates how to flag/zap frequency channels in ILEX.</p>
 <section id="channel-zapping">
 <h2>Channel zapping<a class="headerlink" href="#channel-zapping" title="Link to this heading"></a></h2>
@@ -139,19 +139,24 @@ zapped all the channels between 1160 and 1180 MHz <strong>inclusive!</strong>. Y
 </div>
 <p><strong>NOTE: The</strong> <code class="docutils literal notranslate"><span class="pre">zapchan</span></code> <strong>string does not need to be in any particular order!</strong>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">.zap_channels()</span></code> method allows for more utility in zapping channels. The simplest use case is appending the current <code class="docutils literal notranslate"><span class="pre">zapchan</span></code>
-string with additional frequency channels</p>
+string with additional frequency channels.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="s2">&quot;1250:1300&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>you can also zap frequency channels that are close to zero by toggling <code class="docutils literal notranslate"><span class="pre">zapzeros</span> <span class="pre">=</span> <span class="pre">True</span></code> and specifying a tolerance threshold <code class="docutils literal notranslate"><span class="pre">zapzerosmargin</span></code></p>
+<p>You can also zap frequency channels that are close to zero by toggling <code class="docutils literal notranslate"><span class="pre">zapzeros</span> <span class="pre">=</span> <span class="pre">True</span></code> and specifying a tolerance threshold <code class="docutils literal notranslate"><span class="pre">zapzerosmargin</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="n">zapzeros</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">zapzerosmargin</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>you can also reset any additional channel zapping that was added after loading in the FRB data</p>
+<p>You can also reset any additional channel zapping that was added after loading in the FRB data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="n">resetzap</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">.zap_channels()</span></code> method also provides an interactive mode that allows the user to zap channels using an interactive GUI</p>
+<p>You can also perform an automated statistical based zapping process by toggling <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">=</span> <span class="pre">True</span></code> and specifying <code class="docutils literal notranslate"><span class="pre">zapsigma</span></code> for the threshold, <code class="docutils literal notranslate"><span class="pre">auto_tN</span></code>
+for the downsampling and <code class="docutils literal notranslate"><span class="pre">auto_iter</span></code> for the number of iterations to perform. The default values should work in general.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="n">auto</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">.zap_channels()</span></code> method also provides an interactive mode that allows the user to zap channels using an interactive GUI.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frb</span><span class="o">.</span><span class="n">zap_channels</span><span class="p">(</span><span class="n">interactive</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -175,7 +180,7 @@ by checking which frequency channels in the dynamic spectrum are set to <code cl
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex_weighting.html" class="btn btn-neutral float-left" title="Tutorial 4: Weighting data in time/freq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex_weighting.html" class="btn btn-neutral float-left" title="Tutorial 5: Weighting data in time/freq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ilex_scripts.html" class="btn btn-neutral float-right" title="ILEX scripts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -14,9 +14,5 @@ ilex.script\_core
    :recursive:
    :template: custom-module-template.rst
 
-   plot_PA_multi
-   plot_dynspec_mosaic
    plot_interactive_ds
-   plot_master
-   plot_stokes_dynspec
 

@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -222,6 +221,78 @@
     <span class="k">return</span> <span class="n">y</span></div>
 
 
+
+
+
+
+<div class="viewcode-block" id="downsample">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.downsample">[docs]</a>
+<span class="k">def</span> <span class="nf">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nan</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+                <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Downsample in either frequency or time</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: ndarray</span>
+<span class="sd">       data to average over</span>
+<span class="sd">    axis: int </span>
+<span class="sd">        axis to average over</span>
+<span class="sd">    N: int</span>
+<span class="sd">        donwsampling factor</span>
+<span class="sd">    nan : bool, optional</span>
+<span class="sd">        If True, using nanmean to ignore NaN values in array &#39;x&#39;, by default False</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        Method of downsampling, [&quot;mean&quot;, &quot;sum&quot;]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x: ndarray </span>
+<span class="sd">       Averaged data</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># if nan if true, will use numpy function that ignores nans in array x</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span>
+        <span class="k">if</span> <span class="n">nan</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;sum&quot;</span><span class="p">:</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span>
+        <span class="k">if</span> <span class="n">nan</span><span class="p">:</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nansum</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downsampling mode must be either [&#39;mean&#39;, &#39;sum&#39;]&quot;</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span>
+    
+
+    <span class="c1"># either dynamic spectra or time series</span>
+    <span class="n">ndims</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span>
+    <span class="k">if</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">N_new</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">N_new</span> <span class="o">/</span> <span class="n">N</span><span class="p">),</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    
+    <span class="k">elif</span> <span class="n">ndims</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1">#frequency scrunching</span>
+            <span class="n">N_new</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="nb">int</span><span class="p">(</span><span class="n">N_new</span> <span class="o">/</span> <span class="n">N</span><span class="p">),</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">axis</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#time scrunching</span>
+            <span class="n">N_new</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">N</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">[:,:</span><span class="n">N_new</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="nb">int</span><span class="p">(</span><span class="n">N_new</span> <span class="o">/</span> <span class="n">N</span><span class="p">),</span> <span class="n">N</span><span class="p">),</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;axis must be 1[-1] or 0&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
+        
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ndims must equal 1 or 2..&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 
 
 
@@ -444,6 +515,26 @@
 
 
 
+<div class="viewcode-block" id="gaussian_smooth">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.gaussian_smooth">[docs]</a>
+<span class="k">def</span> <span class="nf">gaussian_smooth</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">stDev</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a gaussian as a smoothing function to [y]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray or array-like</span>
+<span class="sd">        Data to smooth</span>
+<span class="sd">    stDev : int</span>
+<span class="sd">        Standard deviation of gaussian in number of samples</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">stDev</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="n">stDev</span><span class="p">,</span> <span class="mi">6</span><span class="o">*</span><span class="n">stDev</span><span class="p">,</span> <span class="mi">12</span><span class="o">*</span><span class="n">stDev</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">gaussian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">stDev</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">gaussian</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">gaussian</span><span class="p">),</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;same&quot;</span><span class="p">)</span></div>
 
 
 
@@ -580,9 +671,9 @@
             <span class="n">zap_1</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">df_step</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">fi</span><span class="p">)</span><span class="o">/</span><span class="n">df</span><span class="p">)</span>
 
             <span class="c1"># check if completely outside bounds</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">zap_0</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">zap_1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">zap_0</span> <span class="o">&gt;</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">zap_1</span> <span class="o">&gt;</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zap range [</span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">] MHz out of range of bandwidth [</span><span class="si">{</span><span class="n">f_min</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">f_max</span><span class="si">}</span><span class="s2">] MHz&quot;</span><span class="p">)</span>
-                <span class="k">continue</span>            
+            <span class="c1"># if (zap_0 &lt; 0 and zap_1 &lt; 0) or (zap_0 &gt; f.size -1 and zap_1 &gt; f.size -1):</span>
+            <span class="c1">#     print(f&quot;zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz&quot;)</span>
+            <span class="c1">#     continue            </span>
             
             <span class="c1"># check bounds</span>
             <span class="n">crop_zap</span> <span class="o">=</span> <span class="kc">False</span>
@@ -601,8 +692,8 @@
                 <span class="n">crop_zap</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">zap_1</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span>
 
-            <span class="k">if</span> <span class="n">crop_zap</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zap range cropped from [</span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">zap_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">] MHz -&gt; [</span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="n">zap_0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">f</span><span class="p">[</span><span class="n">zap_1</span><span class="p">]</span><span class="si">}</span><span class="s2">] MHz&quot;</span><span class="p">)</span>
+            <span class="c1"># if crop_zap:</span>
+                <span class="c1"># print(f&quot;zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -&gt; [{f[zap_0]}, {f[zap_1]}] MHz&quot;)</span>
 
             <span class="n">seg_idx</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">zap_0</span><span class="p">,</span><span class="n">zap_1</span><span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">df_step</span><span class="p">),</span><span class="n">df_step</span><span class="p">))[::</span><span class="n">df_step</span><span class="p">]</span>
 
@@ -611,7 +702,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_idx</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">df_step</span> <span class="o">*</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">zap_seg</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">-</span> <span class="n">fi</span><span class="p">)</span><span class="o">/</span><span class="n">df</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">_idx</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">_idx</span> <span class="o">&gt;</span> <span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;zap channel </span><span class="si">{</span><span class="n">zap_seg</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2"> MHz out of bounds of bandwidth [</span><span class="si">{</span><span class="n">f_min</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">f_max</span><span class="si">}</span><span class="s2">] MHz&quot;</span><span class="p">)</span>
+                <span class="c1"># print(f&quot;zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz&quot;)</span>
+                <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">seg_idx</span> <span class="o">+=</span> <span class="p">[</span><span class="n">_idx</span><span class="p">]</span>
 
@@ -750,7 +842,7 @@
 
 <div class="viewcode-block" id="calc_PA">
 <a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.calc_PA">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">,</span> <span class="n">rad2deg</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">calc_PA</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Qerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Uerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rad2deg</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate Position Angle (PA) and PA angle</span>
 
@@ -775,15 +867,22 @@
 <span class="sd">        Position Angle err  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">errflag</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">PAerr</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">errflag</span> <span class="o">=</span> <span class="kc">False</span>
+
     <span class="c1"># calculate PA and error</span>
     <span class="n">PA</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
-    <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
+    <span class="k">if</span> <span class="n">errflag</span><span class="p">:</span>
+        <span class="n">PAerr</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span>
                            <span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     
     <span class="c1"># convert to degrees if requested</span>
     <span class="k">if</span> <span class="n">rad2deg</span><span class="p">:</span>
         <span class="n">PA</span> <span class="o">*=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-        <span class="n">PAerr</span> <span class="o">*=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">if</span> <span class="n">errflag</span><span class="p">:</span>
+            <span class="n">PAerr</span> <span class="o">*=</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
 
 
     <span class="k">return</span> <span class="n">PA</span><span class="p">,</span> <span class="n">PAerr</span></div>
@@ -881,9 +980,10 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">L</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
-            <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">!=</span> <span class="mf">0.0</span>
-            <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="n">L</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="c1"># Lmask = L != 0.0</span>
+            <span class="c1"># Lerr[~Lmask] = np.nan</span>
+            <span class="c1"># L[~Lmask] = np.nan</span>
+            <span class="n">Lerr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Lerr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lerr</span></div>
 
@@ -928,14 +1028,17 @@
     <span class="n">L_meas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">L_debias</span> <span class="o">=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">L_debias</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">L_debias</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">L_debias</span><span class="p">[</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mf">1.57</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># updated (was K = 1.57, Median estimator)</span>
+    <span class="n">L_debias</span><span class="p">[</span><span class="n">L_meas</span><span class="o">/</span><span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mf">1.57</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>    
 
     <span class="n">Lerr</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">Lerr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">L_debias</span>
-        <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Lerr</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">L_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Lmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="c1"># Lmask = L_debias != 0.0</span>
+        <span class="c1"># Lerr[~Lmask] = np.nan</span>
+        <span class="c1"># L_debias[~Lmask] = np.nan</span>
+        <span class="n">Lerr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Lerr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">return</span> <span class="n">L_debias</span><span class="p">,</span> <span class="n">Lerr</span></div>
 
@@ -986,9 +1089,10 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">Lerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Verr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">P</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
-            <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P</span> <span class="o">!=</span> <span class="mf">0.0</span>
-            <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="n">P</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="c1"># Pmask = P != 0.0</span>
+            <span class="c1"># Perr[~Pmask] = np.nan</span>
+            <span class="c1"># P[~Pmask] = np.nan</span>
+            <span class="n">Perr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Perr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">return</span> <span class="n">P</span><span class="p">,</span> <span class="n">Perr</span></div>
 
@@ -1033,17 +1137,21 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># calc L debais</span>
-    <span class="n">L_debias</span><span class="p">,</span> <span class="n">Lerr</span> <span class="o">=</span> <span class="n">calc_Ldebiased</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">Ierr</span><span class="p">,</span> <span class="n">Qerr</span><span class="p">,</span> <span class="n">Uerr</span><span class="p">)</span>
+    <span class="c1"># L_debias, Lerr = calc_Ldebiased(Q, U, Ierr, Qerr, Uerr)</span>
     <span class="c1"># calc P </span>
-    <span class="n">P_debias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L_debias</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">P_debias</span> <span class="o">=</span> <span class="n">Ierr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">P</span><span class="o">/</span><span class="n">Ierr</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">P_debias</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">P_debias</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">P_debias</span><span class="p">[</span><span class="n">P</span> <span class="o">/</span> <span class="n">Ierr</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># calc P err</span>
     <span class="n">Perr</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">Lerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Verr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">L_debias</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Lerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">P_debias</span>
-        <span class="n">Pmask</span> <span class="o">=</span> <span class="n">P_debias</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="n">Perr</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="n">P_debias</span><span class="p">[</span><span class="o">~</span><span class="n">Pmask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Qerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Uerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">Verr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">Perr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Q</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Qerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">U</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Uerr</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">V</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">Verr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">P_debias</span>
+        <span class="c1"># Pmask = P_debias != 0.0</span>
+        <span class="c1"># Perr[~Pmask] = np.nan</span>
+        <span class="c1"># P_debias[~Pmask] = np.nan</span>
+        <span class="n">Perr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">Perr</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="k">return</span> <span class="n">P_debias</span><span class="p">,</span> <span class="n">Perr</span></div>
 
@@ -1166,6 +1274,29 @@
 
 
 
+<div class="viewcode-block" id="get_centroid">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.get_centroid">[docs]</a>
+<span class="k">def</span> <span class="nf">get_centroid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get Center of cumalative sum of y in terms of x.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : np.ndarray</span>
+<span class="sd">        X values</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        Y values, it is assumed that there are no NaN values</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    c : float</span>
+<span class="sd">        Center of cumalative sum of y in terms of x</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">mid_cumsum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="n">total</span><span class="o">/</span><span class="mi">2</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mid_cumsum</span><span class="p">))]</span></div>
 
 
 
@@ -1211,6 +1342,37 @@
     <span class="k">return</span> <span class="n">y_out</span><span class="p">,</span> <span class="n">y_fit</span></div>
 
 
+
+<div class="viewcode-block" id="mean_normalize">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.mean_normalize">[docs]</a>
+<span class="k">def</span> <span class="nf">mean_normalize</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize data array by dividing by the mean model. </span>
+<span class="sd">    This function can handle NaN values</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray</span>
+<span class="sd">        data array</span>
+<span class="sd">    n : int, optional</span>
+<span class="sd">        max order for polynomial to fit to mean model of y, by default 5</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        residuals of y</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="c1"># set x vals to nans for corrosponding y values</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="n">y_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">poly1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span><span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">],</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">y_out</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">y_out</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">/=</span> <span class="n">y_fit</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">y_out</span><span class="p">,</span> <span class="n">y_fit</span></div>
 
 
 
@@ -1331,6 +1493,54 @@
 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+
+<div class="viewcode-block" id="unwrap_pa">
+<a class="viewcode-back" href="../../_autosummary/ilex.data.html#ilex.data.unwrap_pa">[docs]</a>
+<span class="k">def</span> <span class="nf">unwrap_pa</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">pa</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unwrap polarisation position angle (PA) with a given RM </span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rm</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;RM is 0, cannot unwrap...&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">):</span>
+        <span class="n">angs</span> <span class="o">=</span> <span class="n">rm</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">1e12</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">f</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">angs</span>
+    
+    <span class="c1"># calculate number of points needed for PA model</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">rmconst1</span> <span class="o">=</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">rm</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e12</span><span class="p">)</span> <span class="o">-</span> <span class="n">f1</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">rmconst2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">f1</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="n">rm</span> <span class="o">*</span> <span class="n">c</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e12</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">f1</span><span class="o">**</span><span class="mi">3</span>
+    <span class="n">rmconst3</span> <span class="o">=</span> <span class="n">f1</span><span class="o">**</span><span class="mi">4</span>
+
+    <span class="n">rmsgn</span> <span class="o">=</span> <span class="n">rm</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">rm</span><span class="p">)</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">rmconst2</span> <span class="o">+</span> <span class="n">rmsgn</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">rmconst2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="n">rmconst1</span><span class="o">*</span><span class="n">rmconst3</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">rmconst1</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">bw</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">bw</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eps</span><span class="p">))</span>
+
+    <span class="c1"># get model data</span>
+    <span class="n">fmodel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+    <span class="n">pamodel</span> <span class="o">=</span> <span class="n">rmquad</span><span class="p">(</span><span class="n">fmodel</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">)</span>
+    <span class="n">pamodel_wrapped</span> <span class="o">=</span> <span class="n">pamodel</span> <span class="o">%</span> <span class="mi">180</span>
+    <span class="n">wrap_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">pamodel_wrapped</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    
+    <span class="n">wrap_points</span> <span class="o">=</span> <span class="p">(</span><span class="n">wrap_points</span> <span class="o">/</span> <span class="p">(</span><span class="n">pamodel</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">pa_unwrapped</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span> 
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">wrap_points</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">pa_unwrapped</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">wrap_points</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmsgn</span> <span class="o">*</span> <span class="n">i</span> <span class="o">*</span> <span class="mf">180.0</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">wrap_points</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">pa_unwrapped</span><span class="p">[</span><span class="n">idx</span><span class="p">:]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rmsgn</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">180</span><span class="p">)</span>
+    <span class="n">pa_unwrapped</span> <span class="o">-=</span> <span class="p">(</span><span class="n">pa_unwrapped</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rmquad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rm</span><span class="p">,</span> <span class="n">pa0</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    
+
+    <span class="k">return</span> <span class="n">pa_unwrapped</span><span class="p">,</span> <span class="n">fmodel</span><span class="p">,</span> <span class="n">pamodel</span></div>
 
 </pre></div>
 

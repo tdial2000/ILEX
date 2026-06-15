@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="ilex.fitting" href="ilex.fitting.html" />
-    <link rel="prev" title="ilex" href="ilex.html" /> 
+    <link rel="prev" title="ilex.classes" href="ilex.classes.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,10 +45,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.addons.html">ilex.addons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.classes.html">ilex.classes</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.data</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.acf"><code class="docutils literal notranslate"><span class="pre">acf()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.average"><code class="docutils literal notranslate"><span class="pre">average()</span></code></a></li>
@@ -63,15 +64,20 @@
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.calc_stokes_abs_debias"><code class="docutils literal notranslate"><span class="pre">calc_stokes_abs_debias()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.ccf"><code class="docutils literal notranslate"><span class="pre">ccf()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.combine_zapchan"><code class="docutils literal notranslate"><span class="pre">combine_zapchan()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.downsample"><code class="docutils literal notranslate"><span class="pre">downsample()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.f_weight"><code class="docutils literal notranslate"><span class="pre">f_weight()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.fday_rot"><code class="docutils literal notranslate"><span class="pre">fday_rot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.gaussian_smooth"><code class="docutils literal notranslate"><span class="pre">gaussian_smooth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.get_centroid"><code class="docutils literal notranslate"><span class="pre">get_centroid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.get_zapstr"><code class="docutils literal notranslate"><span class="pre">get_zapstr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.mean_normalize"><code class="docutils literal notranslate"><span class="pre">mean_normalize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.norm"><code class="docutils literal notranslate"><span class="pre">norm()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.pslice"><code class="docutils literal notranslate"><span class="pre">pslice()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.residuals"><code class="docutils literal notranslate"><span class="pre">residuals()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.rotate_data"><code class="docutils literal notranslate"><span class="pre">rotate_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.scrunch"><code class="docutils literal notranslate"><span class="pre">scrunch()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.t_weight"><code class="docutils literal notranslate"><span class="pre">t_weight()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.data.unwrap_pa"><code class="docutils literal notranslate"><span class="pre">unwrap_pa()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ilex.data.zap_chan"><code class="docutils literal notranslate"><span class="pre">zap_chan()</span></code></a></li>
 </ul>
 </li>
@@ -81,12 +87,14 @@
 <li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.interactive.html">ilex.interactive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.io.html">ilex.io</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utilmethods.html">ilex.utilmethods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
 </ul>
@@ -242,7 +250,7 @@ summation approach that ignores any NaN values.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.calc_PA">
-<span class="sig-name descname"><span class="pre">calc_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad2deg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_PA" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">calc_PA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Qerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad2deg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#calc_PA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.calc_PA" title="Link to this definition"></a></dt>
 <dd><p>Calculate Position Angle (PA) and PA angle</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -429,6 +437,29 @@ real-valued data. Does NOT support NaN values</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.downsample">
+<span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#downsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.downsample" title="Link to this definition"></a></dt>
+<dd><p>Downsample in either frequency or time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>ndarray</em>) – data to average over</p></li>
+<li><p><strong>axis</strong> (<em>int</em>) – axis to average over</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – donwsampling factor</p></li>
+<li><p><strong>nan</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, using nanmean to ignore NaN values in array ‘x’, by default False</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – Method of downsampling, [“mean”, “sum”]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>x</strong> – Averaged data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.f_weight">
 <span class="sig-name descname"><span class="pre">f_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fW</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#f_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.f_weight" title="Link to this definition"></a></dt>
 <dd><p>Apply frequency weights on a 2D array, it is assumed that
@@ -475,6 +506,40 @@ the freq axis is axis = 0</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.gaussian_smooth">
+<span class="sig-name descname"><span class="pre">gaussian_smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stDev</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#gaussian_smooth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.gaussian_smooth" title="Link to this definition"></a></dt>
+<dd><p>Apply a gaussian as a smoothing function to [y]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>np.ndarray</em><em> or </em><em>array-like</em>) – Data to smooth</p></li>
+<li><p><strong>stDev</strong> (<em>int</em>) – Standard deviation of gaussian in number of samples</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.get_centroid">
+<span class="sig-name descname"><span class="pre">get_centroid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#get_centroid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.get_centroid" title="Link to this definition"></a></dt>
+<dd><p>Get Center of cumalative sum of y in terms of x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – X values</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – Y values, it is assumed that there are no NaN values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>c</strong> – Center of cumalative sum of y in terms of x</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.get_zapstr">
 <span class="sig-name descname"><span class="pre">get_zapstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#get_zapstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.get_zapstr" title="Link to this definition"></a></dt>
 <dd><p>Create string of channels to zap based on given nan frequencies in
@@ -491,6 +556,27 @@ stokes I dynamic spectrum</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.mean_normalize">
+<span class="sig-name descname"><span class="pre">mean_normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#mean_normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.mean_normalize" title="Link to this definition"></a></dt>
+<dd><p>Normalize data array by dividing by the mean model.
+This function can handle NaN values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – data array</p></li>
+<li><p><strong>n</strong> (<em>int</em><em>, </em><em>optional</em>) – max order for polynomial to fit to mean model of y, by default 5</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>residuals of y</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -631,6 +717,12 @@ the time axis is axis = 1</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ilex.data.unwrap_pa">
+<span class="sig-name descname"><span class="pre">unwrap_pa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pa0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#unwrap_pa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.unwrap_pa" title="Link to this definition"></a></dt>
+<dd><p>Unwrap polarisation position angle (PA) with a given RM</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ilex.data.zap_chan">
 <span class="sig-name descname"><span class="pre">zap_chan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zap_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/data.html#zap_chan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.data.zap_chan" title="Link to this definition"></a></dt>
 <dd><p>Zap channels, assumes contiguous frequency array</p>
@@ -659,7 +751,7 @@ the time axis is axis = 1</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ilex.html" class="btn btn-neutral float-left" title="ilex" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.classes.html" class="btn btn-neutral float-left" title="ilex.classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ilex.fitting.html" class="btn btn-neutral float-right" title="ilex.fitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

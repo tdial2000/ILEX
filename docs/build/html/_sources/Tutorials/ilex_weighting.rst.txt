@@ -1,4 +1,4 @@
-Tutorial 4: Weighting data in time/freq
+Tutorial 5: Weighting data in time/freq
 ---------------------------------------
 
 This tutorial will walk through weighting data using ILEX.

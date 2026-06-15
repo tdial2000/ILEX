@@ -42,7 +42,6 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Theory.html">Theory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../Tutorials.html">ILEX Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../_autosummary/ilex.html">ILEX Code</a></li>
@@ -77,6 +76,7 @@
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.logging</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">get_verbose</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_stk_from_datalist</span>
+<span class="kn">from</span> <span class="nn">.frbutils</span> <span class="kn">import</span> <span class="n">dynspec_smart_loader</span>
 <span class="kn">from</span> <span class="nn">.globals</span> <span class="kn">import</span> <span class="n">_G</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -211,25 +211,39 @@
     <span class="c1">##         RUN PROCESSING         ##</span>
     <span class="c1">## ============================== ##</span>
     <span class="c1"># log(&quot;Processing data&quot;, lpf = False)</span>
+    <span class="c1"># also crop/average freq array</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="o">*</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">])</span>    
+
+
+    <span class="c1"># # check if zap_chan flag exists</span>
+    <span class="c1"># seg_idx = zap_chan(freq, par[&#39;zapchan&#39;])</span>
+    <span class="c1"># if len(seg_idx) == 0:</span>
+    <span class="c1">#     zap_flag = False</span>
 
 
     <span class="c1">## crop ##    </span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying On-Pulse Time Crop = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying Off-Pulse Time crop = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying Freq Crop = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">_crop</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span> <span class="o">=</span> <span class="n">stk_list</span><span class="p">,</span> 
-                    <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">err_flag</span><span class="p">)</span>
+    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying Time Averaging = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="c1"># stk_ds = _crop(stk = stk, stk_ds = stk_ds, stk_list = stk_list, </span>
+    <span class="c1">#                 par = par, err = err_flag)</span>
 
-    <span class="c1"># also crop freq array</span>
-    <span class="n">freq</span> <span class="o">=</span> <span class="n">pslice</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="o">*</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">])</span>
+    <span class="n">fN</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">_master_dynspec_smart_load</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span> <span class="o">=</span> <span class="n">stk_list</span><span class="p">,</span>
+                <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">err_flag</span><span class="p">)</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fN</span>
 
 
 
     <span class="c1">## Channel Zap ##</span>
+    <span class="n">freqscrunchw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">freq</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">zap_flag</span><span class="p">:</span>
         <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying channel zapping&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="n">stk_ds</span><span class="p">,</span> <span class="n">zap_flag</span> <span class="o">=</span> <span class="n">_zap_chan</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span> <span class="o">=</span> <span class="n">stk_list</span><span class="p">,</span>
+        <span class="n">stk_ds</span><span class="p">,</span> <span class="n">zap_flag</span><span class="p">,</span> <span class="n">flagchans</span> <span class="o">=</span> <span class="n">_zap_chan</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span> <span class="o">=</span> <span class="n">stk_list</span><span class="p">,</span>
                                 <span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span><span class="p">,</span> <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">err_flag</span><span class="p">)</span>
+        <span class="n">freqscrunchw</span><span class="p">[</span><span class="n">flagchans</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="n">zap_flag</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;All channel zapping lies outside the known bandwidth, will skip channel zapping&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">)</span>
@@ -248,16 +262,20 @@
 
     
     <span class="c1"># ## average ##</span>
-    <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying Time Averaging = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
     <span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying Freq Averaging = </span><span class="si">{</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">lpf</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">tN</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">]</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>    
     <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">_average</span><span class="p">(</span><span class="n">stk</span> <span class="o">=</span> <span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span> <span class="o">=</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span> <span class="o">=</span> <span class="n">stk_list</span><span class="p">,</span>
                     <span class="n">par</span> <span class="o">=</span> <span class="n">par</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">err_flag</span><span class="p">,</span> <span class="n">zap</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">)</span>
+    <span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tN</span>
 
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">])</span>  
 
-
-    <span class="c1"># also average freq array</span>
-    <span class="n">freq</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">],</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">)</span>
-
+    <span class="c1"># create set of freq weights to apply when scrunching to properly scale the noise when channels</span>
+    <span class="c1"># are zapped</span>
+    <span class="n">freqscrunchw</span> <span class="o">=</span> <span class="n">downsample</span><span class="p">(</span><span class="n">freqscrunchw</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">],</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+    <span class="n">freqscrunchw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">freqscrunchw</span><span class="p">)</span> 
+    <span class="n">freqscrunchw</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">freqscrunchw</span><span class="p">)</span> 
 
     <span class="c1">## ========================= ##</span>
     <span class="c1">## SAVING DATA TO CONTAINERS ##</span>
@@ -290,7 +308,14 @@
 
         <span class="c1">#------- time series -------#</span>
         <span class="k">if</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">t_list</span><span class="p">:</span>
-            <span class="n">_t</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">_scrunch</span><span class="p">(</span><span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">_average_weight</span><span class="p">(</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;fW&#39;</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]),</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">)</span>
+            <span class="n">fweights</span> <span class="o">=</span> <span class="n">_average_weight</span><span class="p">(</span><span class="n">par</span><span class="p">[</span><span class="s1">&#39;fW&#39;</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;fN&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fweights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">fweights</span> <span class="o">*=</span> <span class="n">freqscrunchw</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fweights</span> <span class="o">=</span> <span class="n">freqscrunchw</span>
+
+            <span class="n">_t</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">_scrunch</span><span class="p">(</span><span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">xtype</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">fweights</span><span class="p">,</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">err_flag</span><span class="p">:</span>
                 <span class="n">_t</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_time_err</span><span class="p">(</span><span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">],</span> <span class="n">nan</span> <span class="o">=</span> <span class="n">zap_flag</span><span class="p">)</span>
 
@@ -332,6 +357,20 @@
 
 
 
+
+<span class="k">def</span> <span class="nf">_master_dynspec_smart_load</span><span class="p">(</span><span class="n">stk</span><span class="p">,</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="n">stk_list</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">err</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk_list</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SMART LOADING STK: &quot;</span><span class="o">+</span><span class="n">S</span><span class="p">)</span>
+        <span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">=</span> <span class="n">dynspec_smart_loader</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;t_crop&#39;</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">],</span>
+                                         <span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dynspec_smart_loader</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;terr_crop&#39;</span><span class="p">],</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;f_crop&#39;</span><span class="p">],</span>
+                                         <span class="n">par</span><span class="p">[</span><span class="s1">&#39;tN&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">stk_ds</span>
+
+        
 
 
 
@@ -440,7 +479,7 @@
 <span class="sd">        Full crop in Time and Frequency</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        See Master _proc</span>
+<span class="sd">        See master_proc</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk_list</span><span class="p">:</span>
@@ -526,31 +565,34 @@
 
     <span class="c1"># normalise by max of stokes I</span>
     <span class="k">if</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;maxI&quot;</span><span class="p">:</span>
-        <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">])</span>
+        <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="s1">&#39;I&#39;</span><span class="p">])</span>
 
     <span class="k">for</span> <span class="n">S</span> <span class="ow">in</span> <span class="n">stk_list</span><span class="p">:</span>
         <span class="c1"># normalise by max of stokes S</span>
-        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">zap</span><span class="p">:</span>
                 <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">])</span>
             <span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
-            <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
 
         <span class="c1"># normalise by abs max of stokes S</span>
-        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;absmax&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;absmax&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">zap</span><span class="p">:</span>
                 <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">]))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">nconst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">stk</span><span class="p">[</span><span class="n">S</span><span class="p">]))</span>
             <span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
-            <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
 
         <span class="c1"># normalise by max of stokes I</span>
-        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;maxI&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;norm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;maxI&quot;</span><span class="p">:</span>
             <span class="n">stk_ds</span><span class="p">[</span><span class="n">S</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
-            <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">nconst</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="p">(</span><span class="s2">&quot;Invalid method of normalisation, skipping step...&quot;</span><span class="p">,</span> <span class="n">stype</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">,</span>
@@ -681,76 +723,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">seg_idx</span> <span class="o">=</span> <span class="n">zap_chan</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">par</span><span class="p">[</span><span class="s1">&#39;zapchan&#39;</span><span class="p">])</span>
 
-    <span class="c1"># # vals</span>
-    <span class="c1"># df = freq[1] - freq[0]</span>
-    <span class="c1"># f_min = np.min(freq)</span>
-    <span class="c1"># f_max = np.max(freq)</span>
-
-    <span class="c1"># if df &lt; 0:</span>
-    <span class="c1">#     # upperside band</span>
-    <span class="c1">#     fi = f_max</span>
-    <span class="c1">#     df_step = -1</span>
-
-    <span class="c1"># else:</span>
-    <span class="c1">#     # lowerside band</span>
-    <span class="c1">#     fi = f_min</span>
-    <span class="c1">#     df_step = 1</span>
-
-    <span class="c1"># df = abs(df)</span>
-    
-    <span class="c1"># # split segments</span>
-    <span class="c1"># zap_segments = par[&#39;zapchan&#39;].split(&#39;,&#39;)</span>
-    <span class="c1"># seg_idx = []</span>
-
-    <span class="c1"># # for each segment, check for delimiter :, else float cast</span>
-    <span class="c1"># for _, zap_seg in enumerate(zap_segments):</span>
-
-    <span class="c1">#     # if segment is a range of frequencies</span>
-    <span class="c1">#     if &quot;:&quot; in zap_seg:</span>
-    <span class="c1">#         zap_range = zap_seg.strip().split(&#39;:&#39;)</span>
-    <span class="c1">#         zap_0 = round(df_step * (float(zap_range[0]) - fi)/df)</span>
-    <span class="c1">#         zap_1 = round(df_step * (float(zap_range[1]) - fi)/df)</span>
-
-
-    <span class="c1">#         # check if completely outside bounds</span>
-    <span class="c1">#         if (zap_0 &lt; 0 and zap_1 &lt; 0) or (zap_0 &gt; freq.size -1 and zap_1 &gt; freq.size -1):</span>
-    <span class="c1">#             log(f&quot;zap range [{zap_range[0]}, {zap_range[1]}] MHz out of range of bandwidth [{f_min}, {f_max}] MHz&quot;, lpf = False, stype = &quot;warn&quot;)</span>
-    <span class="c1">#             continue            </span>
-            
-    <span class="c1">#         # check bounds</span>
-    <span class="c1">#         crop_zap = False</span>
-
-    <span class="c1">#         if zap_0 &lt; 0:</span>
-    <span class="c1">#             crop_zap = True</span>
-    <span class="c1">#             zap_0 = 0</span>
-    <span class="c1">#         elif zap_0 &gt; freq.size - 1:</span>
-    <span class="c1">#             crop_zap = True</span>
-    <span class="c1">#             zap_0 = freq.size - 1</span>
-
-    <span class="c1">#         if zap_1 &lt; 0:</span>
-    <span class="c1">#             crop_zap = True</span>
-    <span class="c1">#             zap_1 = 0</span>
-    <span class="c1">#         elif zap_1 &gt; freq.size - 1:</span>
-    <span class="c1">#             crop_zap = True</span>
-    <span class="c1">#             zap_1 = freq.size - 1</span>
-
-    <span class="c1">#         if crop_zap:</span>
-    <span class="c1">#             log(f&quot;zap range cropped from [{zap_range[0]}, {zap_range[1]}] MHz -&gt; [{freq[zap_0]}, {freq[zap_1]}] MHz&quot;, lpf = False, stype = &quot;warn&quot;)</span>
-
-    <span class="c1">#         seg_idx += list(range(zap_0,zap_1+df_step,df_step))[::df_step]</span>
-        
-    <span class="c1">#     # if segment is just a single frequency</span>
-    <span class="c1">#     else:</span>
-    <span class="c1">#         _idx = round(df_step * (float(zap_seg.strip()) - fi)/df)</span>
-    <span class="c1">#         if (_idx &lt; 0) or (_idx &gt; freq.size - 1):</span>
-    <span class="c1">#             log(f&quot;zap channel {zap_seg.strip()} MHz out of bounds of bandwidth [{f_min}, {f_max}] MHz&quot;, lpf = False, stype = &quot;warn&quot;)</span>
-    <span class="c1">#         else:</span>
-    <span class="c1">#             seg_idx += [_idx]</span>
-
 
     <span class="c1"># check if seg_idx is empty, i.e. if there is no channel zapping.</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seg_idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">seg_idx</span>
 
 
     <span class="c1"># mask out zapped channels</span>
@@ -760,7 +736,7 @@
         <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">stk_ds</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">S</span><span class="si">}</span><span class="s2">err&quot;</span><span class="p">][</span><span class="n">seg_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
-    <span class="k">return</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">stk_ds</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">seg_idx</span>
 
 
 
@@ -802,9 +778,8 @@
             <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;Perr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_Pdebiased</span><span class="p">(</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Ierr&#39;</span><span class="p">],</span> 
                                                     <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Verr&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;PLerr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_P</span><span class="p">(</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span>
+            <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s2">&quot;Perr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">calc_P</span><span class="p">(</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;U&#39;</span><span class="p">],</span><span class="n">_f</span><span class="p">[</span><span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Qerr&#39;</span><span class="p">],</span> <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Uerr&#39;</span><span class="p">],</span>
                                           <span class="n">_f</span><span class="p">[</span><span class="s1">&#39;Verr&#39;</span><span class="p">])</span>
-
 
     <span class="k">return</span>
 

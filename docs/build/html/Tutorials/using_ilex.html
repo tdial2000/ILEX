@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial 1: Loading and plotting data &mdash; ILEX 1.0.0 documentation</title>
+  <title>Tutorial 1: Loading data and basic plotting &mdash; ILEX 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tutorial 2: Fitting methods" href="advanced_ilex.html" />
+    <link rel="next" title="Tutorial 2: Plotting functions" href="plotting_methods.html" />
     <link rel="prev" title="How does ILEX work?" href="how_ilex_works.html" /> 
 </head>
 
@@ -45,21 +45,21 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Overview.html">Overview of ILEX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="how_ilex_works.html">How ILEX works</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 1: Loading and plotting data</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial 1: Loading data and basic plotting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#loading-data">Loading data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cropping-and-plotting-data">Cropping and plotting data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#processing-data-and-the-get-data-function">processing data and the get_data() function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#saving-data">Saving data</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 2: Fitting methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 3: ILEX config files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 4: Weighting data in time/freq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ilex_zapping.html">Tutorial 5: Channel zapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting_methods.html">Tutorial 2: Different types of plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_ilex.html">Tutorial 3: Fitting methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_config.html">Tutorial 4: ILEX config files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_weighting.html">Tutorial 5: Weighting data in time/freq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex_zapping.html">Tutorial 6: Channel zapping</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ilex_scripts.html">ILEX scripts</a></li>
 </ul>
 </li>
@@ -81,7 +81,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../Tutorials.html">ILEX Tutorials</a></li>
-      <li class="breadcrumb-item active">Tutorial 1: Loading and plotting data</li>
+      <li class="breadcrumb-item active">Tutorial 1: Loading data and basic plotting</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/Tutorials/using_ilex.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -91,8 +91,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="tutorial-1-loading-and-plotting-data">
-<h1>Tutorial 1: Loading and plotting data<a class="headerlink" href="#tutorial-1-loading-and-plotting-data" title="Link to this heading"></a></h1>
+  <section id="tutorial-1-loading-data-and-basic-plotting">
+<h1>Tutorial 1: Loading data and basic plotting<a class="headerlink" href="#tutorial-1-loading-data-and-basic-plotting" title="Link to this heading"></a></h1>
 <p>This brief tutorial will go through an example of using ILEX. The example data being used is an ASKAP observation
 of the FRB 20220610A, details of the FRB can be found in the following paper:</p>
 <p><a class="reference external" href="https://www.science.org/doi/abs/10.1126/science.adf2678">https://www.science.org/doi/abs/10.1126/science.adf2678</a></p>
@@ -173,7 +173,7 @@ provided to the <code class="docutils literal notranslate"><span class="pre">.ge
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="how_ilex_works.html" class="btn btn-neutral float-left" title="How does ILEX work?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="advanced_ilex.html" class="btn btn-neutral float-right" title="Tutorial 2: Fitting methods" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="plotting_methods.html" class="btn btn-neutral float-right" title="Tutorial 2: Plotting functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

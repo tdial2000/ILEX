@@ -184,6 +184,9 @@ def _PLOT(x, y, xerr = None, yerr = None, ax = None, plot_type = "lines", color 
     elif plot_type == "lines":
         _PLOT_LINES(x = x, y = y, xerr = xerr, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
 
+    elif plot_type == "step":
+        _PLOT_STEP(x = x, y = y, xerr = xerr, yerr = yerr, ax = ax, color = color, alpha = alpha, **kwargs)
+
     else:
         print("Plot err style undefined/unsupported. ")
     
@@ -279,6 +282,48 @@ def _PLOT_LINES(x, y, xerr = None, yerr = None, ax = None, color = None, alpha =
     
     return
 
+
+
+def _PLOT_STEP(x, y, xerr = None, yerr = None, ax = None, color = None, alpha = 0.5, **kwargs):
+    """
+    Plot lines
+    """
+
+    plot_pars = load_plotstyle()
+
+    for key in kwargs:
+        if key in _G.plot_args:
+            plot_pars['plot'][key] = kwargs[key]
+
+    if 'color' in plot_pars['plot'].keys():
+        del plot_pars['plot']['color']
+
+    # plot region
+    if ax is not None:
+        ln, = ax.step(x, y, color = color, where = 'mid', **plot_pars['plot'])
+
+        if (yerr is not None) and (xerr is None):
+            ax.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None, step = 'mid')
+        elif (yerr is None) and (xerr is not None):
+            ax.fill_betweenx(y, x-xerr, x+xerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None, step = 'mid')
+        elif (xerr is not None) and (yerr is not None):
+            ValueError("ilexplotting: Cannot use plot_type = step with both xerr and yerr!")
+
+    else:
+        ln, = plt.step(x, y, color = color, where = 'mid', **plot_pars['plot'])
+
+        if (yerr is not None) and (xerr is None):
+            plt.fill_between(x, y-yerr, y+yerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None, step = 'mid')
+        elif (yerr is None) and (xerr is not None):
+            plt.fill_betweenx(y, x-xerr, x+xerr, color = ln.get_color(), alpha = alpha,
+                        edgecolor = None, step = 'mid')
+        elif (xerr is not None) and (yerr is not None):
+            ValueError("ilexplotting: Cannot use plot_type = lines with both xerr and yerr!")
+    
+    return
 
 
 
@@ -632,8 +677,8 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
 
 
     # make axes
-    ax.set_ylabel("PA [deg]", fontsize = 12)
-    ax.set_xlabel("time [ms]", fontsize = 12)
+    ax.set_ylabel("PA [deg]")
+    ax.set_xlabel("time [ms]")
 
 
     # flip PA
@@ -653,7 +698,8 @@ def plot_PA(x, PA, PA_err, ax = None, flipPA = False,
              plot_type = plot_type, ax = ax, **kwargs)
     
     paw = np.nanmax(PA * 180/np.pi) - np.nanmin(PA * 180/np.pi)
-    ax.set_ylim([np.nanmin((PA - PA_err) * 180/np.pi) - 0.1*paw, np.nanmax((PA + PA_err) * 180/np.pi) + 0.1*paw])
+    if (PA-PA_err)[~np.isnan(PA-PA_err)].size: 
+        ax.set_ylim([np.nanmin((PA - PA_err) * 180/np.pi) - 0.1*paw, np.nanmax((PA + PA_err) * 180/np.pi) + 0.1*paw])
 
     # if flipPA:
     #     ax.set_ylim([0, 180])
@@ -719,15 +765,15 @@ def plot_stokes(dat, Ldebias = False, sigma = 2.0, stk_type = "f", stk2plot = "I
 
     ## check if frequency or time data
     if stk_type == "t":
-        ax.set_xlabel("Time [ms]", fontsize = 12)
+        ax.set_xlabel("Time [ms]")
         xdat = "time"
     elif stk_type == "f":
-        ax.set_xlabel("Frequency [MHz]", fontsize = 12)
+        ax.set_xlabel("Frequency [MHz]")
         xdat = "freq"
     else:
         print("Invalid type")
     ## update ax
-    ax.set_ylabel("Flux Density (arb.)", fontsize = 12)
+    ax.set_ylabel("Flux (a.u)")
 
     st = stk_type
 

@@ -12,7 +12,7 @@
 ##===============================================##
 import matplotlib.pyplot as plt
 import numpy as np
-from .globals import _G
+from .globals import _G, ILEXPATH
 from copy import deepcopy, copy
 from .logging import log
 import os
@@ -40,9 +40,6 @@ plt.ioff()
 # def interactive_off():
 #     log("Turning interactive OFF", lpf = False)
 #     plt.ioff()
-
-
-
 
 
 ##===============================================##
@@ -339,7 +336,7 @@ def plotnum2grid(nrows = None, ncols = None, num = None):
 
 def _make_new_plotstyle_file():
 
-    with open(os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt"), 'w') as file:
+    with open(os.path.join(ILEXPATH, "files/_plotstyle.txt"), 'w') as file:
         pass
 
     return
@@ -350,7 +347,7 @@ def load_plotstyle():
     Load in plotstyle file and compare with default plotstyle file
     """
 
-    _default_plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt")
+    _default_plotstyle_file = os.path.join(ILEX_PATH, "files/_plotstyle.txt")
     if not os.path.isfile(_default_plotstyle_file):
         _make_new_plotstyle_file()
 
@@ -365,7 +362,7 @@ def load_plotstyle():
 
     else:
         # will use default file
-        plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/default_plot_param_file.yaml")
+        plotstyle_file = os.path.join(ILEXPATH, "files/default_plot_param_file.yaml")
     
 
     with open(plotstyle_file) as plf:
@@ -407,7 +404,7 @@ def set_plotstyle(filepath = None):
     if filepath is None:
         filepath = ""
 
-    _default_plotstyle_file = os.path.join(os.environ['ILEX_PATH'], "files/_plotstyle.txt")
+    _default_plotstyle_file = os.path.join(ILEXPATH, "files/_plotstyle.txt")
     if not os.path.isfile(_default_plotstyle_file):
         _make_new_plotstyle_file()
 

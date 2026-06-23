@@ -11,7 +11,7 @@
 ##===============================================##
 # from .frb import FRB
 from .classes import FRB
-from .globals import _G
+from .globals import _G, ILEXPATH
 from ruamel.yaml import comments
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 import numpy as np
@@ -305,7 +305,7 @@ def load_param_file(param_file = None, return_yaml_obj = False, ruamel2py = True
         pars = {}
 
     # open default param file
-    with open(os.path.join(os.environ['ILEX_PATH'], "files/default.yaml")) as deffile:
+    with open(os.path.join(ILEXPATH, "files/default.yaml")) as deffile:
         def_pars = yaml.load(deffile)
     
     if return_yaml_obj:
@@ -428,7 +428,7 @@ def update_ruamel_CommentedMap(commented_map, key, val):
 
 def _load_ruamel_default_constructors():
     yaml = YAML()
-    def_file = os.path.join(os.environ['ILEX_PATH'], 
+    def_file = os.path.join(ILEXPATH, 
                                         "files/frb_ruamel_yaml_defaults.yaml")
     with open(def_file) as file:
         return yaml.load(file)

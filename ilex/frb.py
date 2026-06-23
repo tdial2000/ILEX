@@ -45,7 +45,7 @@ from .par import FRB_params, FRB_metaparams
 # from .htr import make_stokes
 
 ## import globals ##
-from .globals import _G, c
+from .globals import _G, c, ILEXPATH
 
 ## import plot functions ##
 from .plot import (plot_RM, plot_PA, plot_stokes,      
@@ -374,7 +374,7 @@ class FRB:
         self._mplstyle = mplstyle
 
         if mplstyle is None:    # set as default
-            self._mplstyle = os.path.join(os.environ['ILEX_PATH'], 
+            self._mplstyle = os.path.join(ILEXPATH, 
                                           "files/default.mplstyle")
         print(self._mplstyle)
         plt.style.use(self._mplstyle)

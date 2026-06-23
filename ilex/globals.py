@@ -1,6 +1,11 @@
 # imports
 from matplotlib.pyplot import Line2D, rcParams
 import inspect
+from pathlib import Path
+
+
+ILEXPATH = Path(__file__).resolve().parents[1]
+
 
 class globals_:
   """

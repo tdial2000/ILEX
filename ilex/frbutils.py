@@ -16,6 +16,7 @@ import os
 from yaml import safe_load as base_yaml_save_load
 from yaml import safe_dump as base_yaml_save_dump
 import numpy as np
+from .globals import ILEXPATH
 
 
 def _make_new_dynspec_plot_properties_file(dynspec_file):
@@ -27,7 +28,7 @@ def _make_new_dynspec_plot_properties_file(dynspec_file):
 
 def _get_dynspec_plot_properties_file():
 
-    dynspec_file = os.path.join(os.environ['ILEX_PATH'], "files/_dynspec_plot_properties.yaml")
+    dynspec_file = os.path.join(ILEXPATH, "files/_dynspec_plot_properties.yaml")
     if not os.path.exists:
         _make_new_dynspec_plot_properties_file(dynspec_file)
 

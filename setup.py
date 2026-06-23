@@ -1,4 +1,11 @@
 from setuptools import setup
+import os
+
+package_list = ['ilex', 'ilex.script_core', 'ilex.addons']
+# check if SHRINE code is installed
+if os.path.isdir("./src/SHRINE"):
+    print("Found source code for [SHRINE], adding to installed package list!")
+    package_list += ['src.SHRINE']
 
 setup(
     name = 'ILEX',
@@ -8,7 +15,10 @@ setup(
     author = 'Tyson Dial',
     author_email = 'tdial@swin.edu.au',
     license = 'BSD',
-    packages = ['ilex', 'ilex.script_core', 'ilex.addons'],
+    packages = package_list,
+    package_data = {
+            "ILEX": ["files/*"],
+    },
     install_requires = ['numpy==1.26.4', 'matplotlib==3.9.1', 'PyYAML==6.0.1', 'scipy==1.13.1', 'bilby==2.3.0', 
                         'RM-Tools==1.4.6', 'pyparsing==2.4.7', 'ipython==8.18.1', 'ruamel.yaml==0.18.0', 'cmasher==1.8.0'],
 

@@ -53,7 +53,7 @@ FRB information and some of the baseline signal on either side. Also set the tim
 
    frb.set(t_crop = [1700, 1780], tN = 40)
 
-   frb.save_data(yaml_file = True)
+   frb.save_data(save_yaml = True)
 
 Saving the data this way will not create new data products, instead every time data is loaded from this config file only the crop will be processed.
 

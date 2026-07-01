@@ -347,7 +347,7 @@ def load_plotstyle():
     Load in plotstyle file and compare with default plotstyle file
     """
 
-    _default_plotstyle_file = os.path.join(ILEX_PATH, "files/_plotstyle.txt")
+    _default_plotstyle_file = os.path.join(ILEXPATH, "files/_plotstyle.txt")
     if not os.path.isfile(_default_plotstyle_file):
         _make_new_plotstyle_file()
 

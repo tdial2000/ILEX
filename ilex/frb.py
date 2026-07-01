@@ -1716,7 +1716,10 @@ class FRB:
             [snr]: integrated S/N \n
             [pnsr]: peak S/N \n
             [w]: effective burst width (calculated from t_crop) \n
-            [bw]: effectove bandwidth (calculated from f_crop) \n
+            [bw]: Bandwidth (calculated from f_crop) \n
+            [bw_eff]: effectve bandwidth -accounts for zapping- (calculated from f_crop) \n
+            [cfreq]: Central frequency \n
+            [cfreq_eff]: effective central frequency -accounts for zapping- \n
             [fluence]: fluence of burst \n
             [centroid]: Centroid of burst
         """
@@ -1743,8 +1746,11 @@ class FRB:
         prop['w'] = data['time'][-1] - data['time'][0] + dt 
 
         prop['bw'] = self.this_par.bw
-        prop['bw_eff'] = self.this_par.bw * float(np.where(~np.isnan(data['dsI'][:,0]))[0].size)/float(data['dsI'].shape[0])
+        # prop['bw_eff'] = self.this_par.bw * float(np.where(~np.isnan(data['dsI'][:,0]))[0].size)/float(data['dsI'].shape[0])
         prop['cfreq'] = self.this_par.cfreq
+        freqs_nonan = data['freq'][~np.isnan(data['dsI'][:,0])]
+        prop['bw_eff'] = freqs_nonan[0] - freqs_nonan[-1] + self.this_par.df
+        prop['cfreq_eff'] = (freqs_nonan[0] + freqs_nonan[-1])/2
 
         # fluence 
         # prop['fluence'] = self.this_metapar.tN * self.this_metapar.fN * np.nansum(data['dsI']) * prop['w']
@@ -1758,7 +1764,7 @@ class FRB:
         prop['int_flux'] = scal_fluence
 
         units = {'snr': None, 'psnr': None, 'w': '[ms]', 'bw': '[MHz]', 'bw_eff': '[MHz] (w/o flagged chans)', 'cfreq': '[MHz]', 
-                    'fluence': '[arbitrary]', 'centroid': '[ms]', 'int_flux': '[arbitrary]'}
+                    'cfreq_eff': '[MHz]','fluence': '[arbitrary]', 'centroid': '[ms]', 'int_flux': '[arbitrary]'}
 
         # print out info
         print("\n ---- Burst Properties ---- \n")

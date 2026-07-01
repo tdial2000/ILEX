@@ -1,5 +1,5 @@
 import shutil, argparse, os, sys
-from ilex.globals import c  # import to get ilex_path
+from ilex.globals import c, ILEXPATH  # import to get ilex_path
 from ilex.io import load_param_file, save_param_file
 from ilex.utils import dict_get
 
@@ -112,5 +112,5 @@ if __name__ == "__main__":
 
 
     # copy default yaml file to new filepath
-    shutil.copy(os.path.join(os.environ['ILEX_PATH'], 'files/default.yaml'), args.config)
+    shutil.copy(os.path.join(ILEXPATH, 'files/default.yaml'), args.config)
 

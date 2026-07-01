@@ -18,8 +18,9 @@ from ilex.frb import FRB
 from ilex.io import ilexIO
 from scipy.signal import correlate
 import os, sys
+from ilex.globals import ILEXPATH
 
-if os.path.isdir(os.path.join(os.environ['ILEX_PATH'], "src/SHRINE")):
+if os.path.isdir(os.path.join(ILEXPATH, "src/SHRINE")):
     from ilex.addons.shrine import get_structure_maximised_dm
 
 
@@ -82,7 +83,7 @@ def get_args():
     args = parser.parse_args()
 
     if args.method == "SMDM":
-        if not os.path.isdir(os.path.join(os.environ['ILEX_PATH'], "src/SHRINE")):
+        if not os.path.isdir(os.path.join(ILEXPATH, "src/SHRINE")):
             print("'SHRINE' has not been installed, install SHRINE in the src/ folder by git cloning from https://github.com/marcinglowacki/SHRINE...")
             sys.exit()
 

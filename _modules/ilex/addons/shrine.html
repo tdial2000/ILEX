@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.addons.shrine &mdash; ILEX 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../_autosummary/ilex.html">ILEX Code</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ilex.addons.shrine</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ilex.addons.shrine</h1><div class="highlight"><pre>
+<span></span><span class="c1">####################################################</span>
+<span class="c1">#</span>
+<span class="c1">#       Python Script with utility functions</span>
+<span class="c1">#       to enable the use of SHRINE with general</span>
+<span class="c1">#       ilex/numpy Stokes inputs.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">####################################################</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
+<span class="kn">from</span> <span class="nn">scipy.fftpack</span> <span class="kn">import</span> <span class="n">dct</span><span class="p">,</span> <span class="n">idct</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
+<span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">pathlib</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">ilex.data</span> <span class="kn">import</span> <span class="n">average</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">correlate</span>
+
+<span class="c1"># SHRINE imports</span>
+<span class="n">parent_folder</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">parent_folder</span><span class="p">),</span> <span class="s2">&quot;src/SHRINE/&quot;</span><span class="p">))</span>
+<span class="kn">from</span> <span class="nn">dm_processing</span> <span class="kn">import</span> <span class="n">get_kc</span><span class="p">,</span> <span class="n">uncertainty_calc</span><span class="p">,</span> <span class="n">get_ranges_above_max</span>
+<span class="kn">from</span> <span class="nn">maximise_structure</span> <span class="kn">import</span> <span class="p">(</span><span class="n">plot_DM_index</span><span class="p">,</span> <span class="n">plot_noisy_I_DM_t</span><span class="p">,</span> <span class="n">plot_I_at_max</span><span class="p">,</span>
+                                       <span class="n">plot_DCT_spectrum</span><span class="p">,</span> <span class="n">plot_smooth_I_DM_t</span><span class="p">,</span> <span class="n">plot_SP</span><span class="p">,</span> 
+                                       <span class="n">plot_detrended_noise</span><span class="p">,</span> <span class="n">plot_relative_detrended_noise</span><span class="p">,</span>
+                                       <span class="n">plot_noise_at_max</span><span class="p">,</span> <span class="n">plot_uncertainty</span><span class="p">,</span> <span class="n">plot_relative_uncertainty</span><span class="p">,</span>
+                                       <span class="n">plot_adjusted_SP</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_args">
+<a class="viewcode-back" href="../../../ilex.addons.html#ilex.addons.shrine._args">[docs]</a>
+<span class="k">class</span> <span class="nc">_args</span><span class="p">:</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="generate_profiles">
+<a class="viewcode-back" href="../../../ilex.addons.html#ilex.addons.shrine.generate_profiles">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_profiles</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tN</span><span class="p">,</span> <span class="n">cfreq</span><span class="p">,</span> <span class="n">bw</span><span class="p">,</span> <span class="n">f0</span><span class="p">,</span> <span class="n">dms</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate I matrix, a matrix of Stokes I time series for each trial DM.</span>
+<span class="sd">    This function is an incoherent alternative to the native profile generation avaliable</span>
+<span class="sd">    in SHRINE.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds: 2D np.ndarray</span>
+<span class="sd">        Stokes I dynamic spectrum</span>
+<span class="sd">    dt: float</span>
+<span class="sd">        sample resolution [ms]</span>
+<span class="sd">    tN: int</span>
+<span class="sd">        Downsampling factor in time</span>
+<span class="sd">    cfreq: float</span>
+<span class="sd">        Central frequency [MHz]</span>
+<span class="sd">    bw: float</span>
+<span class="sd">        Bandwidth [MHz]</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        Reference frequency</span>
+<span class="sd">    dms: 1D np.ndarray or array-like</span>
+<span class="sd">        List of trial DMs</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    I: 2D np.ndarray</span>
+<span class="sd">        I matrix (dm, t)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kdm</span> <span class="o">=</span> <span class="mf">4149.377593</span>
+
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dms</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="n">tN</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># create freq array</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">bw</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">cfreq</span> <span class="o">+</span> <span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">-</span> <span class="n">bw</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="n">df</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                        <span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Create copy of ds to dedisperse by rolling</span>
+    <span class="n">ds_dedis</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># check if any channels are flagged</span>
+    <span class="n">goodchans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># loop through trial dms and get dedispersed time series</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dms</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Searching trial DMs...   </span><span class="si">{</span><span class="n">i</span><span class="o">/</span><span class="n">dms</span><span class="o">.</span><span class="n">size</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># calculate dm shifts</span>
+        <span class="n">dmshifts</span> <span class="o">=</span> <span class="p">(</span><span class="n">kdm</span> <span class="o">*</span> <span class="n">dm</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">freqs</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">f0</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># dedisperse by rolling</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">goodchans</span><span class="p">):</span>
+            <span class="n">ds_dedis</span><span class="p">[</span><span class="n">chan</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">chan</span><span class="p">],</span> <span class="o">-</span><span class="n">dmshifts</span><span class="p">[</span><span class="n">chan</span><span class="p">])</span>
+        
+        <span class="c1"># scrunch in frequency</span>
+        <span class="n">I</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ds_dedis</span><span class="p">[</span><span class="n">goodchans</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">),</span> <span class="n">N</span> <span class="o">=</span> <span class="n">tN</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Searching trial DMs...   100.00%&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Trial DM profiles Generated&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">I</span></div>
+
+            
+    
+
+
+
+<div class="viewcode-block" id="get_structure_maximised_dm">
+<a class="viewcode-back" href="../../../ilex.addons.html#ilex.addons.shrine.get_structure_maximised_dm">[docs]</a>
+<span class="k">def</span> <span class="nf">get_structure_maximised_dm</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">919.5</span><span class="p">,</span> <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">751.5</span><span class="p">,</span> <span class="n">DMmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> 
+                                <span class="n">DMmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">DMstep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">outdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                                <span class="n">filter_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">force_kc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Taken from the _main() function in SHRINE/python/maximise_structure.py </span>
+<span class="sd">    and altered to be called as a function with the appropriate inputs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds: 2D np.ndarray</span>
+<span class="sd">        Stokes I dynamic spectrum</span>
+<span class="sd">    dt: float</span>
+<span class="sd">        Time resolution in [ms]</span>
+<span class="sd">    tN: int</span>
+<span class="sd">        Downsampling factor in time</span>
+<span class="sd">    cfreq: float</span>
+<span class="sd">        Central frequency in [MHz], by default 919.5</span>
+<span class="sd">    bw: float</span>
+<span class="sd">        Bandwidth in [MHz], by default 336</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        Reference frequency</span>
+<span class="sd">    DMmin: float</span>
+<span class="sd">        Minimum in trial DM range, by default -1.0</span>
+<span class="sd">    DMmax: float</span>
+<span class="sd">        Maximum in trial DM range, by default 1.0</span>
+<span class="sd">    DMstep: float</span>
+<span class="sd">        Step size in trial DM range, by default 0.1</span>
+<span class="sd">    label: str</span>
+<span class="sd">        Label for outputs, including figures and files</span>
+<span class="sd">    outdir: str</span>
+<span class="sd">        output directory for figures and files</span>
+<span class="sd">    filter_order: int</span>
+<span class="sd">        low pass filter spectral index</span>
+<span class="sd">    force_kc: int</span>
+<span class="sd">        manually force the k index cutoff for low pass filter, if None will estimate \n</span>
+<span class="sd">        the best value, by default None</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># make DM range and get I matrix </span>
+    <span class="n">DM_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">DMmin</span><span class="p">,</span> <span class="n">DMmax</span><span class="p">,</span> <span class="n">DMstep</span><span class="p">)</span>
+    <span class="n">I_data</span> <span class="o">=</span> <span class="n">generate_profiles</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="n">cfreq</span><span class="p">,</span> 
+                                <span class="n">bw</span> <span class="o">=</span> <span class="n">bw</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">,</span> <span class="n">dms</span> <span class="o">=</span> <span class="n">DM_data</span><span class="p">)</span>
+    
+    <span class="c1"># convert dt [ms -&gt; us] to use rest of SHRINE functionality</span>
+    <span class="n">dt</span> <span class="o">*=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">tN</span>
+
+    <span class="c1"># Setup complete, start doing the math</span>
+    <span class="n">CI_data</span><span class="o">=</span><span class="n">dct</span><span class="p">(</span><span class="n">I_data</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">)</span> <span class="c1">#note &quot;norm=ortho&quot; to match MATLAB&#39;s dct</span>
+    <span class="n">dm_length</span><span class="p">,</span><span class="n">k_length</span><span class="o">=</span><span class="n">CI_data</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying low-pass filter&quot;</span><span class="p">)</span>
+    <span class="c1"># Low pass filter</span>
+    <span class="k">if</span> <span class="n">force_kc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kc</span> <span class="o">=</span> <span class="n">get_kc</span><span class="p">(</span><span class="n">CI_data</span><span class="p">)</span> <span class="c1">#cutoff k index</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kc</span> <span class="o">=</span> <span class="n">force_kc</span>
+    <span class="n">O</span><span class="o">=</span><span class="n">filter_order</span> <span class="c1">#filter order</span>
+    <span class="n">k</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">k_length</span><span class="p">,</span><span class="n">k_length</span><span class="p">)</span>
+    <span class="c1"># filter response</span>
+    <span class="n">fL</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="n">kc</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">O</span><span class="p">))</span>
+
+    <span class="c1"># Pass DCT data through the combined filter to calculate structure parameter</span>
+    <span class="n">fL_diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">fL</span><span class="p">)</span> <span class="c1">#make low-pass Filter into a diagonal matrix</span>
+    <span class="n">LPF_data</span><span class="o">=</span><span class="n">fL_diag</span><span class="nd">@np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">CI_data</span><span class="p">)</span> <span class="c1">#pass data through LPF</span>
+    <span class="n">I_smooth</span><span class="o">=</span><span class="n">idct</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">LPF_data</span><span class="p">),</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">)</span> <span class="c1">#smooth data</span>
+
+    <span class="c1">#1st derivative &quot;high-pass&quot; filter</span>
+    <span class="n">pi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">hp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">k</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">pi</span><span class="o">/</span><span class="n">k_length</span><span class="p">))</span> <span class="c1">#square root of the eigenvalues of D_1^T D_1</span>
+
+    <span class="c1">#combined response</span>
+    <span class="nb">filter</span><span class="o">=</span><span class="n">hp</span><span class="o">*</span><span class="n">fL</span>
+    <span class="n">filter_diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="nb">filter</span><span class="p">)</span> <span class="c1">#make Filter into a diagonal matrix</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying combined filter&quot;</span><span class="p">)</span>
+    <span class="c1">#pass DCT data through the combined filter</span>
+    <span class="n">CI_filtered</span><span class="o">=</span><span class="n">filter_diag</span><span class="nd">@np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">CI_data</span><span class="p">)</span>
+    <span class="n">norm_CI_filtered</span><span class="o">=</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">CI_filtered</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1">#calculate structrue parameter, note numpy axis (see https://www.sharpsightlabs.com/blog/numpy-axes-explained/)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;calculating uncertainties&quot;</span><span class="p">)</span>
+    <span class="c1">#Uncertainty calculations</span>
+    <span class="n">delta_I</span><span class="o">=</span><span class="n">I_data</span><span class="o">-</span><span class="n">I_smooth</span> <span class="c1">#de-trended noise</span>
+
+    <span class="c1">#calculate uncertainty proper</span>
+    <span class="n">uncertainty</span> <span class="o">=</span> <span class="n">uncertainty_calc</span><span class="p">(</span><span class="n">delta_I</span><span class="p">,</span> <span class="n">LPF_data</span><span class="p">,</span> <span class="n">filter_diag</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finding Best DM&quot;</span><span class="p">)</span>
+    <span class="c1"># Second round of uncertainty calculations</span>
+    <span class="n">max_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">norm_CI_filtered</span><span class="p">)</span>
+    <span class="n">delta_delta_I</span><span class="o">=</span><span class="n">delta_I</span><span class="o">-</span><span class="n">delta_I</span><span class="p">[</span><span class="n">max_index</span><span class="p">]</span> 
+
+    <span class="n">relative_uncertainty</span> <span class="o">=</span> <span class="n">uncertainty_calc</span><span class="p">(</span><span class="n">delta_delta_I</span><span class="p">,</span> <span class="n">LPF_data</span><span class="p">,</span> <span class="n">filter_diag</span><span class="p">)</span>
+
+    <span class="c1"># Find uncertainty in structure maximizing DM</span>
+    <span class="n">max_structure_parameter</span> <span class="o">=</span> <span class="n">norm_CI_filtered</span><span class="p">[</span><span class="n">max_index</span><span class="p">]</span>
+    <span class="n">delta_DM_at_max</span> <span class="o">=</span> <span class="n">DM_data</span><span class="p">[</span><span class="n">max_index</span><span class="p">]</span>
+
+    <span class="n">adjusted_SPs</span> <span class="o">=</span> <span class="n">norm_CI_filtered</span> <span class="o">+</span> <span class="p">(</span><span class="n">norm_CI_filtered</span> <span class="o">*</span> <span class="n">relative_uncertainty</span><span class="p">)</span> 
+
+    <span class="n">possible_max_ranges</span> <span class="o">=</span> <span class="n">get_ranges_above_max</span><span class="p">(</span><span class="n">max_structure_parameter</span><span class="p">,</span> <span class="n">adjusted_SPs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_max_ranges</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_max_ranges</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">one_range</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">one_range</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># possible_max_ranges ALWAYS finds a minimum, so this is safe</span>
+        <span class="n">min_delta_DM</span> <span class="o">=</span> <span class="n">DM_data</span><span class="p">[</span><span class="n">possible_max_ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_max_ranges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">max_delta_DM</span> <span class="o">=</span> <span class="n">DM_data</span><span class="p">[</span><span class="n">possible_max_ranges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_delta_DM</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Something has gone wrong if this runs</span>
+        <span class="c1"># possible_max_ranges collects everything where `SP` &gt;= `SP at max`</span>
+        <span class="c1"># so at a minimum the max range should consist of `SP_at_max`</span>
+        <span class="n">min_delta_DM</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">max_delta_DM</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">one_range</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+    <span class="c1"># save outputs and figures</span>
+    <span class="k">if</span> <span class="n">outdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SMDM&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Figures/Files will be saved to: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span><span class="w"> </span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">*&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># data</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_SPs.dat&quot;</span><span class="p">),</span> <span class="n">norm_CI_filtered</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_Uncertainties.dat&quot;</span><span class="p">),</span> <span class="n">uncertainty</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_Relative_Uncertainties.dat&quot;</span><span class="p">),</span> <span class="n">relative_uncertainty</span><span class="p">)</span>
+
+
+    <span class="c1">#Write a nice tidy file</span>
+    <span class="n">summary_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_structure_summaryfile.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;//begin maximise_structure summary//</span><span class="se">\n</span><span class="s2">/*</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FRB Label: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Time Resolution: </span><span class="si">{</span><span class="n">dt</span><span class="si">}</span><span class="s2">us</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;kc: </span><span class="si">{</span><span class="n">kc</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">force_kc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Forced kc: </span><span class="si">{</span><span class="kc">False</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Forced kc: </span><span class="si">{</span><span class="kc">True</span><span class="si">}</span><span class="se">\n\t</span><span class="s2">(This could be because of a provided force_kc value or because minimise_uncertainty was used.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Structure Maximising Delta DM: </span><span class="si">{</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Uncertainty in Structure Maximising Delta DM: &quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">min_delta_DM</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">min_delta_DM</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">DM_data</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">max_delta_DM</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="s2">/+</span><span class="si">{</span><span class="n">max_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="s2">/+unknown</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Upper bound on uncertainty exceeds delta DM range.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">max_delta_DM</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="s2">/+</span><span class="si">{</span><span class="n">max_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Lower bound on uncertainty is equal to lower bound on delta DM range.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">This probably means it is actually lower than </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">DM_data</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">min_delta_DM</span><span class="o">-</span><span class="n">delta_DM_at_max</span><span class="si">}</span><span class="s2">/+unknown</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Lower bound on uncertainty is equal to lower bound on delta DM range.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">This probably means it is actually lower than </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">DM_data</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Upper bound on uncertainty exceeds delta DM range.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-unknown/+unknown</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">No uncertainty range found. Something has gone wrong!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">one_range</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Uncertainty range was not continuous.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Ranges found were from:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">possible_range</span> <span class="ow">in</span> <span class="n">possible_max_ranges</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_range</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1">#good range</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">possible_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">possible_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#bad range</span>
+                <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">possible_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="si">}</span><span class="s2"> onwards. (Range finishes out of bounds).</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;*/</span><span class="se">\n</span><span class="s2">//end maximise_structure summary//</span><span class="se">\n\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="c1"># Save figures</span>
+    <span class="n">DM_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;DM.txt&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">DM_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">max_index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">DM_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># set up args object </span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">_args</span><span class="p">()</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span> 
+    <span class="n">args</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+    <span class="c1"># plots</span>
+    <span class="n">plot_DM_index</span><span class="p">(</span><span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># Intensity-time plots</span>
+    <span class="n">plot_I_at_max</span><span class="p">(</span><span class="n">I_data</span><span class="p">[</span><span class="n">max_index</span><span class="p">],</span><span class="n">I_smooth</span><span class="p">[</span><span class="n">max_index</span><span class="p">],</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_noise_at_max</span><span class="p">(</span><span class="n">delta_I</span><span class="p">[</span><span class="n">max_index</span><span class="p">],</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># I(DM,t) plots</span>
+    <span class="n">plot_noisy_I_DM_t</span><span class="p">(</span><span class="n">I_data</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_smooth_I_DM_t</span><span class="p">(</span><span class="n">I_smooth</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_detrended_noise</span><span class="p">(</span><span class="n">delta_I</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_relative_detrended_noise</span><span class="p">(</span><span class="n">delta_delta_I</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_DCT_spectrum</span><span class="p">(</span><span class="n">CI_data</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kc</span><span class="p">)</span>
+
+    <span class="c1"># Uncertainty-time plots</span>
+    <span class="n">plot_uncertainty</span><span class="p">(</span><span class="n">uncertainty</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_relative_uncertainty</span><span class="p">(</span><span class="n">relative_uncertainty</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># Structure parameter plots</span>
+    <span class="n">plot_SP</span><span class="p">(</span><span class="n">norm_CI_filtered</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">plot_adjusted_SP</span><span class="p">(</span><span class="n">adjusted_SPs</span><span class="p">,</span> <span class="n">DM_data</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    
+    <span class="c1"># print overall results</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Results for Structure maximising DM:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--&quot;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">summary_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_structure_summaryfile.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">summary_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">delta_DM_at_max</span></div>
+
+
+
+
+<span class="c1">### NOT USED ###</span>
+<div class="viewcode-block" id="get_wmin_dm">
+<a class="viewcode-back" href="../../../ilex.addons.html#ilex.addons.shrine.get_wmin_dm">[docs]</a>
+<span class="k">def</span> <span class="nf">get_wmin_dm</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tN</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cfreq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">919.5</span><span class="p">,</span> <span class="n">bw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">336</span><span class="p">,</span> <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">751.5</span><span class="p">,</span> <span class="n">DMmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+                <span class="n">DMmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">DMstep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">outdir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filter_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> 
+                <span class="n">force_kc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the DM that minimises the burst width.</span>
+
+<span class="sd">    Function to maximise the S/N fluence in the burst to estimate DM. If we assume the noise the same regardless of DM,</span>
+<span class="sd">    then we can repoise the problem of S/N fluence maximization to burst width minimisation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ds: 2D np.ndarray</span>
+<span class="sd">        Stokes I dynamic spectrum</span>
+<span class="sd">    dt: float</span>
+<span class="sd">        Time resolution in [ms]</span>
+<span class="sd">    tN: int</span>
+<span class="sd">        Downsampling factor in time</span>
+<span class="sd">    cfreq: float</span>
+<span class="sd">        Central frequency in [MHz], by default 919.5</span>
+<span class="sd">    bw: float</span>
+<span class="sd">        Bandwidth in [MHz], by default 336</span>
+<span class="sd">    f0: float</span>
+<span class="sd">        Reference frequency</span>
+<span class="sd">    DMmin: float</span>
+<span class="sd">        Minimum in trial DM range, by default -1.0</span>
+<span class="sd">    DMmax: float</span>
+<span class="sd">        Maximum in trial DM range, by default 1.0</span>
+<span class="sd">    DMstep: float</span>
+<span class="sd">        Step size in trial DM range, by default 0.1</span>
+<span class="sd">    label: str</span>
+<span class="sd">        Label for outputs, including figures and files</span>
+<span class="sd">    outdir: str</span>
+<span class="sd">        output directory for figures and files</span>
+<span class="sd">    filter_order: int</span>
+<span class="sd">        low pass filter spectral index</span>
+<span class="sd">    force_kc: int</span>
+<span class="sd">        manually force the k index cutoff for low pass filter, if None will estimate \n</span>
+<span class="sd">        the best value, by default None</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+
+    <span class="c1"># make DM range and get I matrix </span>
+    <span class="n">DM_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">DMmin</span><span class="p">,</span> <span class="n">DMmax</span><span class="p">,</span> <span class="n">DMstep</span><span class="p">)</span>
+    <span class="n">I_data</span> <span class="o">=</span> <span class="n">generate_profiles</span><span class="p">(</span><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span><span class="p">,</span> <span class="n">tN</span> <span class="o">=</span> <span class="n">tN</span><span class="p">,</span> <span class="n">cfreq</span> <span class="o">=</span> <span class="n">cfreq</span><span class="p">,</span> 
+                                <span class="n">bw</span> <span class="o">=</span> <span class="n">bw</span><span class="p">,</span> <span class="n">f0</span> <span class="o">=</span> <span class="n">f0</span><span class="p">,</span> <span class="n">dms</span> <span class="o">=</span> <span class="n">DM_data</span><span class="p">)</span>
+
+    <span class="n">nsamp</span> <span class="o">=</span> <span class="n">I_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="c1"># convert dt [ms -&gt; us] to use rest of SHRINE functionality</span>
+    <span class="n">dt</span> <span class="o">*=</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="n">tN</span>
+
+    <span class="c1"># Setup complete, start doing the math</span>
+    <span class="n">CI_data</span><span class="o">=</span><span class="n">dct</span><span class="p">(</span><span class="n">I_data</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">)</span> <span class="c1">#note &quot;norm=ortho&quot; to match MATLAB&#39;s dct</span>
+    <span class="n">dm_length</span><span class="p">,</span><span class="n">k_length</span><span class="o">=</span><span class="n">CI_data</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying low-pass filter&quot;</span><span class="p">)</span>
+    <span class="c1"># Low pass filter</span>
+    <span class="k">if</span> <span class="n">force_kc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kc</span> <span class="o">=</span> <span class="n">get_kc</span><span class="p">(</span><span class="n">CI_data</span><span class="p">)</span> <span class="c1">#cutoff k index</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kc</span> <span class="o">=</span> <span class="n">force_kc</span>
+    <span class="n">O</span><span class="o">=</span><span class="n">filter_order</span> <span class="c1">#filter order</span>
+    <span class="n">k</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">k_length</span><span class="p">,</span><span class="n">k_length</span><span class="p">)</span>
+    <span class="c1"># filter response</span>
+    <span class="n">fL</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="p">(</span><span class="n">k</span><span class="o">/</span><span class="n">kc</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">O</span><span class="p">))</span>
+
+    <span class="c1"># Pass DCT data through the combined filter to calculate structure parameter</span>
+    <span class="n">fL_diag</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">fL</span><span class="p">)</span> <span class="c1">#make low-pass Filter into a diagonal matrix</span>
+    <span class="n">LPF_data</span><span class="o">=</span><span class="n">fL_diag</span><span class="nd">@np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">CI_data</span><span class="p">)</span> <span class="c1">#pass data through LPF</span>
+    <span class="n">I_smooth</span><span class="o">=</span><span class="n">idct</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">LPF_data</span><span class="p">),</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">)</span> <span class="c1">#smooth data</span>
+
+    <span class="n">delta_I</span><span class="o">=</span><span class="n">I_data</span><span class="o">-</span><span class="n">I_smooth</span> <span class="c1"># De-trended noise</span>
+    <span class="c1"># noise seems uniform across DMs, this is probably okay (?)</span>
+    <span class="n">constant_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">I_smooth</span><span class="p">)</span>
+    <span class="n">noise_STD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">delta_I</span><span class="p">)</span>
+    <span class="n">zeroed_I</span> <span class="o">=</span> <span class="n">I_smooth</span><span class="c1">#-constant_noise</span>
+    
+    <span class="c1"># calculate fluence, assuming fluence is the same in all DM trials</span>
+    <span class="n">fluence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">zeroed_I</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">yfrac</span> <span class="o">=</span> <span class="mf">0.95</span>
+    <span class="n">startNstep</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="k">def</span> <span class="nf">find_N_length</span><span class="p">(</span><span class="n">tI</span><span class="p">,</span> <span class="n">Nstart</span><span class="p">,</span> <span class="n">Nstep</span><span class="p">):</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="n">Nstart</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">corr</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span><span class="n">tI</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">fluence</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">corr</span> <span class="o">&gt;=</span> <span class="n">yfrac</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The window offset found was 1, there may be something wrong with the data or input data is too small?&quot;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span>
+                <span class="k">if</span> <span class="n">Nstep</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># if p.size &gt; 1:</span>
+                        <span class="c1"># print(&quot;There appears to be two centroids to a minimum width.&quot;)</span>
+                    <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span>
+                <span class="k">if</span> <span class="n">Nstep</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">N</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">find_N_length</span><span class="p">(</span><span class="n">tI</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">Nstep</span><span class="p">,</span> <span class="n">Nstep</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+                
+                <span class="k">break</span>
+            <span class="n">N</span> <span class="o">+=</span> <span class="n">Nstep</span>
+
+        <span class="k">return</span> <span class="n">N</span><span class="p">,</span> <span class="n">p</span>
+
+    <span class="n">sampwidth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">DM_data</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="n">ps</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># sampstart = sampwidth.copy()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">iDM</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">zeroed_I</span><span class="p">):</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Searching for minimum burst width...   </span><span class="si">{</span><span class="n">i</span><span class="o">/</span><span class="n">DM_data</span><span class="o">.</span><span class="n">size</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sampwidth</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">pi</span> <span class="o">=</span> <span class="n">find_N_length</span><span class="p">(</span><span class="n">iDM</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">startNstep</span><span class="p">)</span>
+        <span class="n">ps</span> <span class="o">+=</span> <span class="p">[</span><span class="n">pi</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Searching for minimum burst width...   100.00%&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># get minimum length in set of DM trials</span>
+    <span class="n">Nmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">sampwidth</span><span class="p">)</span>
+
+    <span class="c1"># check if multiple occurences of Nmin are present</span>
+    <span class="n">multiNmin</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sampwidth</span> <span class="o">==</span> <span class="n">Nmin</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">multiNmin</span>
+
+
+    <span class="k">if</span> <span class="n">outdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">outdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;WMDM&quot;</span>
+
+
+    <span class="c1"># write summary file</span>
+    <span class="n">summary_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_minwidth_summaryfile.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;---Calculating DM to minimise burst width---</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multiNmin</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multiple DM values give same minimum width, first occurence at DM = </span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">Nmin</span><span class="p">]</span><span class="si">}</span><span class="s2"> with a width of </span><span class="si">{</span><span class="n">Nmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">us</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Other occurences: </span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">sampwidth</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Nmin</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Minimum width of </span><span class="si">{</span><span class="n">Nmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dt</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">us found at DM = </span><span class="si">{</span><span class="n">DM_data</span><span class="p">[</span><span class="n">Nmin</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Minimum width encompasses </span><span class="si">{</span><span class="n">yfrac</span><span class="si">:</span><span class="s2">%</span><span class="si">}</span><span class="s2"> of burst fluence</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Uncertainty not YET IMPLEMENTED!!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">---End of Summary file---&quot;</span><span class="p">)</span>
+    <span class="n">summary_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Making figures&quot;</span><span class="p">)</span>
+    <span class="c1"># make plots</span>
+    <span class="c1">## plot best I</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">nsamp</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsamp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">I_data</span><span class="p">[</span><span class="n">Nmin</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">zeroed_I</span><span class="p">[</span><span class="n">Nmin</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">ylim</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+    <span class="c1"># plot bounds</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ps</span><span class="p">[</span><span class="n">Nmin</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([(</span><span class="n">ps</span><span class="p">[</span><span class="n">Nmin</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">sampwidth</span><span class="p">[</span><span class="n">Nmin</span><span class="p">])</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Time [ms]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Flux (arb.)&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_best_I.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="c1">## plot fluence vs DM trial</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">DM_data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">zeroed_I</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;DM [$pc cm^{-3}$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Fluence (arb.)&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Fluence of smoothed data&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_fluence_DM.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="c1">## plot burst width vs DM</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">DM_data</span><span class="p">,</span> <span class="n">dt</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sampwidth</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">),</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;DM [$pc cm^{-3}$]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Burst width [us]&quot;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_width_DM.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="c1"># print overall results</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Results for Structure maximising DM:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--&quot;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">summary_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_minwidth_summaryfile.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">summary_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">DM_data</span><span class="p">[</span><span class="n">Nmin</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

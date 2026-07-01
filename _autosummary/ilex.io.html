@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ilex.io &mdash; ILEX 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ilex.logging" href="ilex.logging.html" />
+    <link rel="prev" title="ilex.interactive" href="ilex.interactive.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            ILEX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Theory.html">Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials.html">ILEX Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="ilex.html">ILEX Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ilex.addons.html">ilex.addons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.classes.html">ilex.classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.data.html">ilex.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.fitting.html">ilex.fitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frb.html">ilex.frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.frbutils.html">ilex.frbutils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.globals.html">ilex.globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.htr.html">ilex.htr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.interactive.html">ilex.interactive</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ilex.io</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.check_ruamel_input"><code class="docutils literal notranslate"><span class="pre">check_ruamel_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.check_ruamel_output"><code class="docutils literal notranslate"><span class="pre">check_ruamel_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.ilexIO"><code class="docutils literal notranslate"><span class="pre">ilexIO</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.filepath"><code class="docutils literal notranslate"><span class="pre">ilexIO.filepath</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.frb"><code class="docutils literal notranslate"><span class="pre">ilexIO.frb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.datafilepath"><code class="docutils literal notranslate"><span class="pre">ilexIO.datafilepath</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.stkfiles"><code class="docutils literal notranslate"><span class="pre">ilexIO.stkfiles</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.edit_pars"><code class="docutils literal notranslate"><span class="pre">ilexIO.edit_pars()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">ilexIO.frb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.load"><code class="docutils literal notranslate"><span class="pre">ilexIO.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.load_pars"><code class="docutils literal notranslate"><span class="pre">ilexIO.load_pars()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.save"><code class="docutils literal notranslate"><span class="pre">ilexIO.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ilex.io.ilexIO.set"><code class="docutils literal notranslate"><span class="pre">ilexIO.set()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.load_param_file"><code class="docutils literal notranslate"><span class="pre">load_param_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.save_data"><code class="docutils literal notranslate"><span class="pre">save_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.save_param_file"><code class="docutils literal notranslate"><span class="pre">save_param_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.update_ruamel_CommentedMap"><code class="docutils literal notranslate"><span class="pre">update_ruamel_CommentedMap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ilex.io.update_ruamel_CommentedSeq"><code class="docutils literal notranslate"><span class="pre">update_ruamel_CommentedSeq()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.logging.html">ilex.logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.master_proc.html">ilex.master_proc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.par.html">ilex.par</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.plot.html">ilex.plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.pyfit.html">ilex.pyfit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.script_core.html">ilex.script_core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utilmethods.html">ilex.utilmethods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.utils.html">ilex.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ilex.widths.html">ilex.widths</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">ILEX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="ilex.html">ilex</a></li>
+      <li class="breadcrumb-item active">ilex.io</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/ilex.io.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ilex.io">
+<span id="ilex-io"></span><h1>ilex.io<a class="headerlink" href="#module-ilex.io" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.check_ruamel_input">
+<span class="sig-name descname"><span class="pre">check_ruamel_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#check_ruamel_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.check_ruamel_input" title="Link to this definition"></a></dt>
+<dd><p>Ruamel yaml is used in some cases, this will be used to process these inputs and make sure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inp</strong> (<em>_class_</em>) – Change ruamel class to python class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.check_ruamel_output">
+<span class="sig-name descname"><span class="pre">check_ruamel_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#check_ruamel_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.check_ruamel_output" title="Link to this definition"></a></dt>
+<dd><p>Check if outputs are in right types</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ilex.io.ilexIO">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ilexIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datafilepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stkfiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO" title="Link to this definition"></a></dt>
+<dd><p>Class for loading and saving ilex .yaml files (config files)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.filepath">
+<span class="sig-name descname"><span class="pre">filepath</span></span><a class="headerlink" href="#ilex.io.ilexIO.filepath" title="Link to this definition"></a></dt>
+<dd><p>path to .yaml file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.frb">
+<span class="sig-name descname"><span class="pre">frb</span></span><a class="headerlink" href="#ilex.io.ilexIO.frb" title="Link to this definition"></a></dt>
+<dd><p>ilex FRB class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="ilex.frb.html#ilex.frb.FRB" title="ilex.frb.FRB">ilex.frb.FRB</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.datafilepath">
+<span class="sig-name descname"><span class="pre">datafilepath</span></span><a class="headerlink" href="#ilex.io.ilexIO.datafilepath" title="Link to this definition"></a></dt>
+<dd><p>save stokes data in format &lt;datafilepath&gt;_ds&lt;stk&gt;.npy for stk = “I,Q,U,V”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.stkfiles">
+<span class="sig-name descname"><span class="pre">stkfiles</span></span><a class="headerlink" href="#ilex.io.ilexIO.stkfiles" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of filenames for stokes files, {‘dsI’: &lt;filepath for dsI&gt;, ‘dsQ’, etc:}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.edit_pars">
+<span class="sig-name descname"><span class="pre">edit_pars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO.edit_pars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO.edit_pars" title="Link to this definition"></a></dt>
+<dd><p>Edit attributes of ILEX config file</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">frb</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Get FRB object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO.load" title="Link to this definition"></a></dt>
+<dd><p>Load yaml file, overwrite frb obj</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>frb</strong> – FRB class instance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="ilex.frb.html#ilex.frb.FRB" title="ilex.frb.FRB">ilex.frb.FRB</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.load_pars">
+<span class="sig-name descname"><span class="pre">load_pars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO.load_pars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO.load_pars" title="Link to this definition"></a></dt>
+<dd><p>Get just params from file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO.save" title="Link to this definition"></a></dt>
+<dd><p>Save frb instance to yaml file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ilex.io.ilexIO.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#ilexIO.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.ilexIO.set" title="Link to this definition"></a></dt>
+<dd><p>Set attributes of ilexIO class</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datafile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.load_data" title="Link to this definition"></a></dt>
+<dd><p>Load data to memory map</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datafile</strong> (<em>str</em>) – filename or path</p></li>
+<li><p><strong>mmap</strong> (<em>bool</em><em>, </em><em>optional</em>) – is memorymap?, by default True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>data</strong> – loaded data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.mmap or np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.load_param_file">
+<span class="sig-name descname"><span class="pre">load_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ruamel2py</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#load_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.load_param_file" title="Link to this definition"></a></dt>
+<dd><p>Load in param file and compare with default params file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>param_file</strong> (<em>str</em>) – parameter file to load in, if None, will return default yaml file values</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>params</strong> – parameters, compared with defaults</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.save_data">
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.save_data" title="Link to this definition"></a></dt>
+<dd><p>Save data to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – data to save to file</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – filename to save data to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.save_param_file">
+<span class="sig-name descname"><span class="pre">save_param_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yaml_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#save_param_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.save_param_file" title="Link to this definition"></a></dt>
+<dd><p>save to new parameter file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pars</strong> (<em>dict</em>) – dictionary of parameters in ilex.yaml format</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – filename of saved yaml file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.update_ruamel_CommentedMap">
+<span class="sig-name descname"><span class="pre">update_ruamel_CommentedMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commented_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#update_ruamel_CommentedMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.update_ruamel_CommentedMap" title="Link to this definition"></a></dt>
+<dd><p>Updated Commented map based on key, value pair</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ilex.io.update_ruamel_CommentedSeq">
+<span class="sig-name descname"><span class="pre">update_ruamel_CommentedSeq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commented_seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ilex/io.html#update_ruamel_CommentedSeq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ilex.io.update_ruamel_CommentedSeq" title="Link to this definition"></a></dt>
+<dd><p>Updates the value of the CommentedSeq whilst preserving the flow
+stype and comments</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ilex.interactive.html" class="btn btn-neutral float-left" title="ilex.interactive" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ilex.logging.html" class="btn btn-neutral float-right" title="ilex.logging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Tyson Dial.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
